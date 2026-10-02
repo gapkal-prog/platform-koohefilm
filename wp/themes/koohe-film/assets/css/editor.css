@@ -1,0 +1,265 @@
+/**
+ * Koohe Film — استایل ویرایشگر بلوک
+ *
+ * تنها سبک‌های بصری که در theme.json قابل بیان نیستند اینجا تکرار می‌شوند
+ * تا پیش‌نمایش ویرایشگر با خروجی نهایی هم‌خوان باشد.
+ *
+ * @package KooheFilm
+ */
+
+.editor-styles-wrapper {
+	--koohe-surface: var(--wp--preset--color--surface, #ffffff);
+	--koohe-surface-2: var(--wp--preset--color--surface-2, #f4f5f7);
+	--koohe-surface-3: var(--wp--preset--color--surface-3, #e9ebef);
+	--koohe-text: var(--wp--preset--color--foreground, #14161a);
+	--koohe-muted: var(--wp--preset--color--muted, #6b7280);
+	--koohe-accent: var(--wp--preset--color--accent, #f59e0b);
+	--koohe-accent-contrast: var(--wp--preset--color--accent-contrast, #111318);
+	--koohe-border: var(--wp--preset--color--border, #e2e5ea);
+	--koohe-radius-sm: 8px;
+	--koohe-radius: 14px;
+	--koohe-radius-lg: 20px;
+	--koohe-radius-pill: 999px;
+	--koohe-transition: .2s cubic-bezier(.2, .7, .3, 1);
+	--koohe-shadow: 0 6px 24px rgba(0, 0, 0, .08);
+	--koohe-shadow-lg: 0 18px 48px rgba(0, 0, 0, .14);
+}
+
+/* سبک‌های بلوک اختصاصی در ویرایشگر */
+.editor-styles-wrapper .is-style-koohe-card {
+	background: var(--koohe-surface);
+	border: 1px solid var(--koohe-border);
+	border-radius: var(--koohe-radius);
+	box-shadow: var(--koohe-shadow);
+}
+
+.editor-styles-wrapper .is-style-koohe-glass {
+	background: rgba(255, 255, 255, .7);
+	border: 1px solid var(--koohe-border);
+	border-radius: var(--koohe-radius-lg);
+}
+
+.editor-styles-wrapper .is-style-koohe-outline {
+	border: 1px solid var(--koohe-border);
+	border-radius: var(--koohe-radius);
+}
+
+.editor-styles-wrapper .is-style-koohe-section {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+}
+
+.editor-styles-wrapper .is-style-koohe-section::before {
+	content: "";
+	flex: 0 0 auto;
+	width: 4px;
+	height: 1.05em;
+	border-radius: 2px;
+	background: var(--koohe-accent);
+}
+
+.editor-styles-wrapper .is-style-koohe-underline {
+	position: relative;
+	padding-bottom: .45em;
+}
+
+.editor-styles-wrapper .is-style-koohe-underline::after {
+	content: "";
+	position: absolute;
+	inset-inline-start: 0;
+	bottom: 0;
+	width: 56px;
+	height: 3px;
+	border-radius: 3px;
+	background: var(--koohe-accent);
+}
+
+.editor-styles-wrapper .is-style-koohe-poster img {
+	aspect-ratio: 2 / 3;
+	object-fit: cover;
+	width: 100%;
+	border-radius: var(--koohe-radius);
+}
+
+.editor-styles-wrapper .is-style-koohe-rounded img {
+	border-radius: var(--koohe-radius);
+}
+
+.editor-styles-wrapper .wp-block-button.is-style-koohe-ghost .wp-block-button__link {
+	background: transparent;
+	color: var(--koohe-text);
+	border: 1px solid var(--koohe-border);
+}
+
+.editor-styles-wrapper .wp-block-button.is-style-koohe-soft .wp-block-button__link {
+	background: rgba(245, 158, 11, .14);
+	color: var(--koohe-accent);
+	border: 1px solid transparent;
+}
+
+.editor-styles-wrapper .wp-block-separator.is-style-koohe-dots {
+	border: 0;
+	height: 4px;
+	background-image: radial-gradient(circle, var(--koohe-border) 1.5px, transparent 1.6px);
+	background-size: 12px 4px;
+	background-repeat: repeat-x;
+	opacity: 1;
+}
+
+.editor-styles-wrapper .wp-block-list.is-style-koohe-check {
+	list-style: none;
+	padding-inline-start: 0;
+}
+
+.editor-styles-wrapper .wp-block-list.is-style-koohe-check li {
+	position: relative;
+	padding-inline-start: 1.75em;
+}
+
+.editor-styles-wrapper .wp-block-list.is-style-koohe-check li::before {
+	content: "✓";
+	position: absolute;
+	inset-inline-start: 0;
+	color: var(--koohe-accent);
+	font-weight: 700;
+}
+
+.editor-styles-wrapper .is-style-koohe-pills {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 6px;
+}
+
+.editor-styles-wrapper .is-style-koohe-pills a {
+	display: inline-block;
+	padding: 3px 11px;
+	border-radius: var(--koohe-radius-pill);
+	border: 1px solid var(--koohe-border);
+	background: var(--koohe-surface-2);
+	color: var(--koohe-muted);
+	font-size: .75rem;
+	text-decoration: none;
+}
+
+/* بلوک‌های سرور-رندر ManaCore در ویرایشگر */
+.editor-styles-wrapper .wp-block[data-type^="manacore/"],
+.editor-styles-wrapper .wp-block[data-type^="koohe/"] {
+	min-height: 40px;
+}
+
+.editor-styles-wrapper .components-placeholder.is-manacore {
+	border: 1px dashed var(--koohe-border);
+	border-radius: var(--koohe-radius);
+	background: var(--koohe-surface-2);
+}
+
+/* کارت پوستر در ویرایشگر */
+.editor-styles-wrapper .koohe-poster-card .wp-block-post-featured-image {
+	overflow: hidden;
+	border-radius: 12px;
+	background: var(--koohe-surface-2);
+}
+
+.editor-styles-wrapper .koohe-poster-card .wp-block-post-title a {
+	font-weight: 600;
+}
+
+/* کلید حالت رنگ در ویرایشگر */
+.editor-styles-wrapper .koohe-toggle-track {
+	display: inline-flex;
+	align-items: center;
+	width: 52px;
+	height: 28px;
+	padding: 3px;
+	border-radius: var(--koohe-radius-pill);
+	background: var(--koohe-surface-3);
+	border: 1px solid var(--koohe-border);
+}
+
+.editor-styles-wrapper .koohe-toggle-thumb {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 22px;
+	height: 22px;
+	border-radius: 50%;
+	background: var(--koohe-surface);
+	color: var(--koohe-accent);
+}
+
+.editor-styles-wrapper .koohe-icon-moon {
+	display: none;
+}
+
+.editor-styles-wrapper .koohe-account {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	padding: 4px 10px 4px 4px;
+	border: 1px solid var(--koohe-border);
+	border-radius: var(--koohe-radius-pill);
+	background: var(--koohe-surface-2);
+	font-size: .8125rem;
+	font-weight: 600;
+}
+
+.editor-styles-wrapper .koohe-account-avatar {
+	border-radius: 50%;
+}
+
+/* =========================================================================
+ * بازنویسی‌های ویژه‌ی ویرایشگر
+ *
+ * از نسخه‌ی ۱.۱ فایل theme.css نیز به ویرایشگر بارگذاری می‌شود تا بوم
+ * «ویرایشگر سایت» همان طراحی سمت کاربر را نشان دهد. وردپرس انتخاب‌گرهای
+ * html/body/:root را به .editor-styles-wrapper بازنویسی می‌کند، ولی
+ * موقعیت‌دهی fixed/sticky در بوم ویرایشگر باید غیرفعال شود؛ در غیر این
+ * صورت بلوک‌ها روی نوارابزار می‌افتند یا از دید خارج می‌شوند.
+ * ====================================================================== */
+
+.editor-styles-wrapper .koohe-header-slot,
+.editor-styles-wrapper .koohe-header,
+.editor-styles-wrapper .koohe-progress,
+.editor-styles-wrapper .koohe-to-top,
+.editor-styles-wrapper .koohe-rail-nav {
+	position: static !important;
+	inset: auto !important;
+}
+
+/* دکمه‌ی بازگشت به بالا و نوار پیشرفت در ویرایشگر معنایی ندارند. */
+.editor-styles-wrapper .koohe-to-top,
+.editor-styles-wrapper .koohe-progress {
+	display: none !important;
+}
+
+/* backdrop-filter در بوم ویرایشگر باعث تاری متن و افت کارایی می‌شود. */
+.editor-styles-wrapper .koohe-header,
+.editor-styles-wrapper .is-style-koohe-glass {
+	backdrop-filter: none !important;
+	-webkit-backdrop-filter: none !important;
+}
+
+/* افکت بزرگ‌نمایی کارت هنگام ویرایش، جابه‌جایی بلوک را دشوار می‌کند. */
+.editor-styles-wrapper .koohe-poster-card:hover .wp-block-post-featured-image img,
+.editor-styles-wrapper .koohe-card:hover .wp-block-post-featured-image img,
+.editor-styles-wrapper .koohe-card:hover {
+	transform: none !important;
+}
+
+/*
+ * بوم ویرایشگر همیشه از پالت حالت روشن استفاده می‌کند مگر آنکه
+ * ویرایشگر خودش تیره باشد؛ چون کلاس data-color-mode روی <html> بوم
+ * تنظیم نمی‌شود، این متغیرها تضمین می‌کنند متن خوانا باقی بماند.
+ */
+.editor-styles-wrapper {
+	background-color: var(--wp--preset--color--surface, #ffffff);
+	color: var(--wp--preset--color--foreground, #14161a);
+}
+
+/* ناوبری موبایل در ویرایشگر باید همیشه باز و درجا باشد. */
+.editor-styles-wrapper .wp-block-navigation__responsive-container {
+	position: static !important;
+	background: transparent !important;
+	padding: 0 !important;
+}

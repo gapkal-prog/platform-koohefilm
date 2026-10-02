@@ -1,0 +1,131 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/theme.json",
+	"version": 3,
+	"title": "تیره (Dark)",
+	"slug": "dark",
+	"settings": {
+		"color": {
+			"palette": [
+				{
+					"slug": "surface",
+					"color": "#0e1218",
+					"name": "پس‌زمینه"
+				},
+				{
+					"slug": "surface-2",
+					"color": "#161c24",
+					"name": "پس‌زمینه دوم"
+				},
+				{
+					"slug": "surface-3",
+					"color": "#1c242d",
+					"name": "پس‌زمینه سوم"
+				},
+				{
+					"slug": "foreground",
+					"color": "#eef1f3",
+					"name": "متن"
+				},
+				{
+					"slug": "muted",
+					"color": "#8b949f",
+					"name": "متن کم‌رنگ"
+				},
+				{
+					"slug": "accent",
+					"color": "#c6ed7b",
+					"name": "رنگ تأکید"
+				},
+				{
+					"slug": "accent-contrast",
+					"color": "#1b2712",
+					"name": "متن روی تأکید"
+				},
+				{
+					"slug": "border",
+					"color": "#293039",
+					"name": "خط جداکننده"
+				},
+				{
+					"slug": "success",
+					"color": "#22c55e",
+					"name": "موفق"
+				},
+				{
+					"slug": "danger",
+					"color": "#ed9c92",
+					"name": "خطا"
+				},
+				{
+					"slug": "rating",
+					"color": "#efd18a",
+					"name": "امتیاز"
+				}
+			]
+		},
+		"shadow": {
+			"presets": [
+				{
+					"slug": "soft",
+					"name": "نرم",
+					"shadow": "0 6px 30px rgba(0, 0, 0, .5)"
+				},
+				{
+					"slug": "raised",
+					"name": "برجسته",
+					"shadow": "0 30px 70px rgba(0, 0, 0, .6)"
+				}
+			]
+		},
+		"custom": {
+			"scheme": {
+				"light": {
+					"surface": "#f5f6f2",
+					"surface-2": "#ffffff",
+					"surface-3": "#eef1e8",
+					"foreground": "#202a22",
+					"muted": "#778172",
+					"accent": "#9bc84f",
+					"accent-contrast": "#18230d",
+					"border": "#dce2d6",
+					"success": "#16a34a",
+					"danger": "#bb6357",
+					"rating": "#a98225",
+					"shadow-soft": "0 4px 22px rgba(0, 0, 0, .08)",
+					"shadow-raised": "0 20px 50px rgba(0, 0, 0, .12)",
+					"overlay": "rgba(0, 0, 0, .55)",
+					"glass": "rgba(245, 246, 242, .78)"
+				},
+				"dark": {
+					"surface": "#0e1218",
+					"surface-2": "#161c24",
+					"surface-3": "#1c242d",
+					"foreground": "#eef1f3",
+					"muted": "#8b949f",
+					"accent": "#c6ed7b",
+					"accent-contrast": "#1b2712",
+					"border": "#293039",
+					"success": "#22c55e",
+					"danger": "#ed9c92",
+					"rating": "#efd18a",
+					"shadow-soft": "0 6px 30px rgba(0, 0, 0, .5)",
+					"shadow-raised": "0 30px 70px rgba(0, 0, 0, .6)",
+					"overlay": "rgba(7, 11, 18, .75)",
+					"glass": "rgba(14, 18, 24, .78)"
+				}
+			}
+		}
+	},
+	"styles": {
+		"elements": {
+			"button": {
+				":hover": {
+					"color": {
+						"background": "#d4f59a",
+						"text": "#1b2712"
+					}
+				}
+			}
+		}
+	}
+}

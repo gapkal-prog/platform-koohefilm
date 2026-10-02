@@ -1,0 +1,671 @@
+/**
+ * ManaCore Sources – admin styles.
+ *
+ * Styles the fetch metabox (search → results → preview → import) and the
+ * provider status table on the settings page.
+ *
+ * @package ManaCore\Sources
+ */
+
+/* -------------------------------------------------------------------------
+ * 1. Tokens (aligned with the core plugin admin palette)
+ * ---------------------------------------------------------------------- */
+
+.manacore-fetch-box,
+.manacore-provider-table {
+	--mcs-accent: #f59e0b;
+	--mcs-accent-soft: rgba(245, 158, 11, .12);
+	--mcs-ok: #16a34a;
+	--mcs-ok-soft: rgba(22, 163, 74, .12);
+	--mcs-off: #9ca3af;
+	--mcs-off-soft: rgba(156, 163, 175, .16);
+	--mcs-err: #dc2626;
+	--mcs-err-soft: rgba(220, 38, 38, .1);
+	--mcs-border: #dcdfe4;
+	--mcs-border-soft: #eceef1;
+	--mcs-surface: #fff;
+	--mcs-surface-2: #f6f7f9;
+	--mcs-text: #1e2327;
+	--mcs-muted: #6b7280;
+	--mcs-radius: 8px;
+	--mcs-radius-sm: 5px;
+	--mcs-transition: .18s ease;
+}
+
+/* -------------------------------------------------------------------------
+ * 2. Fetch box shell
+ * ---------------------------------------------------------------------- */
+
+.manacore-fetch-box {
+	font-size: 13px;
+	color: var(--mcs-text);
+	line-height: 1.7;
+}
+
+.manacore-fetch-box *,
+.manacore-fetch-box *::before,
+.manacore-fetch-box *::after {
+	box-sizing: border-box;
+}
+
+/* Mode row -------------------------------------------------------------- */
+
+.manacore-fetch-mode {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 8px;
+	margin: 0 0 12px;
+	padding-bottom: 10px;
+	border-bottom: 1px solid var(--mcs-border-soft);
+}
+
+.manacore-fetch-mode a {
+	font-size: 12px;
+	text-decoration: none;
+}
+
+.manacore-mode-badge {
+	display: inline-flex;
+	align-items: center;
+	gap: 5px;
+	padding: 3px 10px;
+	border-radius: 999px;
+	font-size: 11px;
+	font-weight: 700;
+	line-height: 1.6;
+	white-space: nowrap;
+}
+
+.manacore-mode-badge::before {
+	content: "";
+	width: 7px;
+	height: 7px;
+	border-radius: 50%;
+	background: currentColor;
+	flex: 0 0 auto;
+}
+
+.manacore-mode-badge.is-key {
+	background: var(--mcs-accent-soft);
+	color: #92400e;
+}
+
+.manacore-mode-badge.is-free {
+	background: var(--mcs-ok-soft);
+	color: #14532d;
+}
+
+/* -------------------------------------------------------------------------
+ * 3. Search form
+ * ---------------------------------------------------------------------- */
+
+.manacore-fetch-form {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+}
+
+.manacore-fetch-form input[type="search"],
+.manacore-fetch-form input[type="number"],
+.manacore-fetch-form select {
+	min-height: 30px;
+	border: 1px solid var(--mcs-border);
+	border-radius: var(--mcs-radius-sm);
+	background: var(--mcs-surface);
+	box-shadow: none;
+	font-size: 13px;
+	transition: border-color var(--mcs-transition), box-shadow var(--mcs-transition);
+}
+
+.manacore-fetch-form input[type="search"]:focus,
+.manacore-fetch-form input[type="number"]:focus,
+.manacore-fetch-form select:focus {
+	border-color: var(--mcs-accent);
+	box-shadow: 0 0 0 2px var(--mcs-accent-soft);
+	outline: none;
+}
+
+.manacore-fetch-query {
+	width: 100%;
+}
+
+.manacore-fetch-row {
+	display: flex;
+	gap: 8px;
+}
+
+.manacore-fetch-year {
+	width: 84px;
+	flex: 0 0 84px;
+	text-align: center;
+}
+
+.manacore-fetch-provider {
+	flex: 1 1 auto;
+	min-width: 0;
+	max-width: 100%;
+}
+
+.manacore-fetch-provider option:disabled {
+	color: var(--mcs-off);
+}
+
+.manacore-fetch-submit {
+	width: 100%;
+	justify-content: center;
+	text-align: center;
+}
+
+.manacore-fetch-submit[disabled],
+.manacore-fetch-submit.is-busy {
+	cursor: progress;
+	opacity: .7;
+}
+
+/* -------------------------------------------------------------------------
+ * 4. Status line
+ * ---------------------------------------------------------------------- */
+
+.manacore-fetch-status {
+	margin: 10px 0 0;
+	min-height: 0;
+	font-size: 12px;
+	color: var(--mcs-muted);
+}
+
+.manacore-fetch-status:empty {
+	display: none;
+}
+
+.manacore-fetch-status.is-loading {
+	display: flex;
+	align-items: center;
+	gap: 7px;
+}
+
+.manacore-fetch-status.is-loading::before {
+	content: "";
+	width: 13px;
+	height: 13px;
+	border: 2px solid var(--mcs-border);
+	border-top-color: var(--mcs-accent);
+	border-radius: 50%;
+	animation: manacore-spin .7s linear infinite;
+	flex: 0 0 auto;
+}
+
+.manacore-fetch-status.is-error {
+	padding: 7px 10px;
+	border-radius: var(--mcs-radius-sm);
+	background: var(--mcs-err-soft);
+	color: #7f1d1d;
+	border-inline-start: 3px solid var(--mcs-err);
+}
+
+.manacore-fetch-status.is-success {
+	padding: 7px 10px;
+	border-radius: var(--mcs-radius-sm);
+	background: var(--mcs-ok-soft);
+	color: #14532d;
+	border-inline-start: 3px solid var(--mcs-ok);
+}
+
+.manacore-fetch-status.is-warning {
+	padding: 7px 10px;
+	border-radius: var(--mcs-radius-sm);
+	background: var(--mcs-accent-soft);
+	color: #7c2d12;
+	border-inline-start: 3px solid var(--mcs-accent);
+}
+
+.manacore-fetch-status .manacore-fetch-reload {
+	margin-inline-start: 6px;
+	font-size: 12px;
+}
+
+@keyframes manacore-spin {
+	to {
+		transform: rotate(360deg);
+	}
+}
+
+/* -------------------------------------------------------------------------
+ * 5. Results list
+ * ---------------------------------------------------------------------- */
+
+.manacore-fetch-results {
+	margin-top: 10px;
+}
+
+.manacore-fetch-results:empty {
+	display: none;
+}
+
+.manacore-fetch-list {
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+	max-height: 340px;
+	overflow-y: auto;
+	overscroll-behavior: contain;
+	padding: 2px;
+	margin: 0;
+	list-style: none;
+	border-radius: var(--mcs-radius);
+	background: var(--mcs-surface-2);
+}
+
+.manacore-fetch-list::-webkit-scrollbar {
+	width: 8px;
+}
+
+.manacore-fetch-list::-webkit-scrollbar-thumb {
+	background: #c9ced6;
+	border-radius: 99px;
+}
+
+.manacore-fetch-item {
+	display: flex;
+	gap: 9px;
+	width: 100%;
+	padding: 7px;
+	border: 1px solid transparent;
+	border-radius: var(--mcs-radius-sm);
+	background: var(--mcs-surface);
+	text-align: start;
+	cursor: pointer;
+	transition: border-color var(--mcs-transition), box-shadow var(--mcs-transition), transform var(--mcs-transition);
+	font: inherit;
+	color: inherit;
+}
+
+.manacore-fetch-item:hover,
+.manacore-fetch-item:focus-visible {
+	border-color: var(--mcs-accent);
+	box-shadow: 0 1px 8px rgba(0, 0, 0, .07);
+	outline: none;
+}
+
+.manacore-fetch-item.is-selected {
+	border-color: var(--mcs-accent);
+	background: var(--mcs-accent-soft);
+}
+
+.manacore-fetch-item.is-loading {
+	cursor: progress;
+	opacity: .65;
+}
+
+.manacore-fetch-thumb {
+	width: 42px;
+	height: 63px;
+	flex: 0 0 42px;
+	border-radius: 4px;
+	background: #e6e8ec no-repeat center / cover;
+	overflow: hidden;
+}
+
+.manacore-fetch-thumb img {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	display: block;
+}
+
+.manacore-fetch-thumb.is-empty {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	color: var(--mcs-off);
+	font-size: 16px;
+}
+
+.manacore-fetch-thumb.is-empty::before {
+	content: "\f126";
+	font-family: dashicons, sans-serif;
+	line-height: 1;
+}
+
+.manacore-fetch-info {
+	min-width: 0;
+	flex: 1 1 auto;
+}
+
+.manacore-fetch-title {
+	display: block;
+	font-weight: 600;
+	font-size: 13px;
+	line-height: 1.5;
+	margin: 0 0 2px;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.manacore-fetch-sub {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 4px 6px;
+	font-size: 11px;
+	color: var(--mcs-muted);
+	margin: 0 0 3px;
+}
+
+.manacore-fetch-sub span {
+	display: inline-flex;
+	align-items: center;
+	gap: 3px;
+}
+
+.manacore-fetch-sub .manacore-fetch-provider-tag {
+	padding: 1px 6px;
+	border-radius: 99px;
+	background: var(--mcs-surface-2);
+	border: 1px solid var(--mcs-border-soft);
+	font-weight: 600;
+}
+
+.manacore-fetch-sub .manacore-fetch-rating {
+	font-weight: 700;
+	color: #92400e;
+}
+
+.manacore-fetch-sub .manacore-fetch-rating::before {
+	content: "\2605";
+}
+
+.manacore-fetch-overview {
+	margin: 0;
+	font-size: 11px;
+	line-height: 1.6;
+	color: var(--mcs-muted);
+	display: -webkit-box;
+	-webkit-line-clamp: 2;
+	-webkit-box-orient: vertical;
+	overflow: hidden;
+}
+
+/* Preview card ---------------------------------------------------------- */
+
+.manacore-fetch-preview {
+	margin-top: 10px;
+	padding: 10px;
+	border: 1px solid var(--mcs-border);
+	border-radius: var(--mcs-radius);
+	background: var(--mcs-surface);
+	box-shadow: 0 1px 6px rgba(0, 0, 0, .05);
+}
+
+.manacore-fetch-preview-head {
+	display: flex;
+	gap: 10px;
+	margin-bottom: 9px;
+}
+
+.manacore-fetch-preview-head .manacore-fetch-thumb {
+	width: 54px;
+	height: 81px;
+	flex: 0 0 54px;
+}
+
+.manacore-fetch-preview-title {
+	margin: 0 0 2px;
+	font-size: 14px;
+	font-weight: 700;
+	line-height: 1.5;
+}
+
+.manacore-fetch-preview-original {
+	margin: 0;
+	font-size: 11px;
+	color: var(--mcs-muted);
+	direction: ltr;
+	text-align: start;
+}
+
+.manacore-fetch-facts {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 5px;
+	margin: 0 0 10px;
+	padding: 0;
+	list-style: none;
+}
+
+.manacore-fetch-facts li {
+	margin: 0;
+	padding: 2px 8px;
+	border-radius: 99px;
+	background: var(--mcs-surface-2);
+	border: 1px solid var(--mcs-border-soft);
+	font-size: 11px;
+	color: var(--mcs-text);
+}
+
+.manacore-fetch-facts li b {
+	font-weight: 700;
+	color: var(--mcs-muted);
+	margin-inline-end: 3px;
+	font-size: 10px;
+}
+
+.manacore-fetch-actions {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 8px;
+}
+
+.manacore-fetch-actions .button {
+	flex: 1 1 auto;
+	justify-content: center;
+	text-align: center;
+}
+
+.manacore-fetch-actions .manacore-fetch-cancel {
+	flex: 0 0 auto;
+}
+
+.manacore-fetch-source-link {
+	font-size: 11px;
+	text-decoration: none;
+	white-space: nowrap;
+}
+
+/* -------------------------------------------------------------------------
+ * 6. Import options
+ * ---------------------------------------------------------------------- */
+
+.manacore-fetch-options {
+	margin-top: 12px;
+	padding-top: 10px;
+	border-top: 1px solid var(--mcs-border-soft);
+}
+
+.manacore-fetch-options > summary {
+	cursor: pointer;
+	font-size: 12px;
+	font-weight: 600;
+	color: var(--mcs-muted);
+	padding: 2px 0;
+	list-style: none;
+	display: flex;
+	align-items: center;
+	gap: 5px;
+}
+
+.manacore-fetch-options > summary::-webkit-details-marker {
+	display: none;
+}
+
+.manacore-fetch-options > summary::before {
+	content: "\f345";
+	font-family: dashicons, sans-serif;
+	font-size: 16px;
+	line-height: 1;
+	transition: transform var(--mcs-transition);
+}
+
+.manacore-fetch-options[open] > summary::before {
+	transform: rotate(-90deg);
+}
+
+.manacore-fetch-options > summary:hover {
+	color: var(--mcs-accent);
+}
+
+.manacore-fetch-check {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	margin: 8px 0 0;
+	font-size: 12px;
+	line-height: 1.6;
+	cursor: pointer;
+}
+
+.manacore-fetch-check input[type="checkbox"] {
+	margin: 0;
+	flex: 0 0 auto;
+}
+
+.manacore-fetch-sections {
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap: 2px 10px;
+	margin-top: 8px;
+	padding: 8px 10px;
+	border-radius: var(--mcs-radius-sm);
+	background: var(--mcs-surface-2);
+}
+
+.manacore-fetch-sections .manacore-fetch-check {
+	margin: 3px 0;
+	font-size: 11.5px;
+}
+
+.manacore-fetch-provenance {
+	margin: 12px 0 0;
+	padding-top: 9px;
+	border-top: 1px dashed var(--mcs-border);
+	font-size: 11px;
+	color: var(--mcs-muted);
+	line-height: 1.7;
+}
+
+.manacore-fetch-provenance a {
+	text-decoration: none;
+}
+
+/* -------------------------------------------------------------------------
+ * 7. Provider status table (settings page)
+ * ---------------------------------------------------------------------- */
+
+.manacore-provider-table {
+	margin-top: 12px;
+	border-radius: var(--mcs-radius);
+	overflow: hidden;
+	border-collapse: collapse;
+}
+
+.manacore-provider-table th,
+.manacore-provider-table td {
+	padding: 9px 12px;
+	font-size: 13px;
+	vertical-align: middle;
+}
+
+.manacore-provider-table thead th {
+	background: var(--mcs-surface-2);
+	font-weight: 700;
+}
+
+.manacore-provider-table tbody tr:not(:last-child) td {
+	border-bottom: 1px solid var(--mcs-border-soft);
+}
+
+.manacore-provider-table code {
+	font-size: 11px;
+	background: var(--mcs-surface-2);
+	padding: 1px 5px;
+	border-radius: 3px;
+	direction: ltr;
+	display: inline-block;
+}
+
+.manacore-pill {
+	display: inline-flex;
+	align-items: center;
+	gap: 5px;
+	padding: 2px 10px;
+	border-radius: 999px;
+	font-size: 11px;
+	font-weight: 700;
+	line-height: 1.7;
+	white-space: nowrap;
+}
+
+.manacore-pill::before {
+	content: "";
+	width: 7px;
+	height: 7px;
+	border-radius: 50%;
+	background: currentColor;
+	flex: 0 0 auto;
+}
+
+.manacore-pill.is-on {
+	background: var(--mcs-ok-soft);
+	color: #14532d;
+}
+
+.manacore-pill.is-off {
+	background: var(--mcs-off-soft);
+	color: #4b5563;
+}
+
+/* -------------------------------------------------------------------------
+ * 8. Narrow sidebar / small screens
+ * ---------------------------------------------------------------------- */
+
+@media screen and (max-width: 782px) {
+	.manacore-fetch-sections {
+		grid-template-columns: 1fr;
+	}
+
+	.manacore-fetch-row {
+		flex-wrap: wrap;
+	}
+
+	.manacore-fetch-year {
+		flex: 1 1 100%;
+		width: 100%;
+	}
+}
+
+/* -------------------------------------------------------------------------
+ * 9. Accessibility
+ * ---------------------------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+	.manacore-fetch-box *,
+	.manacore-fetch-status.is-loading::before {
+		animation-duration: .001ms !important;
+		animation-iteration-count: 1 !important;
+		transition-duration: .001ms !important;
+	}
+}
+
+.manacore-sources-sr-only {
+	position: absolute !important;
+	width: 1px;
+	height: 1px;
+	padding: 0;
+	margin: -1px;
+	overflow: hidden;
+	clip: rect(0, 0, 0, 0);
+	white-space: nowrap;
+	border: 0;
+}

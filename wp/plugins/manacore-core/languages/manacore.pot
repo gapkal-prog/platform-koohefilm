@@ -1,0 +1,3361 @@
+# Copyright (C) ManaCore
+# This file is distributed under the GPL-2.0-or-later license.
+msgid ""
+msgstr ""
+"Project-Id-Version: ManaCore 1.0.0\n"
+"Report-Msgid-Bugs-To: https://manacore.dev\n"
+"POT-Creation-Date: 2026-09-19 08:13+0000\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: fa_IR\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"X-Generator: manacore-makepot\n"
+"X-Domain: manacore\n"
+
+#: manacore-core/assets/js/blocks.js:1005
+msgid "فیلترهای پیشرفته"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:1007
+msgid "جستجوی کلیدواژه"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:1016
+msgid "از سال"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:1023
+msgid "تا سال"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:1031
+msgid "حداقل امتیاز"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:1049
+msgid "نوشته‌های ویژه (sticky)"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:1056
+msgid "فقط آثار دارای لینک دانلود"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:1062
+msgid "فقط آثار دارای پوستر"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:1068
+msgid "نویسندگان"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:1072
+msgid "شناسه‌ی نویسنده را وارد و Enter بزنید."
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:1075
+msgid "فقط این شناسه‌ها"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:1076 manacore-core/assets/js/blocks.js:1083
+msgid "با کاما جدا کنید."
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:1082
+msgid "حذف این شناسه‌ها"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:1110
+msgid "مرتب‌سازی بر اساس"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:1118
+msgid "کلید فیلد دلخواه"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:1119
+msgid "مثال: manacore_imdb_rating"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:1128
+msgid "جهت مرتب‌سازی"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:1131
+msgid "نزولی (جدید به قدیم)"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:1132
+msgid "صعودی (قدیم به جدید)"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:1169 manacore-core/assets/js/blocks.js:1647 manacore-core/assets/js/blocks.js:1734
+msgid "چیدمان"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:1172
+msgid "نوع چیدمان"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:1180 manacore-core/assets/js/blocks.js:1742
+msgid "ستون‌ها — دسکتاپ"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:1188 manacore-core/assets/js/blocks.js:1743
+msgid "ستون‌ها — تبلت"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:1196 manacore-core/assets/js/blocks.js:1744
+msgid "ستون‌ها — موبایل"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:1205
+msgid "فاصله‌ی میان آیتم‌ها (پیکسل)"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:1206
+msgid "۰ = استفاده از فاصله‌ی پیش‌فرض پوسته."
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:1237
+msgid "امتیاز"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:1238
+msgid "سال تولید"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:1245
+msgid "نشان اشتراکی"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:1246
+msgid "دکمه‌ی لیست تماشا"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:1247
+msgid "پوشش روی پوستر"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:1248
+msgid "خلاصه‌ی داستان"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:1266
+msgid "سبک کارت"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:1274 manacore-core/assets/js/blocks.js:1750
+msgid "نسبت تصویر"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:1282
+msgid "تگ عنوان کارت"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:1290
+msgid "حداکثر خطوط عنوان"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:1291 manacore-core/assets/js/blocks.js:1901
+msgid "۰ = بدون محدودیت."
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:1319 manacore-core/assets/js/blocks.js:1623
+msgid "تعداد کلمات خلاصه"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:1332
+msgid "نحوه‌ی باز شدن پیوند کارت"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:1340
+msgid "کلاس CSS افزوده‌ی کارت"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:1349
+msgid "نمایش کارت"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:1373
+msgid "پیشرفته"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:1375
+msgid "کلاس CSS افزوده"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:1381
+msgid "شناسه‌ی HTML (لنگر)"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:1382
+msgid "برای پیوند دادن به این بخش، مثال: latest-movies"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:1388
+msgid "متن حالت خالی"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:1394
+msgid "پنهان کردن کل بلوک در صورت خالی بودن"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:1400
+msgid "مدت کش (ثانیه)"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:1401
+msgid "۰ = بدون کش. برای حلقه‌های سنگین مقدار ۳۰۰ پیشنهاد می‌شود."
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:1428 manacore-core/assets/js/blocks.js:1665 manacore-core/assets/js/blocks.js:1703 manacore-core/assets/js/blocks.js:1724
+#: manacore-core/assets/js/blocks.js:1753 manacore-core/assets/js/blocks.js:1777 manacore-core/assets/js/blocks.js:1909 manacore-core/assets/js/blocks.js:1914
+msgid "شناسه‌ی اثر"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:1429
+msgid "۰ = اثر جاری صفحه."
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:1538
+msgid "صعودی"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:1539
+msgid "نزولی"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:1556
+msgid "تنظیمات اسلایدر"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:1560
+msgid "سبک ظاهری اسلایدر"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:1566
+msgid "جلوه‌ی گذر اسلاید"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:1572
+msgid "جای‌گیری محتوا"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:1578
+msgid "شدت پوشش تصویر (٪)"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:1579
+msgid "صفر یعنی استفاده از پوشش پیش‌فرض قالب."
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:1586
+msgid "ارتفاع اسلایدر"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:1588
+msgid "کوتاه"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:1589 manacore-core/assets/js/blocks.js:1836
+msgid "متوسط"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:1590
+msgid "بلند"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:1591
+msgid "تمام‌صفحه"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:1594
+msgid "پخش خودکار"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:1599
+msgid "فاصله‌ی تغییر (ثانیه)"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:1604
+msgid "نمایش نقطه‌ها"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:1605
+msgid "نمایش فلش‌ها"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:1606
+msgid "نمایش لوگوی اثر"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:1607
+msgid "نمایش مشخصات"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:1608
+msgid "نمایش ژانرها"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:1613
+msgid "تعداد ژانر"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:1618
+msgid "نمایش خلاصه"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:1628
+msgid "دکمه‌ی تریلر"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:1629
+msgid "برچسب دکمه‌ی اصلی"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:1630
+msgid "برچسب دکمه‌ی تریلر"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:1636
+msgid "مشخصات نمایشی"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:1640
+msgid "فیلدهای نمایشی"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:1641
+msgid "خالی = فیلدهای پیش‌فرض."
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:1649
+msgid "ردیفی"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:1650
+msgid "دو ستونی"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:1651 manacore-core/assets/js/blocks.js:1796
+msgid "درون‌خطی"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:1654
+msgid "پیوند دادن ترم‌ها"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:1655
+msgid "پنهان کردن فیلدهای خالی"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:1659
+msgid "عرض ستون برچسب (پیکسل)"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:1660
+msgid "۰ = خودکار."
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:1665 manacore-core/assets/js/blocks.js:1703 manacore-core/assets/js/blocks.js:1724 manacore-core/assets/js/blocks.js:1753
+#: manacore-core/assets/js/blocks.js:1777 manacore-core/assets/js/blocks.js:1909
+msgid "۰ = اثر جاری."
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:1671
+msgid "تنظیمات لینک‌ها"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:1675
+msgid "سبک ظاهری جعبه"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:1678
+msgid "تب‌بندی فصل‌ها"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:1679
+msgid "باز بودن اولین گروه"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:1680
+msgid "نمایش آیکون نوع"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:1681
+msgid "نمایش تعداد لینک"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:1682
+msgid "نمایش هشدار اشتراک"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:1686
+msgid "نوع‌های مجاز"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:1687
+msgid "خالی = همه‌ی نوع‌ها."
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:1693
+msgid "کیفیت‌های مجاز"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:1694
+msgid "خالی = همه‌ی کیفیت‌ها."
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:1700 manacore-core/assets/js/blocks.js:1871
+msgid "فقط این فصل"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:1701 manacore-core/assets/js/blocks.js:1872
+msgid "۰ = همه‌ی فصل‌ها."
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:1709
+msgid "تنظیمات امتیاز"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:1710
+msgid "نمایش امتیاز منابع"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:1715
+msgid "منابع امتیاز"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:1716
+msgid "خالی = IMDb، TMDB، MAL و سردبیر."
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:1720
+msgid "نمایش نوار درصدی"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:1721
+msgid "امتیازدهی کاربران"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:1722
+msgid "نمایش خلاصه‌ی امتیاز"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:1723
+msgid "برچسب امتیاز کاربران"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:1730
+msgid "تنظیمات بازیگران"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:1736
+msgid "ریل افقی"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:1740
+msgid "تعداد"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:1741
+msgid "پرش از ابتدا"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:1745
+msgid "نمایش عکس"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:1746
+msgid "نمایش نام نقش"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:1759
+msgid "تنظیمات تریلر"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:1763
+msgid "نسبت ویدیو"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:1771
+msgid "نمایش پوستر پیش از پخش"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:1774
+msgid "کلید فیلد آدرس ویدیو"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:1775
+msgid "پیش‌فرض: manacore_trailer_url"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:1783
+msgid "تنظیمات فیلتر"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:1787
+msgid "تاکسونومی‌های فیلتر"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:1788
+msgid "ترتیب انتخاب، ترتیب نمایش فیلدها است."
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:1794
+msgid "چیدمان فرم"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:1798
+msgid "ستونی"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:1801
+msgid "کادر جستجو"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:1802
+msgid "گزینه‌ی مرتب‌سازی"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:1803
+msgid "دکمه‌ی اعمال"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:1805
+msgid "برچسب دکمه‌ی اعمال"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:1807
+msgid "پیوند پاک‌سازی فیلترها"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:1811
+msgid "نمایش برچسب فیلترهای فعال"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:1812
+msgid "هر برچسب با یک کلیک همان فیلتر را حذف می‌کند."
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:1814
+msgid "پنهان کردن ترم‌های بدون محتوا"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:1818
+msgid "حداکثر ترم در هر فیلد"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:1828
+msgid "تنظیمات جستجو"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:1829
+msgid "متن راهنمای کادر"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:1833
+msgid "اندازه‌ی کادر"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:1835
+msgid "کوچک"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:1837
+msgid "بزرگ"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:1840
+msgid "نمایش آیکون"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:1841
+msgid "نمایش دکمه"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:1843
+msgid "برچسب دکمه"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:1845
+msgid "نتایج زنده"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:1850
+msgid "تعداد نتایج زنده"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:1858
+msgid "محدود به نوع‌های محتوا"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:1859
+msgid "خالی = همه‌ی آثار."
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:1867
+msgid "تنظیمات قسمت‌ها"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:1877
+msgid "ترتیب فصل‌ها"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:1883
+msgid "ترتیب قسمت‌ها"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:1889
+msgid "فصل باز به‌صورت پیش‌فرض"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:1891
+msgid "اولین فصل"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:1892
+msgid "آخرین فصل"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:1893
+msgid "همه‌ی فصل‌ها"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:1894
+msgid "هیچ‌کدام"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:1900
+msgid "حداکثر قسمت در هر فصل"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:1905
+msgid "نمایش نام قسمت"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:1906
+msgid "نمایش تاریخ پخش"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:1907
+msgid "نمایش تعداد قسمت‌ها"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:1908
+msgid "نمایش بندانگشتی"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:1914 manacore-sources/includes/class-metabox.php:134
+msgid "تنظیمات"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:1946
+msgid "پیش‌نمایش سمت سرور در دسترس نیست."
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:300
+msgid "زمینه‌های صفحه"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:301
+msgid "در کدام نوع صفحه‌ها این شرط برقرار است."
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:313 manacore-core/assets/js/blocks.js:824
+msgid "نوع‌های محتوا"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:326 manacore-core/assets/js/blocks.js:924
+msgid "تاکسونومی"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:339 manacore-core/assets/js/blocks.js:934
+msgid "ترم‌ها"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:340
+msgid "خالی بگذارید تا «هر ترمی» در نظر گرفته شود."
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:353
+msgid "شناسه‌ی نوشته‌ها"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:354
+msgid "با کاما جدا کنید. مثال: 12, 48, 90"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:371
+msgid "کاربر وارد شده"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:372
+msgid "کاربر مهمان"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:384
+msgid "نقش‌های کاربری"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:398
+msgid "افزونه‌ی اشتراک ManaCore فعال نیست."
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:405
+msgid "سطوح اشتراک"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:419
+msgid "محتوای اشتراکی باشد؟"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:420
+msgid "لینک دانلود داشته باشد؟"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:423 manacore-sources/includes/class-settings.php:497
+msgid "بله"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:424 manacore-sources/includes/class-settings.php:497
+msgid "خیر"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:437
+msgid "از تاریخ"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:447
+msgid "تا تاریخ"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:461
+msgid "نام پارامتر"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:462
+msgid "مثال: ref در آدرس ?ref=home"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:471
+msgid "مقدارهای مجاز"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:472
+msgid "با کاما جدا کنید. خالی = فقط وجود پارامتر مهم است."
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:504
+msgid "فعال‌سازی نمایش شرطی"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:505
+msgid "با فعال کردن این گزینه، نمایش بلوک به شرط‌های زیر وابسته می‌شود."
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:518
+msgid "در صورت برقراری شرط‌ها"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:521
+msgid "بلوک نمایش داده شود"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:522
+msgid "بلوک پنهان شود"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:531
+msgid "رابطه‌ی میان شرط‌ها"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:534
+msgid "همه‌ی شرط‌ها (AND)"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:535
+msgid "حداقل یک شرط (OR)"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:557
+msgid "شرط"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:566
+msgid "حذف شرط"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:578
+msgid "نوع شرط"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:594 manacore-core/assets/js/blocks.js:943
+msgid "عملگر"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:597
+msgid "برابر باشد (is)"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:598
+msgid "برابر نباشد (is not)"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:625
+msgid "افزودن شرط"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:630
+msgid "پنهان‌سازی در دستگاه‌ها"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:631
+msgid "در دستگاه‌های انتخاب‌شده این بلوک با CSS پنهان می‌شود."
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:641
+msgid "در ویرایشگر همیشه پیش‌نمایش نمایش داده می‌شود؛ شرط‌ها فقط در سایت اعمال می‌شوند."
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:650
+msgid "نمایش شرطی"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:663
+msgid "بدون آیکون"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:665
+msgid "ستاره"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:666
+msgid "داغ"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:667
+msgid "ساعت"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:668
+msgid "چشم"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:670
+msgid "فهرست پخش"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:671
+msgid "قلب"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:672
+msgid "تاج"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:673
+msgid "قطب‌نما"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:677
+msgid "همین پنجره"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:678
+msgid "پنجره‌ی جدید"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:696
+msgid "محتوا و سرتیتر"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:698
+msgid "عنوان بخش"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:704
+msgid "سطح عنوان"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:711
+msgid "آیکون عنوان"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:718
+msgid "توضیح زیر عنوان"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:725
+msgid "نمایش پیوند «مشاهده‌ی همه»"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:735
+msgid "برچسب پیوند"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:741
+msgid "آدرس پیوند"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:748
+msgid "نحوه‌ی باز شدن"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:801
+msgid "منبع و کوئری"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:803
+msgid "ارث‌بری از کوئری صفحه"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:804
+msgid "در قالب‌های آرشیو، جستجو و تاکسونومی از کوئری اصلی استفاده می‌کند."
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:813
+msgid "با فعال بودن ارث‌بری، منبع و بیشتر فیلترها نادیده گرفته می‌شوند."
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:817
+msgid "منبع داده"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:825
+msgid "خالی = همه‌ی نوع‌های آثار (فیلم، سریال، انیمه)."
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:831
+msgid "تعداد آیتم"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:839
+msgid "پرش از ابتدا (offset)"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:847
+msgid "حذف اثر جاری از نتایج"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:873
+msgid "مشخص کنید این حلقه از کدام دسته، برچسب یا تاکسونومی محتوا بگیرد."
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:881
+msgid "رابطه‌ی میان فیلترها"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:884
+msgid "همه (AND)"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:885
+msgid "هرکدام (OR)"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:906
+msgid "فیلتر"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:913
+msgid "حذف فیلتر"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:946
+msgid "یکی از ترم‌ها (IN)"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:947
+msgid "هیچ‌یک از ترم‌ها (NOT IN)"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:948
+msgid "همه‌ی ترم‌ها (AND)"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:974
+msgid "افزودن فیلتر تاکسونومی"
+msgstr ""
+
+#: manacore-core/assets/js/blocks.js:983
+msgid "فیلتر تاکسونومی"
+msgstr ""
+
+#: manacore-core/includes/class-assets.php:100
+msgid "عنوان گروه"
+msgstr ""
+
+#: manacore-core/includes/class-assets.php:101
+msgid "مثلا: فصل ۱ — کیفیت ۱۰۸۰p"
+msgstr ""
+
+#: manacore-core/includes/class-assets.php:102 manacore-core/includes/class-assets.php:116 manacore-core/includes/class-block-data.php:372 manacore-core/includes/class-taxonomies.php:74
+#: manacore-core/assets/js/blocks.js:1240
+msgid "کیفیت"
+msgstr ""
+
+#: manacore-core/includes/class-assets.php:103
+msgid "زبان / دوبله"
+msgstr ""
+
+#: manacore-core/includes/class-assets.php:104
+msgid "انکودر"
+msgstr ""
+
+#: manacore-core/includes/class-assets.php:105
+msgid "حجم"
+msgstr ""
+
+#: manacore-core/includes/class-assets.php:106
+msgid "توضیح"
+msgstr ""
+
+#: manacore-core/includes/class-assets.php:107
+msgid "فقط اعضای اشتراکی"
+msgstr ""
+
+#: manacore-core/includes/class-assets.php:108
+msgid "افزودن لینک"
+msgstr ""
+
+#: manacore-core/includes/class-assets.php:109
+msgid "تکثیر گروه"
+msgstr ""
+
+#: manacore-core/includes/class-assets.php:110
+msgid "(کپی)"
+msgstr ""
+
+#: manacore-core/includes/class-assets.php:111 manacore-sources/includes/class-metabox.php:96 manacore-sources/includes/class-metabox.php:183
+msgid "عنوان"
+msgstr ""
+
+#: manacore-core/includes/class-assets.php:112
+msgid "قسمت ۱ / لینک مستقیم"
+msgstr ""
+
+#: manacore-core/includes/class-assets.php:114
+msgid "آدرس لینک"
+msgstr ""
+
+#: manacore-core/includes/class-assets.php:115
+msgid "نوع"
+msgstr ""
+
+#: manacore-core/includes/class-assets.php:117
+msgid "ارث از گروه"
+msgstr ""
+
+#: manacore-core/includes/class-assets.php:118
+msgid "حذف لینک"
+msgstr ""
+
+#: manacore-core/includes/class-assets.php:119
+msgid "— انتخاب —"
+msgstr ""
+
+#: manacore-core/includes/class-assets.php:120
+msgid "انتخاب تصویر"
+msgstr ""
+
+#: manacore-core/includes/class-assets.php:181
+msgid "کپی شد"
+msgstr ""
+
+#: manacore-core/includes/class-assets.php:182 manacore-core/includes/class-templates.php:633
+msgid "کپی لینک"
+msgstr ""
+
+#: manacore-core/includes/class-assets.php:183
+msgid "برای این کار باید وارد حساب کاربری شوید."
+msgstr ""
+
+#: manacore-core/includes/class-assets.php:184
+msgid "به لیست تماشا اضافه شد"
+msgstr ""
+
+#: manacore-core/includes/class-assets.php:185
+msgid "از لیست تماشا حذف شد"
+msgstr ""
+
+#: manacore-core/includes/class-assets.php:186
+msgid "خطایی رخ داد. دوباره تلاش کنید."
+msgstr ""
+
+#: manacore-core/includes/class-assets.php:187 manacore-sources/includes/class-metabox.php:81
+msgid "در حال جستجو…"
+msgstr ""
+
+#: manacore-core/includes/class-assets.php:188 manacore-sources/includes/class-metabox.php:82
+msgid "نتیجه‌ای یافت نشد."
+msgstr ""
+
+#: manacore-core/includes/class-assets.php:85
+msgid "مجموع لینک‌ها:"
+msgstr ""
+
+#: manacore-core/includes/class-assets.php:86
+msgid "شماره فصل را وارد کنید:"
+msgstr ""
+
+#: manacore-core/includes/class-assets.php:87
+msgid "تعداد قسمت‌های این فصل:"
+msgstr ""
+
+#: manacore-core/includes/class-assets.php:88 manacore-core/includes/class-assets.php:113 manacore-core/includes/class-post-types.php:176 manacore-core/includes/class-settings.php:140
+#: manacore-core/includes/functions.php:34
+msgid "قسمت"
+msgstr ""
+
+#: manacore-core/includes/class-assets.php:89 manacore-sources/includes/class-metabox.php:110
+msgid "فصل"
+msgstr ""
+
+#: manacore-core/includes/class-assets.php:90
+msgid "هر خط یک لینک. قالب: عنوان | آدرس | شماره قسمت (اختیاری) | حجم (اختیاری)"
+msgstr ""
+
+#: manacore-core/includes/class-assets.php:91
+msgid "گروه وارد شده"
+msgstr ""
+
+#: manacore-core/includes/class-assets.php:92
+msgid "هنوز گروهی اضافه نشده است. با دکمه‌ی «افزودن گروه لینک» شروع کنید."
+msgstr ""
+
+#: manacore-core/includes/class-assets.php:93
+msgid "گروه بدون عنوان"
+msgstr ""
+
+#: manacore-core/includes/class-assets.php:94
+msgid "لینک"
+msgstr ""
+
+#: manacore-core/includes/class-assets.php:95
+msgid "باز/بسته کردن"
+msgstr ""
+
+#: manacore-core/includes/class-assets.php:96
+msgid "انتقال به بالا"
+msgstr ""
+
+#: manacore-core/includes/class-assets.php:97
+msgid "انتقال به پایین"
+msgstr ""
+
+#: manacore-core/includes/class-assets.php:98
+msgid "حذف گروه"
+msgstr ""
+
+#: manacore-core/includes/class-assets.php:99
+msgid "این گروه و همه‌ی لینک‌های آن حذف شود؟"
+msgstr ""
+
+#: manacore-core/includes/class-block-data.php:214 manacore-core/assets/js/blocks.js:1737 manacore-core/assets/js/blocks.js:1797
+msgid "شبکه‌ای"
+msgstr ""
+
+#: manacore-core/includes/class-block-data.php:215
+msgid "ریل افقی (اسکرول)"
+msgstr ""
+
+#: manacore-core/includes/class-block-data.php:216
+msgid "فهرست عمودی"
+msgstr ""
+
+#: manacore-core/includes/class-block-data.php:217
+msgid "آجری (Masonry)"
+msgstr ""
+
+#: manacore-core/includes/class-block-data.php:218
+msgid "یک شاخص + فهرست کنار"
+msgstr ""
+
+#: manacore-core/includes/class-block-data.php:219
+msgid "ویترین (سطر اول بزرگ)"
+msgstr ""
+
+#: manacore-core/includes/class-block-data.php:220
+msgid "مترو (کاشی نامتقارن)"
+msgstr ""
+
+#: manacore-core/includes/class-block-data.php:221
+msgid "رتبه‌بندی شماره‌دار"
+msgstr ""
+
+#: manacore-core/includes/class-block-data.php:239 manacore-core/includes/class-post-types.php:68 manacore-core/assets/js/blocks.js:1230
+msgid "پوستر"
+msgstr ""
+
+#: manacore-core/includes/class-block-data.php:240 manacore-core/assets/js/blocks.js:1231
+msgid "عریض"
+msgstr ""
+
+#: manacore-core/includes/class-block-data.php:241 manacore-core/includes/class-block-data.php:264 manacore-core/assets/js/blocks.js:1232
+msgid "مینیمال"
+msgstr ""
+
+#: manacore-core/includes/class-block-data.php:242 manacore-core/assets/js/blocks.js:1233
+msgid "فقط متن"
+msgstr ""
+
+#: manacore-core/includes/class-block-data.php:243
+msgid "متن روی تصویر"
+msgstr ""
+
+#: manacore-core/includes/class-block-data.php:244
+msgid "شیشه‌ای"
+msgstr ""
+
+#: manacore-core/includes/class-block-data.php:245
+msgid "کادر ساده"
+msgstr ""
+
+#: manacore-core/includes/class-block-data.php:246
+msgid "برجسته (سایه‌دار)"
+msgstr ""
+
+#: manacore-core/includes/class-block-data.php:247
+msgid "افقی (۱۶:۹)"
+msgstr ""
+
+#: manacore-core/includes/class-block-data.php:261
+msgid "سینمایی (تمام‌عرض)"
+msgstr ""
+
+#: manacore-core/includes/class-block-data.php:262
+msgid "کادردار"
+msgstr ""
+
+#: manacore-core/includes/class-block-data.php:263
+msgid "دوبخشی (متن کنار تصویر)"
+msgstr ""
+
+#: manacore-core/includes/class-block-data.php:265
+msgid "پوستری (تصویر کوچک کنار متن)"
+msgstr ""
+
+#: manacore-core/includes/class-block-data.php:279
+msgid "محو شدن"
+msgstr ""
+
+#: manacore-core/includes/class-block-data.php:280
+msgid "لغزش افقی"
+msgstr ""
+
+#: manacore-core/includes/class-block-data.php:281
+msgid "بزرگ‌نمایی آرام"
+msgstr ""
+
+#: manacore-core/includes/class-block-data.php:282
+msgid "بدون جلوه"
+msgstr ""
+
+#: manacore-core/includes/class-block-data.php:296
+msgid "ابتدای کادر"
+msgstr ""
+
+#: manacore-core/includes/class-block-data.php:297
+msgid "وسط"
+msgstr ""
+
+#: manacore-core/includes/class-block-data.php:298
+msgid "انتهای کادر"
+msgstr ""
+
+#: manacore-core/includes/class-block-data.php:312
+msgid "کارتی (پیش‌فرض)"
+msgstr ""
+
+#: manacore-core/includes/class-block-data.php:313
+msgid "جدولی"
+msgstr ""
+
+#: manacore-core/includes/class-block-data.php:314
+msgid "فشرده"
+msgstr ""
+
+#: manacore-core/includes/class-block-data.php:315
+msgid "آکاردئونی"
+msgstr ""
+
+#: manacore-core/includes/class-block-data.php:316
+msgid "دکمه‌ای"
+msgstr ""
+
+#: manacore-core/includes/class-block-data.php:328
+msgid "H2"
+msgstr ""
+
+#: manacore-core/includes/class-block-data.php:329
+msgid "H3"
+msgstr ""
+
+#: manacore-core/includes/class-block-data.php:330
+msgid "H4"
+msgstr ""
+
+#: manacore-core/includes/class-block-data.php:331
+msgid "H5"
+msgstr ""
+
+#: manacore-core/includes/class-block-data.php:332
+msgid "H6"
+msgstr ""
+
+#: manacore-core/includes/class-block-data.php:333
+msgid "بدون سرتیتر معنایی (div)"
+msgstr ""
+
+#: manacore-core/includes/class-block-data.php:344
+msgid "پیش‌فرض پوسته"
+msgstr ""
+
+#: manacore-core/includes/class-block-data.php:345
+msgid "پوستر ۲:۳"
+msgstr ""
+
+#: manacore-core/includes/class-block-data.php:346
+msgid "عمودی ۳:۴"
+msgstr ""
+
+#: manacore-core/includes/class-block-data.php:347
+msgid "مربع ۱:۱"
+msgstr ""
+
+#: manacore-core/includes/class-block-data.php:348
+msgid "عریض ۱۶:۹"
+msgstr ""
+
+#: manacore-core/includes/class-block-data.php:349
+msgid "سینمایی ۲۱:۹"
+msgstr ""
+
+#: manacore-core/includes/class-block-data.php:360
+msgid "نام اصلی"
+msgstr ""
+
+#: manacore-core/includes/class-block-data.php:361 manacore-core/includes/class-meta.php:61
+msgid "نام‌های دیگر"
+msgstr ""
+
+#: manacore-core/includes/class-block-data.php:362
+msgid "شعار"
+msgstr ""
+
+#: manacore-core/includes/class-block-data.php:363 manacore-core/includes/class-block-query.php:165 manacore-core/includes/class-meta.php:77 manacore-core/includes/class-taxonomies.php:53
+#: manacore-core/includes/functions.php:107
+msgid "سال انتشار"
+msgstr ""
+
+#: manacore-core/includes/class-block-data.php:364 manacore-core/includes/class-block-query.php:156 manacore-core/includes/class-meta.php:72
+msgid "تاریخ انتشار"
+msgstr ""
+
+#: manacore-core/includes/class-block-data.php:365 manacore-core/includes/class-block-query.php:166 manacore-core/assets/js/blocks.js:1244
+msgid "مدت زمان"
+msgstr ""
+
+#: manacore-core/includes/class-block-data.php:366 manacore-sources/includes/class-settings.php:489
+msgid "وضعیت"
+msgstr ""
+
+#: manacore-core/includes/class-block-data.php:367 manacore-core/includes/class-taxonomies.php:39 manacore-core/assets/js/blocks.js:1241
+msgid "ژانر"
+msgstr ""
+
+#: manacore-core/includes/class-block-data.php:368 manacore-core/includes/class-taxonomies.php:46
+msgid "کشور"
+msgstr ""
+
+#: manacore-core/includes/class-block-data.php:369 manacore-core/includes/class-taxonomies.php:60 manacore-core/assets/js/blocks.js:669
+msgid "شبکه"
+msgstr ""
+
+#: manacore-core/includes/class-block-data.php:370 manacore-core/includes/class-taxonomies.php:67
+msgid "استودیو"
+msgstr ""
+
+#: manacore-core/includes/class-block-data.php:371 manacore-core/includes/class-taxonomies.php:81
+msgid "زبان"
+msgstr ""
+
+#: manacore-core/includes/class-block-data.php:373
+msgid "سال (تاکسونومی)"
+msgstr ""
+
+#: manacore-core/includes/class-block-data.php:374 manacore-core/includes/class-meta.php:276
+msgid "کارگردان"
+msgstr ""
+
+#: manacore-core/includes/class-block-data.php:375 manacore-core/includes/class-meta.php:282
+msgid "نویسنده"
+msgstr ""
+
+#: manacore-core/includes/class-block-data.php:376 manacore-core/includes/class-meta.php:287
+msgid "تهیه‌کننده"
+msgstr ""
+
+#: manacore-core/includes/class-block-data.php:377 manacore-core/includes/class-meta.php:292
+msgid "آهنگساز"
+msgstr ""
+
+#: manacore-core/includes/class-block-data.php:378 manacore-core/includes/class-block-query.php:162 manacore-core/includes/class-meta.php:154
+msgid "امتیاز IMDb"
+msgstr ""
+
+#: manacore-core/includes/class-block-data.php:379 manacore-core/includes/class-block-query.php:163 manacore-core/includes/class-meta.php:174
+msgid "امتیاز TMDB"
+msgstr ""
+
+#: manacore-core/includes/class-block-data.php:380 manacore-core/includes/class-meta.php:189
+msgid "امتیاز MyAnimeList"
+msgstr ""
+
+#: manacore-core/includes/class-block-data.php:381
+msgid "امتیاز سردبیر"
+msgstr ""
+
+#: manacore-core/includes/class-block-data.php:382
+msgid "تعداد فصل"
+msgstr ""
+
+#: manacore-core/includes/class-block-data.php:383 manacore-core/includes/class-meta.php:377
+msgid "تعداد قسمت"
+msgstr ""
+
+#: manacore-core/includes/class-block-data.php:384
+msgid "مدت هر قسمت"
+msgstr ""
+
+#: manacore-core/includes/class-block-data.php:385 manacore-core/includes/class-meta.php:343
+msgid "روز پخش"
+msgstr ""
+
+#: manacore-core/includes/class-block-data.php:386
+msgid "تاریخ پخش قسمت"
+msgstr ""
+
+#: manacore-core/includes/class-block-data.php:387
+msgid "شماره‌ی فصل"
+msgstr ""
+
+#: manacore-core/includes/class-block-data.php:388 manacore-core/includes/class-block-query.php:167 manacore-core/assets/js/blocks.js:1242
+msgid "شماره‌ی قسمت"
+msgstr ""
+
+#: manacore-core/includes/class-block-data.php:389 manacore-core/includes/class-block-query.php:164
+msgid "بازدید"
+msgstr ""
+
+#: manacore-core/includes/class-block-data.php:406
+msgid "مهمان (وارد نشده)"
+msgstr ""
+
+#: manacore-core/includes/class-block-data.php:75 manacore-core/includes/functions.php:103
+msgid "جدیدترین"
+msgstr ""
+
+#: manacore-core/includes/class-block-data.php:76
+msgid "منتخب سردبیر"
+msgstr ""
+
+#: manacore-core/includes/class-block-data.php:77
+msgid "بالاترین امتیاز"
+msgstr ""
+
+#: manacore-core/includes/class-block-data.php:78 manacore-core/includes/functions.php:106
+msgid "پربازدیدترین"
+msgstr ""
+
+#: manacore-core/includes/class-block-data.php:79
+msgid "داغ هفته"
+msgstr ""
+
+#: manacore-core/includes/class-block-data.php:80 manacore-core/includes/class-block-query.php:159
+msgid "تصادفی"
+msgstr ""
+
+#: manacore-core/includes/class-block-data.php:81
+msgid "آثار مشابه (بر اساس اثر جاری)"
+msgstr ""
+
+#: manacore-core/includes/class-block-data.php:82
+msgid "آثار یک مجموعه"
+msgstr ""
+
+#: manacore-core/includes/class-block-query.php:155
+msgid "پیش‌فرض منبع"
+msgstr ""
+
+#: manacore-core/includes/class-block-query.php:157
+msgid "تاریخ ویرایش"
+msgstr ""
+
+#: manacore-core/includes/class-block-query.php:158
+msgid "عنوان (الفبا)"
+msgstr ""
+
+#: manacore-core/includes/class-block-query.php:160
+msgid "تعداد دیدگاه"
+msgstr ""
+
+#: manacore-core/includes/class-block-query.php:161
+msgid "ترتیب دستی (menu_order)"
+msgstr ""
+
+#: manacore-core/includes/class-block-query.php:168
+msgid "کلید متای دلخواه (عددی)"
+msgstr ""
+
+#: manacore-core/includes/class-block-query.php:169
+msgid "کلید متای دلخواه (متنی)"
+msgstr ""
+
+#: manacore-core/includes/class-block-query.php:196
+msgid "بدون فیلتر"
+msgstr ""
+
+#: manacore-core/includes/class-block-query.php:197
+msgid "فقط محتوای اشتراکی"
+msgstr ""
+
+#: manacore-core/includes/class-block-query.php:198
+msgid "فقط محتوای آزاد"
+msgstr ""
+
+#: manacore-core/includes/class-block-query.php:209
+msgid "نادیده گرفتن"
+msgstr ""
+
+#: manacore-core/includes/class-block-query.php:210
+msgid "اولویت به چسبان‌ها"
+msgstr ""
+
+#: manacore-core/includes/class-block-query.php:211
+msgid "فقط چسبان‌ها"
+msgstr ""
+
+#: manacore-core/includes/class-block-query.php:212
+msgid "حذف چسبان‌ها"
+msgstr ""
+
+#: manacore-core/includes/class-block-support.php:451
+msgid "مشاهده همه"
+msgstr ""
+
+#: manacore-core/includes/class-block-support.php:525
+msgid "محتوایی برای نمایش وجود ندارد."
+msgstr ""
+
+#: manacore-core/includes/class-block-visibility.php:103
+msgid "موبایل (کمتر از ۶۰۰px)"
+msgstr ""
+
+#: manacore-core/includes/class-block-visibility.php:104
+msgid "تبلت (۶۰۰ تا ۷۸۱px)"
+msgstr ""
+
+#: manacore-core/includes/class-block-visibility.php:105
+msgid "دسکتاپ (۷۸۲px و بیشتر)"
+msgstr ""
+
+#: manacore-core/includes/class-block-visibility.php:59
+msgid "زمینه‌ی صفحه"
+msgstr ""
+
+#: manacore-core/includes/class-block-visibility.php:60 manacore-core/assets/js/blocks.js:1239
+msgid "نوع محتوا"
+msgstr ""
+
+#: manacore-core/includes/class-block-visibility.php:61
+msgid "ترم تاکسونومی (اثر جاری)"
+msgstr ""
+
+#: manacore-core/includes/class-block-visibility.php:62
+msgid "آرشیو ترم جاری"
+msgstr ""
+
+#: manacore-core/includes/class-block-visibility.php:63
+msgid "شناسه‌ی نوشته‌های مشخص"
+msgstr ""
+
+#: manacore-core/includes/class-block-visibility.php:64 manacore-core/assets/js/blocks.js:368
+msgid "وضعیت ورود"
+msgstr ""
+
+#: manacore-core/includes/class-block-visibility.php:65
+msgid "نقش کاربر"
+msgstr ""
+
+#: manacore-core/includes/class-block-visibility.php:66
+msgid "سطح اشتراک"
+msgstr ""
+
+#: manacore-core/includes/class-block-visibility.php:67 manacore-core/includes/class-templates.php:132 manacore-core/assets/js/blocks.js:1042
+msgid "محتوای اشتراکی"
+msgstr ""
+
+#: manacore-core/includes/class-block-visibility.php:68
+msgid "داشتن لینک دانلود"
+msgstr ""
+
+#: manacore-core/includes/class-block-visibility.php:69
+msgid "بازه‌ی تاریخ"
+msgstr ""
+
+#: manacore-core/includes/class-block-visibility.php:70
+msgid "پارامتر آدرس (Query String)"
+msgstr ""
+
+#: manacore-core/includes/class-block-visibility.php:83
+msgid "صفحه‌ی نخست"
+msgstr ""
+
+#: manacore-core/includes/class-block-visibility.php:84
+msgid "فهرست نوشته‌ها"
+msgstr ""
+
+#: manacore-core/includes/class-block-visibility.php:85
+msgid "صفحه‌ی تک (اثر/نوشته/برگه)"
+msgstr ""
+
+#: manacore-core/includes/class-block-visibility.php:86
+msgid "آرشیو"
+msgstr ""
+
+#: manacore-core/includes/class-block-visibility.php:87
+msgid "آرشیو تاکسونومی"
+msgstr ""
+
+#: manacore-core/includes/class-block-visibility.php:88
+msgid "نتایج جستجو"
+msgstr ""
+
+#: manacore-core/includes/class-block-visibility.php:89
+msgid "آرشیو نویسنده"
+msgstr ""
+
+#: manacore-core/includes/class-block-visibility.php:90
+msgid "آرشیو تاریخ"
+msgstr ""
+
+#: manacore-core/includes/class-block-visibility.php:91
+msgid "صفحه‌ی ۴۰۴"
+msgstr ""
+
+#: manacore-core/includes/class-block-visibility.php:92
+msgid "صفحه‌بندی‌شده (صفحه ۲ به بعد)"
+msgstr ""
+
+#: manacore-core/includes/class-blocks.php:1091 manacore-core/assets/js/blocks.js:1533
+msgid "سردبیر"
+msgstr ""
+
+#: manacore-core/includes/class-blocks.php:1092 manacore-core/assets/js/blocks.js:1534
+msgid "کاربران"
+msgstr ""
+
+#: manacore-core/includes/class-blocks.php:1149
+msgid "امتیاز شما:"
+msgstr ""
+
+#: manacore-core/includes/class-blocks.php:1158
+msgid "امتیاز %d"
+msgstr ""
+
+#: manacore-core/includes/class-blocks.php:1171
+msgid "%1$s از ۱۰ (%2$s رأی)"
+msgstr ""
+
+#: manacore-core/includes/class-blocks.php:1177
+msgid "هنوز رأیی ثبت نشده"
+msgstr ""
+
+#: manacore-core/includes/class-blocks.php:1355 manacore-core/includes/class-blocks.php:1582 manacore-core/includes/class-blocks.php:1590 manacore-sources/includes/class-metabox.php:84
+#: manacore-sources/includes/class-metabox.php:165
+msgid "جستجو"
+msgstr ""
+
+#: manacore-core/includes/class-blocks.php:1357
+msgid "نام اثر…"
+msgstr ""
+
+#: manacore-core/includes/class-blocks.php:1408
+msgid "همه‌ی %s"
+msgstr ""
+
+#: manacore-core/includes/class-blocks.php:1429 manacore-core/assets/js/blocks.js:1108
+msgid "مرتب‌سازی"
+msgstr ""
+
+#: manacore-core/includes/class-blocks.php:1446
+msgid "اعمال فیلتر"
+msgstr ""
+
+#: manacore-core/includes/class-blocks.php:1463
+msgid "پاک‌سازی"
+msgstr ""
+
+#: manacore-core/includes/class-blocks.php:1477
+msgid "فیلترهای فعال:"
+msgstr ""
+
+#: manacore-core/includes/class-blocks.php:1483
+msgid "حذف این فیلتر"
+msgstr ""
+
+#: manacore-core/includes/class-blocks.php:1487
+msgid "حذف همه"
+msgstr ""
+
+#: manacore-core/includes/class-blocks.php:154
+msgid "مشخصات اثر"
+msgstr ""
+
+#: manacore-core/includes/class-blocks.php:155
+msgid "جدول مشخصات اثر جاری با انتخاب دقیق فیلدها، چیدمان و پیوند ترم‌ها."
+msgstr ""
+
+#: manacore-core/includes/class-blocks.php:1556
+msgid "نام فیلم، سریال یا انیمه…"
+msgstr ""
+
+#: manacore-core/includes/class-blocks.php:1704 manacore-core/includes/class-templates.php:450
+msgid "فصل %s"
+msgstr ""
+
+#: manacore-core/includes/class-blocks.php:1705 manacore-core/includes/class-post-types.php:176
+msgid "قسمت‌ها"
+msgstr ""
+
+#: manacore-core/includes/class-blocks.php:191
+msgid "لینک‌های دانلود"
+msgstr ""
+
+#: manacore-core/includes/class-blocks.php:192
+msgid "جدول لینک‌های دانلود و پخش با فیلتر نوع، کیفیت و فصل."
+msgstr ""
+
+#: manacore-core/includes/class-blocks.php:245
+msgid "جعبه‌ی امتیاز"
+msgstr ""
+
+#: manacore-core/includes/class-blocks.php:246
+msgid "امتیازهای IMDb/TMDB/MAL/سردبیر و امتیازدهی کاربران با انتخاب منابع."
+msgstr ""
+
+#: manacore-core/includes/class-blocks.php:286
+msgid "فهرست بازیگران"
+msgstr ""
+
+#: manacore-core/includes/class-blocks.php:287
+msgid "بازیگران و نقش‌هایشان به شکل ریل افقی یا شبکه‌ای."
+msgstr ""
+
+#: manacore-core/includes/class-blocks.php:338 manacore-core/includes/class-blocks.php:923
+msgid "تریلر"
+msgstr ""
+
+#: manacore-core/includes/class-blocks.php:339
+msgid "پخش‌کننده‌ی تریلر اثر جاری با نسبت تصویر و پوستر دلخواه."
+msgstr ""
+
+#: manacore-core/includes/class-blocks.php:366
+msgid "نوار فیلتر"
+msgstr ""
+
+#: manacore-core/includes/class-blocks.php:367
+msgid "فیلتر آثار بر اساس تاکسونومی‌های انتخابی، جستجو و مرتب‌سازی."
+msgstr ""
+
+#: manacore-core/includes/class-blocks.php:420
+msgid "جستجوی زنده"
+msgstr ""
+
+#: manacore-core/includes/class-blocks.php:421
+msgid "کادر جستجو با نتایج آنی و محدودسازی به نوع‌های محتوای دلخواه."
+msgstr ""
+
+#: manacore-core/includes/class-blocks.php:45
+msgid "ManaCore — فیلم و سریال"
+msgstr ""
+
+#: manacore-core/includes/class-blocks.php:465
+msgid "فهرست قسمت‌ها"
+msgstr ""
+
+#: manacore-core/includes/class-blocks.php:466
+msgid "قسمت‌های سریال یا انیمه به تفکیک فصل با ترتیب و اجزای دلخواه."
+msgstr ""
+
+#: manacore-core/includes/class-blocks.php:61
+msgid "شبکه‌ی آثار"
+msgstr ""
+
+#: manacore-core/includes/class-blocks.php:62
+msgid "حلقه‌ی فیلم، سریال و انیمه با کوئری، چیدمان، کارت و نمایش شرطی کاملاً قابل تنظیم."
+msgstr ""
+
+#: manacore-core/includes/class-blocks.php:69
+msgid "اسلایدر ویژه"
+msgstr ""
+
+#: manacore-core/includes/class-blocks.php:70
+msgid "اسلایدر بزرگ بالای صفحه با کنترل کامل روی منبع، پخش خودکار و اجزای نمایش."
+msgstr ""
+
+#: manacore-core/includes/class-blocks.php:911
+msgid "مشاهده و دانلود"
+msgstr ""
+
+#: manacore-core/includes/class-blocks.php:940
+msgid "اسلاید قبلی"
+msgstr ""
+
+#: manacore-core/includes/class-blocks.php:941
+msgid "اسلاید بعدی"
+msgstr ""
+
+#: manacore-core/includes/class-meta.php:100
+msgid "پایان یافته"
+msgstr ""
+
+#: manacore-core/includes/class-meta.php:101
+msgid "لغو شده"
+msgstr ""
+
+#: manacore-core/includes/class-meta.php:102
+msgid "در حال تولید"
+msgstr ""
+
+#: manacore-core/includes/class-meta.php:106
+msgid "نوع محتوا (انیمه)"
+msgstr ""
+
+#: manacore-core/includes/class-meta.php:111
+msgid "سریال تلویزیونی"
+msgstr ""
+
+#: manacore-core/includes/class-meta.php:112 manacore-core/includes/class-post-types.php:113 manacore-core/includes/class-settings.php:137 manacore-core/includes/functions.php:31
+#: manacore-core/assets/js/blocks.js:664 manacore-sources/includes/functions.php:115
+msgid "فیلم"
+msgstr ""
+
+#: manacore-core/includes/class-meta.php:115 manacore-core/includes/class-templates.php:563 manacore-subscriptions/includes/class-plans.php:56
+msgid "ویژه"
+msgstr ""
+
+#: manacore-core/includes/class-meta.php:119
+msgid "کشور سازنده (متن)"
+msgstr ""
+
+#: manacore-core/includes/class-meta.php:124
+msgid "زبان‌های اثر"
+msgstr ""
+
+#: manacore-core/includes/class-meta.php:129
+msgid "نمایش در اسلایدر ویژه"
+msgstr ""
+
+#: manacore-core/includes/class-meta.php:134
+msgid "محتوای ویژه‌ی اشتراکی"
+msgstr ""
+
+#: manacore-core/includes/class-meta.php:137
+msgid "در صورت فعال بودن، دسترسی به لینک‌ها نیازمند اشتراک فعال است."
+msgstr ""
+
+#: manacore-core/includes/class-meta.php:144
+msgid "امتیاز و آمار"
+msgstr ""
+
+#: manacore-core/includes/class-meta.php:148
+msgid "شناسه IMDb"
+msgstr ""
+
+#: manacore-core/includes/class-meta.php:164
+msgid "تعداد آرای IMDb"
+msgstr ""
+
+#: manacore-core/includes/class-meta.php:169
+msgid "شناسه TMDB"
+msgstr ""
+
+#: manacore-core/includes/class-meta.php:184
+msgid "شناسه MyAnimeList"
+msgstr ""
+
+#: manacore-core/includes/class-meta.php:199
+msgid "امتیاز Rotten Tomatoes"
+msgstr ""
+
+#: manacore-core/includes/class-meta.php:208
+msgid "متااسکور"
+msgstr ""
+
+#: manacore-core/includes/class-meta.php:217
+msgid "امتیاز سردبیر (۰ تا ۱۰)"
+msgstr ""
+
+#: manacore-core/includes/class-meta.php:227 manacore-core/assets/js/blocks.js:1243
+msgid "تعداد بازدید"
+msgstr ""
+
+#: manacore-core/includes/class-meta.php:237
+msgid "رسانه و تصاویر"
+msgstr ""
+
+#: manacore-core/includes/class-meta.php:241
+msgid "آدرس پوستر (خارجی)"
+msgstr ""
+
+#: manacore-core/includes/class-meta.php:244
+msgid "در صورت نبود تصویر شاخص، از این آدرس استفاده می‌شود."
+msgstr ""
+
+#: manacore-core/includes/class-meta.php:247
+msgid "آدرس تصویر پس‌زمینه"
+msgstr ""
+
+#: manacore-core/includes/class-meta.php:252
+msgid "آدرس لوگوی اثر"
+msgstr ""
+
+#: manacore-core/includes/class-meta.php:257
+msgid "آدرس تریلر"
+msgstr ""
+
+#: manacore-core/includes/class-meta.php:260
+msgid "یوتیوب، آپارات یا فایل mp4."
+msgstr ""
+
+#: manacore-core/includes/class-meta.php:263
+msgid "گالری تصاویر"
+msgstr ""
+
+#: manacore-core/includes/class-meta.php:272 manacore-core/includes/class-post-types.php:199 manacore-core/includes/class-settings.php:141
+msgid "عوامل"
+msgstr ""
+
+#: manacore-core/includes/class-meta.php:279
+msgid "نام‌ها را با ویرگول جدا کنید."
+msgstr ""
+
+#: manacore-core/includes/class-meta.php:297 manacore-sources/includes/class-metabox.php:100 manacore-sources/includes/class-metabox.php:187
+msgid "بازیگران"
+msgstr ""
+
+#: manacore-core/includes/class-meta.php:302
+msgid "نام"
+msgstr ""
+
+#: manacore-core/includes/class-meta.php:306
+msgid "نقش"
+msgstr ""
+
+#: manacore-core/includes/class-meta.php:310
+msgid "تصویر"
+msgstr ""
+
+#: manacore-core/includes/class-meta.php:314
+msgid "شناسه عامل"
+msgstr ""
+
+#: manacore-core/includes/class-meta.php:324
+msgid "اطلاعات سریال"
+msgstr ""
+
+#: manacore-core/includes/class-meta.php:328
+msgid "تعداد فصل‌ها"
+msgstr ""
+
+#: manacore-core/includes/class-meta.php:333
+msgid "تعداد کل قسمت‌ها"
+msgstr ""
+
+#: manacore-core/includes/class-meta.php:338
+msgid "مدت هر قسمت (دقیقه)"
+msgstr ""
+
+#: manacore-core/includes/class-meta.php:348 manacore-sources/includes/class-provider-tvmaze.php:230
+msgid "شنبه"
+msgstr ""
+
+#: manacore-core/includes/class-meta.php:349 manacore-sources/includes/class-provider-tvmaze.php:231
+msgid "یکشنبه"
+msgstr ""
+
+#: manacore-core/includes/class-meta.php:350 manacore-sources/includes/class-provider-tvmaze.php:232
+msgid "دوشنبه"
+msgstr ""
+
+#: manacore-core/includes/class-meta.php:351 manacore-sources/includes/class-provider-tvmaze.php:233
+msgid "سه‌شنبه"
+msgstr ""
+
+#: manacore-core/includes/class-meta.php:352 manacore-sources/includes/class-provider-tvmaze.php:234
+msgid "چهارشنبه"
+msgstr ""
+
+#: manacore-core/includes/class-meta.php:353 manacore-sources/includes/class-provider-tvmaze.php:235
+msgid "پنجشنبه"
+msgstr ""
+
+#: manacore-core/includes/class-meta.php:354 manacore-sources/includes/class-provider-tvmaze.php:236
+msgid "جمعه"
+msgstr ""
+
+#: manacore-core/includes/class-meta.php:358
+msgid "تاریخ قسمت بعدی"
+msgstr ""
+
+#: manacore-core/includes/class-meta.php:363 manacore-sources/includes/class-metabox.php:101 manacore-sources/includes/class-metabox.php:188
+msgid "فصل‌ها"
+msgstr ""
+
+#: manacore-core/includes/class-meta.php:366
+msgid "اطلاعات هر فصل. لینک‌های دانلود در تب «لینک‌ها» مدیریت می‌شوند."
+msgstr ""
+
+#: manacore-core/includes/class-meta.php:369 manacore-core/includes/class-meta.php:410
+msgid "شماره فصل"
+msgstr ""
+
+#: manacore-core/includes/class-meta.php:373
+msgid "نام فصل"
+msgstr ""
+
+#: manacore-core/includes/class-meta.php:381 manacore-sources/includes/class-metabox.php:85 manacore-sources/includes/class-metabox.php:150
+msgid "سال"
+msgstr ""
+
+#: manacore-core/includes/class-meta.php:385
+msgid "پوستر فصل"
+msgstr ""
+
+#: manacore-core/includes/class-meta.php:389
+msgid "خلاصه"
+msgstr ""
+
+#: manacore-core/includes/class-meta.php:399
+msgid "اطلاعات قسمت"
+msgstr ""
+
+#: manacore-core/includes/class-meta.php:403
+msgid "اثر والد"
+msgstr ""
+
+#: manacore-core/includes/class-meta.php:407
+msgid "سریال یا انیمه‌ای که این قسمت به آن تعلق دارد."
+msgstr ""
+
+#: manacore-core/includes/class-meta.php:415
+msgid "شماره قسمت"
+msgstr ""
+
+#: manacore-core/includes/class-meta.php:420
+msgid "تاریخ پخش"
+msgstr ""
+
+#: manacore-core/includes/class-meta.php:429
+msgid "نمایش و سئو"
+msgstr ""
+
+#: manacore-core/includes/class-meta.php:433
+msgid "عنوان سئو"
+msgstr ""
+
+#: manacore-core/includes/class-meta.php:438
+msgid "توضیحات متا"
+msgstr ""
+
+#: manacore-core/includes/class-meta.php:443
+msgid "یادداشت اختصاصی صفحه"
+msgstr ""
+
+#: manacore-core/includes/class-meta.php:446
+msgid "بالای بخش لینک‌ها نمایش داده می‌شود."
+msgstr ""
+
+#: manacore-core/includes/class-meta.php:449
+msgid "غیرفعال کردن بخش لینک‌ها"
+msgstr ""
+
+#: manacore-core/includes/class-meta.php:454 manacore-core/includes/class-post-types.php:221 manacore-core/includes/class-settings.php:142
+msgid "مجموعه"
+msgstr ""
+
+#: manacore-core/includes/class-meta.php:458
+msgid "مجموعه‌ای که این اثر عضو آن است (برای بلوک «آثار مجموعه»)."
+msgstr ""
+
+#: manacore-core/includes/class-meta.php:51
+msgid "اطلاعات کلی"
+msgstr ""
+
+#: manacore-core/includes/class-meta.php:55
+msgid "عنوان اصلی (لاتین)"
+msgstr ""
+
+#: manacore-core/includes/class-meta.php:553
+msgid "آثار این مجموعه به ترتیب نمایش."
+msgstr ""
+
+#: manacore-core/includes/class-meta.php:58
+msgid "نام اثر به زبان اصلی برای نمایش و جستجو."
+msgstr ""
+
+#: manacore-core/includes/class-meta.php:64
+msgid "هر نام در یک خط. برای بهبود جستجوی داخلی."
+msgstr ""
+
+#: manacore-core/includes/class-meta.php:67
+msgid "شعار / خط معرفی"
+msgstr ""
+
+#: manacore-core/includes/class-meta.php:86
+msgid "مدت زمان (دقیقه)"
+msgstr ""
+
+#: manacore-core/includes/class-meta.php:92
+msgid "وضعیت پخش"
+msgstr ""
+
+#: manacore-core/includes/class-meta.php:96 manacore-core/includes/class-meta.php:110 manacore-core/includes/class-meta.php:347 manacore-core/includes/class-metaboxes.php:384
+#: manacore-core/assets/js/blocks.js:328 manacore-core/assets/js/blocks.js:926
+msgid "— انتخاب کنید —"
+msgstr ""
+
+#: manacore-core/includes/class-meta.php:97
+msgid "منتشر شده"
+msgstr ""
+
+#: manacore-core/includes/class-meta.php:98
+msgid "در حال پخش"
+msgstr ""
+
+#: manacore-core/includes/class-meta.php:99
+msgid "به‌زودی"
+msgstr ""
+
+#: manacore-core/includes/class-metaboxes.php:135
+msgid "آثار عضو این مجموعه را انتخاب کنید. ترتیب انتخاب، ترتیب نمایش در بلوک «آثار مجموعه» خواهد بود."
+msgstr ""
+
+#: manacore-core/includes/class-metaboxes.php:139
+msgid "آثار مجموعه"
+msgstr ""
+
+#: manacore-core/includes/class-metaboxes.php:167
+msgid "%d اثر از طریق فیلد «مجموعه» در صفحه‌ی خودشان به این مجموعه متصل شده‌اند. در صورت خالی بودن فهرست بالا، همان‌ها نمایش داده می‌شوند."
+msgstr ""
+
+#: manacore-core/includes/class-metaboxes.php:187
+msgid "فیلدی برای این نوع محتوا تعریف نشده است."
+msgstr ""
+
+#: manacore-core/includes/class-metaboxes.php:400 manacore-subscriptions/includes/class-account.php:229
+msgid "انتخاب"
+msgstr ""
+
+#: manacore-core/includes/class-metaboxes.php:415
+msgid "هر آدرس تصویر در یک خط"
+msgstr ""
+
+#: manacore-core/includes/class-metaboxes.php:46
+msgid "مشخصات اثر — ManaCore"
+msgstr ""
+
+#: manacore-core/includes/class-metaboxes.php:471 manacore-core/includes/class-metaboxes.php:494
+msgid "حذف"
+msgstr ""
+
+#: manacore-core/includes/class-metaboxes.php:502
+msgid "افزودن ردیف"
+msgstr ""
+
+#: manacore-core/includes/class-metaboxes.php:528
+msgid "افزودن گروه لینک"
+msgstr ""
+
+#: manacore-core/includes/class-metaboxes.php:533
+msgid "افزودن فصل کامل"
+msgstr ""
+
+#: manacore-core/includes/class-metaboxes.php:538
+msgid "ورود گروهی لینک"
+msgstr ""
+
+#: manacore-core/includes/class-metaboxes.php:542
+msgid "بستن همه"
+msgstr ""
+
+#: manacore-core/includes/class-metaboxes.php:55
+msgid "لینک‌های دانلود و پخش — ManaCore"
+msgstr ""
+
+#: manacore-core/includes/class-metaboxes.php:550
+msgid "گروه‌ها را می‌توانید با کشیدن جابه‌جا کنید. هر گروه می‌تواند شامل چند لینک با کیفیت و قسمت متفاوت باشد."
+msgstr ""
+
+#: manacore-core/includes/class-metaboxes.php:566
+msgid "برای دریافت خودکار اطلاعات، افزونه‌ی «ManaCore Sources» را فعال کنید."
+msgstr ""
+
+#: manacore-core/includes/class-metaboxes.php:66
+msgid "دریافت خودکار اطلاعات"
+msgstr ""
+
+#: manacore-core/includes/class-metaboxes.php:76
+msgid "آثار این مجموعه — ManaCore"
+msgstr ""
+
+#: manacore-core/includes/class-player.php:100
+msgid "مرورگر شما از پخش ویدیو پشتیبانی نمی‌کند."
+msgstr ""
+
+#: manacore-core/includes/class-player.php:104
+msgid "پخش‌کننده"
+msgstr ""
+
+#: manacore-core/includes/class-player.php:154 manacore-core/includes/class-templates.php:623
+msgid "پخش"
+msgstr ""
+
+#: manacore-core/includes/class-player.php:156
+msgid "بستن"
+msgstr ""
+
+#: manacore-core/includes/class-post-types.php:113
+msgid "فیلم‌ها"
+msgstr ""
+
+#: manacore-core/includes/class-post-types.php:134 manacore-core/includes/class-settings.php:138 manacore-core/includes/functions.php:32 manacore-sources/includes/functions.php:116
+msgid "سریال"
+msgstr ""
+
+#: manacore-core/includes/class-post-types.php:134
+msgid "سریال‌ها"
+msgstr ""
+
+#: manacore-core/includes/class-post-types.php:155 manacore-core/includes/class-settings.php:139 manacore-core/includes/functions.php:33 manacore-sources/includes/functions.php:117
+msgid "انیمه"
+msgstr ""
+
+#: manacore-core/includes/class-post-types.php:155
+msgid "انیمه‌ها"
+msgstr ""
+
+#: manacore-core/includes/class-post-types.php:199
+msgid "عامل"
+msgstr ""
+
+#: manacore-core/includes/class-post-types.php:221
+msgid "مجموعه‌ها"
+msgstr ""
+
+#: manacore-core/includes/class-post-types.php:245
+msgid "نام فیلم را وارد کنید"
+msgstr ""
+
+#: manacore-core/includes/class-post-types.php:247
+msgid "نام سریال را وارد کنید"
+msgstr ""
+
+#: manacore-core/includes/class-post-types.php:249
+msgid "نام انیمه را وارد کنید"
+msgstr ""
+
+#: manacore-core/includes/class-post-types.php:251
+msgid "نام قسمت را وارد کنید"
+msgstr ""
+
+#: manacore-core/includes/class-post-types.php:253
+msgid "نام عامل را وارد کنید"
+msgstr ""
+
+#: manacore-core/includes/class-post-types.php:53
+msgid "افزودن"
+msgstr ""
+
+#: manacore-core/includes/class-post-types.php:55
+msgid "افزودن %s جدید"
+msgstr ""
+
+#: manacore-core/includes/class-post-types.php:57 manacore-core/includes/class-taxonomies.php:129
+msgid "ویرایش %s"
+msgstr ""
+
+#: manacore-core/includes/class-post-types.php:59
+msgid "%s جدید"
+msgstr ""
+
+#: manacore-core/includes/class-post-types.php:61
+msgid "نمایش %s"
+msgstr ""
+
+#: manacore-core/includes/class-post-types.php:63 manacore-core/includes/class-taxonomies.php:126
+msgid "جستجوی %s"
+msgstr ""
+
+#: manacore-core/includes/class-post-types.php:65
+msgid "هیچ %s یافت نشد"
+msgstr ""
+
+#: manacore-core/includes/class-post-types.php:66
+msgid "موردی در زباله‌دان نیست"
+msgstr ""
+
+#: manacore-core/includes/class-post-types.php:69
+msgid "انتخاب پوستر"
+msgstr ""
+
+#: manacore-core/includes/class-post-types.php:70
+msgid "حذف پوستر"
+msgstr ""
+
+#: manacore-core/includes/class-post-types.php:71
+msgid "استفاده به عنوان پوستر"
+msgstr ""
+
+#: manacore-core/includes/class-post-types.php:73
+msgid "منتشر شد."
+msgstr ""
+
+#: manacore-core/includes/class-post-types.php:74
+msgid "به‌روزرسانی شد."
+msgstr ""
+
+#: manacore-core/includes/class-ratings.php:55 manacore-core/includes/class-rest-api.php:288 manacore-core/includes/class-watchlist.php:68
+msgid "محتوا یافت نشد."
+msgstr ""
+
+#: manacore-core/includes/class-rest-api.php:160
+msgid "امتیازدهی غیرفعال است."
+msgstr ""
+
+#: manacore-core/includes/class-rest-api.php:292
+msgid "ابتدا وارد شوید."
+msgstr ""
+
+#: manacore-core/includes/class-settings.php:122
+msgid "ManaCore — هسته‌ی سایت فیلم و سریال"
+msgstr ""
+
+#: manacore-core/includes/class-settings.php:123
+msgid "طراحی و توسعه توسط گروه ManaCore"
+msgstr ""
+
+#: manacore-core/includes/class-settings.php:130
+msgid "نشانی‌های یکتا (Slug)"
+msgstr ""
+
+#: manacore-core/includes/class-settings.php:132
+msgid "پس از تغییر، به تنظیمات » پیوندهای یکتا بروید و یک‌بار ذخیره کنید."
+msgstr ""
+
+#: manacore-core/includes/class-settings.php:158
+msgid "امکانات"
+msgstr ""
+
+#: manacore-core/includes/class-settings.php:162
+msgid "فعال بودن امتیازدهی کاربران"
+msgstr ""
+
+#: manacore-core/includes/class-settings.php:163
+msgid "فعال بودن لیست تماشا"
+msgstr ""
+
+#: manacore-core/includes/class-settings.php:164
+msgid "شمارش بازدید"
+msgstr ""
+
+#: manacore-core/includes/class-settings.php:165
+msgid "نمایش لینک‌ها فقط برای کاربران وارد شده"
+msgstr ""
+
+#: manacore-core/includes/class-settings.php:175 manacore-sources/includes/class-settings.php:500 manacore-subscriptions/includes/class-settings.php:202
+msgid "فعال"
+msgstr ""
+
+#: manacore-core/includes/class-settings.php:181
+msgid "تعداد آیتم در هر صفحه"
+msgstr ""
+
+#: manacore-core/includes/class-settings.php:188
+msgid "حالت رنگی پیش‌فرض"
+msgstr ""
+
+#: manacore-core/includes/class-settings.php:193
+msgid "تیره"
+msgstr ""
+
+#: manacore-core/includes/class-settings.php:194
+msgid "روشن"
+msgstr ""
+
+#: manacore-core/includes/class-settings.php:195
+msgid "خودکار (بر اساس سیستم)"
+msgstr ""
+
+#: manacore-core/includes/class-settings.php:208
+msgid "کیفیت‌های سفارشی"
+msgstr ""
+
+#: manacore-core/includes/class-settings.php:211
+msgid "کیفیت‌های اضافه"
+msgstr ""
+
+#: manacore-core/includes/class-settings.php:216
+msgid "هر خط یک کیفیت. نمونه: remux|BluRay REMUX"
+msgstr ""
+
+#: manacore-core/includes/class-settings.php:32 manacore-core/includes/class-settings.php:33
+msgid "ManaCore"
+msgstr ""
+
+#: manacore-core/includes/class-settings.php:43 manacore-core/includes/class-settings.php:44 manacore-subscriptions/includes/class-settings.php:103
+msgid "تنظیمات عمومی"
+msgstr ""
+
+#: manacore-core/includes/class-taxonomies.php:102
+msgid "برچسب"
+msgstr ""
+
+#: manacore-core/includes/class-taxonomies.php:103
+msgid "برچسب‌ها"
+msgstr ""
+
+#: manacore-core/includes/class-taxonomies.php:131
+msgid "افزودن %s"
+msgstr ""
+
+#: manacore-core/includes/class-taxonomies.php:133
+msgid "%s یافت نشد"
+msgstr ""
+
+#: manacore-core/includes/class-taxonomies.php:40
+msgid "ژانرها"
+msgstr ""
+
+#: manacore-core/includes/class-taxonomies.php:47
+msgid "کشورها"
+msgstr ""
+
+#: manacore-core/includes/class-taxonomies.php:54
+msgid "سال‌های انتشار"
+msgstr ""
+
+#: manacore-core/includes/class-taxonomies.php:61
+msgid "شبکه‌ها"
+msgstr ""
+
+#: manacore-core/includes/class-taxonomies.php:68
+msgid "استودیوها"
+msgstr ""
+
+#: manacore-core/includes/class-taxonomies.php:75
+msgid "کیفیت‌ها"
+msgstr ""
+
+#: manacore-core/includes/class-taxonomies.php:82
+msgid "زبان‌ها"
+msgstr ""
+
+#: manacore-core/includes/class-taxonomies.php:88
+msgid "رده سنی"
+msgstr ""
+
+#: manacore-core/includes/class-taxonomies.php:89
+msgid "رده‌های سنی"
+msgstr ""
+
+#: manacore-core/includes/class-taxonomies.php:95
+msgid "حال و هوا"
+msgstr ""
+
+#: manacore-core/includes/class-taxonomies.php:96
+msgid "حال و هواها"
+msgstr ""
+
+#: manacore-core/includes/class-templates.php:182 manacore-core/includes/class-templates.php:814
+msgid "%s دقیقه"
+msgstr ""
+
+#: manacore-core/includes/class-templates.php:200
+msgid "%s بازدید"
+msgstr ""
+
+#: manacore-core/includes/class-templates.php:230
+msgid "افزودن به لیست تماشا"
+msgstr ""
+
+#: manacore-core/includes/class-templates.php:277
+msgid "%s فصل"
+msgstr ""
+
+#: manacore-core/includes/class-templates.php:284
+msgid "%s قسمت"
+msgstr ""
+
+#: manacore-core/includes/class-templates.php:372
+msgid "برای مشاهده‌ی لینک‌های دانلود وارد حساب کاربری شوید."
+msgstr ""
+
+#: manacore-core/includes/class-templates.php:374 manacore-subscriptions/includes/class-account.php:75
+msgid "ورود به حساب"
+msgstr ""
+
+#: manacore-core/includes/class-templates.php:401
+msgid "لینک‌های دانلود و پخش"
+msgstr ""
+
+#: manacore-core/includes/class-templates.php:427
+msgid "%s لینک"
+msgstr ""
+
+#: manacore-core/includes/class-templates.php:451
+msgid "عمومی"
+msgstr ""
+
+#: manacore-core/includes/class-templates.php:575 manacore-subscriptions/includes/class-account.php:352
+msgid "این بخش مخصوص کاربران دارای اشتراک فعال است."
+msgstr ""
+
+#: manacore-core/includes/class-templates.php:577 manacore-subscriptions/includes/class-account.php:144 manacore-subscriptions/includes/class-account.php:280 manacore-subscriptions/includes/class-account.php:354
+msgid "تهیه اشتراک"
+msgstr ""
+
+#: manacore-core/includes/class-templates.php:601
+msgid "قسمت %s"
+msgstr ""
+
+#: manacore-core/includes/class-templates.php:629
+msgid "دریافت"
+msgstr ""
+
+#: manacore-core/includes/class-watchlist.php:119
+msgid "برای دیدن لیست تماشا وارد حساب کاربری شوید."
+msgstr ""
+
+#: manacore-core/includes/class-watchlist.php:126 manacore-core/includes/class-watchlist.php:140
+msgid "فهرست شما خالی است."
+msgstr ""
+
+#: manacore-core/includes/class-watchlist.php:65
+msgid "ابتدا وارد حساب کاربری شوید."
+msgstr ""
+
+#: manacore-core/includes/functions.php:102
+msgid "پیش‌فرض"
+msgstr ""
+
+#: manacore-core/includes/functions.php:104
+msgid "قدیمی‌ترین"
+msgstr ""
+
+#: manacore-core/includes/functions.php:105
+msgid "بیشترین امتیاز"
+msgstr ""
+
+#: manacore-core/includes/functions.php:108
+msgid "حروف الفبا"
+msgstr ""
+
+#: manacore-core/includes/functions.php:259
+msgid "زیرنویس فارسی چسبیده"
+msgstr ""
+
+#: manacore-core/includes/functions.php:260
+msgid "زیرنویس فارسی جدا"
+msgstr ""
+
+#: manacore-core/includes/functions.php:261
+msgid "دوبله فارسی"
+msgstr ""
+
+#: manacore-core/includes/functions.php:262
+msgid "دو زبانه"
+msgstr ""
+
+#: manacore-core/includes/functions.php:263
+msgid "زبان اصلی"
+msgstr ""
+
+#: manacore-core/includes/functions.php:264
+msgid "سانسور شده"
+msgstr ""
+
+#: manacore-core/includes/functions.php:265
+msgid "بدون سانسور"
+msgstr ""
+
+#: manacore-core/includes/functions.php:279
+msgid "دانلود مستقیم"
+msgstr ""
+
+#: manacore-core/includes/functions.php:280
+msgid "پخش آنلاین"
+msgstr ""
+
+#: manacore-core/includes/functions.php:281
+msgid "تورنت"
+msgstr ""
+
+#: manacore-core/includes/functions.php:282
+msgid "مگنت"
+msgstr ""
+
+#: manacore-core/includes/functions.php:283
+msgid "زیرنویس"
+msgstr ""
+
+#: manacore-core/includes/functions.php:284
+msgid "لینک خارجی"
+msgstr ""
+
+#: manacore-sources/includes/abstract-class-provider.php:160
+msgid "خطای ارتباط با %1$s (کد %2$d)."
+msgstr ""
+
+#: manacore-sources/includes/abstract-class-provider.php:175
+msgid "پاسخ نامعتبر از %s دریافت شد."
+msgstr ""
+
+#: manacore-sources/includes/class-importer.php:101
+msgid "نوشته مقصد پیدا نشد."
+msgstr ""
+
+#: manacore-sources/includes/class-importer.php:105 manacore-sources/includes/class-rest.php:232
+msgid "دسترسی لازم را ندارید."
+msgstr ""
+
+#: manacore-sources/includes/class-importer.php:136
+msgid "پیش‌نویس خودکار"
+msgstr ""
+
+#: manacore-sources/includes/class-importer.php:465
+msgid "نشانی تصویر نامعتبر است."
+msgstr ""
+
+#: manacore-sources/includes/class-metabox.php:102 manacore-sources/includes/class-metabox.php:189
+msgid "گالری"
+msgstr ""
+
+#: manacore-sources/includes/class-metabox.php:103 manacore-sources/includes/class-metabox.php:190
+msgid "تصویر شاخص"
+msgstr ""
+
+#: manacore-sources/includes/class-metabox.php:104
+msgid "حالت فعال: TMDB (با کلید)"
+msgstr ""
+
+#: manacore-sources/includes/class-metabox.php:105
+msgid "حالت فعال: منابع آزاد (بدون کلید)"
+msgstr ""
+
+#: manacore-sources/includes/class-metabox.php:106
+msgid "تنظیمات منابع"
+msgstr ""
+
+#: manacore-sources/includes/class-metabox.php:107
+msgid "خطا در ارتباط با سرور."
+msgstr ""
+
+#: manacore-sources/includes/class-metabox.php:108
+msgid "ابتدا نوشته را ذخیره کنید (پیش‌نویس) تا امکان درج فراهم شود."
+msgstr ""
+
+#: manacore-sources/includes/class-metabox.php:109
+msgid "بازیگر"
+msgstr ""
+
+#: manacore-sources/includes/class-metabox.php:129 manacore-sources/includes/class-provider-tmdb.php:28 manacore-sources/includes/class-settings.php:223
+msgid "TMDB (با کلید)"
+msgstr ""
+
+#: manacore-sources/includes/class-metabox.php:130 manacore-sources/includes/class-settings.php:112
+msgid "منابع آزاد (بدون کلید)"
+msgstr ""
+
+#: manacore-sources/includes/class-metabox.php:142
+msgid "نام اثر را بنویسید…"
+msgstr ""
+
+#: manacore-sources/includes/class-metabox.php:173
+msgid "گزینه‌های درج"
+msgstr ""
+
+#: manacore-sources/includes/class-metabox.php:177
+msgid "بازنویسی مقادیری که از قبل پر شده‌اند"
+msgstr ""
+
+#: manacore-sources/includes/class-metabox.php:231
+msgid "آخرین دریافت از %1$s در %2$s"
+msgstr ""
+
+#: manacore-sources/includes/class-metabox.php:237
+msgid "مشاهده منبع"
+msgstr ""
+
+#: manacore-sources/includes/class-metabox.php:83
+msgid "نام فیلم/سریال/انیمه"
+msgstr ""
+
+#: manacore-sources/includes/class-metabox.php:86 manacore-sources/includes/class-settings.php:487 manacore-subscriptions/includes/class-account.php:128 manacore-subscriptions/includes/class-admin.php:143
+msgid "منبع"
+msgstr ""
+
+#: manacore-sources/includes/class-metabox.php:87 manacore-sources/includes/class-metabox.php:155
+msgid "خودکار (پیشنهادی)"
+msgstr ""
+
+#: manacore-sources/includes/class-metabox.php:88
+msgid "درج اطلاعات"
+msgstr ""
+
+#: manacore-sources/includes/class-metabox.php:89
+msgid "در حال درج…"
+msgstr ""
+
+#: manacore-sources/includes/class-metabox.php:90
+msgid "اطلاعات با موفقیت درج شد."
+msgstr ""
+
+#: manacore-sources/includes/class-metabox.php:91
+msgid "فیلدها به‌روزرسانی شدند؛ برای ثبت نهایی نوشته را ذخیره کنید."
+msgstr ""
+
+#: manacore-sources/includes/class-metabox.php:92
+msgid "برای دیدن تغییرات، صفحه را بازخوانی کنید."
+msgstr ""
+
+#: manacore-sources/includes/class-metabox.php:93
+msgid "بازخوانی صفحه"
+msgstr ""
+
+#: manacore-sources/includes/class-metabox.php:94
+msgid "بازنویسی مقادیر پرشده"
+msgstr ""
+
+#: manacore-sources/includes/class-metabox.php:95
+msgid "بخش‌های وارد شده"
+msgstr ""
+
+#: manacore-sources/includes/class-metabox.php:97 manacore-sources/includes/class-metabox.php:184
+msgid "خلاصه و متن"
+msgstr ""
+
+#: manacore-sources/includes/class-metabox.php:98 manacore-sources/includes/class-metabox.php:185
+msgid "مشخصات و امتیازها"
+msgstr ""
+
+#: manacore-sources/includes/class-metabox.php:99 manacore-sources/includes/class-metabox.php:186
+msgid "ژانر/کشور/شبکه"
+msgstr ""
+
+#: manacore-sources/includes/class-provider-jikan.php:144
+msgid "ژاپن"
+msgstr ""
+
+#: manacore-sources/includes/class-provider-jikan.php:145 manacore-sources/includes/functions.php:100
+msgid "ژاپنی"
+msgstr ""
+
+#: manacore-sources/includes/class-provider-jikan.php:24
+msgid "MyAnimeList / Jikan (بدون کلید)"
+msgstr ""
+
+#: manacore-sources/includes/class-provider-jikan.php:85
+msgid "شناسه MyAnimeList نامعتبر است."
+msgstr ""
+
+#: manacore-sources/includes/class-provider-jikan.php:97
+msgid "اطلاعاتی برای این انیمه یافت نشد."
+msgstr ""
+
+#: manacore-sources/includes/class-provider-omdb.php:124
+msgid "شناسه IMDb نامعتبر است."
+msgstr ""
+
+#: manacore-sources/includes/class-provider-omdb.php:142
+msgid "موردی در OMDb یافت نشد."
+msgstr ""
+
+#: manacore-sources/includes/class-provider-omdb.php:25
+msgid "OMDb (اختیاری)"
+msgstr ""
+
+#: manacore-sources/includes/class-provider-omdb.php:64 manacore-sources/includes/class-provider-omdb.php:118
+msgid "کلید OMDb ثبت نشده است."
+msgstr ""
+
+#: manacore-sources/includes/class-provider-tmdb.php:105 manacore-sources/includes/class-provider-tmdb.php:158
+msgid "کلید TMDB ثبت نشده است."
+msgstr ""
+
+#: manacore-sources/includes/class-provider-tmdb.php:165
+msgid "شناسه TMDB نامعتبر است."
+msgstr ""
+
+#: manacore-sources/includes/class-provider-tvmaze.php:24
+msgid "TVMaze (بدون کلید)"
+msgstr ""
+
+#: manacore-sources/includes/class-provider-tvmaze.php:82
+msgid "شناسه TVMaze نامعتبر است."
+msgstr ""
+
+#: manacore-sources/includes/class-provider-wikidata.php:43
+msgid "Wikidata (بدون کلید)"
+msgstr ""
+
+#: manacore-sources/includes/class-provider-wikidata.php:525
+msgid "شناسه Wikidata نامعتبر است."
+msgstr ""
+
+#: manacore-sources/includes/class-provider-wikidata.php:540
+msgid "موردی در Wikidata یافت نشد."
+msgstr ""
+
+#: manacore-sources/includes/class-registry.php:173
+msgid "عبارت جستجو را وارد کنید."
+msgstr ""
+
+#: manacore-sources/includes/class-registry.php:182 manacore-sources/includes/class-registry.php:242
+msgid "منبع انتخاب‌شده نامعتبر است."
+msgstr ""
+
+#: manacore-sources/includes/class-registry.php:188
+msgid "این منبع در حال حاضر در دسترس نیست (احتمالاً کلید ثبت نشده است)."
+msgstr ""
+
+#: manacore-sources/includes/class-registry.php:196
+msgid "هیچ منبعی برای این نوع محتوا فعال نیست."
+msgstr ""
+
+#: manacore-sources/includes/class-rest.php:269
+msgid "%1$d فیلد و %2$d دسته‌بندی به‌روزرسانی شد."
+msgstr ""
+
+#: manacore-sources/includes/class-settings.php:104
+msgid "زبان TMDB"
+msgstr ""
+
+#: manacore-sources/includes/class-settings.php:119
+msgid "زبان Wikidata"
+msgstr ""
+
+#: manacore-sources/includes/class-settings.php:127
+msgid "کلید OMDb (اختیاری)"
+msgstr ""
+
+#: manacore-sources/includes/class-settings.php:135
+msgid "رفتار درج اطلاعات"
+msgstr ""
+
+#: manacore-sources/includes/class-settings.php:142
+msgid "بازنویسی پیش‌فرض"
+msgstr ""
+
+#: manacore-sources/includes/class-settings.php:150
+msgid "دانلود تصویر شاخص"
+msgstr ""
+
+#: manacore-sources/includes/class-settings.php:158
+msgid "تکمیل خودکار از منابع دیگر"
+msgstr ""
+
+#: manacore-sources/includes/class-settings.php:166
+msgid "حداکثر تعداد بازیگر"
+msgstr ""
+
+#: manacore-sources/includes/class-settings.php:182
+msgid "اگر کلید TMDB ثبت شود، سیستم به‌صورت پیش‌فرض از آن استفاده می‌کند و در صورت خطا به‌طور خودکار به منابع آزاد بازمی‌گردد. بدون کلید هم همه‌چیز کار می‌کند."
+msgstr ""
+
+#: manacore-sources/includes/class-settings.php:191
+msgid "این منابع بدون هیچ کلیدی کار می‌کنند: Wikidata برای فیلم، TVMaze برای سریال و Jikan/MyAnimeList برای انیمه."
+msgstr ""
+
+#: manacore-sources/includes/class-settings.php:205
+msgid "خودکار — اگر کلید هست، کلید اولویت دارد (پیشنهادی)"
+msgstr ""
+
+#: manacore-sources/includes/class-settings.php:206
+msgid "فقط TMDB (نیازمند کلید)"
+msgstr ""
+
+#: manacore-sources/includes/class-settings.php:207
+msgid "فقط منابع آزاد (بدون کلید)"
+msgstr ""
+
+#: manacore-sources/includes/class-settings.php:221
+msgid "حالت فعال در این لحظه: %s"
+msgstr ""
+
+#: manacore-sources/includes/class-settings.php:224
+msgid "منابع آزاد"
+msgstr ""
+
+#: manacore-sources/includes/class-settings.php:243
+msgid "کلید v3 یا توکن v4"
+msgstr ""
+
+#: manacore-sources/includes/class-settings.php:246
+msgid "از حساب TMDB خود کلید API را بگیرید. هر دو نوع کلید v3 و توکن Bearer نسخه v4 پشتیبانی می‌شود."
+msgstr ""
+
+#: manacore-sources/includes/class-settings.php:248
+msgid "توجه: کلید از طریق wp-config تعریف شده و اولویت دارد."
+msgstr ""
+
+#: manacore-sources/includes/class-settings.php:267
+msgid "اگر ترجمه فارسی موجود نباشد، TMDB متن اصلی را برمی‌گرداند."
+msgstr ""
+
+#: manacore-sources/includes/class-settings.php:277 manacore-sources/includes/functions.php:93
+msgid "فارسی"
+msgstr ""
+
+#: manacore-sources/includes/class-settings.php:278 manacore-sources/includes/functions.php:94
+msgid "انگلیسی"
+msgstr ""
+
+#: manacore-sources/includes/class-settings.php:279 manacore-sources/includes/functions.php:95
+msgid "عربی"
+msgstr ""
+
+#: manacore-sources/includes/class-settings.php:280 manacore-sources/includes/functions.php:96
+msgid "ترکی"
+msgstr ""
+
+#: manacore-sources/includes/class-settings.php:307
+msgid "اختیاری. برای تکمیل امتیاز IMDb، تعداد رأی، Metascore و Rotten Tomatoes استفاده می‌شود."
+msgstr ""
+
+#: manacore-sources/includes/class-settings.php:316
+msgid "به‌طور پیش‌فرض مقادیر پرشده بازنویسی شوند"
+msgstr ""
+
+#: manacore-sources/includes/class-settings.php:323
+msgid "پوستر به‌عنوان تصویر شاخص در کتابخانه رسانه ذخیره شود"
+msgstr ""
+
+#: manacore-sources/includes/class-settings.php:330
+msgid "فیلدهای خالی از منابع مکمل پر شوند"
+msgstr ""
+
+#: manacore-sources/includes/class-settings.php:488
+msgid "نیاز به کلید"
+msgstr ""
+
+#: manacore-sources/includes/class-settings.php:490
+msgid "انواع پشتیبانی‌شده"
+msgstr ""
+
+#: manacore-sources/includes/class-settings.php:502
+msgid "غیرفعال"
+msgstr ""
+
+#: manacore-sources/includes/class-settings.php:59 manacore-sources/includes/class-settings.php:60 manacore-sources/includes/class-settings.php:463
+msgid "منابع اطلاعات"
+msgstr ""
+
+#: manacore-sources/includes/class-settings.php:81
+msgid "حالت دریافت اطلاعات"
+msgstr ""
+
+#: manacore-sources/includes/class-settings.php:88
+msgid "حالت فعال"
+msgstr ""
+
+#: manacore-sources/includes/class-settings.php:96
+msgid "کلید TMDB"
+msgstr ""
+
+#: manacore-sources/includes/functions.php:101
+msgid "کره‌ای"
+msgstr ""
+
+#: manacore-sources/includes/functions.php:97
+msgid "فرانسوی"
+msgstr ""
+
+#: manacore-sources/includes/functions.php:98
+msgid "آلمانی"
+msgstr ""
+
+#: manacore-sources/includes/functions.php:99
+msgid "اسپانیایی"
+msgstr ""
+
+#: manacore-sources/manacore-sources.php:54
+msgid "برای کار کردن این افزونه، ابتدا افزونه «ManaCore Core» را نصب و فعال کنید."
+msgstr ""
+
+#: manacore-subscriptions/includes/class-account.php:102
+msgid "بدون اشتراک فعال"
+msgstr ""
+
+#: manacore-subscriptions/includes/class-account.php:112
+msgid "اعتبار تا"
+msgstr ""
+
+#: manacore-subscriptions/includes/class-account.php:116
+msgid "روزهای باقی‌مانده"
+msgstr ""
+
+#: manacore-subscriptions/includes/class-account.php:121
+msgid "اعتبار"
+msgstr ""
+
+#: manacore-subscriptions/includes/class-account.php:122 manacore-subscriptions/includes/class-admin.php:194
+msgid "نامحدود"
+msgstr ""
+
+#: manacore-subscriptions/includes/class-account.php:129 manacore-subscriptions/includes/class-meta.php:249
+msgid "اشتراک ووکامرس"
+msgstr ""
+
+#: manacore-subscriptions/includes/class-account.php:136
+msgid "مدیریت اشتراک"
+msgstr ""
+
+#: manacore-subscriptions/includes/class-account.php:141
+msgid "با تهیه اشتراک به همه‌ی لینک‌های ویژه و کیفیت‌های بالا دسترسی پیدا می‌کنید."
+msgstr ""
+
+#: manacore-subscriptions/includes/class-account.php:226
+msgid "اشتراک فعلی شما"
+msgstr ""
+
+#: manacore-subscriptions/includes/class-account.php:278
+msgid "ادامه‌ی این مطلب مخصوص کاربران دارای اشتراک فعال است."
+msgstr ""
+
+#: manacore-subscriptions/includes/class-account.php:390
+msgid "پلن‌های اشتراک"
+msgstr ""
+
+#: manacore-subscriptions/includes/class-account.php:73
+msgid "برای مشاهده وضعیت اشتراک وارد حساب کاربری شوید."
+msgstr ""
+
+#: manacore-subscriptions/includes/class-account.php:95 manacore-subscriptions/includes/class-account.php:373
+msgid "وضعیت اشتراک"
+msgstr ""
+
+#: manacore-subscriptions/includes/class-admin.php:129
+msgid "تغییرات ذخیره شد."
+msgstr ""
+
+#: manacore-subscriptions/includes/class-admin.php:134
+msgid "این فهرست کاربرانی را نشان می‌دهد که به‌صورت دستی یا از طریق سفارش، سطح اشتراک گرفته‌اند. اشتراک‌های فعال ووکامرس مستقیماً از خود ووکامرس خوانده می‌شوند."
+msgstr ""
+
+#: manacore-subscriptions/includes/class-admin.php:140
+msgid "کاربر"
+msgstr ""
+
+#: manacore-subscriptions/includes/class-admin.php:141
+msgid "سطح مؤثر"
+msgstr ""
+
+#: manacore-subscriptions/includes/class-admin.php:142
+msgid "انقضا"
+msgstr ""
+
+#: manacore-subscriptions/includes/class-admin.php:144 manacore-subscriptions/includes/class-meta.php:242
+msgid "یادداشت"
+msgstr ""
+
+#: manacore-subscriptions/includes/class-admin.php:145
+msgid "عملیات"
+msgstr ""
+
+#: manacore-subscriptions/includes/class-admin.php:151
+msgid "هنوز اشتراک دستی ثبت نشده است."
+msgstr ""
+
+#: manacore-subscriptions/includes/class-admin.php:187
+msgid "منقضی"
+msgstr ""
+
+#: manacore-subscriptions/includes/class-admin.php:201
+msgid "لغو"
+msgstr ""
+
+#: manacore-subscriptions/includes/class-admin.php:221
+msgid "دستی"
+msgstr ""
+
+#: manacore-subscriptions/includes/class-admin.php:223
+msgid "ووکامرس"
+msgstr ""
+
+#: manacore-subscriptions/includes/class-admin.php:225
+msgid "افزونه‌ی دیگر"
+msgstr ""
+
+#: manacore-subscriptions/includes/class-admin.php:256
+msgid "دسترسی"
+msgstr ""
+
+#: manacore-subscriptions/includes/class-admin.php:275
+msgid "آزاد"
+msgstr ""
+
+#: manacore-subscriptions/includes/class-admin.php:40 manacore-subscriptions/includes/class-admin.php:41 manacore-subscriptions/includes/class-admin.php:124
+msgid "مشترکان"
+msgstr ""
+
+#: manacore-subscriptions/includes/class-meta.php:216
+msgid "اشتراک ManaCore"
+msgstr ""
+
+#: manacore-subscriptions/includes/class-meta.php:219
+msgid "سطح اشتراک (دستی)"
+msgstr ""
+
+#: manacore-subscriptions/includes/class-meta.php:222
+msgid "— بدون اشتراک دستی —"
+msgstr ""
+
+#: manacore-subscriptions/includes/class-meta.php:230
+msgid "اعطای دستی مستقل از ووکامرس عمل می‌کند و بالاترین سطح میان این دو اعمال می‌شود."
+msgstr ""
+
+#: manacore-subscriptions/includes/class-meta.php:235
+msgid "تاریخ انقضا"
+msgstr ""
+
+#: manacore-subscriptions/includes/class-meta.php:238
+msgid "خالی بگذارید تا اشتراک بدون محدودیت زمانی باشد."
+msgstr ""
+
+#: manacore-subscriptions/includes/class-meta.php:252
+msgid "این سطح از اشتراک فعال ووکامرس خوانده شده و در این صفحه قابل ویرایش نیست."
+msgstr ""
+
+#: manacore-subscriptions/includes/class-meta.php:324
+msgid "اشتراک"
+msgstr ""
+
+#: manacore-subscriptions/includes/class-meta.php:345 manacore-subscriptions/includes/class-settings.php:420
+msgid "ندارد"
+msgstr ""
+
+#: manacore-subscriptions/includes/class-meta.php:46
+msgid "پیش‌فرض تنظیمات"
+msgstr ""
+
+#: manacore-subscriptions/includes/class-meta.php:53
+msgid "حداقل سطح اشتراک"
+msgstr ""
+
+#: manacore-subscriptions/includes/class-meta.php:56
+msgid "تنها کاربران دارای این سطح (یا بالاتر) به لینک‌های ویژه دسترسی دارند."
+msgstr ""
+
+#: manacore-subscriptions/includes/class-plans.php:52
+msgid "پایه"
+msgstr ""
+
+#: manacore-subscriptions/includes/class-plans.php:60
+msgid "VIP"
+msgstr ""
+
+#: manacore-subscriptions/includes/class-rest.php:156
+msgid "نوشته یافت نشد."
+msgstr ""
+
+#: manacore-subscriptions/includes/class-rest.php:189
+msgid "کاربر یافت نشد."
+msgstr ""
+
+#: manacore-subscriptions/includes/class-rest.php:197
+msgid "سطح اشتراک نامعتبر است."
+msgstr ""
+
+#: manacore-subscriptions/includes/class-settings.php:105
+msgid "رفتار کلی سیستم اشتراک و سطح پیش‌فرض محتوای ویژه."
+msgstr ""
+
+#: manacore-subscriptions/includes/class-settings.php:112
+msgid "اتصال به ووکامرس"
+msgstr ""
+
+#: manacore-subscriptions/includes/class-settings.php:119
+msgid "صفحات و نمایش"
+msgstr ""
+
+#: manacore-subscriptions/includes/class-settings.php:121
+msgid "مقصد دکمه‌ی «تهیه اشتراک» و نحوه‌ی نمایش محتوای قفل‌شده."
+msgstr ""
+
+#: manacore-subscriptions/includes/class-settings.php:127
+msgid "با غیرفعال کردن، همه‌ی لینک‌ها برای همه باز می‌شود."
+msgstr ""
+
+#: manacore-subscriptions/includes/class-settings.php:127
+msgid "فعال بودن سیستم اشتراک"
+msgstr ""
+
+#: manacore-subscriptions/includes/class-settings.php:128
+msgid "اعمال دقیق سطح‌ها"
+msgstr ""
+
+#: manacore-subscriptions/includes/class-settings.php:128
+msgid "اگر غیرفعال باشد، هر اشتراک فعالی همه‌ی محتوای ویژه را باز می‌کند."
+msgstr ""
+
+#: manacore-subscriptions/includes/class-settings.php:129
+msgid "برای نوشته‌هایی که تیک «محتوای ویژه» دارند ولی سطحی برایشان انتخاب نشده است."
+msgstr ""
+
+#: manacore-subscriptions/includes/class-settings.php:129
+msgid "سطح پیش‌فرض محتوای ویژه"
+msgstr ""
+
+#: manacore-subscriptions/includes/class-settings.php:130
+msgid "محصولاتی که در نگاشت زیر نیستند، سطح پیش‌فرض را می‌گیرند."
+msgstr ""
+
+#: manacore-subscriptions/includes/class-settings.php:130
+msgid "هر محصول اشتراکی، دسترسی می‌دهد"
+msgstr ""
+
+#: manacore-subscriptions/includes/class-settings.php:131
+msgid "پذیرش اشتراک‌های در انتظار لغو"
+msgstr ""
+
+#: manacore-subscriptions/includes/class-settings.php:131
+msgid "کاربری که اشتراکش را لغو کرده تا پایان دوره دسترسی دارد."
+msgstr ""
+
+#: manacore-subscriptions/includes/class-settings.php:132
+msgid "نگاشت محصول به سطح"
+msgstr ""
+
+#: manacore-subscriptions/includes/class-settings.php:132
+msgid "هر خط: شناسه‌ی محصول = نامک سطح — مثال: 128 = vip"
+msgstr ""
+
+#: manacore-subscriptions/includes/class-settings.php:133
+msgid "اعطای دسترسی با سفارش ساده"
+msgstr ""
+
+#: manacore-subscriptions/includes/class-settings.php:133
+msgid "با تکمیل سفارشِ محصولِ نگاشت‌شده، اشتراک زمان‌دار داده می‌شود."
+msgstr ""
+
+#: manacore-subscriptions/includes/class-settings.php:134
+msgid "مدت اعتبار سفارش ساده (روز)"
+msgstr ""
+
+#: manacore-subscriptions/includes/class-settings.php:135
+msgid "برگه‌ی تهیه اشتراک"
+msgstr ""
+
+#: manacore-subscriptions/includes/class-settings.php:135
+msgid "در صورت خالی بودن، از آدرس دستی یا فروشگاه ووکامرس استفاده می‌شود."
+msgstr ""
+
+#: manacore-subscriptions/includes/class-settings.php:136
+msgid "آدرس دستی"
+msgstr ""
+
+#: manacore-subscriptions/includes/class-settings.php:137
+msgid "به‌صورت پیش‌فرض تنها لینک‌های دانلود قفل می‌شوند."
+msgstr ""
+
+#: manacore-subscriptions/includes/class-settings.php:137
+msgid "قفل کردن متن نوشته"
+msgstr ""
+
+#: manacore-subscriptions/includes/class-settings.php:138
+msgid "تعداد کلمات پیش‌نمایش"
+msgstr ""
+
+#: manacore-subscriptions/includes/class-settings.php:139
+msgid "نمایش وضعیت در حساب ووکامرس"
+msgstr ""
+
+#: manacore-subscriptions/includes/class-settings.php:166
+msgid "ووکامرس اشتراک فعال است"
+msgstr ""
+
+#: manacore-subscriptions/includes/class-settings.php:171
+msgid "افزونه‌ی WooCommerce Subscriptions نصب نیست"
+msgstr ""
+
+#: manacore-subscriptions/includes/class-settings.php:172
+msgid "می‌توانید از اعطای دستی یا سفارش ساده استفاده کنید."
+msgstr ""
+
+#: manacore-subscriptions/includes/class-settings.php:177
+msgid "ووکامرس نصب نیست"
+msgstr ""
+
+#: manacore-subscriptions/includes/class-settings.php:178
+msgid "سیستم اشتراک با اعطای دستی سطح دسترسی همچنان کار می‌کند."
+msgstr ""
+
+#: manacore-subscriptions/includes/class-settings.php:254
+msgid "— انتخاب نشده —"
+msgstr ""
+
+#: manacore-subscriptions/includes/class-settings.php:38 manacore-subscriptions/includes/class-settings.php:39 manacore-subscriptions/includes/class-settings.php:373
+msgid "اشتراک‌ها"
+msgstr ""
+
+#: manacore-subscriptions/includes/class-settings.php:399
+msgid "سطح"
+msgstr ""
+
+#: manacore-subscriptions/includes/class-settings.php:400
+msgid "نامک"
+msgstr ""
+
+#: manacore-subscriptions/includes/class-settings.php:401
+msgid "وزن"
+msgstr ""
+
+#: manacore-subscriptions/includes/class-settings.php:402
+msgid "محصولات نگاشت‌شده"
+msgstr ""
+
+#: manacore-subscriptions/includes/class-settings.php:436
+msgid "راهنمای سریع"
+msgstr ""
+
+#: manacore-subscriptions/includes/class-settings.php:438
+msgid "نمایش کارت وضعیت اشتراک کاربر."
+msgstr ""
+
+#: manacore-subscriptions/includes/class-settings.php:439
+msgid "نمایش فهرست پلن‌ها."
+msgstr ""
+
+#: manacore-subscriptions/includes/class-settings.php:440
+msgid "نمایش بخشی از محتوا فقط به مشترکان."
+msgstr ""
+
+#: manacore-subscriptions/includes/class-settings.php:441
+msgid "برای اعطای دستی اشتراک، به صفحه‌ی ویرایش کاربر بروید."
+msgstr ""
+
+#: manacore-subscriptions/includes/class-woo.php:303
+msgid "اعطای خودکار از سفارش #%d"
+msgstr ""
+
+#: manacore-subscriptions/manacore-subscriptions.php:86
+msgid "افزونه‌ی «ManaCore Subscriptions» برای کار کردن به افزونه‌ی «ManaCore Core» نیاز دارد."
+msgstr ""

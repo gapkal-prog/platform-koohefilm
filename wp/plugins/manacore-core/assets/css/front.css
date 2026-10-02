@@ -1,0 +1,3026 @@
+/**
+ * ManaCore Core - Front-end styles
+ *
+ * Minimal, dark/light aware. All colors are driven by CSS custom properties
+ * that bridge to the active FSE theme palette (theme.json presets), so the
+ * Koohe Film theme - or any other block theme - can restyle everything
+ * without touching this file.
+ *
+ * @package ManaCore
+ * @author  ManaCore
+ */
+
+/* -------------------------------------------------------------------------
+ * 0. لایه‌ی پایه
+ * ---------------------------------------------------------------------- */
+
+/*
+ * [hidden] باید واقعاً پنهان باشد.
+ *
+ * قاعده‌ی پیش‌فرض مرورگر برای [hidden] همان display:none است، ولی هر
+ * اعلان display در شیوه‌نامه‌ی نویسنده بر آن غلبه می‌کند. پس هر جزئی
+ * که display:flex/grid/block بگیرد، با وجود ویژگی hidden باز هم دیده
+ * می‌شود. این قاعده جلوی آن را می‌گیرد تا «پنهان» یک معنا داشته باشد
+ * و سازوکار دومی مثل کلاس .is-open لازم نشود.
+ */
+[hidden] {
+	display: none !important;
+}
+
+/* -------------------------------------------------------------------------
+ * 1. Design tokens
+ * ---------------------------------------------------------------------- */
+
+:root {
+	--mc-surface: var(--wp--preset--color--surface, #ffffff);
+	--mc-surface-2: var(--wp--preset--color--surface-2, #f4f5f7);
+	--mc-surface-3: var(--wp--preset--color--surface-3, #e9ebef);
+	--mc-text: var(--wp--preset--color--foreground, #14161a);
+	--mc-text-muted: var(--wp--preset--color--muted, #6b7280);
+	--mc-accent: var(--wp--preset--color--accent, #f59e0b);
+	--mc-accent-contrast: #111318;
+	--mc-border: var(--wp--preset--color--border, rgba(0, 0, 0, .1));
+	--mc-success: #16a34a;
+	--mc-danger: #dc2626;
+	--mc-warning: #d97706;
+
+	--mc-radius: 14px;
+	--mc-radius-sm: 8px;
+	--mc-radius-lg: 20px;
+	--mc-radius-pill: 999px;
+
+	--mc-shadow: 0 6px 24px rgba(0, 0, 0, .08);
+	--mc-shadow-lg: 0 18px 48px rgba(0, 0, 0, .14);
+	--mc-transition: .2s cubic-bezier(.2, .7, .3, 1);
+
+	--mc-gap: clamp(12px, 2vw, 20px);
+	--mc-columns: 6;
+	--mc-z-modal: 100000;
+	--mc-z-toast: 100010;
+}
+
+/*
+ * Dark mode.
+ *
+ * Themes that ship a dark palette (like Koohe Film) override the WordPress
+ * preset variables themselves, so the bridges above already resolve to dark
+ * values and nothing needs repeating here. The fallbacks below only matter
+ * when the active theme has no dark palette at all - in that case the preset
+ * variable still holds a light value, so an explicit dark value is required.
+ *
+ * `@supports` cannot test a custom property, so the values are declared
+ * unconditionally with the theme preset winning through the cascade:
+ * `--mc-dark-*` acts as the fallback layer while the theme, when present,
+ * redefines the presets one level up (html[data-color-mode="dark"]).
+ */
+[data-color-mode="dark"] {
+	--mc-dark-surface: #14161a;
+	--mc-dark-surface-2: #1c1f26;
+	--mc-dark-surface-3: #252932;
+	--mc-dark-foreground: #eef0f4;
+	--mc-dark-muted: #9aa1ad;
+	--mc-dark-border: #2c313b;
+
+	--mc-surface: var(--wp--preset--color--surface, var(--mc-dark-surface));
+	--mc-surface-2: var(--wp--preset--color--surface-2, var(--mc-dark-surface-2));
+	--mc-surface-3: var(--wp--preset--color--surface-3, var(--mc-dark-surface-3));
+	--mc-text: var(--wp--preset--color--foreground, var(--mc-dark-foreground));
+	--mc-text-muted: var(--wp--preset--color--muted, var(--mc-dark-muted));
+	--mc-border: var(--wp--preset--color--border, var(--mc-dark-border));
+	--mc-accent-contrast: #101216;
+	--mc-success: #22c55e;
+	--mc-danger: #ef4444;
+	--mc-warning: #f59e0b;
+	--mc-shadow: 0 8px 30px rgba(0, 0, 0, .45);
+	--mc-shadow-lg: 0 22px 60px rgba(0, 0, 0, .6);
+
+	color-scheme: dark;
+}
+
+/*
+ * Light mode. Declared explicitly so a theme whose only palette is dark still
+ * renders correctly when the visitor picks light.
+ */
+[data-color-mode="light"] {
+	--mc-accent-contrast: #111318;
+	--mc-success: #16a34a;
+	--mc-danger: #dc2626;
+	--mc-warning: #d97706;
+	--mc-shadow: 0 6px 24px rgba(0, 0, 0, .08);
+	--mc-shadow-lg: 0 18px 48px rgba(0, 0, 0, .14);
+
+	color-scheme: light;
+}
+
+/* -------------------------------------------------------------------------
+ * 2. Primitives
+ * ---------------------------------------------------------------------- */
+
+.manacore-block {
+	color: var(--mc-text);
+	margin-block: var(--mc-gap);
+}
+
+.manacore-block *,
+.manacore-block *::before,
+.manacore-block *::after {
+	box-sizing: border-box;
+}
+
+.manacore-block-head {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12px;
+	margin-bottom: 14px;
+	flex-wrap: wrap;
+}
+
+.manacore-section-title {
+	font-size: clamp(1.05rem, 1.6vw, 1.35rem);
+	font-weight: 700;
+	line-height: 1.4;
+	margin: 0;
+	position: relative;
+	padding-inline-start: 12px;
+}
+
+.manacore-section-title::before {
+	content: "";
+	position: absolute;
+	inset-inline-start: 0;
+	top: 50%;
+	transform: translateY(-50%);
+	width: 4px;
+	height: 1.1em;
+	border-radius: var(--mc-radius-pill);
+	background: var(--mc-accent);
+}
+
+.manacore-more-link {
+	font-size: .85rem;
+	color: var(--mc-text-muted);
+	text-decoration: none;
+	transition: color var(--mc-transition);
+	white-space: nowrap;
+}
+
+.manacore-more-link:hover,
+.manacore-more-link:focus-visible {
+	color: var(--mc-accent);
+}
+
+.manacore-btn {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 8px;
+	padding: 10px 18px;
+	border: 1px solid var(--mc-border);
+	border-radius: var(--mc-radius-pill);
+	background: var(--mc-surface-2);
+	color: var(--mc-text);
+	font-size: .9rem;
+	font-weight: 600;
+	line-height: 1.2;
+	text-decoration: none;
+	cursor: pointer;
+	transition: background var(--mc-transition), color var(--mc-transition),
+		border-color var(--mc-transition), transform var(--mc-transition);
+}
+
+.manacore-btn:hover,
+.manacore-btn:focus-visible {
+	background: var(--mc-surface-3);
+	color: var(--mc-text);
+	transform: translateY(-1px);
+}
+
+.manacore-btn.is-primary {
+	background: var(--mc-accent);
+	border-color: var(--mc-accent);
+	color: var(--mc-accent-contrast);
+}
+
+.manacore-btn.is-primary:hover,
+.manacore-btn.is-primary:focus-visible {
+	filter: brightness(1.08);
+	color: var(--mc-accent-contrast);
+}
+
+.manacore-btn.is-ghost {
+	background: transparent;
+}
+
+.manacore-btn.is-small {
+	padding: 6px 12px;
+	font-size: .8rem;
+}
+
+.manacore-btn[disabled],
+.manacore-btn.is-busy {
+	opacity: .6;
+	pointer-events: none;
+}
+
+.manacore-badge {
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
+	padding: 3px 8px;
+	border-radius: var(--mc-radius-sm);
+	background: var(--mc-surface-3);
+	color: var(--mc-text-muted);
+	font-size: .7rem;
+	font-weight: 600;
+	line-height: 1.5;
+	white-space: nowrap;
+}
+
+.manacore-chips {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 6px;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.manacore-chip {
+	display: inline-flex;
+	align-items: center;
+	gap: 5px;
+	padding: 4px 11px;
+	border: 1px solid var(--mc-border);
+	border-radius: var(--mc-radius-pill);
+	background: var(--mc-surface-2);
+	color: var(--mc-text-muted);
+	font-size: .75rem;
+	line-height: 1.6;
+	text-decoration: none;
+	transition: all var(--mc-transition);
+}
+
+.manacore-chip:hover,
+.manacore-chip:focus-visible,
+.manacore-chip.is-active {
+	background: var(--mc-accent);
+	border-color: var(--mc-accent);
+	color: var(--mc-accent-contrast);
+}
+
+.manacore-empty-state {
+	padding: 40px 20px;
+	border: 1px dashed var(--mc-border);
+	border-radius: var(--mc-radius);
+	background: var(--mc-surface-2);
+	color: var(--mc-text-muted);
+	text-align: center;
+	font-size: .9rem;
+}
+
+.manacore-inline-notice {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	padding: 12px 16px;
+	border: 1px solid var(--mc-border);
+	border-inline-start: 3px solid var(--mc-accent);
+	border-radius: var(--mc-radius-sm);
+	background: var(--mc-surface-2);
+	color: var(--mc-text-muted);
+	font-size: .85rem;
+}
+
+/* -------------------------------------------------------------------------
+ * 3. Grid + cards
+ * ---------------------------------------------------------------------- */
+
+.manacore-grid-cards {
+	display: grid;
+	grid-template-columns: repeat(var(--mc-columns), minmax(0, 1fr));
+	gap: var(--mc-gap);
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+@media (max-width: 1280px) {
+	.manacore-grid-cards {
+		grid-template-columns: repeat(min(var(--mc-columns), 5), minmax(0, 1fr));
+	}
+}
+
+@media (max-width: 1024px) {
+	.manacore-grid-cards {
+		grid-template-columns: repeat(min(var(--mc-columns), 4), minmax(0, 1fr));
+	}
+}
+
+@media (max-width: 781px) {
+	.manacore-grid-cards {
+		grid-template-columns: repeat(min(var(--mc-columns), 3), minmax(0, 1fr));
+	}
+}
+
+@media (max-width: 520px) {
+	.manacore-grid-cards {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		--mc-gap: 12px;
+	}
+}
+
+.manacore-card {
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	border-radius: 9px;
+	background: var(--mc-surface-2);
+	overflow: hidden;
+	transition: transform .25s cubic-bezier(.2, .7, .3, 1), box-shadow var(--mc-transition);
+}
+
+/*
+ * کارت رتبه‌دار سینورا: شماره‌ی درشت با خط دوران سبز گوشه‌ی کارت.
+ * (مانند «این روزها، روی بورس» در مرجع.)
+ */
+.manacore-card .mc-rank {
+	position: absolute;
+	z-index: 3;
+	inset-block-start: 42px;
+	inset-inline-start: 8px;
+	font-size: 2.6rem;
+	font-weight: 800;
+	line-height: 1;
+	color: transparent;
+	-webkit-text-stroke: 1.5px var(--mc-accent);
+	paint-order: stroke fill;
+	pointer-events: none;
+	text-shadow: 0 4px 22px rgba(0, 0, 0, .35);
+}
+
+.manacore-card:hover,
+.manacore-card:focus-within {
+	transform: translateY(-4px);
+	z-index: 2;
+}
+
+.manacore-card-link {
+	display: block;
+	color: inherit;
+	text-decoration: none;
+}
+
+.manacore-card-poster {
+	position: relative;
+	display: block;
+	aspect-ratio: 2 / 3;
+	overflow: hidden;
+	background: var(--mc-surface-3);
+	border-radius: 9px;
+}
+
+.manacore-card-poster img {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	display: block;
+	transition: transform .45s cubic-bezier(.2, .7, .3, 1);
+}
+
+.manacore-card:hover .manacore-card-poster img {
+	transform: scale(1.045);
+}
+
+.manacore-card-overlay {
+	position: absolute;
+	inset: 0;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	gap: 12px;
+	background: rgba(11, 16, 25, .35);
+	opacity: 0;
+	transition: opacity .3s ease;
+}
+
+.manacore-card:hover .manacore-card-overlay,
+.manacore-card:focus-within .manacore-card-overlay {
+	opacity: 1;
+}
+
+.manacore-card-play {
+	width: 46px;
+	height: 46px;
+	display: grid;
+	place-items: center;
+	border: 0;
+	border-radius: 50%;
+	background: var(--mc-accent);
+	color: var(--mc-accent-contrast);
+	cursor: pointer;
+	transition: transform var(--mc-transition);
+}
+
+.manacore-card:hover .manacore-card-play {
+	transform: scale(1);
+}
+
+.manacore-card-rating,
+.manacore-card-type,
+.manacore-card-premium {
+	position: absolute;
+	z-index: 2;
+	display: inline-flex;
+	align-items: center;
+	gap: 3px;
+	padding: 3px 8px;
+	border-radius: var(--mc-radius-sm);
+	font-size: .72rem;
+	font-weight: 700;
+	line-height: 1.5;
+	backdrop-filter: blur(6px);
+}
+
+.manacore-card-rating {
+	inset-block-start: 8px;
+	inset-inline-start: 8px;
+	background: rgba(0, 0, 0, .68);
+	color: #ffd166;
+}
+
+.manacore-card-type {
+	inset-block-start: 8px;
+	inset-inline-end: 8px;
+	background: rgba(0, 0, 0, .68);
+	color: #fff;
+}
+
+.manacore-card-premium {
+	inset-block-end: 8px;
+	inset-inline-start: 8px;
+	background: var(--mc-accent);
+	color: var(--mc-accent-contrast);
+}
+
+.manacore-card-fav {
+	position: absolute;
+	inset-block-start: 8px;
+	inset-inline-start: 8px;
+	z-index: 3;
+	width: 29px;
+	height: 29px;
+	display: grid;
+	place-items: center;
+	border: 1px solid rgba(255, 255, 255, .25);
+	border-radius: 50%;
+	background: rgba(17, 22, 26, .75);
+	color: #fff;
+	cursor: pointer;
+	opacity: 0;
+	backdrop-filter: blur(10px);
+	transition: opacity var(--mc-transition), color var(--mc-transition), background var(--mc-transition);
+}
+
+.manacore-card:hover .manacore-card-fav,
+.manacore-card:focus-within .manacore-card-fav,
+.manacore-card-fav.is-active {
+	opacity: 1;
+}
+
+.manacore-card-fav.is-active {
+	color: var(--mc-accent);
+	background: rgba(26, 37, 27, .94);
+	border-color: color-mix(in srgb, var(--mc-accent) 50%, transparent);
+}
+
+.manacore-card-body {
+	padding: 11px 2px 10px;
+	display: flex;
+	flex-direction: column;
+	gap: 3px;
+}
+
+.manacore-card-title {
+	font-size: .75rem;
+	font-weight: 600;
+	line-height: 1.9;
+	margin: 0;
+	color: var(--mc-text);
+	overflow: hidden;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+}
+
+.manacore-card-meta {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	gap: 5px;
+	font-size: .5625rem;
+	color: var(--mc-text-muted);
+	margin-top: 7px;
+}
+
+.manacore-card-meta span:not(:last-child)::after {
+	content: "";
+	display: inline-block;
+	width: 3px;
+	height: 3px;
+	background: var(--mc-text-muted);
+	border-radius: 50%;
+	margin-inline-start: 7px;
+	opacity: .7;
+	vertical-align: middle;
+}
+
+/* -------------------------------------------------------------------------
+ * 4. Hero slider
+ * ---------------------------------------------------------------------- */
+
+.manacore-hero {
+	position: relative;
+	border-radius: 14px;
+	border: 1px solid var(--mc-border);
+	overflow: hidden;
+	background: var(--mc-surface-2);
+	isolation: isolate;
+	box-shadow: 0 15px 35px rgba(0, 0, 0, .08);
+}
+
+.manacore-hero.is-height-small { --mc-hero-h: 42vh; }
+.manacore-hero.is-height-medium { --mc-hero-h: 60vh; }
+.manacore-hero.is-height-large { --mc-hero-h: 78vh; }
+/* «تمام‌صفحه» در ویرایشگر گزینه بود ولی قاعده‌ای نداشت و بی‌اثر می‌ماند. */
+.manacore-hero.is-height-full { --mc-hero-h: 100vh; }
+
+.manacore-hero-track {
+	position: relative;
+	/*
+	 * سقف بیشینه از خودِ متغیر خوانده می‌شود تا حالت «تمام‌صفحه» با
+	 * سقف ثابت ۷۲۰px خنثی نشود.
+	 */
+	min-height: clamp(280px, var(--mc-hero-h, 60vh), var(--mc-hero-max, 720px));
+}
+
+.manacore-hero.is-height-full { --mc-hero-max: 100vh; }
+
+.manacore-hero-slide {
+	position: absolute;
+	inset: 0;
+	display: flex;
+	align-items: flex-end;
+	opacity: 0;
+	visibility: hidden;
+	transition: opacity .6s ease;
+}
+
+.manacore-hero-slide.is-active {
+	opacity: 1;
+	visibility: visible;
+	position: relative;
+}
+
+.manacore-hero-bg {
+	position: absolute;
+	inset: 0;
+	z-index: -1;
+}
+
+.manacore-hero-bg img {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	display: block;
+}
+
+/*
+ * پوشش تصویر. جهت گرادیان افقی پیش‌تر از --mc-hero-dir خوانده می‌شد
+ * ولی این متغیر هیچ‌جا تعیین نمی‌شد و همیشه روی «left» می‌ماند؛ یعنی
+ * در RTL محتوا روی بخش روشن تصویر می‌افتاد. اکنون مقدار پیش‌فرض برای
+ * RTL درست است و برای LTR جداگانه بازنویسی می‌شود.
+ */
+.manacore-hero-bg::after {
+	content: "";
+	position: absolute;
+	inset: 0;
+	/*
+	 * «to left» یعنی توقفِ ۰٪ (تیره‌ترین) در سمت راست است. محتوای اسلاید
+	 * هم در RTL از راست آغاز می‌شود، پس تیرگی درست زیر متن می‌افتد.
+	 */
+	background:
+		linear-gradient(0deg, rgba(0, 0, 0, .92) 0%, rgba(0, 0, 0, .35) 55%, rgba(0, 0, 0, .15) 100%),
+		linear-gradient(to left, rgba(0, 0, 0, .8) 0%, transparent 70%);
+}
+
+[dir="ltr"] .manacore-hero-bg::after,
+html:not([dir="rtl"]) .manacore-hero-bg::after {
+	background:
+		linear-gradient(0deg, rgba(0, 0, 0, .92) 0%, rgba(0, 0, 0, .35) 55%, rgba(0, 0, 0, .15) 100%),
+		linear-gradient(to right, rgba(0, 0, 0, .8) 0%, transparent 70%);
+}
+
+.manacore-hero-content {
+	position: relative;
+	z-index: 1;
+	width: 53%;
+	max-width: 675px;
+	padding: 34px 39px 35px 0;
+	color: #fff;
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+}
+
+.manacore-hero-logo {
+	max-width: min(320px, 60%);
+	height: auto;
+}
+
+.manacore-hero-title {
+	font-size: clamp(1.75rem, 4.5vw, 2.5625rem);
+	font-weight: 800;
+	line-height: 1.7;
+	letter-spacing: -1.4px;
+	margin: 0;
+	color: #fff;
+}
+
+.manacore-hero-title a {
+	color: inherit;
+	text-decoration: none;
+}
+
+.manacore-hero-meta {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 8px 14px;
+	font-size: .82rem;
+	color: rgba(255, 255, 255, .82);
+}
+
+.manacore-hero-meta .manacore-badge {
+	background: rgba(255, 255, 255, .16);
+	color: #fff;
+}
+
+.manacore-hero-excerpt {
+	max-width: 445px;
+	font-size: .6875rem;
+	line-height: 2.2;
+	color: rgba(255, 255, 255, .72);
+	margin: 0;
+	display: -webkit-box;
+	-webkit-line-clamp: 2;
+	-webkit-box-orient: vertical;
+	overflow: hidden;
+}
+
+.manacore-hero-actions {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 10px;
+	margin-top: 6px;
+}
+
+.manacore-hero-actions .manacore-btn:not(.is-primary) {
+	background: rgba(255, 255, 255, .14);
+	border-color: rgba(255, 255, 255, .24);
+	color: #fff;
+}
+
+.manacore-hero-actions .manacore-btn:not(.is-primary):hover {
+	background: rgba(255, 255, 255, .24);
+}
+
+.manacore-hero-dots {
+	position: absolute;
+	z-index: 3;
+	inset-block-end: 21px;
+	inset-inline-start: 24px;
+	display: flex;
+	align-items: center;
+	gap: 5px;
+	direction: ltr;
+}
+
+.manacore-hero-dot {
+	width: 18px;
+	height: 20px;
+	padding: 0;
+	border: 0;
+	background: transparent;
+	cursor: pointer;
+	display: grid;
+	place-items: center;
+	transition: width .2s;
+}
+
+.manacore-hero-dot::before {
+	content: "";
+	width: 100%;
+	height: 2px;
+	border-radius: 2px;
+	background: rgba(255, 255, 255, .28);
+}
+
+.manacore-hero-dot.is-active {
+	width: 32px;
+}
+
+.manacore-hero-dot.is-active::before {
+	background: var(--mc-accent);
+}
+
+@media (max-width: 781px) {
+	.manacore-hero-content {
+		width: 100%;
+	}
+
+	.manacore-hero-excerpt {
+		-webkit-line-clamp: 2;
+	}
+}
+
+/* -------------------------------------------------------------------------
+ * 5. Download links
+ * ---------------------------------------------------------------------- */
+
+.manacore-links {
+	border: 1px solid var(--mc-border);
+	border-radius: var(--mc-radius);
+	background: var(--mc-surface);
+	overflow: hidden;
+}
+
+.manacore-links-header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12px;
+	flex-wrap: wrap;
+	padding: 16px 20px;
+	border-bottom: 1px solid var(--mc-border);
+	background: var(--mc-surface-2);
+}
+
+.manacore-links-header .manacore-section-title {
+	font-size: 1rem;
+}
+
+.manacore-links-total {
+	font-size: .78rem;
+	color: var(--mc-text-muted);
+}
+
+.manacore-season-tabs {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 6px;
+	padding: 12px 18px 0;
+	margin: 0;
+	list-style: none;
+}
+
+.manacore-season-tab {
+	padding: 7px 15px;
+	border: 1px solid var(--mc-border);
+	border-radius: var(--mc-radius-pill);
+	background: var(--mc-surface-2);
+	color: var(--mc-text-muted);
+	font-size: .8rem;
+	font-weight: 600;
+	cursor: pointer;
+	transition: all var(--mc-transition);
+}
+
+.manacore-season-tab:hover {
+	color: var(--mc-text);
+}
+
+.manacore-season-tab.is-active {
+	background: var(--mc-accent);
+	border-color: var(--mc-accent);
+	color: var(--mc-accent-contrast);
+}
+
+.manacore-season-panel {
+	display: none;
+	padding: 14px 18px 18px;
+}
+
+.manacore-season-panel.is-active {
+	display: block;
+	animation: manacore-fade .25s ease;
+}
+
+@keyframes manacore-fade {
+	from { opacity: 0; transform: translateY(6px); }
+	to { opacity: 1; transform: none; }
+}
+
+.manacore-link-group {
+	border: 1px solid var(--mc-border);
+	border-radius: var(--mc-radius-sm);
+	background: var(--mc-surface-2);
+	overflow: hidden;
+}
+
+.manacore-link-group + .manacore-link-group {
+	margin-top: 12px;
+}
+
+.manacore-link-group-head {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 10px;
+	flex-wrap: wrap;
+	padding: 11px 14px;
+	background: var(--mc-surface-3);
+}
+
+.manacore-link-group-title {
+	font-size: .9rem;
+	font-weight: 700;
+	margin: 0;
+	color: var(--mc-text);
+}
+
+.manacore-link-tags {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 5px;
+}
+
+.manacore-link-list {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.manacore-link-item {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	flex-wrap: wrap;
+	padding: 10px 14px;
+	border-top: 1px solid var(--mc-border);
+	transition: background var(--mc-transition);
+}
+
+.manacore-link-item:hover {
+	background: var(--mc-surface-3);
+}
+
+.manacore-link-icon {
+	flex: 0 0 auto;
+	width: 30px;
+	height: 30px;
+	display: grid;
+	place-items: center;
+	border-radius: var(--mc-radius-sm);
+	background: color-mix(in srgb, var(--mc-accent) 12%, transparent);
+	color: var(--mc-accent);
+	font-size: .85rem;
+}
+
+.manacore-link-episode {
+	flex: 0 0 auto;
+	min-width: 52px;
+	padding: 3px 8px;
+	border-radius: var(--mc-radius-sm);
+	background: color-mix(in srgb, var(--mc-accent) 10%, transparent);
+	color: var(--mc-accent);
+	font-size: .74rem;
+	font-weight: 700;
+	text-align: center;
+}
+
+.manacore-link-label {
+	flex: 1 1 180px;
+	min-width: 0;
+	font-size: .85rem;
+	font-weight: 600;
+	color: var(--mc-text);
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.manacore-link-note {
+	flex: 1 1 100%;
+	font-size: .74rem;
+	color: var(--mc-text-muted);
+	padding-inline-start: 40px;
+}
+
+.manacore-link-actions {
+	flex: 0 0 auto;
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	margin-inline-start: auto;
+}
+
+.manacore-download {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	padding: 7px 14px;
+	border-radius: var(--mc-radius-pill);
+	background: var(--mc-accent);
+	color: var(--mc-accent-contrast);
+	font-size: .78rem;
+	font-weight: 700;
+	text-decoration: none;
+	box-shadow: 0 4px 14px color-mix(in srgb, var(--mc-accent) 25%, transparent);
+	transition: filter var(--mc-transition), transform var(--mc-transition), box-shadow var(--mc-transition);
+}
+
+.manacore-download:hover,
+.manacore-download:focus-visible {
+	filter: brightness(1.08);
+	color: var(--mc-accent-contrast);
+	transform: translateY(-1px);
+}
+
+.manacore-copy {
+	width: 30px;
+	height: 30px;
+	display: grid;
+	place-items: center;
+	border: 1px solid var(--mc-border);
+	border-radius: var(--mc-radius-sm);
+	background: var(--mc-surface);
+	color: var(--mc-text-muted);
+	cursor: pointer;
+	transition: all var(--mc-transition);
+}
+
+.manacore-copy:hover,
+.manacore-copy.is-copied {
+	background: var(--mc-accent);
+	border-color: var(--mc-accent);
+	color: var(--mc-accent-contrast);
+}
+
+.manacore-locked {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 12px;
+	padding: 36px 24px;
+	text-align: center;
+	color: var(--mc-text-muted);
+}
+
+.manacore-locked-icon {
+	width: 54px;
+	height: 54px;
+	display: grid;
+	place-items: center;
+	border-radius: 50%;
+	background: var(--mc-surface-3);
+	color: var(--mc-accent);
+	font-size: 1.35rem;
+}
+
+.manacore-locked p {
+	margin: 0;
+	font-size: .9rem;
+	line-height: 1.8;
+}
+
+@media (max-width: 520px) {
+	.manacore-link-item {
+		gap: 8px;
+	}
+
+	.manacore-link-label {
+		flex-basis: 100%;
+		white-space: normal;
+	}
+
+	.manacore-link-note {
+		padding-inline-start: 0;
+	}
+}
+
+/* -------------------------------------------------------------------------
+ * 6. Meta list + rating box
+ * ---------------------------------------------------------------------- */
+
+.manacore-meta-list {
+	display: grid;
+	gap: 1px;
+	margin: 0;
+	border: 1px solid var(--mc-border);
+	border-radius: var(--mc-radius);
+	background: var(--mc-border);
+	overflow: hidden;
+}
+
+.manacore-meta-row {
+	display: grid;
+	grid-template-columns: minmax(90px, 150px) 1fr;
+	gap: 12px;
+	padding: 10px 14px;
+	background: var(--mc-surface);
+	font-size: .85rem;
+	line-height: 1.8;
+}
+
+.manacore-meta-row > dt {
+	color: var(--mc-text-muted);
+	font-weight: 600;
+	margin: 0;
+}
+
+.manacore-meta-row > dd {
+	color: var(--mc-text);
+	margin: 0;
+	min-width: 0;
+}
+
+.manacore-meta-row a {
+	color: var(--mc-accent);
+	text-decoration: none;
+}
+
+.manacore-meta-row a:hover {
+	text-decoration: underline;
+}
+
+@media (max-width: 520px) {
+	.manacore-meta-row {
+		grid-template-columns: 1fr;
+		gap: 2px;
+	}
+}
+
+.manacore-rating-box {
+	padding: 24px;
+	border: 1px solid var(--mc-border);
+	border-radius: 10px;
+	background: var(--mc-surface-2);
+	display: flex;
+	flex-direction: column;
+	gap: 16px;
+	text-align: center;
+}
+
+.manacore-scores {
+	display: grid;
+	gap: 12px;
+}
+
+.manacore-score {
+	display: grid;
+	grid-template-columns: 1fr auto;
+	gap: 4px 10px;
+	align-items: center;
+}
+
+.manacore-score-label {
+	font-size: .78rem;
+	color: var(--mc-text-muted);
+	font-weight: 600;
+}
+
+.manacore-score-value {
+	font-size: .85rem;
+	font-weight: 800;
+	color: var(--mc-text);
+	font-variant-numeric: tabular-nums;
+}
+
+.manacore-score-bar {
+	grid-column: 1 / -1;
+	height: 6px;
+	border-radius: var(--mc-radius-pill);
+	background: var(--mc-surface-3);
+	overflow: hidden;
+}
+
+.manacore-score-bar > span {
+	display: block;
+	height: 100%;
+	border-radius: inherit;
+	background: linear-gradient(90deg, var(--mc-accent), #f97316);
+	transition: width .6s cubic-bezier(.2, .7, .3, 1);
+}
+
+.manacore-user-rating {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+	padding-top: 14px;
+	border-top: 1px solid var(--mc-border);
+}
+
+.manacore-user-rating-label {
+	font-size: .8rem;
+	color: var(--mc-text-muted);
+}
+
+.manacore-stars {
+	display: inline-flex;
+	flex-direction: row-reverse;
+	justify-content: flex-end;
+	gap: 2px;
+}
+
+.manacore-star {
+	width: 26px;
+	height: 26px;
+	padding: 0;
+	border: 0;
+	background: none;
+	color: var(--mc-surface-3);
+	font-size: 1.2rem;
+	line-height: 1;
+	cursor: pointer;
+	transition: color var(--mc-transition), transform var(--mc-transition);
+}
+
+.manacore-star:hover,
+.manacore-star:hover ~ .manacore-star,
+.manacore-star.is-active,
+.manacore-star.is-active ~ .manacore-star {
+	color: var(--wp--preset--color--rating, #efd18a);
+}
+
+.manacore-star:hover {
+	transform: scale(1.18);
+}
+
+.manacore-rating-summary {
+	font-size: .78rem;
+	color: var(--mc-text-muted);
+}
+
+.manacore-rating {
+	display: inline-flex;
+	align-items: center;
+	gap: 5px;
+	font-weight: 700;
+	color: var(--mc-accent);
+}
+
+/* -------------------------------------------------------------------------
+ * 7. Cast
+ * ---------------------------------------------------------------------- */
+
+.manacore-cast-track {
+	display: flex;
+	gap: 12px;
+	overflow-x: auto;
+	padding-bottom: 8px;
+	scroll-snap-type: x mandatory;
+	scrollbar-width: thin;
+	scrollbar-color: var(--mc-surface-3) transparent;
+}
+
+.manacore-cast-track::-webkit-scrollbar {
+	height: 6px;
+}
+
+.manacore-cast-track::-webkit-scrollbar-thumb {
+	background: var(--mc-surface-3);
+	border-radius: var(--mc-radius-pill);
+}
+
+.manacore-cast-item {
+	flex: 0 0 auto;
+	width: 130px;
+	scroll-snap-align: start;
+	text-align: center;
+	text-decoration: none;
+	color: inherit;
+}
+
+.manacore-cast-item img {
+	width: 100%;
+	aspect-ratio: 3 / 4;
+	object-fit: cover;
+	object-position: 50% 18%;
+	border-radius: 8px;
+	background: var(--mc-surface-3);
+	border: 1px solid var(--mc-border);
+	filter: saturate(.72);
+	transition: filter .3s, transform var(--mc-transition);
+}
+
+.manacore-cast-item:hover img {
+	filter: saturate(1);
+	transform: scale(1.04);
+}
+
+.manacore-cast-item strong {
+	display: block;
+	margin-top: 11px;
+	font-size: .6875rem;
+	font-weight: 600;
+	color: var(--mc-text);
+	line-height: 1.5;
+}
+
+.manacore-cast-item small {
+	display: block;
+	margin-top: 5px;
+	font-size: .5625rem;
+	color: var(--mc-text-muted);
+	line-height: 1.6;
+}
+
+/* Grid layout variant */
+.manacore-cast.is-grid .manacore-cast-track {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+	overflow: visible;
+}
+
+.manacore-cast.is-grid .manacore-cast-item {
+	width: auto;
+}
+
+/* -------------------------------------------------------------------------
+ * 8. Player + trailer + modal
+ * ---------------------------------------------------------------------- */
+
+.manacore-player,
+.manacore-trailer {
+	position: relative;
+	width: 100%;
+	aspect-ratio: 16 / 9;
+	border: 1px solid var(--mc-border);
+	border-radius: 11px;
+	overflow: hidden;
+	background: #05080c;
+}
+
+.manacore-player iframe,
+.manacore-player video,
+.manacore-trailer iframe,
+.manacore-trailer video {
+	position: absolute;
+	inset: 0;
+	width: 100%;
+	height: 100%;
+	border: 0;
+	display: block;
+}
+
+.manacore-play {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 8px;
+	cursor: pointer;
+}
+
+/*
+ * نمایش مودال تنها با ویژگی [hidden] کنترل می‌شود.
+ *
+ * پیش‌تر دو سازوکار موازی بود: CSS پیش‌فرض را display:none می‌گذاشت و
+ * انتظار کلاس .is-open داشت، ولی front.js فقط modal.hidden را عوض
+ * می‌کرد و آن کلاس را هرگز نمی‌افزود. نتیجه این بود که پس از
+ * hidden=false هم قاعده‌ی نویسنده (display:none) برنده می‌ماند و
+ * مودال پخش‌کننده هرگز باز نمی‌شد.
+ */
+.manacore-modal {
+	position: fixed;
+	inset: 0;
+	z-index: var(--mc-z-modal);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 16px;
+}
+
+.manacore-modal-backdrop {
+	position: absolute;
+	inset: 0;
+	background: rgba(0, 0, 0, .82);
+	backdrop-filter: blur(4px);
+	border: 0;
+	cursor: pointer;
+}
+
+.manacore-modal-box {
+	position: relative;
+	z-index: 1;
+	width: min(100%, 960px);
+	max-height: 90vh;
+	display: flex;
+	flex-direction: column;
+	border-radius: 11px;
+	background: var(--mc-surface);
+	box-shadow: var(--mc-shadow-lg);
+	overflow: hidden;
+	animation: manacore-zoom .25s cubic-bezier(.2, .7, .3, 1);
+}
+
+@keyframes manacore-zoom {
+	from { opacity: 0; transform: scale(.95); }
+	to { opacity: 1; transform: none; }
+}
+
+.manacore-modal-head {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12px;
+	padding: 12px 16px;
+	border-bottom: 1px solid var(--mc-border);
+}
+
+.manacore-modal-title {
+	font-size: .95rem;
+	font-weight: 700;
+	margin: 0;
+	color: var(--mc-text);
+}
+
+.manacore-modal-close,
+.manacore-close {
+	width: 32px;
+	height: 32px;
+	display: grid;
+	place-items: center;
+	border: 1px solid var(--mc-border);
+	border-radius: 50%;
+	background: var(--mc-surface-2);
+	color: var(--mc-text-muted);
+	font-size: 1rem;
+	line-height: 1;
+	cursor: pointer;
+	transition: all var(--mc-transition);
+}
+
+.manacore-modal-close:hover,
+.manacore-close:hover {
+	background: var(--mc-danger);
+	border-color: var(--mc-danger);
+	color: #fff;
+}
+
+.manacore-modal-body {
+	padding: 0;
+	overflow: auto;
+	background: #000;
+}
+
+.manacore-modal-body:empty {
+	min-height: 200px;
+}
+
+body.manacore-modal-open {
+	overflow: hidden;
+}
+
+/*
+ * حالت سینما (بازآفرینی cinema-mode سینورا): جعبه‌ی مودال تمام‌عرض و
+ * بدون حاشیه و گوشه می‌شود و بدنه ارتفاع کامل می‌گیرد. کلاس با دکمه‌ی
+ * «سینما» در سربرگ مودال (front.js) کنترل می‌شود و به‌طور خودکار روی
+ * ویدیوی تمام‌صفحه هم خاموش می‌شود.
+ */
+.manacore-modal.is-cinema {
+	padding: 0;
+}
+
+.manacore-modal.is-cinema .manacore-modal-box {
+	width: 100%;
+	max-height: none;
+	height: 100%;
+	border-radius: 0;
+	animation: none;
+}
+
+.manacore-modal.is-cinema .manacore-modal-body {
+	flex: 1;
+	min-height: 0;
+}
+
+.manacore-modal.is-cinema .manacore-modal-body iframe,
+.manacore-modal.is-cinema .manacore-modal-body video {
+	position: static;
+	width: 100%;
+	height: 100%;
+	aspect-ratio: auto;
+}
+
+/*
+ * دکمه‌ی «سینما» در سربرگ مودال؛ وقتی حالت فعال است حالت فعال نشان داده
+ * می‌شود. مرجع سینورا دکمه‌های سینما و تمام‌صفحه را کنار هم دارد؛ همین
+ * دو کنش را در سربرگ مودال بازآفریدی می‌کنیم.
+ */
+.manacore-modal-cinema {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	margin-inline-end: 8px;
+	padding: 6px 12px;
+	border: 1px solid var(--mc-border);
+	border-radius: 999px;
+	background: var(--mc-surface-2);
+	color: var(--mc-text-muted);
+	font-size: .75rem;
+	font-weight: 700;
+	line-height: 1;
+	cursor: pointer;
+	transition: background var(--mc-transition), color var(--mc-transition), border-color var(--mc-transition);
+}
+
+.manacore-modal-cinema:hover,
+.manacore-modal-cinema:focus-visible {
+	border-color: var(--mc-accent);
+	color: var(--mc-accent);
+}
+
+.manacore-modal-cinema.is-on {
+	background: var(--mc-accent);
+	border-color: var(--mc-accent);
+	color: var(--mc-accent-contrast);
+}
+
+/* -------------------------------------------------------------------------
+ * 9. Filter bar
+ * ---------------------------------------------------------------------- */
+
+.manacore-filter-bar {
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+	padding: 15px;
+	border: 1px solid var(--mc-border);
+	border-radius: 10px;
+	background: var(--mc-surface-2);
+}
+
+.manacore-filter-form {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+	gap: 12px;
+	align-items: end;
+}
+
+.manacore-filter-field {
+	display: flex;
+	flex-direction: column;
+	gap: 5px;
+	min-width: 0;
+}
+
+/*
+ * برچسب فیلد: در نشانه‌گذاری، خودِ .manacore-filter-field یک <label> است و
+ * متن دیده‌شدنی در <span class="manacore-filter-label"> قرار دارد؛ گزینشگر
+ * پیشین («.manacore-filter-field > label») هیچ‌گاه منطبق نمی‌شد و برچسب‌ها
+ * کاملاً بی‌استایل می‌ماندند.
+ */
+.manacore-filter-label {
+	display: block;
+	font-size: .75rem;
+	font-weight: 600;
+	line-height: 1.6;
+	color: var(--mc-text-muted);
+}
+
+.manacore-filter-field.is-active > .manacore-filter-label {
+	color: var(--mc-accent);
+}
+
+.manacore-filter-field select,
+.manacore-filter-field input {
+	width: 100%;
+	min-height: 40px;
+	padding: 9px 12px;
+	border: 1px solid var(--mc-border);
+	border-radius: var(--mc-radius-sm);
+	background: var(--mc-surface);
+	color: var(--mc-text);
+	font-size: .85rem;
+	font-family: inherit;
+	transition: border-color var(--mc-transition), box-shadow var(--mc-transition);
+}
+
+.manacore-filter-field.is-active select {
+	border-color: var(--mc-accent);
+}
+
+.manacore-filter-field select:focus,
+.manacore-filter-field input:focus {
+	outline: none;
+	border-color: var(--mc-accent);
+	box-shadow: 0 0 0 3px color-mix(in srgb, var(--mc-accent) 22%, transparent);
+}
+
+.manacore-filter-field select:focus-visible,
+.manacore-filter-field input:focus-visible {
+	outline: 2px solid var(--mc-accent);
+	outline-offset: 1px;
+}
+
+.manacore-filter-field select option {
+	background: var(--mc-surface);
+	color: var(--mc-text);
+}
+
+/* دکمه‌های اعمال/پاک‌سازی: همیشه در یک ردیف و هم‌تراز پایین فیلدها. */
+.manacore-filter-actions {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 8px;
+	min-width: 0;
+}
+
+.manacore-filter-actions .manacore-btn {
+	min-height: 40px;
+}
+
+.manacore-filter-actions .manacore-btn[aria-disabled="true"] {
+	opacity: .5;
+	pointer-events: none;
+}
+
+/* برچسب فیلترهای فعال (chips) ------------------------------------------- */
+
+.manacore-filter-chips {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 6px;
+	padding-top: 10px;
+	border-top: 1px solid var(--mc-border);
+}
+
+.manacore-filter-chips-title {
+	font-size: .75rem;
+	font-weight: 600;
+	color: var(--mc-text-muted);
+}
+
+.manacore-filter-chip {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	min-height: 30px;
+	padding: 4px 10px;
+	border: 1px solid var(--mc-border);
+	border-radius: 999px;
+	background: var(--mc-surface);
+	color: var(--mc-text);
+	font-size: .78rem;
+	font-weight: 600;
+	text-decoration: none;
+	transition: border-color var(--mc-transition), color var(--mc-transition), background-color var(--mc-transition);
+}
+
+.manacore-filter-chip:hover,
+.manacore-filter-chip:focus-visible {
+	border-color: var(--mc-accent);
+	color: var(--mc-accent);
+}
+
+.manacore-filter-chip:focus-visible {
+	outline: 2px solid var(--mc-accent);
+	outline-offset: 2px;
+}
+
+.manacore-filter-chip-x {
+	font-size: 1rem;
+	line-height: 1;
+	color: var(--mc-text-muted);
+}
+
+.manacore-filter-chip:hover .manacore-filter-chip-x,
+.manacore-filter-chip:focus-visible .manacore-filter-chip-x {
+	color: var(--mc-accent);
+}
+
+.manacore-filter-chip.is-clear {
+	border-style: dashed;
+	color: var(--mc-text-muted);
+}
+
+/* موبایل: فیلدها تمام‌عرض و دکمه‌ها کشیده. */
+@media (max-width: 599px) {
+	.manacore-filter-form,
+	.manacore-filter-form.is-layout-grid {
+		grid-template-columns: 1fr 1fr;
+	}
+
+	.manacore-filter-form.is-layout-inline {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+	}
+
+	.manacore-filter-actions {
+		grid-column: 1 / -1;
+	}
+
+	.manacore-filter-actions .manacore-btn {
+		flex: 1 1 auto;
+		justify-content: center;
+	}
+}
+
+/* -------------------------------------------------------------------------
+ * 10. Search
+ * ---------------------------------------------------------------------- */
+
+.manacore-search {
+	position: relative;
+	width: 100%;
+}
+
+.manacore-search-form {
+	position: relative;
+	display: flex;
+	align-items: center;
+}
+
+.manacore-search-icon {
+	position: absolute;
+	inset-inline-start: 14px;
+	color: var(--mc-text-muted);
+	pointer-events: none;
+	font-size: .9rem;
+}
+
+.manacore-search-input {
+	width: 100%;
+	padding: 11px 16px;
+	padding-inline-start: 40px;
+	border: 1px solid var(--mc-border);
+	border-radius: var(--mc-radius-pill);
+	background: var(--mc-surface-2);
+	color: var(--mc-text);
+	font-size: .9rem;
+	font-family: inherit;
+	transition: all var(--mc-transition);
+}
+
+.manacore-search-input::placeholder {
+	color: var(--mc-text-muted);
+}
+
+.manacore-search-input:focus {
+	outline: none;
+	background: var(--mc-surface);
+	border-color: var(--mc-accent);
+	box-shadow: 0 0 0 3px color-mix(in srgb, var(--mc-accent) 22%, transparent);
+}
+
+.manacore-search-results {
+	position: absolute;
+	z-index: 60;
+	inset-inline: 0;
+	top: calc(100% + 8px);
+	max-height: 420px;
+	overflow-y: auto;
+	margin: 0;
+	padding: 6px;
+	list-style: none;
+	border: 1px solid var(--mc-border);
+	border-radius: var(--mc-radius);
+	background: var(--mc-surface);
+	box-shadow: var(--mc-shadow-lg);
+	/*
+	 * مانند مودال: نمایش تنها با [hidden] کنترل می‌شود. پیش‌تر اینجا
+	 * display:none بود و انتظار کلاس .is-open می‌رفت، ولی front.js فقط
+	 * results.hidden را عوض می‌کند؛ پس نتایج جستجوی زنده هرگز دیده
+	 * نمی‌شدند.
+	 */
+	display: block;
+}
+
+.manacore-search-item {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	padding: 8px;
+	border-radius: var(--mc-radius-sm);
+	color: var(--mc-text);
+	text-decoration: none;
+	transition: background var(--mc-transition);
+}
+
+.manacore-search-item:hover,
+.manacore-search-item:focus-visible,
+.manacore-search-item.is-highlighted {
+	background: var(--mc-surface-2);
+}
+
+.manacore-search-item img {
+	flex: 0 0 auto;
+	width: 40px;
+	height: 58px;
+	object-fit: cover;
+	border-radius: var(--mc-radius-sm);
+	background: var(--mc-surface-3);
+}
+
+.manacore-search-item-body {
+	min-width: 0;
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+}
+
+.manacore-search-item-body strong {
+	font-size: .85rem;
+	font-weight: 600;
+	line-height: 1.5;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.manacore-search-item-body span {
+	font-size: .74rem;
+	color: var(--mc-text-muted);
+}
+
+.manacore-search-status {
+	padding: 16px;
+	text-align: center;
+	font-size: .82rem;
+	color: var(--mc-text-muted);
+}
+
+/* -------------------------------------------------------------------------
+ * 11. Episodes
+ * ---------------------------------------------------------------------- */
+
+.manacore-episodes .manacore-season + .manacore-season {
+	margin-top: 18px;
+}
+
+.manacore-season > h3 {
+	font-size: .95rem;
+	font-weight: 700;
+	margin: 0 0 10px;
+	color: var(--mc-text);
+}
+
+.manacore-episode-list {
+	display: grid;
+	gap: 1px;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+	border: 1px solid var(--mc-border);
+	border-radius: var(--mc-radius);
+	background: var(--mc-border);
+	overflow: hidden;
+}
+
+.manacore-episode-list > li {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	padding: 11px 14px;
+	background: var(--mc-surface);
+	transition: background var(--mc-transition);
+}
+
+.manacore-episode-list > li:hover {
+	background: var(--mc-surface-2);
+}
+
+.manacore-episode-number {
+	flex: 0 0 auto;
+	min-width: 34px;
+	height: 30px;
+	display: grid;
+	place-items: center;
+	border-radius: var(--mc-radius-sm);
+	background: color-mix(in srgb, var(--mc-accent) 12%, transparent);
+	color: var(--mc-accent);
+	font-size: .78rem;
+	font-weight: 800;
+	font-variant-numeric: tabular-nums;
+}
+
+.manacore-episode-title {
+	flex: 1 1 auto;
+	min-width: 0;
+	font-size: .86rem;
+	font-weight: 600;
+	color: var(--mc-text);
+	text-decoration: none;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.manacore-episode-title:hover {
+	color: var(--mc-accent);
+}
+
+.manacore-episode-date {
+	flex: 0 0 auto;
+	font-size: .74rem;
+	color: var(--mc-text-muted);
+	font-variant-numeric: tabular-nums;
+}
+
+/* -------------------------------------------------------------------------
+ * 12. Watchlist page + toast + color mode toggle
+ * ---------------------------------------------------------------------- */
+
+.manacore-watchlist {
+	display: flex;
+	flex-direction: column;
+	gap: 16px;
+}
+
+.manacore-toast {
+	position: fixed;
+	z-index: var(--mc-z-toast);
+	inset-block-end: 24px;
+	inset-inline-start: 50%;
+	transform: translate(-50%, 20px);
+	max-width: min(90vw, 420px);
+	padding: 11px 20px;
+	border-radius: var(--mc-radius-pill);
+	background: var(--mc-text);
+	color: var(--mc-surface);
+	font-size: .85rem;
+	font-weight: 600;
+	box-shadow: var(--mc-shadow-lg);
+	opacity: 0;
+	pointer-events: none;
+	transition: opacity var(--mc-transition), transform var(--mc-transition);
+}
+
+.manacore-toast.is-visible {
+	opacity: 1;
+	transform: translate(-50%, 0);
+}
+
+.manacore-toast.is-error {
+	background: var(--mc-danger);
+	color: #fff;
+}
+
+.manacore-toast.is-success {
+	background: var(--mc-success);
+	color: #fff;
+}
+
+.manacore-theme-toggle {
+	display: inline-grid;
+	place-items: center;
+	width: 38px;
+	height: 38px;
+	border: 1px solid var(--mc-border);
+	border-radius: 50%;
+	background: var(--mc-surface-2);
+	color: var(--mc-text);
+	cursor: pointer;
+	transition: all var(--mc-transition);
+}
+
+.manacore-theme-toggle:hover {
+	background: var(--mc-accent);
+	border-color: var(--mc-accent);
+	color: var(--mc-accent-contrast);
+	transform: rotate(-18deg);
+}
+
+/*
+ * آیکون آفتاب/ماه اینجا قاعده‌ای ندارد: نشانه‌گذاری تغییر حالت را قالب
+ * می‌سازد (koohe-icon-sun / koohe-icon-moon) و در theme.css استایل
+ * می‌گیرد. قواعد پیشین با پیشوند manacore- هیچ‌گاه منطبق نمی‌شدند.
+ */
+
+/* -------------------------------------------------------------------------
+ * 13. Accessibility helpers
+ * ---------------------------------------------------------------------- */
+
+.manacore-block :focus-visible {
+	outline: 2px solid var(--mc-accent);
+	outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.manacore-block *,
+	.manacore-modal *,
+	.manacore-toast {
+		animation-duration: .01ms !important;
+		animation-iteration-count: 1 !important;
+		transition-duration: .01ms !important;
+		scroll-behavior: auto !important;
+	}
+
+	.manacore-card:hover {
+		transform: none;
+	}
+
+	.manacore-card:hover .manacore-card-poster img {
+		transform: none;
+	}
+}
+
+@media print {
+	.manacore-hero,
+	.manacore-modal,
+	.manacore-toast,
+	.manacore-card-fav,
+	.manacore-theme-toggle,
+	.manacore-filter-bar,
+	.manacore-search {
+		display: none !important;
+	}
+}
+
+/* -------------------------------------------------------------------------
+ * 12. Block editor driven options (visibility, responsive columns, layouts)
+ *
+ * این بخش گزینه‌های تنظیم‌شده در ویرایشگر بلوک را پیاده می‌کند:
+ * ستون‌بندی واکنش‌گرا، پنهان‌سازی بر پایه‌ی دستگاه، سبک‌های چیدمان
+ * و اجزای تازه‌ی سرتیتر و کارت.
+ * ---------------------------------------------------------------------- */
+
+/* 12.1 پنهان‌سازی بر پایه‌ی دستگاه --------------------------------------- */
+
+@media (max-width: 599px) {
+	.manacore-hide-mobile {
+		display: none !important;
+	}
+}
+
+@media (min-width: 600px) and (max-width: 781px) {
+	.manacore-hide-tablet {
+		display: none !important;
+	}
+}
+
+@media (min-width: 782px) {
+	.manacore-hide-desktop {
+		display: none !important;
+	}
+}
+
+/* 12.2 ستون‌بندی واکنش‌گرای مبتنی بر تنظیمات بلوک ------------------------ */
+
+.manacore-grid-cards {
+	--mc-columns-tablet: var(--mc-columns);
+	--mc-columns-mobile: 2;
+}
+
+@media (max-width: 781px) {
+	.manacore-grid-cards {
+		grid-template-columns: repeat(var(--mc-columns-tablet), minmax(0, 1fr));
+	}
+}
+
+@media (max-width: 599px) {
+	.manacore-grid-cards {
+		grid-template-columns: repeat(var(--mc-columns-mobile), minmax(0, 1fr));
+	}
+}
+
+/* 12.3 سبک‌های چیدمان حلقه ---------------------------------------------- */
+
+.manacore-grid-cards.is-scroll {
+	display: flex;
+	overflow-x: auto;
+	scroll-snap-type: x mandatory;
+	scroll-padding-inline-start: 2px;
+	-webkit-overflow-scrolling: touch;
+	scrollbar-width: thin;
+	padding-bottom: 6px;
+}
+
+.manacore-grid-cards.is-scroll > * {
+	flex: 0 0 calc((100% - (var(--mc-columns) - 1) * var(--mc-gap)) / var(--mc-columns));
+	scroll-snap-align: start;
+}
+
+@media (max-width: 781px) {
+	.manacore-grid-cards.is-scroll > * {
+		flex-basis: calc((100% - (var(--mc-columns-tablet) - 1) * var(--mc-gap)) / var(--mc-columns-tablet));
+	}
+}
+
+@media (max-width: 599px) {
+	.manacore-grid-cards.is-scroll > * {
+		flex-basis: calc((100% - (var(--mc-columns-mobile) - 1) * var(--mc-gap)) / var(--mc-columns-mobile));
+	}
+}
+
+.manacore-grid-cards.is-list {
+	display: flex;
+	flex-direction: column;
+}
+
+.manacore-grid-cards.is-list .manacore-card {
+	flex-direction: row;
+	align-items: stretch;
+}
+
+.manacore-grid-cards.is-list .manacore-card-poster {
+	flex: 0 0 clamp(96px, 22%, 168px);
+}
+
+.manacore-grid-cards.is-list .manacore-card-body {
+	flex: 1 1 auto;
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+}
+
+.manacore-grid-cards.is-masonry {
+	display: block;
+	columns: var(--mc-columns);
+	column-gap: var(--mc-gap);
+}
+
+.manacore-grid-cards.is-masonry > * {
+	break-inside: avoid;
+	margin-bottom: var(--mc-gap);
+}
+
+@media (max-width: 781px) {
+	.manacore-grid-cards.is-masonry {
+		columns: var(--mc-columns-tablet);
+	}
+}
+
+@media (max-width: 599px) {
+	.manacore-grid-cards.is-masonry {
+		columns: var(--mc-columns-mobile);
+	}
+}
+
+.manacore-grid-cards.is-spotlight > *:first-child {
+	grid-column: span 2;
+	grid-row: span 2;
+}
+
+@media (max-width: 599px) {
+	.manacore-grid-cards.is-spotlight > *:first-child {
+		grid-column: span 2;
+		grid-row: auto;
+	}
+}
+
+/* 12.4 اجزای تازه‌ی سرتیتر بخش ------------------------------------------ */
+
+.manacore-block-head-text {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+	min-width: 0;
+}
+
+.manacore-section-title {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+
+.manacore-section-icon {
+	flex: 0 0 auto;
+	width: 1em;
+	height: 1em;
+	fill: none;
+	stroke: var(--mc-accent);
+	stroke-width: 1.8;
+	stroke-linecap: round;
+	stroke-linejoin: round;
+}
+
+.manacore-section-subtitle {
+	margin: 0;
+	font-size: .85rem;
+	line-height: 1.6;
+	color: var(--mc-text-muted);
+	padding-inline-start: 12px;
+}
+
+.manacore-more-link {
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
+}
+
+.manacore-more-icon {
+	width: 1em;
+	height: 1em;
+	fill: none;
+	stroke: currentColor;
+	stroke-width: 2;
+	stroke-linecap: round;
+	stroke-linejoin: round;
+}
+
+/* آیکون در حالت راست‌به‌چپ باید برگردد. */
+[dir="rtl"] .manacore-more-icon {
+	transform: scaleX(-1);
+}
+
+/* 12.5 حالت خالی بلوک --------------------------------------------------- */
+
+.manacore-block.is-empty .manacore-empty-state {
+	margin-block: 4px 0;
+}
+
+/* 12.6 گزینه‌های کارت --------------------------------------------------- */
+
+.manacore-card-poster {
+	aspect-ratio: var(--mc-poster-ratio, 2 / 3);
+}
+
+.manacore-card-title {
+	display: -webkit-box;
+	-webkit-box-orient: vertical;
+}
+
+/* محدودسازی خطوط عنوان فقط وقتی مقدار تعیین شده باشد. */
+.manacore-card-title[style*="--mc-title-lines"] {
+	-webkit-line-clamp: var(--mc-title-lines);
+	line-clamp: var(--mc-title-lines);
+	overflow: hidden;
+}
+
+.manacore-card-episode {
+	font-size: .72rem;
+	font-weight: 600;
+	color: var(--mc-text-muted);
+}
+
+.manacore-card.is-style-wide .manacore-card-poster {
+	aspect-ratio: var(--mc-poster-ratio, 16 / 9);
+}
+
+.manacore-card.is-style-minimal {
+	background: transparent;
+}
+
+.manacore-card.is-style-minimal .manacore-card-body {
+	padding-inline: 0;
+}
+
+.manacore-card.is-style-text .manacore-card-poster {
+	display: none;
+}
+
+/* 12.7 چیدمان‌های جدول مشخصات ------------------------------------------ */
+
+.manacore-meta-list.is-layout-columns {
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap: 8px 20px;
+}
+
+.manacore-meta-list.is-layout-inline {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px 18px;
+}
+
+.manacore-meta-list.is-layout-inline .manacore-meta-row {
+	display: inline-flex;
+	gap: 6px;
+}
+
+/*
+ * پهنای برچسب. دو ایراد در گزینشگر پیشین بود: نشانه‌گذاری هیچ عنصری با
+ * کلاس .manacore-meta-label نمی‌سازد (برچسب یک <dt> ساده است) و متغیر
+ * درون‌خطی روی .manacore-meta-list نوشته می‌شود نه روی هر ردیف. پس
+ * قاعده هرگز منطبق نمی‌شد و تنظیم «پهنای برچسب» بی‌اثر بود.
+ */
+.manacore-meta-list[style*="--mc-meta-label"] .manacore-meta-row > dt {
+	flex: 0 0 var(--mc-meta-label);
+	min-width: var(--mc-meta-label);
+}
+
+@media (max-width: 599px) {
+	.manacore-meta-list.is-layout-columns {
+		grid-template-columns: minmax(0, 1fr);
+	}
+}
+
+/* 12.8 فلش‌های اسلایدر ------------------------------------------------- */
+
+.manacore-hero-arrow {
+	position: absolute;
+	top: 50%;
+	transform: translateY(-50%);
+	z-index: 3;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 40px;
+	height: 40px;
+	border: 0;
+	border-radius: 50%;
+	cursor: pointer;
+	color: #fff;
+	background: rgba(0, 0, 0, .45);
+	backdrop-filter: blur(4px);
+	transition: background var(--mc-transition), transform var(--mc-transition);
+}
+
+.manacore-hero-arrow:hover,
+.manacore-hero-arrow:focus-visible {
+	background: rgba(0, 0, 0, .7);
+}
+
+.manacore-hero-arrow.is-prev {
+	inset-inline-start: 12px;
+}
+
+.manacore-hero-arrow.is-next {
+	inset-inline-end: 12px;
+}
+
+@media (max-width: 599px) {
+	.manacore-hero-arrow {
+		width: 32px;
+		height: 32px;
+	}
+}
+
+/* 12.9 چیدمان‌های فرم فیلتر -------------------------------------------- */
+
+.manacore-filter-form.is-layout-inline {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: flex-end;
+	gap: 10px;
+}
+
+/* در چیدمان درون‌خطی، فیلدها رشد می‌کنند ولی دکمه‌ها اندازه‌ی طبیعی دارند. */
+.manacore-filter-form.is-layout-inline > .manacore-filter-field {
+	flex: 1 1 150px;
+}
+
+.manacore-filter-form.is-layout-inline > .manacore-filter-actions {
+	flex: 0 0 auto;
+}
+
+.manacore-filter-form.is-layout-stack > .manacore-filter-actions {
+	justify-content: flex-start;
+}
+
+.manacore-filter-form.is-layout-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+	gap: 10px;
+	align-items: end;
+}
+
+.manacore-filter-form.is-layout-stack {
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+}
+
+.manacore-filter-reset {
+	font-size: .82rem;
+	color: var(--mc-text-muted);
+	text-decoration: none;
+	align-self: center;
+}
+
+.manacore-filter-reset:hover,
+.manacore-filter-reset:focus-visible {
+	color: var(--mc-accent);
+}
+
+/* 12.10 بندانگشتی قسمت‌ها و اندازه‌ی کادر جستجو ------------------------- */
+
+.manacore-episode-thumb {
+	flex: 0 0 auto;
+	width: 84px;
+	aspect-ratio: 16 / 9;
+	border-radius: calc(var(--mc-radius) / 2);
+	overflow: hidden;
+	background: var(--mc-surface-2);
+}
+
+.manacore-episode-thumb img {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+}
+
+.manacore-search.is-size-small .manacore-search-input {
+	padding-block: 6px;
+	font-size: .85rem;
+}
+
+.manacore-search.is-size-large .manacore-search-input {
+	padding-block: 14px;
+	font-size: 1.05rem;
+}
+
+/* 12.11 شبکه‌ای شدن فهرست بازیگران ------------------------------------- */
+
+/*
+ * رندرکننده ظرف را با کلاس .manacore-cast-track می‌سازد، نه
+ * .manacore-cast-list؛ گزینشگر پیشین هیچ‌گاه منطبق نمی‌شد و گزینه‌ی
+ * چیدمان «شبکه‌ای» در ویرایشگر کاملاً بی‌اثر بود.
+ */
+.manacore-cast.is-layout-grid .manacore-cast-track {
+	display: grid;
+	grid-template-columns: repeat(var(--mc-columns), minmax(0, 1fr));
+	gap: var(--mc-gap);
+	overflow: visible;
+}
+
+@media (max-width: 781px) {
+	.manacore-cast.is-layout-grid .manacore-cast-track {
+		grid-template-columns: repeat(var(--mc-columns-tablet, 4), minmax(0, 1fr));
+	}
+}
+
+@media (max-width: 599px) {
+	.manacore-cast.is-layout-grid .manacore-cast-track {
+		grid-template-columns: repeat(var(--mc-columns-mobile, 3), minmax(0, 1fr));
+	}
+}
+
+/* =========================================================
+ * ۱۳) تنوع ظاهری بلوک‌ها (P5)
+ *
+ * هر تنوع فقط با یک کلاس روی ظرفِ بلوک فعال می‌شود و روی
+ * نشانه‌گذاری پایه سوار می‌شود؛ بنابراین بلوک‌های موجود بدون
+ * تغییر محتوا همان ظاهر پیشین را نگه می‌دارند.
+ * ====================================================== */
+
+/* 13.1 چیدمان‌های تازه‌ی شبکه --------------------------------------------- */
+
+/*
+ * ویترین: نخستین سطر دو برابر پهن‌تر است. با nth-child کار می‌کند تا
+ * بدون نشانه‌گذاری اضافه، «سطر اول بزرگ» ساخته شود.
+ */
+.manacore-grid-cards.is-showcase > *:nth-child(-n+2) {
+	grid-column: span 2;
+	grid-row: span 2;
+}
+
+@media (max-width: 599px) {
+	.manacore-grid-cards.is-showcase > *:nth-child(-n+2) {
+		grid-column: span 2;
+		grid-row: auto;
+	}
+}
+
+/* مترو: کاشی‌های نامتقارن با الگوی تکرارشونده‌ی ۶تایی. */
+.manacore-grid-cards.is-metro > *:nth-child(6n+1) {
+	grid-column: span 2;
+	grid-row: span 2;
+}
+
+.manacore-grid-cards.is-metro > *:nth-child(6n+4) {
+	grid-column: span 2;
+}
+
+@media (max-width: 781px) {
+	.manacore-grid-cards.is-metro > *:nth-child(6n+1),
+	.manacore-grid-cards.is-metro > *:nth-child(6n+4) {
+		grid-column: span 2;
+		grid-row: auto;
+	}
+}
+
+@media (max-width: 599px) {
+	.manacore-grid-cards.is-metro > *:nth-child(6n+1),
+	.manacore-grid-cards.is-metro > *:nth-child(6n+4) {
+		grid-column: auto;
+	}
+}
+
+/*
+ * رتبه‌بندی: شماره‌ی ترتیب با counter تولید می‌شود، نه با متن
+ * سخت‌کدشده؛ پس با هر تعداد آیتم و در هر دو جهت درست می‌ماند.
+ */
+.manacore-grid-cards.is-ranking {
+	counter-reset: mc-rank;
+	display: flex;
+	flex-direction: column;
+}
+
+.manacore-grid-cards.is-ranking > * {
+	counter-increment: mc-rank;
+	position: relative;
+	padding-inline-start: clamp(38px, 7%, 64px);
+}
+
+.manacore-grid-cards.is-ranking > *::before {
+	content: counter(mc-rank);
+	position: absolute;
+	inset-inline-start: 0;
+	top: 50%;
+	transform: translateY(-50%);
+	font-size: clamp(1.5rem, 4vw, 2.4rem);
+	font-weight: 800;
+	line-height: 1;
+	color: var(--mc-text-muted);
+	opacity: .55;
+	pointer-events: none;
+}
+
+.manacore-grid-cards.is-ranking .manacore-card {
+	flex-direction: row;
+	align-items: stretch;
+}
+
+.manacore-grid-cards.is-ranking .manacore-card-poster {
+	flex: 0 0 clamp(80px, 18%, 132px);
+}
+
+.manacore-grid-cards.is-ranking .manacore-card-body {
+	flex: 1 1 auto;
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+}
+
+/* 13.2 سبک‌های تازه‌ی کارت ------------------------------------------------ */
+
+/* متن روی تصویر: بدنه روی پوستر شناور می‌شود. */
+.manacore-card.is-style-overlay {
+	position: relative;
+	isolation: isolate;
+}
+
+.manacore-card.is-style-overlay .manacore-card-body {
+	position: absolute;
+	inset-inline: 0;
+	bottom: 0;
+	z-index: 1;
+	padding: 12px;
+	background: linear-gradient(to top, rgba(0, 0, 0, .88), rgba(0, 0, 0, .55) 55%, transparent);
+	color: #fff;
+}
+
+.manacore-card.is-style-overlay .manacore-card-title,
+.manacore-card.is-style-overlay .manacore-card-title a {
+	color: #fff;
+}
+
+.manacore-card.is-style-overlay .manacore-card-meta,
+.manacore-card.is-style-overlay .manacore-card-episode {
+	color: rgba(255, 255, 255, .84);
+}
+
+/* شیشه‌ای. */
+.manacore-card.is-style-glass {
+	background: color-mix(in srgb, var(--mc-surface-2) 62%, transparent);
+	border: 1px solid color-mix(in srgb, var(--mc-border) 70%, transparent);
+	backdrop-filter: blur(10px);
+}
+
+/* کادر ساده. */
+.manacore-card.is-style-outline {
+	background: transparent;
+	border: 1px solid var(--mc-border);
+	box-shadow: none;
+}
+
+/* برجسته. */
+.manacore-card.is-style-elevated {
+	box-shadow: 0 10px 30px -12px rgba(0, 0, 0, .45);
+	transition: box-shadow .25s ease, transform .25s ease;
+}
+
+.manacore-card.is-style-elevated:hover,
+.manacore-card.is-style-elevated:focus-within {
+	box-shadow: 0 18px 44px -14px rgba(0, 0, 0, .55);
+	transform: translateY(-3px);
+}
+
+/* افقی ۱۶:۹. */
+.manacore-card.is-style-landscape .manacore-card-poster {
+	aspect-ratio: var(--mc-poster-ratio, 16 / 9);
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.manacore-card.is-style-elevated {
+		transition: none;
+	}
+
+	.manacore-card.is-style-elevated:hover,
+	.manacore-card.is-style-elevated:focus-within {
+		transform: none;
+	}
+}
+
+/* 13.3 سبک‌های اسلایدر ویژه ---------------------------------------------- */
+
+/* پوشش تصویر با شدت قابل تنظیم از ویرایشگر. */
+.manacore-hero[style*="--mc-hero-overlay"] .manacore-hero-bg::after {
+	opacity: var(--mc-hero-overlay);
+}
+
+/* کادردار: گوشه‌گرد با حاشیه‌ی درونی. */
+.manacore-hero.is-slider-boxed {
+	border: 1px solid var(--mc-border);
+}
+
+.manacore-hero.is-slider-boxed .manacore-hero-content {
+	width: min(100%, 620px);
+}
+
+/* دوبخشی: متن در یک ستون و تصویر در ستون دیگر. */
+@media (min-width: 782px) {
+	.manacore-hero.is-slider-split .manacore-hero-slide {
+		align-items: stretch;
+	}
+
+	.manacore-hero.is-slider-split .manacore-hero-bg {
+		inset-inline-start: 42%;
+		width: 58%;
+	}
+
+	/*
+	 * جهت گرادیان منطقی‌ساز ندارد (to inline-end در CSS معتبر نیست و
+	 * مرورگر کل اعلان را دور می‌اندازد)، پس هر جهت جداگانه نوشته می‌شود.
+	 */
+	.manacore-hero.is-slider-split .manacore-hero-bg::after {
+		background: linear-gradient(to left, var(--mc-surface-2), transparent 65%);
+	}
+
+	[dir="ltr"] .manacore-hero.is-slider-split .manacore-hero-bg::after,
+	html:not([dir="rtl"]) .manacore-hero.is-slider-split .manacore-hero-bg::after {
+		background: linear-gradient(to right, var(--mc-surface-2), transparent 65%);
+	}
+
+	.manacore-hero.is-slider-split .manacore-hero-content {
+		width: 46%;
+		justify-content: center;
+		color: var(--mc-text);
+	}
+
+	.manacore-hero.is-slider-split .manacore-hero-title {
+		color: var(--mc-text);
+		text-shadow: none;
+	}
+
+	.manacore-hero.is-slider-split .manacore-hero-excerpt,
+	.manacore-hero.is-slider-split .manacore-hero-meta {
+		color: var(--mc-text-muted);
+	}
+}
+
+/* مینیمال: بدون پوشش تیره‌ی سنگین و بدون سایه‌ی متن. */
+.manacore-hero.is-slider-minimal .manacore-hero-bg::after {
+	background: linear-gradient(to top, rgba(0, 0, 0, .72), transparent 62%);
+}
+
+.manacore-hero.is-slider-minimal .manacore-hero-title {
+	font-size: clamp(1.25rem, 3vw, 2rem);
+	text-shadow: none;
+}
+
+.manacore-hero.is-slider-minimal .manacore-hero-content {
+	gap: 8px;
+}
+
+/* پوستری: پوستر کوچک ۲:۳ کنار متن. */
+@media (min-width: 782px) {
+	.manacore-hero.is-slider-poster .manacore-hero-bg {
+		inset-inline-start: auto;
+		inset-inline-end: clamp(24px, 5%, 64px);
+		top: 50%;
+		bottom: auto;
+		transform: translateY(-50%);
+		width: clamp(160px, 18%, 260px);
+		height: auto;
+		aspect-ratio: 2 / 3;
+		border-radius: var(--mc-radius);
+		overflow: hidden;
+	}
+
+	.manacore-hero.is-slider-poster .manacore-hero-bg::after {
+		background: none;
+	}
+
+	.manacore-hero.is-slider-poster .manacore-hero-slide {
+		background: var(--mc-surface-2);
+	}
+
+	.manacore-hero.is-slider-poster .manacore-hero-content {
+		width: min(100%, 62%);
+		color: var(--mc-text);
+	}
+
+	.manacore-hero.is-slider-poster .manacore-hero-title {
+		color: var(--mc-text);
+		text-shadow: none;
+	}
+
+	.manacore-hero.is-slider-poster .manacore-hero-excerpt,
+	.manacore-hero.is-slider-poster .manacore-hero-meta {
+		color: var(--mc-text-muted);
+	}
+}
+
+/* 13.4 جای‌گیری محتوای اسلاید -------------------------------------------- */
+
+.manacore-hero.is-align-center .manacore-hero-slide {
+	align-items: center;
+}
+
+.manacore-hero.is-align-center .manacore-hero-content {
+	margin-inline: auto;
+	text-align: center;
+}
+
+.manacore-hero.is-align-center .manacore-hero-meta,
+.manacore-hero.is-align-center .manacore-hero-actions {
+	justify-content: center;
+}
+
+.manacore-hero.is-align-end .manacore-hero-content {
+	margin-inline-start: auto;
+}
+
+/* 13.5 جلوه‌ی گذر اسلاید ------------------------------------------------- */
+
+/*
+ * جلوه‌ی «لغزش»: اسلاید غیرفعال از سمت مخالف جریان متن وارد می‌شود.
+ * از منطقی‌های inline استفاده می‌شود تا در RTL هم درست بماند.
+ */
+.manacore-hero.is-effect-slide .manacore-hero-slide {
+	transition: opacity .5s ease, translate .5s ease;
+	translate: 6% 0;
+}
+
+.manacore-hero.is-effect-slide .manacore-hero-slide.is-active {
+	translate: 0 0;
+}
+
+.manacore-hero.is-effect-zoom .manacore-hero-bg {
+	transition: scale 8s ease-out;
+	scale: 1;
+}
+
+.manacore-hero.is-effect-zoom .manacore-hero-slide.is-active .manacore-hero-bg {
+	scale: 1.08;
+}
+
+.manacore-hero.is-effect-none .manacore-hero-slide {
+	transition: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.manacore-hero.is-effect-slide .manacore-hero-slide,
+	.manacore-hero.is-effect-zoom .manacore-hero-bg {
+		transition: none;
+		translate: none;
+		scale: 1;
+	}
+
+	.manacore-hero.is-effect-zoom .manacore-hero-slide.is-active .manacore-hero-bg {
+		scale: 1;
+	}
+}
+
+/* 13.6 سبک‌های جعبه‌ی دانلود --------------------------------------------- */
+
+/* جدولی: هر آیتم یک سطر با ستون‌های هم‌تراز. */
+.manacore-links.is-box-table .manacore-link-list {
+	display: table;
+	width: 100%;
+	border-collapse: collapse;
+}
+
+.manacore-links.is-box-table .manacore-link-item {
+	display: table-row;
+}
+
+.manacore-links.is-box-table .manacore-link-item > * {
+	display: table-cell;
+	vertical-align: middle;
+	padding: 10px 8px;
+	border-bottom: 1px solid var(--mc-border);
+}
+
+.manacore-links.is-box-table .manacore-link-icon {
+	width: 34px;
+}
+
+.manacore-links.is-box-table .manacore-link-actions {
+	text-align: end;
+	white-space: nowrap;
+}
+
+@media (max-width: 599px) {
+	/* در نمایشگر کوچک جدول به کارت برمی‌گردد تا سطرها فشرده نشوند. */
+	.manacore-links.is-box-table .manacore-link-list,
+	.manacore-links.is-box-table .manacore-link-item,
+	.manacore-links.is-box-table .manacore-link-item > * {
+		display: revert;
+		border-bottom: 0;
+	}
+}
+
+/* فشرده: فاصله‌ها و اندازه‌ها کوچک‌تر. */
+.manacore-links.is-box-compact .manacore-link-group {
+	padding: 10px 12px;
+}
+
+.manacore-links.is-box-compact .manacore-link-item {
+	padding-block: 6px;
+	font-size: .86rem;
+}
+
+.manacore-links.is-box-compact .manacore-link-group-title {
+	font-size: .95rem;
+}
+
+.manacore-links.is-box-compact .manacore-chip {
+	font-size: .68rem;
+}
+
+/* آکاردئونی: <details> بومی؛ نشانگر پیش‌فرض حذف و با فلش سازگار RTL جانشین می‌شود. */
+.manacore-links.is-box-accordion .manacore-link-group-head {
+	cursor: pointer;
+	list-style: none;
+	position: relative;
+	padding-inline-end: 28px;
+}
+
+.manacore-links.is-box-accordion .manacore-link-group-head::-webkit-details-marker {
+	display: none;
+}
+
+.manacore-links.is-box-accordion .manacore-link-group-head::after {
+	content: "";
+	position: absolute;
+	inset-inline-end: 6px;
+	top: 50%;
+	width: 8px;
+	height: 8px;
+	border-inline-end: 2px solid currentColor;
+	border-bottom: 2px solid currentColor;
+	transform: translateY(-70%) rotate(45deg);
+	opacity: .6;
+	transition: transform .2s ease;
+}
+
+.manacore-links.is-box-accordion .manacore-link-group[open] > .manacore-link-group-head::after {
+	transform: translateY(-30%) rotate(225deg);
+}
+
+.manacore-links.is-box-accordion .manacore-link-group-head:focus-visible {
+	outline: 2px solid var(--mc-accent);
+	outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.manacore-links.is-box-accordion .manacore-link-group-head::after {
+		transition: none;
+	}
+}
+
+/* دکمه‌ای: آیتم‌ها به دکمه‌های شبکه‌ای تبدیل می‌شوند. */
+.manacore-links.is-box-buttons .manacore-link-list {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+	gap: 8px;
+}
+
+.manacore-links.is-box-buttons .manacore-link-item {
+	flex-wrap: wrap;
+	gap: 6px;
+	padding: 10px 12px;
+	border: 1px solid var(--mc-border);
+	border-radius: var(--mc-radius);
+	background: var(--mc-surface-2);
+}
+
+.manacore-links.is-box-buttons .manacore-link-tags {
+	flex-basis: 100%;
+}
+
+.manacore-links.is-box-buttons .manacore-link-actions {
+	flex-basis: 100%;
+	justify-content: flex-start;
+}
+
+/* =========================================================
+ * ۱۴) دسترس‌پذیری، هدف لمسی و ریسپانسیو کامل
+ *
+ * سه اصل راهنما:
+ *   • ناحیه‌ی کلیک بزرگ می‌شود، ظاهر نه. با شبه‌عنصر شفاف، هدف لمسی
+ *     به ۴۴px می‌رسد بدون آنکه طرح بصری تغییر کند (WCAG 2.5.5).
+ *   • اندازه‌ها سیال‌اند نه پله‌ای؛ با clamp از ۳۲۰px تا نمایشگر بزرگ
+ *     پیوسته تغییر می‌کنند و «پرش» در نقطه‌ی شکست ندارند.
+ *   • هر جلوه‌ی حرکتی با prefers-reduced-motion خاموش می‌شود.
+ * ====================================================== */
+
+/* 14.1 هدف لمسی امن ------------------------------------------------------ */
+
+/*
+ * پایه‌ی مشترک: ناحیه‌ی لمسی دست‌کم ۴۴×۴۴ می‌شود بدون تغییر اندازه‌ی
+ * دیداری. شبه‌عنصر در مرکز عنصر می‌نشیند و چون شفاف است دیده نمی‌شود.
+ * فقط روی نمایشگرهای لمسی/کم‌دقت فعال می‌شود تا در دسکتاپ فاصله‌های
+ * فشرده‌ی طراحی حفظ شود.
+ */
+@media (pointer: coarse) {
+	.manacore-hero-dot::after,
+	.manacore-hero-arrow::after,
+	.manacore-filter-chip::after,
+	.manacore-season-tab::after,
+	.manacore-btn.is-small::after,
+	.manacore-card-fav::after {
+		content: "";
+		position: absolute;
+		top: 50%;
+		inset-inline-start: 50%;
+		translate: -50% -50%;
+		min-width: 44px;
+		min-height: 44px;
+		width: 100%;
+		height: 100%;
+		border-radius: inherit;
+	}
+
+	.manacore-hero-dot,
+	.manacore-hero-arrow,
+	.manacore-filter-chip,
+	.manacore-season-tab,
+	.manacore-btn.is-small,
+	.manacore-card-fav {
+		position: relative;
+	}
+
+	/* دکمه‌ی معمولی خودش به ارتفاع امن می‌رسد. */
+	.manacore-btn {
+		min-height: 44px;
+	}
+
+	/*
+	 * نقطه‌های اسلایدر در حالت لمسی از هم فاصله می‌گیرند تا نواحی ۴۴px
+	 * روی هم نیفتند و انگشت نقطه‌ی اشتباه را نزند.
+	 */
+	.manacore-hero-dots {
+		gap: 14px;
+	}
+}
+
+/* در نمایشگر غیرلمسی هم هیچ هدفی نباید زیر ۲۴px بماند (WCAG 2.5.8). */
+.manacore-hero-arrow {
+	min-width: 32px;
+}
+
+.manacore-filter-chip,
+.manacore-season-tab {
+	min-height: 32px;
+}
+
+/* 14.2 تمرکز دیدنی یکدست ------------------------------------------------- */
+
+/*
+ * یک حلقه‌ی تمرکز برای همه‌ی عناصر تعاملی. outline-offset مثبت باعث
+ * می‌شود حلقه روی پس‌زمینه‌ی تیره هم دیده شود، و outline (نه box-shadow)
+ * در حالت «کنتراست بالا»ی ویندوز هم باقی می‌ماند.
+ */
+.manacore-block :is(a, button, select, input, summary, [tabindex]):focus-visible {
+	outline: 2px solid var(--mc-accent);
+	outline-offset: 2px;
+	border-radius: var(--mc-radius-sm, 6px);
+}
+
+/* روی تصویر تیره، حلقه‌ی سفید خواناتر است. */
+.manacore-hero :is(a, button):focus-visible,
+.manacore-card.is-style-overlay :is(a, button):focus-visible {
+	outline-color: #fff;
+}
+
+/* 14.3 متن ویژه‌ی صفحه‌خوان ---------------------------------------------- */
+
+/*
+ * هم‌نام با کلاس هسته تا نشانه‌گذاری افزونه در قالب‌های دیگر هم درست
+ * کار کند. clip-path مدرن به‌همراه clip قدیمی برای پشتیبانی گسترده.
+ */
+.manacore-block .screen-reader-text {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	padding: 0;
+	margin: -1px;
+	overflow: hidden;
+	clip: rect(0, 0, 0, 0);
+	clip-path: inset(50%);
+	white-space: nowrap;
+	border: 0;
+}
+
+/* هنگام تمرکز باید دیده شود (مثل پیوندهای پرش). */
+.manacore-block .screen-reader-text:focus-visible {
+	position: static;
+	width: auto;
+	height: auto;
+	margin: 0;
+	overflow: visible;
+	clip: auto;
+	clip-path: none;
+	white-space: normal;
+}
+
+/* 14.4 اندازه‌ی سیال به‌جای پله‌ای ---------------------------------------- */
+
+/*
+ * پیش‌تر شبکه در هر نقطه‌ی شکست ناگهان تغییر می‌کرد. با clamp کمینه‌ی
+ * پهنای کارت پیوسته کوچک می‌شود، پس بین ۳۲۰px تا ۴K هیچ پرشی نیست.
+ */
+.manacore-grid-cards.is-fluid {
+	grid-template-columns: repeat(auto-fill, minmax(clamp(120px, 16vw, 190px), 1fr));
+}
+
+/* در نمایشگر بسیار بزرگ، شبکه بی‌نهایت کشیده نشود. */
+@media (min-width: 1921px) {
+	.manacore-grid-cards.is-fluid {
+		grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+	}
+}
+
+/*
+ * ریلِ افقی روی موبایل باید لبه‌به‌لبه پیمایش شود ولی محتوا داخل حاشیه
+ * بماند؛ padding به‌علاوه‌ی scroll-padding این را تأمین می‌کند.
+ */
+@media (max-width: 599px) {
+	.manacore-grid-cards.is-scroll {
+		margin-inline: calc(var(--mc-gap, 12px) * -1);
+		padding-inline: var(--mc-gap, 12px);
+		scroll-padding-inline: var(--mc-gap, 12px);
+	}
+}
+
+/* 14.5 جلوگیری از سرریز افقی -------------------------------------------- */
+
+/*
+ * سرریز افقی رایج‌ترین ایراد موبایل است: یک عنوان بلند بدون فاصله یا
+ * نشانی طولانی، کل صفحه را قابل پیمایش جانبی می‌کند.
+ */
+.manacore-block :is(h1, h2, h3, h4, h5, h6, p, li, td, dd, dt) {
+	overflow-wrap: anywhere;
+}
+
+.manacore-link-item .manacore-link-label,
+.manacore-card-title {
+	min-width: 0;
+}
+
+/* عکس و ویدیو هرگز از ظرف بیرون نزنند. */
+.manacore-block :is(img, video, iframe, svg) {
+	max-width: 100%;
+}
+
+/* 14.6 حالت افقی موبایل (ارتفاع کم) -------------------------------------- */
+
+/*
+ * در گوشی چرخیده، ارتفاع دید کمتر از ۵۰۰px می‌شود و اسلایدر تمام‌قد
+ * تمام صفحه را می‌بلعد. اینجا ارتفاع را به بیشترین حدِ معقول می‌بندیم.
+ */
+@media (max-height: 500px) and (orientation: landscape) {
+	.manacore-hero-track {
+		min-height: 240px;
+	}
+
+	.manacore-hero-content {
+		padding-block: 12px;
+		gap: 6px;
+	}
+
+	.manacore-hero-excerpt {
+		display: none;
+	}
+}
+
+/* 14.7 احترام به تنظیمات کاربر ------------------------------------------ */
+
+@media (prefers-reduced-motion: reduce) {
+	.manacore-block *,
+	.manacore-block *::before,
+	.manacore-block *::after {
+		animation-duration: .01ms !important;
+		animation-iteration-count: 1 !important;
+		transition-duration: .01ms !important;
+		scroll-behavior: auto !important;
+	}
+}
+
+/* کنتراست بالا: مرزها باید دیده شوند. */
+@media (prefers-contrast: more) {
+	.manacore-card,
+	.manacore-link-group,
+	.manacore-filter-bar,
+	.manacore-btn {
+		border: 1px solid currentColor;
+	}
+}

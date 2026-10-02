@@ -1,0 +1,252 @@
+/**
+ * ManaCore Subscriptions – front-end styles.
+ *
+ * Inherits the core plugin's design tokens (--mc-*) so dark/light mode works
+ * automatically; falls back to sane values when the core CSS is absent.
+ *
+ * @package ManaCore\Subs
+ */
+
+.manacore-sub-card,
+.manacore-plans {
+	--mcs-surface: var(--mc-surface, #fff);
+	--mcs-surface-2: var(--mc-surface-2, #f4f5f7);
+	--mcs-text: var(--mc-text, #14161a);
+	--mcs-muted: var(--mc-text-muted, #6b7280);
+	--mcs-accent: var(--mc-accent, #f59e0b);
+	--mcs-accent-contrast: var(--mc-accent-contrast, #111318);
+	--mcs-border: var(--mc-border, rgba(0, 0, 0, .1));
+	--mcs-radius: var(--mc-radius, 14px);
+	--mcs-shadow: var(--mc-shadow, 0 6px 24px rgba(0, 0, 0, .08));
+	--mcs-transition: var(--mc-transition, .2s cubic-bezier(.2, .7, .3, 1));
+}
+
+/* -------------------------------------------------------------------------
+ * Status card
+ * ---------------------------------------------------------------------- */
+
+.manacore-sub-card {
+	display: flex;
+	flex-direction: column;
+	gap: 14px;
+	padding: clamp(16px, 3vw, 22px);
+	border: 1px solid var(--mcs-border);
+	border-radius: var(--mcs-radius);
+	background: var(--mcs-surface);
+	color: var(--mcs-text);
+	box-shadow: var(--mcs-shadow);
+}
+
+.manacore-sub-card.is-compact {
+	padding: 14px 16px;
+	gap: 10px;
+}
+
+.manacore-sub-card-head {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+}
+
+.manacore-sub-icon {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 42px;
+	height: 42px;
+	flex: 0 0 42px;
+	border-radius: 50%;
+	background: var(--mcs-surface-2);
+	color: var(--mcs-accent);
+}
+
+.manacore-sub-title {
+	margin: 0 0 2px;
+	font-size: 1rem;
+	font-weight: 700;
+	line-height: 1.5;
+}
+
+.manacore-sub-level {
+	margin: 0;
+	font-size: .875rem;
+	font-weight: 700;
+	line-height: 1.6;
+}
+
+.manacore-sub-level.is-active {
+	color: var(--mcs-accent);
+}
+
+.manacore-sub-level.is-inactive {
+	color: var(--mcs-muted);
+	font-weight: 500;
+}
+
+.manacore-sub-facts {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+	gap: 10px;
+	margin: 0;
+	padding: 12px;
+	list-style: none;
+	border-radius: calc(var(--mcs-radius) - 6px);
+	background: var(--mcs-surface-2);
+}
+
+.manacore-sub-facts li {
+	display: flex;
+	flex-direction: column;
+	gap: 3px;
+	margin: 0;
+}
+
+.manacore-sub-facts b {
+	font-size: .6875rem;
+	font-weight: 600;
+	color: var(--mcs-muted);
+}
+
+.manacore-sub-facts span {
+	font-size: .875rem;
+	font-weight: 700;
+}
+
+.manacore-sub-hint {
+	margin: 0;
+	font-size: .8125rem;
+	line-height: 1.8;
+	color: var(--mcs-muted);
+}
+
+/* -------------------------------------------------------------------------
+ * Plans grid
+ * ---------------------------------------------------------------------- */
+
+.manacore-plans {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+	gap: clamp(12px, 2vw, 18px);
+}
+
+.manacore-plan {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	gap: 10px;
+	padding: 30px;
+	border: 1px solid var(--mcs-border);
+	border-radius: 13px;
+	background: var(--mcs-surface);
+	color: var(--mcs-text);
+	transition: transform var(--mcs-transition), box-shadow var(--mcs-transition), border-color var(--mcs-transition);
+}
+
+.manacore-plan:hover {
+	transform: translateY(-3px);
+	box-shadow: var(--mcs-shadow);
+	border-color: var(--mcs-accent);
+}
+
+/*
+ * طرح «ویژه» یا «فعلی»: هاله‌ی سبز سینورایی — همان کارت featured مرجع
+ * با گرادیان ۱۷۰ درجه از رنگ تاکید به سطح، و سایه‌ی گسترده.
+ */
+.manacore-plan.is-current,
+.manacore-plan.is-featured {
+	border-color: color-mix(in srgb, var(--mcs-accent) 75%, var(--mcs-border));
+	background: linear-gradient(170deg, color-mix(in srgb, var(--mcs-accent) 7%, var(--mcs-surface)), var(--mcs-surface) 70%);
+	box-shadow: 0 10px 55px color-mix(in srgb, var(--mcs-accent) 6%, transparent);
+}
+
+.manacore-plan-title {
+	margin: 0;
+	font-size: 1.0625rem;
+	font-weight: 800;
+	line-height: 1.4;
+}
+
+.manacore-plan-price {
+	font-size: 1.25rem;
+	font-weight: 800;
+	color: var(--mcs-accent);
+	line-height: 1.4;
+}
+
+.manacore-plan-price del {
+	font-size: .875rem;
+	font-weight: 500;
+	opacity: .6;
+	margin-inline-end: 6px;
+}
+
+.manacore-plan-badge {
+	display: inline-flex;
+	align-items: center;
+	padding: 4px 12px;
+	border-radius: 999px;
+	background: var(--mcs-accent);
+	color: var(--mcs-accent-contrast);
+	font-size: .75rem;
+	font-weight: 700;
+}
+
+/* -------------------------------------------------------------------------
+ * Buttons (fallback when the core CSS is not loaded)
+ * ---------------------------------------------------------------------- */
+
+.manacore-sub-card .manacore-btn,
+.manacore-plan .manacore-btn {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 6px;
+	padding: 9px 18px;
+	border: 1px solid var(--mcs-border);
+	border-radius: 999px;
+	background: var(--mcs-surface-2);
+	color: inherit;
+	font-size: .875rem;
+	font-weight: 700;
+	text-decoration: none;
+	cursor: pointer;
+	transition: background var(--mcs-transition), color var(--mcs-transition), transform var(--mcs-transition);
+}
+
+.manacore-sub-card .manacore-btn:hover,
+.manacore-plan .manacore-btn:hover {
+	transform: translateY(-1px);
+}
+
+.manacore-sub-card .manacore-btn.is-primary,
+.manacore-plan .manacore-btn.is-primary {
+	background: var(--mcs-accent);
+	border-color: var(--mcs-accent);
+	color: var(--mcs-accent-contrast);
+}
+
+/* -------------------------------------------------------------------------
+ * WooCommerce account integration
+ * ---------------------------------------------------------------------- */
+
+.woocommerce-account .manacore-sub-card {
+	margin-bottom: 22px;
+}
+
+/* -------------------------------------------------------------------------
+ * Motion
+ * ---------------------------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+	.manacore-plan,
+	.manacore-sub-card .manacore-btn,
+	.manacore-plan .manacore-btn {
+		transition: none;
+	}
+
+	.manacore-plan:hover,
+	.manacore-sub-card .manacore-btn:hover,
+	.manacore-plan .manacore-btn:hover {
+		transform: none;
+	}
+}

@@ -1,0 +1,543 @@
+/**
+ * استایل پیشخوان ManaCore.
+ */
+
+.manacore-metabox {
+	--mc-radius: 10px;
+	--mc-border: #dcdcde;
+	--mc-accent: #2b6cb0;
+	--mc-muted: #646970;
+	font-size: 13px;
+}
+
+/* ---------- تب‌ها ---------- */
+.manacore-tabs {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 4px;
+	border-bottom: 1px solid var(--mc-border);
+	margin: 0 0 16px;
+	padding: 0 0 8px;
+}
+
+.manacore-tab {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	background: transparent;
+	border: 1px solid transparent;
+	border-radius: var(--mc-radius);
+	padding: 7px 12px;
+	cursor: pointer;
+	color: var(--mc-muted);
+	font-size: 13px;
+	font-weight: 500;
+	transition: background .15s ease, color .15s ease;
+}
+
+.manacore-tab:hover {
+	background: rgba(43, 108, 176, .07);
+	color: var(--mc-accent);
+}
+
+.manacore-tab.is-active {
+	background: rgba(43, 108, 176, .12);
+	border-color: rgba(43, 108, 176, .35);
+	color: var(--mc-accent);
+}
+
+.manacore-tab .dashicons {
+	font-size: 17px;
+	width: 17px;
+	height: 17px;
+}
+
+.manacore-tab-panel {
+	display: none;
+}
+
+.manacore-tab-panel.is-active {
+	display: block;
+	animation: manacore-fade .18s ease;
+}
+
+@keyframes manacore-fade {
+	from { opacity: 0; transform: translateY(4px); }
+	to   { opacity: 1; transform: none; }
+}
+
+/* ---------- شبکه‌ی فیلدها ---------- */
+.manacore-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+	gap: 16px;
+}
+
+.manacore-field.is-wide {
+	grid-column: 1 / -1;
+}
+
+.manacore-label {
+	display: block;
+	font-weight: 600;
+	margin-bottom: 5px;
+	color: #1d2327;
+}
+
+.manacore-desc {
+	margin: 5px 0 0;
+	color: var(--mc-muted);
+	font-size: 12px;
+	line-height: 1.6;
+}
+
+.manacore-field input[type="text"],
+.manacore-field input[type="url"],
+.manacore-field input[type="number"],
+.manacore-field input[type="date"],
+.manacore-field select,
+.manacore-field textarea {
+	border-radius: 6px;
+	border-color: var(--mc-border);
+}
+
+/* ---------- کلید روشن/خاموش ---------- */
+.manacore-switch {
+	display: inline-flex;
+	align-items: center;
+	cursor: pointer;
+}
+
+.manacore-switch input[type="checkbox"] {
+	position: absolute;
+	opacity: 0;
+	width: 1px;
+	height: 1px;
+}
+
+.manacore-switch-track {
+	display: block;
+	width: 42px;
+	height: 24px;
+	border-radius: 999px;
+	background: #c3c4c7;
+	position: relative;
+	transition: background .2s ease;
+}
+
+.manacore-switch-thumb {
+	position: absolute;
+	inset-inline-start: 3px;
+	top: 3px;
+	width: 18px;
+	height: 18px;
+	background: #fff;
+	border-radius: 50%;
+	transition: transform .2s ease;
+	box-shadow: 0 1px 3px rgba(0,0,0,.25);
+}
+
+.manacore-switch input:checked + .manacore-switch-track {
+	background: var(--mc-accent);
+}
+
+.manacore-switch input:checked + .manacore-switch-track .manacore-switch-thumb {
+	transform: translateX(-18px);
+}
+
+body:not(.rtl) .manacore-switch input:checked + .manacore-switch-track .manacore-switch-thumb {
+	transform: translateX(18px);
+}
+
+.manacore-switch input:focus-visible + .manacore-switch-track {
+	outline: 2px solid var(--mc-accent);
+	outline-offset: 2px;
+}
+
+/* ---------- رسانه ---------- */
+.manacore-media-field {
+	display: flex;
+	gap: 6px;
+}
+
+.manacore-media-preview {
+	display: block;
+	max-width: 120px;
+	margin-top: 8px;
+	border-radius: 8px;
+	border: 1px solid var(--mc-border);
+}
+
+/* ---------- ریپیتر ---------- */
+.manacore-repeater-rows {
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+	margin-bottom: 10px;
+}
+
+.manacore-repeater-row {
+	display: flex;
+	align-items: flex-start;
+	gap: 10px;
+	background: #f6f7f7;
+	border: 1px solid var(--mc-border);
+	border-radius: var(--mc-radius);
+	padding: 12px;
+}
+
+.manacore-repeater-fields {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+	gap: 10px;
+	flex: 1;
+}
+
+.manacore-sub {
+	display: flex;
+	flex-direction: column;
+	gap: 3px;
+	font-size: 12px;
+	color: var(--mc-muted);
+}
+
+.manacore-sub input,
+.manacore-sub textarea {
+	width: 100%;
+	border-radius: 6px;
+	border: 1px solid var(--mc-border);
+	padding: 5px 8px;
+	font-size: 13px;
+}
+
+.manacore-drag {
+	color: #a7aaad;
+	cursor: grab;
+	margin-top: 6px;
+}
+
+/* ---------- مدیریت لینک ---------- */
+.manacore-links-toolbar {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 8px;
+	margin-bottom: 14px;
+	padding-bottom: 12px;
+	border-bottom: 1px solid var(--mc-border);
+}
+
+.manacore-links-toolbar .button .dashicons {
+	font-size: 16px;
+	width: 16px;
+	height: 16px;
+	vertical-align: text-bottom;
+}
+
+.manacore-links-count {
+	margin-inline-start: auto;
+	color: var(--mc-muted);
+	font-size: 12px;
+	font-weight: 600;
+}
+
+.manacore-links-groups {
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+}
+
+.manacore-empty {
+	padding: 24px;
+	text-align: center;
+	color: var(--mc-muted);
+	background: #f6f7f7;
+	border: 1px dashed var(--mc-border);
+	border-radius: var(--mc-radius);
+	margin: 0;
+}
+
+.manacore-group {
+	border: 1px solid var(--mc-border);
+	border-radius: var(--mc-radius);
+	background: #fff;
+	overflow: hidden;
+}
+
+.manacore-group-header {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding: 10px 12px;
+	background: #f6f7f7;
+	border-bottom: 1px solid var(--mc-border);
+}
+
+.manacore-group-title {
+	font-size: 13px;
+	color: #1d2327;
+}
+
+.manacore-spacer {
+	flex: 1;
+}
+
+.manacore-badge {
+	display: inline-block;
+	padding: 2px 8px;
+	border-radius: 999px;
+	background: rgba(43, 108, 176, .12);
+	color: var(--mc-accent);
+	font-size: 11px;
+	font-weight: 600;
+}
+
+.manacore-collapse,
+.manacore-icon-btn {
+	background: none;
+	border: none;
+	cursor: pointer;
+	color: var(--mc-muted);
+	padding: 2px;
+	line-height: 1;
+	text-decoration: none;
+}
+
+.manacore-collapse:hover,
+.manacore-icon-btn:hover {
+	color: var(--mc-accent);
+}
+
+.manacore-icon-btn.manacore-danger:hover {
+	color: #b32d2e;
+}
+
+.manacore-group-body {
+	padding: 14px;
+}
+
+.manacore-group-meta {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+	gap: 10px;
+	padding-bottom: 12px;
+	margin-bottom: 12px;
+	border-bottom: 1px dashed var(--mc-border);
+}
+
+.manacore-inline-field {
+	display: flex;
+	flex-direction: column;
+	gap: 3px;
+	font-size: 12px;
+}
+
+.manacore-inline-field.is-grow {
+	flex: 2 1 260px;
+}
+
+.manacore-inline-label {
+	color: var(--mc-muted);
+	font-weight: 600;
+}
+
+.manacore-inline-check {
+	flex-direction: row;
+	align-items: center;
+	gap: 6px;
+	align-self: end;
+	padding-bottom: 6px;
+}
+
+.manacore-input {
+	width: 100%;
+	border: 1px solid var(--mc-border);
+	border-radius: 6px;
+	padding: 5px 8px;
+	font-size: 13px;
+	background: #fff;
+	color: #1d2327;
+}
+
+.manacore-input:focus {
+	border-color: var(--mc-accent);
+	box-shadow: 0 0 0 1px var(--mc-accent);
+	outline: none;
+}
+
+.manacore-items {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+	margin-bottom: 12px;
+}
+
+.manacore-item {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: flex-end;
+	gap: 8px;
+	padding: 10px;
+	background: #fbfbfc;
+	border: 1px solid #eaeaec;
+	border-radius: 8px;
+}
+
+.manacore-item .manacore-inline-field {
+	flex: 1 1 110px;
+	min-width: 0;
+}
+
+.manacore-item-index {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 22px;
+	height: 22px;
+	border-radius: 50%;
+	background: rgba(43, 108, 176, .1);
+	color: var(--mc-accent);
+	font-size: 11px;
+	font-weight: 700;
+	flex: none;
+	margin-bottom: 4px;
+}
+
+.manacore-group-actions {
+	display: flex;
+	gap: 8px;
+	flex-wrap: wrap;
+}
+
+.manacore-group-actions .dashicons {
+	font-size: 16px;
+	width: 16px;
+	height: 16px;
+	vertical-align: text-bottom;
+}
+
+/* ---------- متاباکس دریافت ---------- */
+.manacore-fetch-box p {
+	margin: 0 0 10px;
+}
+
+.manacore-fetch-results {
+	margin-top: 12px;
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+	max-height: 380px;
+	overflow-y: auto;
+}
+
+.manacore-fetch-result {
+	display: flex;
+	gap: 8px;
+	align-items: center;
+	padding: 8px;
+	border: 1px solid var(--mc-border);
+	border-radius: 8px;
+	cursor: pointer;
+	background: #fff;
+	text-align: start;
+	width: 100%;
+}
+
+.manacore-fetch-result:hover {
+	border-color: var(--mc-accent);
+	background: rgba(43, 108, 176, .05);
+}
+
+.manacore-fetch-result img {
+	width: 40px;
+	height: 58px;
+	object-fit: cover;
+	border-radius: 4px;
+	flex: none;
+	background: #f0f0f1;
+}
+
+.manacore-fetch-result-body {
+	min-width: 0;
+}
+
+.manacore-fetch-result-title {
+	font-weight: 600;
+	display: block;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.manacore-fetch-result-meta {
+	color: var(--mc-muted);
+	font-size: 11px;
+}
+
+.manacore-notice {
+	padding: 8px 10px;
+	border-radius: 6px;
+	font-size: 12px;
+	margin-top: 10px;
+}
+
+.manacore-notice.is-success {
+	background: #edfaef;
+	color: #00450c;
+}
+
+.manacore-notice.is-error {
+	background: #fcf0f1;
+	color: #8a2424;
+}
+
+.manacore-spinner {
+	display: inline-block;
+	width: 14px;
+	height: 14px;
+	border: 2px solid rgba(43, 108, 176, .25);
+	border-top-color: var(--mc-accent);
+	border-radius: 50%;
+	animation: manacore-spin .7s linear infinite;
+	vertical-align: middle;
+}
+
+@keyframes manacore-spin {
+	to { transform: rotate(360deg); }
+}
+
+/* ---------- صفحه‌ی تنظیمات ---------- */
+.manacore-settings-header {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	padding: 18px 20px;
+	background: linear-gradient(135deg, #1a202c, #2d3748);
+	color: #fff;
+	border-radius: 12px;
+	margin: 16px 0 20px;
+}
+
+.manacore-settings-header h1 {
+	color: #fff;
+	margin: 0;
+	font-size: 20px;
+}
+
+.manacore-settings-header p {
+	margin: 3px 0 0;
+	opacity: .75;
+	font-size: 13px;
+}
+
+.manacore-brand-mark {
+	width: 40px;
+	height: 40px;
+	border-radius: 10px;
+	background: linear-gradient(135deg, #f6ad55, #ed8936);
+	display: grid;
+	place-items: center;
+	font-weight: 800;
+	color: #1a202c;
+	flex: none;
+}

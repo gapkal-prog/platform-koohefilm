@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 600" width="400" height="600" role="img" aria-label="Koohe Film">
+	<defs>
+		<linearGradient id="kf-bg" x1="0" y1="0" x2="1" y2="1">
+			<stop offset="0" stop-color="#1c1f26"/>
+			<stop offset="1" stop-color="#14161a"/>
+		</linearGradient>
+		<linearGradient id="kf-peak" x1="0" y1="0" x2="0" y2="1">
+			<stop offset="0" stop-color="#f59e0b" stop-opacity=".85"/>
+			<stop offset="1" stop-color="#f59e0b" stop-opacity=".18"/>
+		</linearGradient>
+	</defs>
+
+	<rect width="400" height="600" fill="url(#kf-bg)"/>
+
+	<g opacity=".08" fill="none" stroke="#eef0f4" stroke-width="1">
+		<path d="M0 150h400M0 300h400M0 450h400M100 0v600M200 0v600M300 0v600"/>
+	</g>
+
+	<g transform="translate(200 268)">
+		<path d="M-96 62 -30 -44 6 12 34 -26 96 62Z" fill="url(#kf-peak)"/>
+		<path d="M-30 -44 -8 -9 -52 -9Z" fill="#14161a" opacity=".55"/>
+		<circle cx="58" cy="-52" r="15" fill="#f59e0b" opacity=".5"/>
+	</g>
+
+	<g transform="translate(200 372)" fill="none" stroke="#6b7280" stroke-width="3" opacity=".65">
+		<rect x="-58" y="-16" width="116" height="46" rx="7"/>
+		<path d="M-58 -4h116M-58 18h116"/>
+		<path d="M-40 -16v46M-20 -16v46M0 -16v46M20 -16v46M40 -16v46"/>
+	</g>
+
+	<text x="200" y="452" fill="#9aa1ad" font-family="Vazirmatn, Tahoma, sans-serif" font-size="21" font-weight="700" letter-spacing="1.4" text-anchor="middle">KOOHE FILM</text>
+	<text x="200" y="478" fill="#6b7280" font-family="Vazirmatn, Tahoma, sans-serif" font-size="12" letter-spacing="2.6" text-anchor="middle">NO POSTER</text>
+</svg>

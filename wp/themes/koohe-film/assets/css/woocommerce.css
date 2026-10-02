@@ -1,0 +1,715 @@
+/**
+ * Koohe Film — یکپارچه‌سازی ظاهری ووکامرس.
+ *
+ * تنها هنگام فعال بودن ووکامرس بارگذاری می‌شود (inc/compat.php).
+ * همه‌ی رنگ‌ها از توکن‌های --koohe-* گرفته می‌شوند تا حالت تیره/روشن
+ * به‌صورت خودکار پشتیبانی شود.
+ *
+ * @package KooheFilm
+ */
+
+/* =========================================================================
+ * ۱. پوسته‌ی عمومی
+ * ====================================================================== */
+
+.woocommerce,
+.woocommerce-page {
+	color: var(--koohe-text);
+}
+
+.koohe-woo .woocommerce-breadcrumb {
+	font-size: var(--wp--preset--font-size--small, .8125rem);
+	color: var(--koohe-muted);
+	margin-block-end: var(--wp--preset--spacing--30, 1.25rem);
+}
+
+.koohe-woo .woocommerce-breadcrumb a {
+	color: var(--koohe-muted);
+}
+
+.koohe-woo .woocommerce-breadcrumb a:hover {
+	color: var(--koohe-accent);
+}
+
+/* =========================================================================
+ * ۲. پیام‌ها و اعلان‌ها
+ * ====================================================================== */
+
+.woocommerce-message,
+.woocommerce-info,
+.woocommerce-error,
+.woocommerce-noreviews,
+p.no-comments {
+	background: var(--koohe-surface-2);
+	border: 1px solid var(--koohe-border);
+	border-inline-start: 3px solid var(--koohe-accent);
+	border-radius: var(--koohe-radius-sm);
+	color: var(--koohe-text);
+	padding: 14px 18px;
+	margin-block-end: var(--wp--preset--spacing--30, 1.25rem);
+	list-style: none;
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 10px;
+}
+
+.woocommerce-message::before,
+.woocommerce-info::before,
+.woocommerce-error::before {
+	display: none;
+}
+
+.woocommerce-message {
+	border-inline-start-color: var(--wp--preset--color--success, #16a34a);
+}
+
+.woocommerce-error {
+	border-inline-start-color: var(--wp--preset--color--danger, #dc2626);
+}
+
+.woocommerce-error li {
+	list-style: none;
+	width: 100%;
+}
+
+/* =========================================================================
+ * ۳. دکمه‌ها
+ * ====================================================================== */
+
+.woocommerce a.button,
+.woocommerce button.button,
+.woocommerce input.button,
+.woocommerce #respond input#submit,
+.woocommerce a.button.alt,
+.woocommerce button.button.alt,
+.woocommerce input.button.alt,
+.woocommerce #respond input#submit.alt {
+	appearance: none;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 8px;
+	padding: 11px 22px;
+	border: 1px solid transparent;
+	border-radius: var(--koohe-radius-pill, 999px);
+	background: var(--koohe-accent);
+	color: var(--koohe-accent-contrast);
+	font-family: inherit;
+	font-size: var(--wp--preset--font-size--small, .8125rem);
+	font-weight: 600;
+	line-height: 1.4;
+	text-decoration: none;
+	text-shadow: none;
+	cursor: pointer;
+	transition: opacity var(--koohe-transition), background-color var(--koohe-transition), border-color var(--koohe-transition);
+}
+
+.woocommerce a.button:hover,
+.woocommerce button.button:hover,
+.woocommerce input.button:hover,
+.woocommerce #respond input#submit:hover,
+.woocommerce a.button.alt:hover,
+.woocommerce button.button.alt:hover,
+.woocommerce input.button.alt:hover {
+	background: var(--koohe-accent);
+	color: var(--koohe-accent-contrast);
+	opacity: .88;
+}
+
+.woocommerce a.button.disabled,
+.woocommerce button.button:disabled,
+.woocommerce button.button.disabled,
+.woocommerce input.button:disabled {
+	opacity: .5;
+	cursor: not-allowed;
+}
+
+/* دکمه‌های ثانویه */
+.woocommerce .cart .button[name="update_cart"],
+.woocommerce a.button.wc-backward,
+.woocommerce-cart .return-to-shop .button {
+	background: transparent;
+	border-color: var(--koohe-border);
+	color: var(--koohe-text);
+}
+
+.woocommerce .cart .button[name="update_cart"]:hover,
+.woocommerce a.button.wc-backward:hover,
+.woocommerce-cart .return-to-shop .button:hover {
+	background: var(--koohe-surface-2);
+	border-color: var(--koohe-accent);
+	color: var(--koohe-accent);
+	opacity: 1;
+}
+
+/* =========================================================================
+ * ۴. فرم‌ها
+ * ====================================================================== */
+
+.woocommerce form .form-row {
+	margin-block-end: 14px;
+	padding: 0;
+}
+
+.woocommerce form .form-row label,
+.woocommerce-account label {
+	display: block;
+	margin-block-end: 6px;
+	font-size: var(--wp--preset--font-size--small, .8125rem);
+	font-weight: 600;
+	color: var(--koohe-text);
+}
+
+.woocommerce form .form-row .required {
+	color: var(--wp--preset--color--danger, #dc2626);
+	text-decoration: none;
+	border: 0;
+}
+
+.woocommerce form .form-row input.input-text,
+.woocommerce form .form-row textarea,
+.woocommerce form .form-row select,
+.woocommerce-page input[type="text"],
+.woocommerce-page input[type="email"],
+.woocommerce-page input[type="tel"],
+.woocommerce-page input[type="password"],
+.woocommerce-page input[type="number"],
+.woocommerce-page textarea,
+.woocommerce-page select,
+.select2-container .select2-selection--single {
+	width: 100%;
+	padding: 10px 14px;
+	border: 1px solid var(--koohe-border);
+	border-radius: var(--koohe-radius-sm);
+	background: var(--koohe-surface);
+	color: var(--koohe-text);
+	font-family: inherit;
+	font-size: var(--wp--preset--font-size--small, .8125rem);
+	line-height: 1.6;
+	height: auto;
+	transition: border-color var(--koohe-transition);
+}
+
+.woocommerce form .form-row input.input-text:focus,
+.woocommerce form .form-row textarea:focus,
+.woocommerce form .form-row select:focus,
+.woocommerce-page textarea:focus {
+	border-color: var(--koohe-accent);
+	outline: none;
+}
+
+.woocommerce form .form-row.woocommerce-invalid input.input-text {
+	border-color: var(--wp--preset--color--danger, #dc2626);
+}
+
+.woocommerce form .form-row.woocommerce-validated input.input-text {
+	border-color: var(--wp--preset--color--success, #16a34a);
+}
+
+.select2-container--default .select2-selection--single .select2-selection__rendered {
+	color: var(--koohe-text);
+	line-height: 1.6;
+	padding: 0;
+}
+
+.select2-container--default .select2-selection--single .select2-selection__arrow {
+	height: 100%;
+	inset-inline-end: 8px;
+	inset-inline-start: auto;
+}
+
+.select2-dropdown {
+	background: var(--koohe-surface);
+	border-color: var(--koohe-border);
+	color: var(--koohe-text);
+}
+
+.select2-container--default .select2-results__option--highlighted[aria-selected] {
+	background: var(--koohe-accent);
+	color: var(--koohe-accent-contrast);
+}
+
+/* فرم ورود / ثبت‌نام */
+.woocommerce-account .woocommerce form.login,
+.woocommerce-account .woocommerce form.register,
+.woocommerce form.checkout_coupon,
+.woocommerce form.lost_reset_password {
+	background: var(--koohe-surface-2);
+	border: 1px solid var(--koohe-border);
+	border-radius: var(--koohe-radius);
+	padding: clamp(18px, 3vw, 28px);
+}
+
+/* =========================================================================
+ * ۵. فروشگاه و کارت محصول
+ * ====================================================================== */
+
+.woocommerce ul.products {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+	gap: clamp(14px, 2vw, 24px);
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.woocommerce ul.products::before,
+.woocommerce ul.products::after {
+	display: none;
+}
+
+.woocommerce ul.products li.product {
+	width: auto !important;
+	margin: 0 !important;
+	float: none !important;
+	background: var(--koohe-surface-2);
+	border: 1px solid var(--koohe-border);
+	border-radius: var(--koohe-radius);
+	padding: 12px;
+	text-align: start;
+	transition: border-color var(--koohe-transition), transform var(--koohe-transition);
+}
+
+.woocommerce ul.products li.product:hover {
+	border-color: var(--koohe-accent);
+	transform: translateY(-2px);
+}
+
+.woocommerce ul.products li.product a img {
+	border-radius: var(--koohe-radius-sm);
+	margin-block-end: 12px;
+	box-shadow: none;
+}
+
+.woocommerce ul.products li.product .woocommerce-loop-product__title {
+	font-size: var(--wp--preset--font-size--medium, .9375rem);
+	font-weight: 600;
+	line-height: 1.5;
+	padding: 0;
+	margin: 0 0 6px;
+	color: var(--koohe-text);
+}
+
+.woocommerce ul.products li.product .price {
+	display: block;
+	color: var(--koohe-accent);
+	font-size: var(--wp--preset--font-size--medium, .9375rem);
+	font-weight: 700;
+	margin-block-end: 10px;
+}
+
+.woocommerce ul.products li.product .price del {
+	color: var(--koohe-muted);
+	font-weight: 400;
+	opacity: .7;
+}
+
+.woocommerce ul.products li.product .price ins {
+	text-decoration: none;
+	font-weight: 700;
+}
+
+.woocommerce ul.products li.product .button {
+	width: 100%;
+	margin: 0;
+}
+
+.woocommerce span.onsale {
+	position: absolute;
+	inset-block-start: 18px;
+	inset-inline-start: 18px;
+	inset-inline-end: auto;
+	min-height: 0;
+	min-width: 0;
+	line-height: 1;
+	padding: 6px 12px;
+	border-radius: var(--koohe-radius-pill, 999px);
+	background: var(--koohe-accent);
+	color: var(--koohe-accent-contrast);
+	font-size: var(--wp--preset--font-size--x-small, .75rem);
+	font-weight: 700;
+	margin: 0;
+}
+
+.woocommerce .woocommerce-result-count,
+.woocommerce .woocommerce-ordering {
+	color: var(--koohe-muted);
+	font-size: var(--wp--preset--font-size--small, .8125rem);
+}
+
+.woocommerce .woocommerce-ordering select {
+	width: auto;
+	min-width: 200px;
+}
+
+/* =========================================================================
+ * ۶. برگه‌ی محصول
+ * ====================================================================== */
+
+.woocommerce div.product .product_title {
+	font-size: var(--wp--preset--font-size--x-large, 1.6rem);
+	margin-block-end: 10px;
+}
+
+.woocommerce div.product p.price,
+.woocommerce div.product span.price {
+	color: var(--koohe-accent);
+	font-size: var(--wp--preset--font-size--large, 1.25rem);
+	font-weight: 800;
+}
+
+.woocommerce div.product .woocommerce-product-details__short-description {
+	color: var(--koohe-muted);
+}
+
+.woocommerce div.product form.cart {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 12px;
+	margin-block: 20px;
+}
+
+.woocommerce div.product form.cart .variations {
+	width: 100%;
+}
+
+.woocommerce div.product form.cart div.quantity {
+	float: none;
+	margin: 0;
+}
+
+.woocommerce .quantity .qty {
+	width: 78px;
+	padding: 10px 8px;
+	border: 1px solid var(--koohe-border);
+	border-radius: var(--koohe-radius-sm);
+	background: var(--koohe-surface);
+	color: var(--koohe-text);
+	text-align: center;
+}
+
+.woocommerce div.product .product_meta {
+	color: var(--koohe-muted);
+	font-size: var(--wp--preset--font-size--small, .8125rem);
+	padding-block-start: 16px;
+	border-block-start: 1px solid var(--koohe-border);
+}
+
+/* تب‌های محصول */
+.woocommerce div.product .woocommerce-tabs ul.tabs {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 6px;
+	padding: 0;
+	margin: 0 0 20px;
+	border: 0;
+}
+
+.woocommerce div.product .woocommerce-tabs ul.tabs::before,
+.woocommerce div.product .woocommerce-tabs ul.tabs li::before,
+.woocommerce div.product .woocommerce-tabs ul.tabs li::after {
+	display: none;
+}
+
+.woocommerce div.product .woocommerce-tabs ul.tabs li {
+	background: transparent;
+	border: 1px solid var(--koohe-border);
+	border-radius: var(--koohe-radius-pill, 999px);
+	margin: 0;
+	padding: 0;
+}
+
+.woocommerce div.product .woocommerce-tabs ul.tabs li a {
+	display: block;
+	padding: 8px 18px;
+	color: var(--koohe-muted);
+	font-weight: 600;
+	font-size: var(--wp--preset--font-size--small, .8125rem);
+}
+
+.woocommerce div.product .woocommerce-tabs ul.tabs li.active {
+	background: var(--koohe-accent);
+	border-color: var(--koohe-accent);
+}
+
+.woocommerce div.product .woocommerce-tabs ul.tabs li.active a {
+	color: var(--koohe-accent-contrast);
+}
+
+.woocommerce div.product .woocommerce-tabs .panel {
+	margin: 0;
+	padding: 0;
+}
+
+/* ستاره‌ها */
+.woocommerce .star-rating span,
+.woocommerce p.stars a {
+	color: var(--koohe-accent);
+}
+
+.woocommerce .star-rating {
+	color: var(--koohe-accent);
+}
+
+/* =========================================================================
+ * ۷. سبد خرید و تسویه‌حساب
+ * ====================================================================== */
+
+.woocommerce table.shop_table,
+.woocommerce table.shop_attributes {
+	width: 100%;
+	border: 1px solid var(--koohe-border);
+	border-collapse: separate;
+	border-spacing: 0;
+	border-radius: var(--koohe-radius);
+	overflow: hidden;
+	background: var(--koohe-surface);
+	margin-block-end: var(--wp--preset--spacing--30, 1.25rem);
+}
+
+.woocommerce table.shop_table th,
+.woocommerce table.shop_attributes th {
+	background: var(--koohe-surface-2);
+	color: var(--koohe-text);
+	font-weight: 700;
+	font-size: var(--wp--preset--font-size--small, .8125rem);
+	padding: 12px 14px;
+	text-align: start;
+	border: 0;
+}
+
+.woocommerce table.shop_table td,
+.woocommerce table.shop_attributes td {
+	padding: 12px 14px;
+	border: 0;
+	border-block-start: 1px solid var(--koohe-border);
+	color: var(--koohe-text);
+	font-size: var(--wp--preset--font-size--small, .8125rem);
+	vertical-align: middle;
+}
+
+.woocommerce table.shop_table td.product-remove a.remove {
+	color: var(--wp--preset--color--danger, #dc2626) !important;
+	background: transparent;
+	font-size: 1.15rem;
+}
+
+.woocommerce table.shop_table td.product-remove a.remove:hover {
+	background: transparent;
+	color: var(--wp--preset--color--danger, #dc2626) !important;
+	opacity: .7;
+}
+
+.woocommerce table.shop_table img {
+	border-radius: 6px;
+	width: 52px;
+}
+
+.woocommerce-cart .cart-collaterals .cart_totals,
+.woocommerce-checkout #order_review,
+.woocommerce .woocommerce-checkout-review-order {
+	background: var(--koohe-surface-2);
+	border: 1px solid var(--koohe-border);
+	border-radius: var(--koohe-radius);
+	padding: clamp(14px, 2vw, 22px);
+}
+
+.woocommerce-cart .cart-collaterals .cart_totals > h2,
+.woocommerce-checkout h3 {
+	font-size: var(--wp--preset--font-size--large, 1.15rem);
+	margin-block: 0 14px;
+}
+
+.woocommerce ul.order_details {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+	gap: 14px;
+	margin: 0 0 24px;
+	padding: 18px;
+	list-style: none;
+	background: var(--koohe-surface-2);
+	border: 1px solid var(--koohe-border);
+	border-radius: var(--koohe-radius);
+}
+
+.woocommerce ul.order_details li {
+	float: none;
+	margin: 0;
+	padding: 0;
+	border: 0;
+	color: var(--koohe-muted);
+	font-size: var(--wp--preset--font-size--x-small, .75rem);
+	text-transform: none;
+}
+
+.woocommerce ul.order_details li strong {
+	display: block;
+	margin-block-start: 4px;
+	color: var(--koohe-text);
+	font-size: var(--wp--preset--font-size--medium, .9375rem);
+}
+
+#add_payment_method #payment,
+.woocommerce-cart #payment,
+.woocommerce-checkout #payment {
+	background: transparent;
+	border-radius: var(--koohe-radius);
+}
+
+#add_payment_method #payment ul.payment_methods,
+.woocommerce-checkout #payment ul.payment_methods {
+	border-block-end: 1px solid var(--koohe-border);
+	padding: 0 0 14px;
+}
+
+#add_payment_method #payment div.payment_box,
+.woocommerce-checkout #payment div.payment_box {
+	background: var(--koohe-surface);
+	border: 1px solid var(--koohe-border);
+	border-radius: var(--koohe-radius-sm);
+	color: var(--koohe-muted);
+	font-size: var(--wp--preset--font-size--small, .8125rem);
+}
+
+#add_payment_method #payment div.payment_box::before,
+.woocommerce-checkout #payment div.payment_box::before {
+	display: none;
+}
+
+/* =========================================================================
+ * ۸. حساب کاربری (شامل تب اشتراک‌ها)
+ * ====================================================================== */
+
+.woocommerce-account .woocommerce {
+	display: flex;
+	flex-wrap: wrap;
+	gap: clamp(18px, 3vw, 34px);
+	align-items: flex-start;
+}
+
+.woocommerce-account .woocommerce-MyAccount-navigation {
+	width: 100%;
+	max-width: 240px;
+	float: none;
+}
+
+.woocommerce-account .woocommerce-MyAccount-content {
+	width: auto;
+	flex: 1 1 320px;
+	min-width: 0;
+	float: none;
+}
+
+.woocommerce-account .woocommerce-MyAccount-navigation ul {
+	margin: 0;
+	padding: 8px;
+	list-style: none;
+	background: var(--koohe-surface-2);
+	border: 1px solid var(--koohe-border);
+	border-radius: var(--koohe-radius);
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+}
+
+.woocommerce-account .woocommerce-MyAccount-navigation li {
+	margin: 0;
+	border: 0;
+}
+
+.woocommerce-account .woocommerce-MyAccount-navigation li a {
+	display: block;
+	padding: 9px 14px;
+	border-radius: var(--koohe-radius-sm);
+	color: var(--koohe-muted);
+	font-size: var(--wp--preset--font-size--small, .8125rem);
+	font-weight: 600;
+	transition: background-color var(--koohe-transition), color var(--koohe-transition);
+}
+
+.woocommerce-account .woocommerce-MyAccount-navigation li a:hover {
+	background: var(--koohe-surface-3, var(--koohe-surface));
+	color: var(--koohe-text);
+}
+
+.woocommerce-account .woocommerce-MyAccount-navigation li.is-active a {
+	background: var(--koohe-accent);
+	color: var(--koohe-accent-contrast);
+}
+
+/* کارت وضعیت اشتراک افزونه‌ی ManaCore Subscriptions در حساب کاربری */
+.woocommerce-account .manacore-subs-card,
+.woocommerce-account .manacore-account-card {
+	margin-block-end: var(--wp--preset--spacing--30, 1.25rem);
+}
+
+/* =========================================================================
+ * ۹. صفحه‌بندی و نتایج
+ * ====================================================================== */
+
+.woocommerce nav.woocommerce-pagination ul {
+	display: inline-flex;
+	flex-wrap: wrap;
+	gap: 6px;
+	border: 0;
+	margin: 0;
+}
+
+.woocommerce nav.woocommerce-pagination ul li {
+	border: 0;
+	margin: 0;
+	overflow: visible;
+}
+
+.woocommerce nav.woocommerce-pagination ul li a,
+.woocommerce nav.woocommerce-pagination ul li span {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	min-width: 38px;
+	height: 38px;
+	padding: 0 10px;
+	border: 1px solid var(--koohe-border);
+	border-radius: var(--koohe-radius-sm);
+	background: var(--koohe-surface);
+	color: var(--koohe-muted);
+	font-size: var(--wp--preset--font-size--small, .8125rem);
+	font-weight: 600;
+}
+
+.woocommerce nav.woocommerce-pagination ul li a:hover {
+	background: var(--koohe-surface-2);
+	border-color: var(--koohe-accent);
+	color: var(--koohe-accent);
+}
+
+.woocommerce nav.woocommerce-pagination ul li span.current {
+	background: var(--koohe-accent);
+	border-color: var(--koohe-accent);
+	color: var(--koohe-accent-contrast);
+}
+
+/* =========================================================================
+ * ۱۰. واکنش‌گرایی
+ * ====================================================================== */
+
+@media (max-width: 781px) {
+	.woocommerce-account .woocommerce-MyAccount-navigation {
+		max-width: 100%;
+	}
+
+	.woocommerce-account .woocommerce-MyAccount-navigation ul {
+		flex-direction: row;
+		flex-wrap: wrap;
+	}
+
+	.woocommerce ul.products {
+		grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+	}
+
+	.woocommerce table.shop_table_responsive tr td {
+		text-align: end;
+	}
+}

@@ -1,0 +1,105 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/theme.json",
+	"version": 3,
+	"title": "روشن (Light)",
+	"slug": "light",
+	"settings": {
+		"color": {
+			"palette": [
+				{
+					"slug": "surface",
+					"color": "#f5f6f2",
+					"name": "پس‌زمینه"
+				},
+				{
+					"slug": "surface-2",
+					"color": "#ffffff",
+					"name": "پس‌زمینه دوم"
+				},
+				{
+					"slug": "surface-3",
+					"color": "#eef1e8",
+					"name": "پس‌زمینه سوم"
+				},
+				{
+					"slug": "foreground",
+					"color": "#202a22",
+					"name": "متن"
+				},
+				{
+					"slug": "muted",
+					"color": "#778172",
+					"name": "متن کم‌رنگ"
+				},
+				{
+					"slug": "accent",
+					"color": "#9bc84f",
+					"name": "رنگ تأکید"
+				},
+				{
+					"slug": "accent-contrast",
+					"color": "#18230d",
+					"name": "متن روی تأکید"
+				},
+				{
+					"slug": "border",
+					"color": "#dce2d6",
+					"name": "خط جداکننده"
+				},
+				{
+					"slug": "success",
+					"color": "#16a34a",
+					"name": "موفق"
+				},
+				{
+					"slug": "danger",
+					"color": "#bb6357",
+					"name": "خطا"
+				},
+				{
+					"slug": "rating",
+					"color": "#a98225",
+					"name": "امتیاز"
+				}
+			]
+		},
+		"custom": {
+			"scheme": {
+				"light": {
+					"surface": "#f5f6f2",
+					"surface-2": "#ffffff",
+					"surface-3": "#eef1e8",
+					"foreground": "#202a22",
+					"muted": "#778172",
+					"accent": "#9bc84f",
+					"accent-contrast": "#18230d",
+					"border": "#dce2d6",
+					"success": "#16a34a",
+					"danger": "#bb6357",
+					"rating": "#a98225",
+					"shadow-soft": "0 4px 22px rgba(0, 0, 0, .08)",
+					"shadow-raised": "0 20px 50px rgba(0, 0, 0, .12)",
+					"overlay": "rgba(0, 0, 0, .55)",
+					"glass": "rgba(245, 246, 242, .78)"
+				},
+				"dark": {
+					"surface": "#0e1218",
+					"surface-2": "#161c24",
+					"surface-3": "#1c242d",
+					"foreground": "#eef1f3",
+					"muted": "#8b949f",
+					"accent": "#c6ed7b",
+					"accent-contrast": "#1b2712",
+					"border": "#293039",
+					"success": "#22c55e",
+					"danger": "#ed9c92",
+					"rating": "#efd18a",
+					"shadow-soft": "0 6px 30px rgba(0, 0, 0, .5)",
+					"shadow-raised": "0 30px 70px rgba(0, 0, 0, .6)",
+					"overlay": "rgba(7, 11, 18, .75)",
+					"glass": "rgba(14, 18, 24, .78)"
+				}
+			}
+		}
+	}
+}

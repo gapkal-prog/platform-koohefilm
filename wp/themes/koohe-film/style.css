@@ -1,0 +1,21 @@
+/*
+Theme Name: Koohe Film
+Theme URI: https://manacore.dev/themes/koohe-film
+Author: ManaCore
+Author URI: https://manacore.dev
+Description: قالب بلوکی (FSE) مینیمال و حرفه‌ای برای سایت‌های فیلم، سریال و انیمه. سازگار با افزونه‌های ManaCore، ووکامرس و ووکامرس ساب‌اسکریپشن، دارای حالت تیره و روشن، الگوهای آماده و پشتیبانی کامل از ویرایش سراسری سایت.
+Requires at least: 6.5
+Tested up to: 6.8
+Requires PHP: 7.4
+Version: 1.0.0
+License: GNU General Public License v2 or later
+License URI: https://www.gnu.org/licenses/gpl-2.0.html
+Text Domain: koohe-film
+Tags: full-site-editing, block-patterns, block-styles, dark-mode, rtl-language-support, custom-colors, wide-blocks, translation-ready, entertainment, blog
+*/
+
+/*
+ * استایل‌های اصلی قالب در فایل assets/css/theme.css قرار دارد
+ * و توکن‌های رنگ در theme.json تعریف شده‌اند.
+ * این فایل تنها برای شناسایی قالب توسط وردپرس لازم است.
+ */

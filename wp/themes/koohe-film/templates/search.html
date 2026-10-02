@@ -1,0 +1,39 @@
+<!-- wp:template-part {"slug":"header","tagName":"div","area":"header"} /-->
+
+<!-- wp:group {"tagName":"main","className":"koohe-main koohe-search","style":{"spacing":{"margin":{"top":"var:preset|spacing|40"},"blockGap":"var:preset|spacing|30"}},"layout":{"type":"constrained"}} -->
+<main id="koohe-main" class="wp-block-group koohe-main koohe-search" style="margin-top:var(--wp--preset--spacing--40)"><!-- wp:group {"align":"wide","style":{"spacing":{"blockGap":"14px"}},"layout":{"type":"default"}} -->
+<div class="wp-block-group alignwide"><!-- wp:query-title {"type":"search","level":1,"className":"is-style-koohe-underline"} /-->
+
+<!-- wp:manacore/search-box {"placeholder":"جستجوی دوباره…"} /-->
+
+<!-- wp:manacore/filter-bar {"taxonomies":"genre,release_year,country,quality","showSort":true,"showReset":true,"showActiveChips":true} /--></div>
+<!-- /wp:group -->
+
+<!-- wp:query {"queryId":15,"query":{"perPage":24,"pages":0,"offset":0,"postType":"post","order":"desc","orderBy":"relevance","inherit":true},"align":"wide","className":"koohe-query koohe-poster-query","layout":{"type":"default"}} -->
+<div class="wp-block-query alignwide koohe-query koohe-poster-query"><!-- wp:post-template {"className":"koohe-poster-grid","layout":{"type":"grid","columnCount":6}} -->
+<!-- wp:group {"className":"koohe-poster-card","style":{"spacing":{"blockGap":"8px"}},"layout":{"type":"default"}} -->
+<div class="wp-block-group koohe-poster-card"><!-- wp:post-featured-image {"isLink":true,"aspectRatio":"2/3","style":{"border":{"radius":"12px"}}} /-->
+
+<!-- wp:post-title {"isLink":true,"fontSize":"small"} /--></div>
+<!-- /wp:group -->
+<!-- /wp:post-template -->
+
+<!-- wp:query-no-results -->
+<!-- wp:paragraph {"align":"center","style":{"color":{"text":"var:preset|color|muted"},"spacing":{"margin":{"top":"var:preset|spacing|40"}}}} -->
+<p class="has-text-align-center has-text-color" style="color:var(--wp--preset--color--muted);margin-top:var(--wp--preset--spacing--40)">نتیجه‌ای برای جستجوی شما پیدا نشد. لطفاً عبارت دیگری را امتحان کنید.</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:manacore/titles-grid {"heading":"شاید این آثار را بپسندید","source":"trending","count":12,"columns":6,"showMore":false,"layout":"grid"} /-->
+<!-- /wp:query-no-results -->
+
+<!-- wp:query-pagination {"paginationArrow":"arrow","className":"koohe-pagination koohe-pagination--load-more","layout":{"type":"flex","justifyContent":"center"},"style":{"spacing":{"margin":{"top":"var:preset|spacing|40"}}}} -->
+<!-- wp:query-pagination-previous /-->
+
+<!-- wp:query-pagination-numbers /-->
+
+<!-- wp:query-pagination-next /-->
+<!-- /wp:query-pagination --></div>
+<!-- /wp:query --></main>
+<!-- /wp:group -->
+
+<!-- wp:template-part {"slug":"footer","tagName":"div","area":"footer"} /-->

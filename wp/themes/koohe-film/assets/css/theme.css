@@ -1,0 +1,3501 @@
+/**
+ * Koohe Film — استایل اصلی قالب
+ *
+ * توکن‌های رنگ از theme.json می‌آیند (--wp--preset--color--*)
+ * و افزونه‌ی ManaCore آن‌ها را به --mc-* پل می‌زند.
+ * حالت تیره با ویژگی [data-color-mode="dark"] روی <html> کنترل می‌شود.
+ *
+ * @package KooheFilm
+ * @author  ManaCore
+ */
+
+/* =========================================================================
+ * 1. توکن‌های قالب
+ * ====================================================================== */
+
+:root {
+	--koohe-surface: var(--wp--preset--color--surface, #ffffff);
+	--koohe-surface-2: var(--wp--preset--color--surface-2, #f4f5f7);
+	--koohe-surface-3: var(--wp--preset--color--surface-3, #e9ebef);
+	--koohe-text: var(--wp--preset--color--foreground, #14161a);
+	--koohe-muted: var(--wp--preset--color--muted, #6b7280);
+	--koohe-accent: var(--wp--preset--color--accent, #f59e0b);
+	--koohe-accent-contrast: var(--wp--preset--color--accent-contrast, #111318);
+	--koohe-border: var(--wp--preset--color--border, #e2e5ea);
+
+	--koohe-radius-sm: var(--wp--custom--radius--sm, 8px);
+	--koohe-radius: var(--wp--custom--radius--base, 14px);
+	--koohe-radius-lg: var(--wp--custom--radius--lg, 20px);
+	--koohe-radius-pill: var(--wp--custom--radius--pill, 999px);
+
+	--koohe-transition: var(--wp--custom--transition, .2s cubic-bezier(.2, .7, .3, 1));
+	--koohe-header-h: var(--wp--custom--header--height, 68px);
+
+	--koohe-shadow: var(--wp--preset--shadow--soft, 0 6px 24px rgba(0, 0, 0, .08));
+	--koohe-shadow-lg: var(--wp--preset--shadow--raised, 0 18px 48px rgba(0, 0, 0, .14));
+
+	--koohe-overlay: rgba(0, 0, 0, .55);
+	--koohe-glass: rgba(255, 255, 255, .72);
+
+	/* نسبت پوستر؛ در صورت تغییر در سفارشی‌ساز به‌صورت درون‌خطی بازنویسی می‌شود. */
+	--koohe-poster-ratio: 2 / 3;
+
+	/* توکن‌های سینورا — امتیاز، ظرف و ارتفاع سربرگ. */
+	--koohe-rating: var(--wp--preset--color--rating, #efd18a);
+	--koohe-danger: var(--wp--preset--color--danger, #ed9c92);
+	--koohe-container: 1440px;
+	--koohe-container-pad: clamp(16px, 4vw, 56px);
+}
+
+/* -------------------------------------------------------------------------
+ * 1.1 حالت روشن / تیره
+ *
+ * سه نکته‌ی طراحی که این بخش را «درست» می‌کند:
+ *
+ * ۱) بازنویسی روی توکن‌های پیش‌فرضِ وردپرس (--wp--preset--color--*) انجام
+ *    می‌شود، نه فقط توکن‌های قالب. به این ترتیب هر بلوکی که رنگ پوسته را
+ *    استفاده می‌کند — بلوک‌های هسته، بلوک‌های ManaCore و استایل‌های خود قالب —
+ *    خودکار هم‌گام می‌شود و نیازی به فهرست‌کردن تک‌تک انتخابگرها نیست.
+ *
+ * ۲) ویژگی‌مندی (specificity): وردپرس متغیرهای پیش‌فرض را روی «:root» چاپ
+ *    می‌کند که ویژگی‌مندی آن (0,1,0) است — برابر با یک انتخابگر ویژگیِ تنها.
+ *    برابری ویژگی‌مندی نتیجه را به ترتیب چاپ استایل‌ها گره می‌زند که شکننده
+ *    است؛ افزودن «html» ویژگی‌مندی را به (0,1,1) می‌رساند و بازنویسی قطعی
+ *    می‌شود.
+ *
+ * ۳) مقادیر اینجا سخت‌کد نمی‌شوند؛ از --wp--custom--scheme--* خوانده می‌شوند
+ *    که در theme.json تعریف شده است. بنابراین هر «تنوع استایل»
+ *    (styles/cinema.json، styles/midnight.json و …) می‌تواند پالت هر دو حالتِ
+ *    خود را تعیین کند و کلید تیره/روشن، هویت آن تنوع را از بین نمی‌برد.
+ *    مقادیر پس از کاما تنها تکیه‌گاهِ اطمینان‌اند (اگر theme.json در دسترس نبود).
+ * ---------------------------------------------------------------------- */
+
+html[data-color-mode="dark"] {
+	--wp--preset--color--surface: var(--wp--custom--scheme--dark--surface, #14161a);
+	--wp--preset--color--surface-2: var(--wp--custom--scheme--dark--surface-2, #1c1f26);
+	--wp--preset--color--surface-3: var(--wp--custom--scheme--dark--surface-3, #252932);
+	--wp--preset--color--foreground: var(--wp--custom--scheme--dark--foreground, #eef0f4);
+	--wp--preset--color--muted: var(--wp--custom--scheme--dark--muted, #9aa1ad);
+	--wp--preset--color--accent: var(--wp--custom--scheme--dark--accent, #f59e0b);
+	--wp--preset--color--accent-contrast: var(--wp--custom--scheme--dark--accent-contrast, #101216);
+	--wp--preset--color--border: var(--wp--custom--scheme--dark--border, #2c313b);
+	--wp--preset--color--success: var(--wp--custom--scheme--dark--success, #22c55e);
+	--wp--preset--color--danger: var(--wp--custom--scheme--dark--danger, #ef4444);
+
+	--wp--preset--shadow--soft: var(--wp--custom--scheme--dark--shadow-soft, 0 8px 30px rgba(0, 0, 0, .45));
+	--wp--preset--shadow--raised: var(--wp--custom--scheme--dark--shadow-raised, 0 22px 60px rgba(0, 0, 0, .6));
+
+	--koohe-overlay: var(--wp--custom--scheme--dark--overlay, rgba(0, 0, 0, .72));
+	--koohe-glass: var(--wp--custom--scheme--dark--glass, rgba(20, 22, 26, .72));
+
+	color-scheme: dark;
+}
+
+html[data-color-mode="light"] {
+	--wp--preset--color--surface: var(--wp--custom--scheme--light--surface, #ffffff);
+	--wp--preset--color--surface-2: var(--wp--custom--scheme--light--surface-2, #f4f5f7);
+	--wp--preset--color--surface-3: var(--wp--custom--scheme--light--surface-3, #e9ebef);
+	--wp--preset--color--foreground: var(--wp--custom--scheme--light--foreground, #14161a);
+	--wp--preset--color--muted: var(--wp--custom--scheme--light--muted, #6b7280);
+	--wp--preset--color--accent: var(--wp--custom--scheme--light--accent, #f59e0b);
+	--wp--preset--color--accent-contrast: var(--wp--custom--scheme--light--accent-contrast, #111318);
+	--wp--preset--color--border: var(--wp--custom--scheme--light--border, #e2e5ea);
+	--wp--preset--color--success: var(--wp--custom--scheme--light--success, #16a34a);
+	--wp--preset--color--danger: var(--wp--custom--scheme--light--danger, #dc2626);
+
+	--wp--preset--shadow--soft: var(--wp--custom--scheme--light--shadow-soft, 0 6px 24px rgba(0, 0, 0, .08));
+	--wp--preset--shadow--raised: var(--wp--custom--scheme--light--shadow-raised, 0 18px 48px rgba(0, 0, 0, .14));
+
+	--koohe-overlay: var(--wp--custom--scheme--light--overlay, rgba(0, 0, 0, .55));
+	--koohe-glass: var(--wp--custom--scheme--light--glass, rgba(255, 255, 255, .72));
+
+	color-scheme: light;
+}
+
+/*
+ * کلاس‌های نام‌دار وردپرس (مانند .has-surface-background-color) مقدار خود را
+ * از همین متغیرها می‌گیرند، بنابراین با بازنویسی بالا به‌طور خودکار هم‌گام
+ * می‌شوند و نیازی به بازنویسی مجدد با !important نیست.
+ *
+ * تنها چیزی که باید صریح تنظیم شود، پس‌زمینه و رنگ ریشه است تا در نبود
+ * theme.json (مثلاً در ویرایشگر) هم درست باشد.
+ */
+html[data-color-mode] {
+	background-color: var(--koohe-surface);
+	color: var(--koohe-text);
+	accent-color: var(--koohe-accent);
+}
+
+/* گذارِ نرم هنگام تعویض حالت (با احترام به کاهش حرکت). */
+@media ( prefers-reduced-motion: no-preference ) {
+
+	html[data-color-mode],
+	html[data-color-mode] body {
+		transition: background-color .25s ease, color .25s ease;
+	}
+}
+
+/* تصاویر در حالت تیره کمی ملایم‌تر دیده شوند. */
+html[data-color-mode="dark"] img:not([src$=".svg"]):not(.koohe-no-dim) {
+	filter: brightness(.94);
+}
+
+/* نوار پیمایش هم‌رنگ حالت فعال. */
+html[data-color-mode] {
+	scrollbar-color: var(--koohe-surface-3) transparent;
+	scrollbar-width: thin;
+}
+
+html[data-color-mode] ::-webkit-scrollbar {
+	width: 10px;
+	height: 10px;
+}
+
+html[data-color-mode] ::-webkit-scrollbar-track {
+	background: transparent;
+}
+
+html[data-color-mode] ::-webkit-scrollbar-thumb {
+	background: var(--koohe-surface-3);
+	border-radius: var(--koohe-radius-pill);
+}
+
+html[data-color-mode] ::-webkit-scrollbar-thumb:hover {
+	background: var(--koohe-muted);
+}
+
+/* =========================================================================
+ * 2. پایه
+ * ====================================================================== */
+
+/*
+ * توجه بسیار مهم: overflow-x روی body یا html، آن عنصر را به یک
+ * «scroll container» تبدیل می‌کند و در نتیجه position:sticky برای همه‌ی
+ * فرزندان نسبت به viewport از کار می‌افتد (سربرگ چسبان نمی‌چسبد).
+ * به همین دلیل اینجا overflow تنظیم نمی‌شود؛ سرریز افقی با
+ * `max-width:100%` روی عنصرهای رسانه و `min-width:0` روی آیتم‌های
+ * flex/grid کنترل می‌گردد.
+ */
+body {
+	background: var(--koohe-surface);
+	color: var(--koohe-text);
+	transition: background-color var(--koohe-transition), color var(--koohe-transition);
+}
+
+/* جایگزین ایمن overflow-x: hidden — بدون شکستن sticky. */
+img,
+video,
+iframe,
+svg,
+table {
+	max-width: 100%;
+}
+
+.wp-site-blocks > *,
+.koohe-main > * {
+	min-width: 0;
+}
+
+.koohe-main {
+	min-height: 45vh;
+}
+
+/* اسکرول‌بار سبک */
+* {
+	scrollbar-width: thin;
+	scrollbar-color: var(--koohe-surface-3) transparent;
+}
+
+*::-webkit-scrollbar {
+	width: 9px;
+	height: 9px;
+}
+
+*::-webkit-scrollbar-track {
+	background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+	background: var(--koohe-surface-3);
+	border-radius: var(--koohe-radius-pill);
+}
+
+*::-webkit-scrollbar-thumb:hover {
+	background: var(--koohe-muted);
+}
+
+/* پرش به محتوا */
+.koohe-skip-link {
+	position: absolute;
+	inset-inline-start: -9999px;
+	z-index: 100000;
+}
+
+.koohe-skip-link:focus {
+	inset-inline-start: 16px;
+	top: 16px;
+	width: auto;
+	height: auto;
+	padding: 10px 18px;
+	background: var(--koohe-accent);
+	color: var(--koohe-accent-contrast);
+	border-radius: var(--koohe-radius-sm);
+	font-weight: 600;
+	clip: auto;
+	clip-path: none;
+}
+
+/* حلقه‌ی فوکوس یکنواخت */
+:where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+	outline: 2px solid var(--koohe-accent);
+	outline-offset: 2px;
+	border-radius: var(--koohe-radius-sm);
+}
+
+/* =========================================================================
+ * 3. سربرگ
+ * ====================================================================== */
+
+.koohe-header {
+	position: relative;
+	z-index: 60;
+	height: var(--koohe-header-h);
+	display: flex;
+	align-items: center;
+	background: color-mix(in srgb, var(--koohe-surface) 92%, transparent);
+	backdrop-filter: blur(18px) saturate(160%);
+	-webkit-backdrop-filter: blur(18px) saturate(160%);
+	border-bottom: 1px solid var(--koohe-border);
+	transition: background var(--koohe-transition), box-shadow var(--koohe-transition);
+}
+
+/*
+ * سربرگ چسبان.
+ *
+ * عنصر چسبان، پوششِ قطعه‌ی قالب (.koohe-header-slot) است نه خود <header>.
+ * دلیل: ارتفاع پوشش برابر ارتفاع سربرگ است، پس sticky روی فرزند
+ * فضای حرکتی ندارد. کلاس koohe-header-slot سمت سرور تزریق می‌شود
+ * (koohe_tag_header_slot) و انتخاب‌گر جایگزین برای حالت‌های نادرِ
+ * بدون آن کلاس نیز نگه داشته شده است.
+ */
+.koohe-sticky-header .koohe-header-slot {
+	position: sticky;
+	top: 0;
+	z-index: 50;
+}
+
+/*
+ * لنگر پنل مگامنو: پنل absolute با inset-inline:0 در همین پوشش جای
+ * می‌گیرد؛ پس پوشش باید همیشه positioned باشد (sticky هنگام چسباندن،
+ * relative در حالت عادی).
+ */
+.koohe-header-slot {
+	position: relative;
+}
+
+/* حالت جایگزین: اگر سربرگ بدون پوشش رندر شد. */
+.koohe-sticky-header > .koohe-header,
+.koohe-sticky-header .wp-site-blocks > .koohe-header {
+	position: sticky;
+	top: 0;
+}
+
+.admin-bar.koohe-sticky-header .koohe-header-slot,
+.admin-bar.koohe-sticky-header > .koohe-header,
+.admin-bar.koohe-sticky-header .wp-site-blocks > .koohe-header {
+	top: 32px;
+}
+
+@media (max-width: 782px) {
+	.admin-bar.koohe-sticky-header .koohe-header-slot,
+	.admin-bar.koohe-sticky-header > .koohe-header,
+	.admin-bar.koohe-sticky-header .wp-site-blocks > .koohe-header {
+		top: 46px;
+	}
+}
+
+/* کوچک‌شدن سربرگ هنگام پیمایش (کلاس is-shrunk توسط theme.js). */
+.koohe-shrink-header.koohe-sticky-header .koohe-header {
+	transition: padding var(--koohe-transition), box-shadow var(--koohe-transition);
+}
+
+.koohe-shrink-header.koohe-sticky-header .koohe-header-slot.is-shrunk .koohe-header {
+	padding-top: 6px !important;
+	padding-bottom: 6px !important;
+	box-shadow: var(--koohe-shadow);
+}
+
+.koohe-shrink-header.koohe-sticky-header .koohe-header-slot.is-shrunk .wp-block-site-logo img {
+	max-height: 30px;
+	width: auto;
+	transition: max-height var(--koohe-transition);
+}
+
+@media ( prefers-reduced-motion: reduce ) {
+	.koohe-shrink-header.koohe-sticky-header .koohe-header,
+	.koohe-shrink-header.koohe-sticky-header .koohe-header-slot.is-shrunk .wp-block-site-logo img {
+		transition: none;
+	}
+}
+
+/* نوار پیشرفت خوانش. */
+.koohe-progress {
+	position: fixed;
+	inset-inline: 0;
+	top: 0;
+	z-index: 90;
+	height: 3px;
+	background: transparent;
+	pointer-events: none;
+}
+
+.admin-bar .koohe-progress {
+	top: 32px;
+}
+
+@media (max-width: 782px) {
+	.admin-bar .koohe-progress {
+		top: 46px;
+	}
+}
+
+.koohe-progress-bar {
+	height: 100%;
+	width: 0;
+	background: var(--koohe-accent);
+	border-start-end-radius: 3px;
+	border-end-end-radius: 3px;
+	/*
+	 * نوار با تغییر width رشد می‌کند نه transform؛ بنابراین جهت رشد را خودِ
+	 * جریان متن تعیین می‌کند و در RTL از راست آغاز می‌شود. مقدار پیشین
+	 * (transform-origin: inset-inline-start) اساساً نامعتبر بود و مرورگر
+	 * آن را دور می‌انداخت.
+	 */
+	transition: width .1s linear;
+}
+
+@media ( prefers-reduced-motion: reduce ) {
+	.koohe-progress-bar {
+		transition: none;
+	}
+}
+
+.koohe-header-inner {
+	width: 100%;
+	max-width: var(--koohe-container);
+	margin-inline: auto;
+	padding-inline: var(--koohe-container-pad);
+	display: flex;
+	align-items: center;
+	height: 100%;
+	gap: clamp(14px, 2.5vw, 35px);
+}
+
+.koohe-brand {
+	flex-shrink: 0;
+	display: inline-flex;
+	align-items: center;
+	gap: 11px;
+}
+
+.koohe-brand .wp-block-site-logo img {
+	border-radius: var(--koohe-radius-sm);
+	display: block;
+	width: 36px;
+	height: auto;
+}
+
+.koohe-logo-text a {
+	font-weight: 850;
+	font-size: 1.375rem;
+	letter-spacing: -.04em;
+	white-space: nowrap;
+	color: var(--koohe-text);
+	text-decoration: none;
+	transition: color var(--koohe-transition);
+}
+
+.koohe-logo-text a:hover {
+	color: var(--koohe-accent);
+}
+
+.koohe-header-start,
+.koohe-header-end {
+	min-width: 0;
+	display: flex;
+	align-items: center;
+}
+
+.koohe-header-start {
+	gap: clamp(14px, 2.5vw, 35px);
+	flex: 1;
+}
+
+.koohe-header-end {
+	flex-shrink: 0;
+	margin-inline-start: auto;
+	gap: 11px;
+}
+
+/* ناوبری دسکتاپ */
+.koohe-nav {
+	flex-shrink: 0;
+}
+
+.koohe-nav .wp-block-navigation-item__content {
+	padding: 0;
+	border-radius: 0;
+	color: var(--koohe-muted);
+	font-size: var(--wp--preset--font-size--small, .75rem);
+	font-weight: 500;
+	transition: color var(--koohe-transition);
+	position: relative;
+}
+
+.koohe-nav .wp-block-navigation-item__content:hover {
+	color: var(--koohe-accent);
+}
+
+.koohe-nav .current-menu-item > .wp-block-navigation-item__content {
+	color: var(--koohe-accent);
+}
+
+/* نقطه‌ی زیر آیتم فعال */
+.koohe-nav .current-menu-item > .wp-block-navigation-item__content::after {
+	content: "";
+	position: absolute;
+	bottom: -6px;
+	right: 50%;
+	transform: translateX(50%);
+	width: 4px;
+	height: 4px;
+	border-radius: 50%;
+	background: var(--koohe-accent);
+}
+
+/* دکمه‌ی اشتراک در سربرگ */
+.koohe-header-cta .wp-block-button__link {
+	min-height: 35px;
+	padding: 8px 13px;
+	font-size: var(--wp--preset--font-size--small, .6875rem);
+	gap: 6px;
+	border-radius: 7px;
+	font-weight: 600;
+	transition: background var(--koohe-transition), transform var(--koohe-transition),
+		box-shadow var(--koohe-transition);
+}
+
+.koohe-header-cta .wp-block-button__link:hover {
+	transform: translateY(-2px);
+	box-shadow: 0 4px 22px color-mix(in srgb, var(--koohe-accent) 20%, transparent);
+}
+
+/* زیرمنوی ناوبری */
+.koohe-nav .wp-block-navigation__submenu-container {
+	background: var(--koohe-surface);
+	border: 1px solid var(--koohe-border);
+	border-radius: var(--koohe-radius);
+	box-shadow: var(--koohe-shadow-lg);
+	padding: 6px;
+	min-width: 200px;
+	overflow: hidden;
+}
+
+.koohe-nav .wp-block-navigation__submenu-container .wp-block-navigation-item__content {
+	padding: 8px 12px;
+	border-radius: var(--koohe-radius-sm);
+	width: 100%;
+}
+
+.koohe-nav .wp-block-navigation__submenu-container .wp-block-navigation-item__content:hover {
+	background: var(--koohe-surface-2);
+}
+
+/* =========================================================================
+ * 3.5 فهرست همبرگری موبایل (overlay)
+ *
+ * چرا این بخش این‌قدر صریح است؟
+ * هسته‌ی وردپرس برای فهرست بازشده این دو قاعده را دارد:
+ *
+ *   .wp-block-navigation:not(.has-background)
+ *     .wp-block-navigation__responsive-container.is-menu-open:not(.disable-default-overlay)
+ *     { background-color: #fff }
+ *   .wp-block-navigation:not(.has-text-color) … { color: #000 }
+ *
+ * ویژهگی (specificity) آن‌ها (0,5,0) است. قاعده‌ی پیشین قالب
+ * «.koohe-nav .…is-menu-open» تنها (0,3,0) بود، پس هسته برنده می‌شد و
+ * فهرست بازشده در حالت تیره سفید با متن مشکی می‌ماند — همان «بی‌استایل».
+ *
+ * راه‌حل: انتخابگرها را با همان الگوی هسته (شامل :not(.disable-default-overlay))
+ * می‌نویسیم تا ویژهگی برابر یا بیشتر شود و در ترتیب بار شدن (theme.css پس از
+ * استایل هسته) برنده باشیم — بدون هیچ !important.
+ * ====================================================================== */
+
+/* پوسته‌ی اصلی فهرست بازشده. ویژهگی: (0,5,0) و پس از هسته بار می‌شود. */
+.koohe-nav.wp-block-navigation .wp-block-navigation__responsive-container.is-menu-open:not(.disable-default-overlay) {
+	background-color: var(--koohe-surface);
+	color: var(--koohe-text);
+	padding: 0;
+	overscroll-behavior: contain;
+	-webkit-overflow-scrolling: touch;
+}
+
+/* لایه‌ی محتوا: قاب امن، فاصله‌گذاری و جای دکمه‌ی بستن. */
+.koohe-nav .wp-block-navigation__responsive-container.is-menu-open .wp-block-navigation__responsive-close {
+	width: 100%;
+	max-width: var(--wp--style--global--wide-size, 1200px);
+	margin-inline: auto;
+	padding: clamp(16px, 4vw, 28px);
+	padding-top: max(clamp(16px, 4vw, 28px), env(safe-area-inset-top));
+	padding-bottom: max(clamp(16px, 4vw, 28px), env(safe-area-inset-bottom));
+}
+
+.koohe-nav .wp-block-navigation__responsive-container.is-menu-open .wp-block-navigation__responsive-dialog {
+	position: relative;
+	min-height: 100%;
+}
+
+/*
+ * هسته padding-top: calc(2rem + 24px) می‌گذارد تا محتوا زیر دکمه‌ی بستن
+ * نرود. ما دکمه را در نواری جدا می‌گذاریم، پس فاصله را متناسب می‌کنیم.
+ */
+.koohe-nav .wp-block-navigation__responsive-container.is-menu-open:not(.disable-default-overlay) .wp-block-navigation__responsive-container-content {
+	padding-top: 56px;
+	gap: 4px;
+	width: 100%;
+}
+
+/* دکمه‌ی بستن (×) — هم‌شکل با دیگر دکمه‌های آیکونی قالب. */
+.koohe-nav .wp-block-navigation__responsive-container-close {
+	inset-inline-end: clamp(16px, 4vw, 28px);
+	inset-inline-start: auto;
+	right: auto;
+	top: clamp(16px, 4vw, 28px);
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 40px;
+	height: 40px;
+	border-radius: var(--koohe-radius-pill);
+	background: var(--koohe-surface-2);
+	border: 1px solid var(--koohe-border);
+	color: var(--koohe-text);
+	transition: background-color var(--koohe-transition), border-color var(--koohe-transition), color var(--koohe-transition);
+}
+
+.koohe-nav .wp-block-navigation__responsive-container-close:hover,
+.koohe-nav .wp-block-navigation__responsive-container-close:focus-visible {
+	background: var(--koohe-surface-3);
+	border-color: var(--koohe-accent);
+	color: var(--koohe-accent);
+}
+
+/* دکمه‌ی باز کردن (همبرگر) در سربرگ. */
+.koohe-nav .wp-block-navigation__responsive-container-open {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 40px;
+	height: 40px;
+	border-radius: var(--koohe-radius-pill);
+	background: transparent;
+	border: 1px solid transparent;
+	color: var(--koohe-text);
+	transition: background-color var(--koohe-transition), border-color var(--koohe-transition), color var(--koohe-transition);
+}
+
+.koohe-nav .wp-block-navigation__responsive-container-open:hover,
+.koohe-nav .wp-block-navigation__responsive-container-open:focus-visible {
+	background: var(--koohe-surface-2);
+	border-color: var(--koohe-border);
+	color: var(--koohe-accent);
+}
+
+/* حالت فوکوس یکنواخت برای دسترس‌پذیری. */
+.koohe-nav .wp-block-navigation__responsive-container-open:focus-visible,
+.koohe-nav .wp-block-navigation__responsive-container-close:focus-visible {
+	outline: 2px solid var(--koohe-accent);
+	outline-offset: 2px;
+}
+
+/*
+ * آیتم‌های فهرست داخل overlay: بزرگ، انگشت‌پسند (۴۴px)، با جداکننده‌ی نازک.
+ * ویژهگی بالا لازم است چون هسته برای همین آیتم‌ها padding: 0 می‌گذارد.
+ */
+.koohe-nav .wp-block-navigation__responsive-container.is-menu-open .wp-block-navigation-item__content.wp-block-navigation-item__content {
+	display: flex;
+	align-items: center;
+	width: 100%;
+	min-height: 44px;
+	padding: 10px 12px;
+	border-radius: var(--koohe-radius-sm);
+	color: var(--koohe-text);
+	font-size: var(--wp--preset--font-size--medium, 1.0625rem);
+	font-weight: 600;
+}
+
+.koohe-nav .wp-block-navigation__responsive-container.is-menu-open .wp-block-navigation-item {
+	width: 100%;
+	border-bottom: 1px solid var(--koohe-border);
+}
+
+.koohe-nav .wp-block-navigation__responsive-container.is-menu-open .wp-block-navigation-item:last-child {
+	border-bottom: 0;
+}
+
+.koohe-nav .wp-block-navigation__responsive-container.is-menu-open .wp-block-navigation-item__content:hover,
+.koohe-nav .wp-block-navigation__responsive-container.is-menu-open .wp-block-navigation-item__content:focus-visible {
+	background: var(--koohe-surface-2);
+	color: var(--koohe-accent);
+}
+
+/* آیتم جاری: نشانگر عمودی به‌جای زیرخط افقی (چیدمان ستونی است). */
+.koohe-nav .wp-block-navigation__responsive-container.is-menu-open .current-menu-item > .wp-block-navigation-item__content {
+	color: var(--koohe-accent);
+}
+
+.koohe-nav .wp-block-navigation__responsive-container.is-menu-open .current-menu-item > .wp-block-navigation-item__content::after {
+	inset-inline-start: 0;
+	inset-inline-end: auto;
+	bottom: auto;
+	top: 50%;
+	width: 3px;
+	height: 60%;
+	transform: translateY(-50%);
+}
+
+/*
+ * زیرفهرست‌ها داخل overlay: هسته آن‌ها را position:static و شفاف می‌کند،
+ * پس کارت شیشه‌ای/سایه‌دار دسکتاپ باید کاملاً برداشته شود.
+ */
+.koohe-nav .wp-block-navigation__responsive-container.is-menu-open .wp-block-navigation__submenu-container {
+	border: 0;
+	border-radius: 0;
+	box-shadow: none;
+	min-width: 0;
+	padding: 0 0 6px;
+	padding-inline-start: 14px;
+	margin-inline-start: 6px;
+	border-inline-start: 1px solid var(--koohe-border);
+}
+
+.koohe-nav .wp-block-navigation__responsive-container.is-menu-open .wp-block-navigation__submenu-container .wp-block-navigation-item {
+	border-bottom: 0;
+}
+
+.koohe-nav .wp-block-navigation__responsive-container.is-menu-open .wp-block-navigation__submenu-container .wp-block-navigation-item__content.wp-block-navigation-item__content {
+	min-height: 40px;
+	font-size: var(--wp--preset--font-size--small, .9375rem);
+	font-weight: 500;
+	color: var(--koohe-muted);
+}
+
+.koohe-nav .wp-block-navigation__responsive-container.is-menu-open .wp-block-navigation__submenu-container .wp-block-navigation-item__content:hover {
+	color: var(--koohe-text);
+}
+
+/*
+ * هسته آیکون زیرفهرست را در overlay مخفی می‌کند (display:none) و همه‌ی
+ * زیرفهرست‌ها باز نمایش داده می‌شوند؛ همین رفتار مطلوب موبایل است و
+ * دست‌کاری نمی‌کنیم.
+ */
+
+/*
+ * وقتی فهرست باز است هسته کلاس has-modal-open را روی همان ظرف و
+ * html می‌گذارد (html.has-modal-open{overflow:hidden}). پیمایش پس‌زمینه
+ * قفل می‌شود؛ فقط باید سربرگ چسبان زیر overlay نرود.
+ */
+.has-modal-open .koohe-header-slot {
+	z-index: 1;
+}
+
+/* در نوار مدیریت، هسته فاصله‌ی بالا می‌دهد؛ نوار ما هم باید جا شود. */
+.has-modal-open .admin-bar .koohe-nav .wp-block-navigation__responsive-container-close {
+	top: calc(clamp(16px, 4vw, 28px) + 46px);
+}
+
+@media (min-width: 782px) {
+	.has-modal-open .admin-bar .koohe-nav .wp-block-navigation__responsive-container-close {
+		top: calc(clamp(16px, 4vw, 28px) + 32px);
+	}
+}
+
+/* احترام به کاهش حرکت: انیمیشن محو شدن هسته را خاموش می‌کنیم. */
+@media (prefers-reduced-motion: reduce) {
+	.koohe-nav .wp-block-navigation__responsive-container.is-menu-open {
+		animation: none;
+	}
+}
+
+/* =========================================================================
+ * 4. کلید حالت تیره/روشن
+ * ====================================================================== */
+
+.koohe-toggle-wrap {
+	display: inline-flex;
+	line-height: 0;
+}
+
+.koohe-toggle {
+	appearance: none;
+	border: 0;
+	background: none;
+	padding: 0;
+	margin: 0;
+	cursor: pointer;
+	line-height: 0;
+	color: inherit;
+}
+
+.koohe-toggle-track {
+	display: inline-flex;
+	align-items: center;
+	width: 52px;
+	height: 28px;
+	padding: 3px;
+	border-radius: var(--koohe-radius-pill);
+	background: var(--koohe-surface-3);
+	border: 1px solid var(--koohe-border);
+	transition: background-color var(--koohe-transition), border-color var(--koohe-transition);
+}
+
+.koohe-toggle:hover .koohe-toggle-track {
+	border-color: var(--koohe-accent);
+}
+
+.koohe-toggle-thumb {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 22px;
+	height: 22px;
+	border-radius: 50%;
+	background: var(--koohe-surface);
+	color: var(--koohe-accent);
+	box-shadow: 0 1px 3px rgba(0, 0, 0, .2);
+	transform: translateX(0);
+	transition: transform var(--koohe-transition), background-color var(--koohe-transition);
+}
+
+/* در RTL جهت حرکت معکوس است */
+[dir="rtl"] .koohe-toggle[aria-pressed="true"] .koohe-toggle-thumb {
+	transform: translateX(-24px);
+}
+
+[dir="ltr"] .koohe-toggle[aria-pressed="true"] .koohe-toggle-thumb,
+html:not([dir="rtl"]) .koohe-toggle[aria-pressed="true"] .koohe-toggle-thumb {
+	transform: translateX(24px);
+}
+
+.koohe-toggle .koohe-icon-moon {
+	display: none;
+}
+
+.koohe-toggle[aria-pressed="true"] .koohe-icon-sun {
+	display: none;
+}
+
+.koohe-toggle[aria-pressed="true"] .koohe-icon-moon {
+	display: block;
+}
+
+/* =========================================================================
+ * 5. حساب کاربری در سربرگ
+ * ====================================================================== */
+
+.koohe-account-wrap {
+	display: inline-flex;
+}
+
+.koohe-account {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	padding: 4px 10px 4px 4px;
+	border: 1px solid var(--koohe-border);
+	border-radius: var(--koohe-radius-pill);
+	background: var(--koohe-surface-2);
+	font-size: .8125rem;
+	font-weight: 600;
+	color: var(--koohe-text);
+	text-decoration: none;
+	transition: border-color var(--koohe-transition), background-color var(--koohe-transition);
+}
+
+.koohe-account:hover {
+	border-color: var(--koohe-accent);
+	background: var(--koohe-surface-3);
+}
+
+.koohe-account-avatar {
+	border-radius: 50%;
+	display: block;
+	width: 28px;
+	height: 28px;
+}
+
+.koohe-account-name {
+	max-width: 110px;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.koohe-account-level {
+	padding: 2px 8px;
+	border-radius: var(--koohe-radius-pill);
+	background: var(--koohe-accent);
+	color: var(--koohe-accent-contrast);
+	font-size: .6875rem;
+	font-weight: 700;
+}
+
+.koohe-btn,
+.koohe-btn-ghost {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 6px;
+	padding: .5rem 1.1rem;
+	border-radius: var(--koohe-radius-pill);
+	border: 1px solid var(--koohe-border);
+	background: var(--koohe-surface-2);
+	color: var(--koohe-text);
+	font-size: .8125rem;
+	font-weight: 600;
+	text-decoration: none;
+	cursor: pointer;
+	transition: all var(--koohe-transition);
+}
+
+.koohe-btn:hover,
+.koohe-btn-ghost:hover {
+	border-color: var(--koohe-accent);
+	color: var(--koohe-accent);
+}
+
+/* =========================================================================
+ * 6. سبک‌های بلوک اختصاصی
+ * ====================================================================== */
+
+/* گروه: کارت */
+.is-style-koohe-card {
+	background: var(--koohe-surface);
+	border: 1px solid var(--koohe-border);
+	border-radius: var(--koohe-radius);
+	box-shadow: var(--koohe-shadow);
+	transition: border-color var(--koohe-transition), box-shadow var(--koohe-transition), transform var(--koohe-transition);
+}
+
+.is-style-koohe-card:hover {
+	border-color: color-mix(in srgb, var(--koohe-accent) 45%, var(--koohe-border));
+}
+
+/* گروه: شیشه‌ای */
+.is-style-koohe-glass {
+	background: var(--koohe-glass);
+	backdrop-filter: blur(16px) saturate(160%);
+	-webkit-backdrop-filter: blur(16px) saturate(160%);
+	border: 1px solid var(--koohe-border);
+	border-radius: var(--koohe-radius-lg);
+}
+
+/* گروه: کادر ساده */
+.is-style-koohe-outline {
+	border: 1px solid var(--koohe-border);
+	border-radius: var(--koohe-radius);
+	background: transparent;
+}
+
+/* ستون‌ها بدون فاصله */
+.is-style-koohe-gapless {
+	gap: 0 !important;
+}
+
+/* عنوان بخش */
+.is-style-koohe-section {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	margin-bottom: .35em;
+}
+
+.is-style-koohe-section::before {
+	content: "";
+	flex: 0 0 auto;
+	width: 4px;
+	height: 1.05em;
+	border-radius: 2px;
+	background: var(--koohe-accent);
+}
+
+/* عنوان با زیرخط */
+.is-style-koohe-underline {
+	position: relative;
+	padding-bottom: .45em;
+	margin-bottom: .5em;
+}
+
+.is-style-koohe-underline::after {
+	content: "";
+	position: absolute;
+	inset-inline-start: 0;
+	bottom: 0;
+	width: 56px;
+	height: 3px;
+	border-radius: 3px;
+	background: var(--koohe-accent);
+}
+
+/* تصویر: پوستر */
+.is-style-koohe-poster img {
+	aspect-ratio: var(--koohe-poster-ratio, 2 / 3);
+	object-fit: cover;
+	width: 100%;
+	border-radius: var(--koohe-radius);
+}
+
+.is-style-koohe-rounded img {
+	border-radius: var(--koohe-radius);
+}
+
+/* دکمه‌ها */
+.wp-block-button.is-style-koohe-ghost .wp-block-button__link {
+	background: transparent;
+	color: var(--koohe-text);
+	border: 1px solid var(--koohe-border);
+}
+
+.wp-block-button.is-style-koohe-ghost .wp-block-button__link:hover {
+	border-color: var(--koohe-accent);
+	color: var(--koohe-accent);
+	background: transparent;
+}
+
+.wp-block-button.is-style-koohe-soft .wp-block-button__link {
+	background: color-mix(in srgb, var(--koohe-accent) 14%, transparent);
+	color: var(--koohe-accent);
+	border: 1px solid transparent;
+}
+
+.wp-block-button.is-style-koohe-soft .wp-block-button__link:hover {
+	background: var(--koohe-accent);
+	color: var(--koohe-accent-contrast);
+}
+
+/* جداکننده‌ی نقطه‌چین */
+.wp-block-separator.is-style-koohe-dots {
+	border: 0;
+	height: 4px;
+	background-image: radial-gradient(circle, var(--koohe-border) 1.5px, transparent 1.6px);
+	background-size: 12px 4px;
+	background-repeat: repeat-x;
+	max-width: 100%;
+	opacity: 1;
+}
+
+/* فهرست تیک‌دار */
+.wp-block-list.is-style-koohe-check {
+	list-style: none;
+	padding-inline-start: 0;
+}
+
+.wp-block-list.is-style-koohe-check li {
+	position: relative;
+	padding-inline-start: 1.75em;
+	margin-block: .45em;
+}
+
+.wp-block-list.is-style-koohe-check li::before {
+	content: "";
+	position: absolute;
+	inset-inline-start: 0;
+	top: .45em;
+	width: 1.05em;
+	height: 1.05em;
+	border-radius: 50%;
+	background: color-mix(in srgb, var(--koohe-accent) 18%, transparent);
+	background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23f59e0b' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 6 9 17l-5-5'/%3E%3C/svg%3E");
+	background-size: 68%;
+	background-position: center;
+	background-repeat: no-repeat;
+}
+
+/* برچسب‌های قرصی */
+.is-style-koohe-pills {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 6px;
+}
+
+.is-style-koohe-pills a {
+	display: inline-block;
+	padding: 3px 11px;
+	border-radius: var(--koohe-radius-pill);
+	border: 1px solid var(--koohe-border);
+	background: var(--koohe-surface-2);
+	color: var(--koohe-muted);
+	font-size: .75rem;
+	font-weight: 500;
+	text-decoration: none;
+	transition: all var(--koohe-transition);
+}
+
+.is-style-koohe-pills a:hover {
+	background: var(--koohe-accent);
+	border-color: var(--koohe-accent);
+	color: var(--koohe-accent-contrast);
+}
+
+.is-style-koohe-pills .wp-block-post-terms__separator {
+	display: none;
+}
+
+/* پرس‌وجوی ریلی */
+.is-style-koohe-rail .wp-block-post-template {
+	display: flex;
+	flex-wrap: nowrap;
+	overflow-x: auto;
+	scroll-snap-type: x mandatory;
+	gap: 14px;
+	padding-bottom: 10px;
+}
+
+.is-style-koohe-rail .wp-block-post-template > li {
+	flex: 0 0 auto;
+	width: clamp(150px, 18vw, 200px);
+	scroll-snap-align: start;
+}
+
+/* =========================================================================
+ * 7. کارت‌ها و شبکه‌ها
+ * ====================================================================== */
+
+.koohe-poster-grid {
+	gap: clamp(10px, 1.4vw, 18px) !important;
+}
+
+.koohe-poster-card {
+	position: relative;
+}
+
+.koohe-poster-card .wp-block-post-featured-image {
+	overflow: hidden;
+	border-radius: 12px;
+	background: var(--koohe-surface-2);
+}
+
+.koohe-poster-card .wp-block-post-featured-image img {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	aspect-ratio: var(--koohe-poster-ratio, 2 / 3);
+}
+
+/*
+ * بزرگ‌نمایی با نشانگر تنها زمانی که گزینه‌ی سفارشی‌ساز روشن باشد
+ * (کلاس koohe-card-zoom روی <body>) و کاربر کاهش حرکت نخواسته باشد.
+ */
+@media ( prefers-reduced-motion: no-preference ) {
+	.koohe-card-zoom .koohe-poster-card .wp-block-post-featured-image img,
+	.koohe-card-zoom .koohe-card .wp-block-post-featured-image img {
+		transition: transform .35s cubic-bezier(.2, .7, .3, 1);
+	}
+
+	.koohe-card-zoom .koohe-poster-card:hover .wp-block-post-featured-image img,
+	.koohe-card-zoom .koohe-poster-card:focus-within .wp-block-post-featured-image img,
+	.koohe-card-zoom .koohe-card:hover .wp-block-post-featured-image img {
+		transform: scale(1.05);
+	}
+}
+
+/* گوشه‌های گرد برای تصاویر (گزینه‌ی سفارشی‌ساز). */
+.koohe-rounded-media .koohe-poster-card .wp-block-post-featured-image,
+.koohe-rounded-media .koohe-card .wp-block-post-featured-image {
+	border-radius: var(--koohe-radius);
+}
+
+.koohe-rounded-media .wp-block-post-featured-image img,
+.koohe-rounded-media .wp-block-image img {
+	border-radius: inherit;
+}
+
+/* متن حق نشر پابرگ. */
+.koohe-copyright {
+	margin: 0;
+	color: var(--koohe-muted);
+	font-size: var(--wp--preset--font-size--x-small, .75rem);
+}
+
+.koohe-copyright a {
+	color: inherit;
+	text-decoration: underline;
+	text-underline-offset: 3px;
+}
+
+.koohe-copyright a:hover,
+.koohe-copyright a:focus-visible {
+	color: var(--koohe-accent);
+}
+
+/* تصویر بارگذاری‌نشده: نمایش پوستر پیش‌فرض (کلاس توسط theme.js افزوده می‌شود) */
+.koohe-img-fallback {
+	background-color: var(--koohe-surface-2);
+	background-image: url("../img/poster-placeholder.svg");
+	background-position: center;
+	background-repeat: no-repeat;
+	background-size: cover;
+	color: transparent;
+	min-height: 120px;
+}
+
+.koohe-poster-card .wp-block-post-title {
+	margin: 0;
+	line-height: 1.5;
+}
+
+.koohe-poster-card .wp-block-post-title a {
+	display: -webkit-box;
+	-webkit-line-clamp: 2;
+	line-clamp: 2;
+	-webkit-box-orient: vertical;
+	overflow: hidden;
+	font-weight: 600;
+}
+
+.koohe-card .wp-block-post-featured-image {
+	overflow: hidden;
+	border-radius: 10px;
+	background: var(--koohe-surface-2);
+}
+
+.koohe-card .wp-block-post-title {
+	margin: 0;
+}
+
+.koohe-card .wp-block-post-title a {
+	display: -webkit-box;
+	-webkit-line-clamp: 2;
+	line-clamp: 2;
+	-webkit-box-orient: vertical;
+	overflow: hidden;
+}
+
+.koohe-card:hover {
+	transform: translateY(-2px);
+	box-shadow: var(--koohe-shadow-lg);
+}
+
+.koohe-post-row .wp-block-post-featured-image img {
+	border-radius: 10px;
+}
+
+/* =========================================================================
+ * 8. صفحه‌ی اثر (طرح سینورا)
+ * ====================================================================== */
+
+.koohe-title-header {
+	position: relative;
+	overflow: hidden;
+	border-bottom: 1px solid var(--koohe-border);
+}
+
+.koohe-title-poster .wp-block-post-featured-image {
+	overflow: hidden;
+	border-radius: 10px;
+	border: 1px solid var(--koohe-border);
+	box-shadow: 0 15px 35px rgba(0, 0, 0, .35);
+	background: var(--koohe-surface-3);
+}
+
+.koohe-title-poster .wp-block-post-featured-image img {
+	width: 100%;
+	display: block;
+	object-fit: cover;
+	object-position: 50% 25%;
+}
+
+.koohe-title-info > * + * {
+	margin-block-start: 16px;
+}
+
+.koohe-title-info .wp-block-post-title {
+	margin: 0;
+	line-height: 1.9;
+	font-size: clamp(1.5rem, 3vw, 2.3125rem);
+	letter-spacing: -1px;
+}
+
+/* =========================================================================
+ * صفحه‌ی اشتراک: تاج و مزایا (بازآفرینی pricing-intro سینورا)
+ * ====================================================================== */
+
+.koohe-pricing-crown {
+	width: 66px;
+	height: 66px;
+	display: grid;
+	place-items: center;
+	margin: 0 auto 19px;
+	border: 1px solid color-mix(in srgb, var(--koohe-accent) 28%, var(--koohe-border));
+	border-radius: 18px;
+	background: color-mix(in srgb, var(--koohe-accent) 6%, transparent);
+	color: var(--koohe-accent);
+	transform: rotate(-5deg);
+}
+
+.koohe-pricing-benefits {
+	display: flex;
+	justify-content: center;
+	gap: 27px;
+	margin-top: 23px;
+	flex-wrap: wrap;
+}
+
+.koohe-pricing-benefits span {
+	display: flex;
+	align-items: center;
+	gap: 7px;
+	color: var(--koohe-muted);
+	font-size: .6875rem;
+}
+
+.koohe-pricing-benefits svg {
+	color: var(--koohe-accent);
+	flex: none;
+}
+
+@media (max-width: 599px) {
+	.koohe-pricing-benefits {
+		gap: 12px;
+	}
+}
+
+/* =========================================================================
+ * صفحه‌ی عامل (بازآفرینی person-hero سینورا)
+ * ====================================================================== */
+
+.koohe-person-hero {
+	position: relative;
+	overflow: hidden;
+	padding: 37px;
+	border: 1px solid var(--koohe-border);
+	border-radius: 14px;
+	background: linear-gradient(135deg, var(--koohe-surface-2), var(--koohe-surface));
+}
+
+.koohe-person-portrait img {
+	width: 100%;
+	display: block;
+	object-fit: cover;
+	object-position: 50% 12%;
+	filter: saturate(.75);
+	transition: filter var(--koohe-transition), transform .4s;
+}
+
+.koohe-person-hero:hover .koohe-person-portrait img {
+	filter: saturate(1);
+}
+
+.koohe-person-english {
+	margin: 0;
+	color: var(--koohe-muted);
+	font-size: .8125rem;
+	letter-spacing: .4px;
+}
+
+@media (max-width: 781px) {
+	.koohe-person-hero {
+		padding: 22px;
+	}
+
+	.koohe-person-portrait {
+		max-width: 200px;
+	}
+}
+
+/* =========================================================================
+ * چیدمان browse سینورا: سایدبار فیلتر + نتایج ۴ستونه
+ * ====================================================================== */
+
+.koohe-browse-toolbar {
+	display: flex;
+	align-items: end;
+	justify-content: space-between;
+	gap: 20px;
+	flex-wrap: wrap;
+}
+
+.koohe-browse-toolbar p {
+	margin: 0;
+}
+
+.koohe-browse-layout {
+	display: grid;
+	grid-template-columns: 240px minmax(0, 1fr);
+	gap: 28px;
+	align-items: start;
+}
+
+.koohe-browse-side {
+	position: sticky;
+	top: calc(var(--koohe-header-h, 84px) + 16px);
+}
+
+/* فیلتر سایدبار: پنل پشت‌زمینه‌داده مثل مرجع. */
+.koohe-browse-side .manacore-filter-bar {
+	position: sticky;
+	top: calc(var(--koohe-header-h, 84px) + 16px);
+}
+
+.koohe-browse-results {
+	min-width: 0;
+}
+
+.koohe-browse-results .koohe-poster-grid {
+	grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+}
+
+@media (max-width: 1100px) {
+	.koohe-browse-layout {
+		grid-template-columns: 210px minmax(0, 1fr);
+		gap: 20px;
+	}
+
+	.koohe-browse-results .koohe-poster-grid {
+		grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+	}
+}
+
+@media (max-width: 781px) {
+	/* زیر موبایل سایدبار بالای نتایج باز می‌شود (رفتار صفحه‌بندی طبیعی). */
+	.koohe-browse-layout {
+		grid-template-columns: 1fr;
+	}
+
+	.koohe-browse-side,
+	.koohe-browse-side .manacore-filter-bar {
+		position: static;
+	}
+
+	.koohe-browse-results .koohe-poster-grid {
+		grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+	}
+}
+
+/* =========================================================================
+ * هیرو سینمایی صفحه‌ی اثر (بازآفرینی detail-hero سینورا)
+ * ====================================================================== */
+
+/* ظرف استاندارد محتوا — همان کانتینر ۱۴۴۰ مرجع. */
+.koohe-container {
+	width: 100%;
+	max-width: var(--koohe-container);
+	margin-inline: auto;
+	padding-inline: var(--koohe-container-pad);
+}
+
+.koohe-detail-hero {
+	position: relative;
+	overflow: hidden;
+	padding: 30px 0 46px;
+	border-bottom: 1px solid var(--koohe-border);
+}
+
+.koohe-detail-hero__backdrop {
+	position: absolute;
+	inset: 0;
+	z-index: 0;
+	pointer-events: none;
+}
+
+.koohe-detail-hero__backdrop img {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	opacity: .38;
+	filter: blur(2px) saturate(.85);
+}
+
+.koohe-detail-hero__shade {
+	position: absolute;
+	inset: 0;
+	background:
+		linear-gradient(0deg, var(--koohe-surface) 8%, color-mix(in srgb, var(--koohe-surface) 55%, transparent) 45%, color-mix(in srgb, var(--koohe-surface) 80%, transparent) 100%);
+}
+
+.koohe-detail-hero .koohe-container {
+	position: relative;
+	z-index: 1;
+}
+
+.koohe-detail-hero__main {
+	display: grid;
+	grid-template-columns: 260px minmax(0, 1fr);
+	gap: 34px;
+	align-items: start;
+	padding-top: 18px;
+}
+
+.koohe-detail-hero__poster {
+	position: relative;
+	border-radius: 14px;
+	overflow: hidden;
+	border: 1px solid var(--koohe-border);
+	box-shadow: 0 15px 35px rgba(0, 0, 0, .35);
+	background: var(--koohe-surface-3);
+}
+
+.koohe-detail-hero__poster img {
+	display: block;
+	width: 100%;
+	aspect-ratio: 2 / 3;
+	object-fit: cover;
+}
+
+.koohe-detail-hero__poster .koohe-btn {
+	position: absolute;
+	inset-inline: 12px;
+	bottom: 12px;
+	justify-content: center;
+	backdrop-filter: blur(10px);
+}
+
+.koohe-detail-hero__copy > * + * {
+	margin-block-start: 12px;
+}
+
+.koohe-detail-hero__tags {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	flex-wrap: wrap;
+}
+
+.koohe-detail-hero__tags span {
+	display: inline-flex;
+	padding: 4px 10px;
+	border: 1px solid var(--koohe-border);
+	border-radius: 5px;
+	background: color-mix(in srgb, var(--koohe-surface) 70%, transparent);
+	color: var(--koohe-muted);
+	font-size: .6875rem;
+	font-weight: 600;
+	line-height: 1.6;
+}
+
+.koohe-detail-hero__age {
+	color: var(--koohe-accent);
+	border-color: color-mix(in srgb, var(--koohe-accent) 40%, var(--koohe-border));
+}
+
+.koohe-detail-hero__copy h1 {
+	margin: 0;
+	font-size: clamp(1.6rem, 3.2vw, 2.5rem);
+	line-height: 1.8;
+	letter-spacing: -1px;
+}
+
+.koohe-detail-hero__original {
+	margin: 0;
+	color: var(--koohe-muted);
+	font-size: .875rem;
+	letter-spacing: .4px;
+}
+
+.koohe-detail-hero__meta {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	flex-wrap: wrap;
+	color: var(--koohe-muted);
+	font-size: .8125rem;
+}
+
+.koohe-detail-hero__meta i {
+	width: 1px;
+	height: 14px;
+	background: var(--koohe-border);
+}
+
+.koohe-detail-hero__imdb b {
+	margin-inline-end: 5px;
+	color: var(--koohe-accent);
+	font-size: .625rem;
+	letter-spacing: 1px;
+}
+
+.koohe-detail-hero__imdb strong {
+	color: var(--koohe-text);
+	font-size: 1rem;
+}
+
+.koohe-detail-hero__imdb:last-child,
+.koohe-detail-hero__meta > span:last-of-type {
+	margin-inline-end: 0;
+}
+
+.koohe-detail-hero__genres {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	flex-wrap: wrap;
+}
+
+.koohe-detail-hero__genres a {
+	display: inline-flex;
+	padding: 6px 13px;
+	border: 1px solid color-mix(in srgb, var(--koohe-accent) 25%, var(--koohe-border));
+	border-radius: 999px;
+	background: color-mix(in srgb, var(--koohe-accent) 6%, transparent);
+	color: var(--koohe-text);
+	font-size: .75rem;
+	font-weight: 600;
+	line-height: 1.6;
+	text-decoration: none;
+	transition: border-color var(--koohe-transition), color var(--koohe-transition);
+}
+
+.koohe-detail-hero__genres a:hover,
+.koohe-detail-hero__genres a:focus-visible {
+	border-color: var(--koohe-accent);
+	color: var(--koohe-accent);
+}
+
+.koohe-detail-hero__summary {
+	max-width: 640px;
+	margin: 0;
+	color: var(--koohe-muted);
+	font-size: .875rem;
+	line-height: 2.1;
+}
+
+.koohe-detail-hero__actions {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	flex-wrap: wrap;
+}
+
+.koohe-detail-hero__note {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	margin: 0;
+	color: var(--koohe-muted);
+	font-size: .6875rem;
+}
+
+@media (max-width: 1024px) {
+	.koohe-detail-hero__main {
+		grid-template-columns: 210px minmax(0, 1fr);
+		gap: 24px;
+	}
+}
+
+@media (max-width: 781px) {
+	.koohe-detail-hero__main {
+		grid-template-columns: 1fr;
+	}
+
+	.koohe-detail-hero__poster {
+		max-width: 220px;
+	}
+}
+
+/* تب‌بار چسبان برای صفحه‌ی جزئیات */
+.koohe-tab-bar {
+	background: color-mix(in srgb, var(--koohe-surface) 95%, transparent);
+	backdrop-filter: blur(15px);
+	-webkit-backdrop-filter: blur(15px);
+	border-bottom: 1px solid var(--koohe-border);
+	position: sticky;
+	top: var(--koohe-header-h);
+	z-index: 15;
+}
+
+.koohe-tab-bar .koohe-tabs {
+	display: flex;
+	gap: 32px;
+	height: 64px;
+}
+
+.koohe-tab-bar .koohe-tabs > button {
+	font-size: .6875rem;
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	border: 0;
+	border-bottom: 2px solid transparent;
+	background: none;
+	padding: 0 2px;
+	color: var(--koohe-muted);
+	white-space: nowrap;
+	cursor: pointer;
+	transition: color var(--koohe-transition), border-color var(--koohe-transition);
+}
+
+.koohe-tab-bar .koohe-tabs > button.is-active {
+	border-bottom-color: var(--koohe-accent);
+	color: var(--koohe-accent);
+}
+
+/* موبایل: تب‌ها به‌صورت افقی پیمایش می‌شوند. */
+@media (max-width: 781px) {
+	.koohe-tab-bar .koohe-tabs {
+		gap: 22px;
+		height: 52px;
+		overflow-x: auto;
+		scrollbar-width: none;
+		-webkit-overflow-scrolling: touch;
+	}
+
+	.koohe-tab-bar .koohe-tabs::-webkit-scrollbar {
+		display: none;
+	}
+
+	.koohe-tab-bar .koohe-tabs > button {
+		font-size: .75rem;
+	}
+}
+
+.koohe-content-block > * + * {
+	margin-block-start: var(--wp--preset--spacing--30, 1.5rem);
+}
+
+.koohe-single-body {
+	margin-top: var(--wp--preset--spacing--40, 2rem);
+}
+
+.koohe-episode-nav .wp-block-post-navigation-link a {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	padding: .5rem 1rem;
+	border: 1px solid var(--koohe-border);
+	border-radius: var(--koohe-radius-pill);
+	background: var(--koohe-surface-2);
+	font-weight: 600;
+	transition: all var(--koohe-transition);
+}
+
+.koohe-episode-nav .wp-block-post-navigation-link a:hover,
+.koohe-post-nav .wp-block-post-navigation-link a:hover {
+	border-color: var(--koohe-accent);
+	color: var(--koohe-accent);
+}
+
+.koohe-post-nav {
+	gap: 10px;
+	margin-top: var(--wp--preset--spacing--30, 1.5rem);
+	padding-top: var(--wp--preset--spacing--20, 1rem);
+	border-top: 1px solid var(--koohe-border);
+}
+
+.koohe-post-nav .wp-block-post-navigation-link a {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	padding: .45rem .9rem;
+	border: 1px solid var(--koohe-border);
+	border-radius: var(--koohe-radius-pill);
+	transition: all var(--koohe-transition);
+}
+
+.koohe-post-meta {
+	color: var(--koohe-muted);
+}
+
+.koohe-post-meta a {
+	color: inherit;
+}
+
+.koohe-post-meta a:hover {
+	color: var(--koohe-accent);
+}
+
+/* =========================================================================
+ * 9. نوار کناری و ابزارک‌ها
+ * ====================================================================== */
+
+.koohe-sidebar {
+	position: sticky;
+	top: calc(var(--koohe-header-h) + 16px);
+}
+
+@media (max-width: 781px) {
+	.koohe-sidebar {
+		position: static;
+	}
+}
+
+.koohe-sidebar .is-style-koohe-card > * + * {
+	margin-block-start: 12px;
+}
+
+.koohe-term-list,
+.koohe-footer-list {
+	list-style: none;
+	padding-inline-start: 0;
+	margin: 0;
+}
+
+.koohe-term-list li,
+.koohe-footer-list li {
+	padding-block: 6px;
+	border-bottom: 1px dashed var(--koohe-border);
+}
+
+.koohe-term-list li:last-child,
+.koohe-footer-list li:last-child {
+	border-bottom: 0;
+}
+
+.koohe-term-list a,
+.koohe-footer-list a {
+	color: var(--koohe-muted);
+	font-size: .8125rem;
+}
+
+.koohe-term-list a:hover,
+.koohe-footer-list a:hover {
+	color: var(--koohe-accent);
+}
+
+.koohe-widget {
+	background: var(--koohe-surface);
+	border: 1px solid var(--koohe-border);
+	border-radius: var(--koohe-radius);
+	padding: 16px;
+	margin-bottom: 18px;
+}
+
+.koohe-widget-title {
+	font-size: .9375rem;
+	margin: 0 0 10px;
+}
+
+.koohe-tagcloud a {
+	display: inline-block;
+	margin: 0 0 6px 6px;
+	padding: 4px 12px;
+	border-radius: var(--koohe-radius-pill);
+	border: 1px solid var(--koohe-border);
+	background: var(--koohe-surface-2);
+	color: var(--koohe-muted);
+	text-decoration: none;
+	transition: all var(--koohe-transition);
+}
+
+.koohe-tagcloud a:hover {
+	background: var(--koohe-accent);
+	border-color: var(--koohe-accent);
+	color: var(--koohe-accent-contrast);
+}
+
+.koohe-tagcloud .tag-link-count {
+	opacity: .6;
+	font-size: .85em;
+}
+
+/* =========================================================================
+ * 10. صفحه‌بندی
+ * ====================================================================== */
+
+.koohe-pagination {
+	gap: 6px;
+}
+
+.koohe-pagination .wp-block-query-pagination-numbers .page-numbers,
+.koohe-pagination .wp-block-query-pagination-previous,
+.koohe-pagination .wp-block-query-pagination-next {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	min-width: 38px;
+	height: 38px;
+	padding: 0 12px;
+	border: 1px solid var(--koohe-border);
+	border-radius: var(--koohe-radius-sm);
+	background: var(--koohe-surface-2);
+	color: var(--koohe-muted);
+	font-size: .8125rem;
+	font-weight: 600;
+	text-decoration: none;
+	transition: all var(--koohe-transition);
+}
+
+.koohe-pagination .page-numbers:hover,
+.koohe-pagination .wp-block-query-pagination-previous:hover,
+.koohe-pagination .wp-block-query-pagination-next:hover {
+	border-color: var(--koohe-accent);
+	color: var(--koohe-accent);
+}
+
+.koohe-pagination .page-numbers.current {
+	background: var(--koohe-accent);
+	border-color: var(--koohe-accent);
+	color: var(--koohe-accent-contrast);
+}
+
+.koohe-pagination .page-numbers.dots {
+	border-color: transparent;
+	background: transparent;
+}
+
+/* هدف لمسی و حلقه‌ی تمرکز دیدنی برای صفحه‌بندی. */
+.koohe-pagination .wp-block-query-pagination-numbers .page-numbers,
+.koohe-pagination .wp-block-query-pagination-previous,
+.koohe-pagination .wp-block-query-pagination-next {
+	min-height: 40px;
+}
+
+.koohe-pagination a:focus-visible {
+	outline: 2px solid var(--koohe-accent);
+	outline-offset: 2px;
+}
+
+/* صفحه‌ی جاری برای صفحه‌خوان‌ها نیز مشخص باشد. */
+.koohe-pagination .page-numbers.current {
+	pointer-events: none;
+}
+
+/* روی نمایشگر باریک، شماره‌ها در چند سطر و بدون سرریز افقی بچینند. */
+@media (max-width: 480px) {
+	.koohe-pagination .wp-block-query-pagination-numbers {
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: center;
+		gap: 6px;
+	}
+}
+
+/* =========================================================================
+ * 10.5 آرشیو، دسته‌بندی و نتایج جستجو
+ *
+ * سرتیتر آرشیو، نوار فیلتر و شبکه‌ی نتایج باید یک ریتم عمودی یکسان و
+ * چیدمانی واکنش‌گرا داشته باشند. شبکه‌ی پوستری در قالب‌ها با columnCount
+ * ثابت (۶) تعریف شده است؛ در نمایشگرهای کوچک‌تر با minmax بازنویسی
+ * می‌شود تا پوسترها بیش از حد باریک نشوند.
+ * ====================================================================== */
+
+.koohe-archive .wp-block-query-title,
+.koohe-search .wp-block-query-title {
+	margin-block: 0;
+	overflow-wrap: anywhere;
+}
+
+/* توضیح ترم: خوانا و با عرض محدود. */
+.koohe-archive .wp-block-term-description p {
+	margin-block: 0;
+	max-width: 68ch;
+	line-height: 1.8;
+}
+
+/* نوار فیلتر در آرشیو: فاصله‌ی هماهنگ با سرتیتر. */
+.koohe-archive .manacore-filter-bar,
+.koohe-search .manacore-filter-bar,
+.koohe-taxonomy .manacore-filter-bar {
+	margin-block-start: 4px;
+}
+
+/*
+ * شبکه‌ی پوستری واکنش‌گرا: columnCount هسته با auto-fill جایگزین می‌شود تا
+ * در نمایشگرهای میانی و کوچک، پوسترها پهنای کمینه‌ی معقولی داشته باشند.
+ */
+@media (max-width: 1100px) {
+	.koohe-poster-grid.is-layout-grid {
+		grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+	}
+}
+
+@media (max-width: 599px) {
+	.koohe-poster-grid.is-layout-grid {
+		grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+	}
+
+	/* شبکه‌ی کارت وبلاگ در موبایل یک‌ستونی شود. */
+	.koohe-archive .wp-block-post-template.is-layout-grid:not(.koohe-poster-grid) {
+		grid-template-columns: 1fr;
+	}
+}
+
+/* پیام «نتیجه‌ای یافت نشد» به شکل کارت آرام، نه متن رهاشده. */
+.koohe-query .wp-block-query-no-results {
+	padding: clamp(20px, 5vw, 40px);
+	border: 1px dashed var(--koohe-border);
+	border-radius: var(--koohe-radius-lg, 16px);
+	background: var(--koohe-surface-2);
+}
+
+.koohe-query .wp-block-query-no-results > :first-child {
+	margin-block-start: 0;
+}
+
+.koohe-query .wp-block-query-no-results > :last-child {
+	margin-block-end: 0;
+}
+
+/* =========================================================================
+ * 11. دیدگاه‌ها
+ * ====================================================================== */
+
+.koohe-comments {
+	margin-top: var(--wp--preset--spacing--50, 3rem);
+	padding-top: var(--wp--preset--spacing--30, 1.5rem);
+	border-top: 1px solid var(--koohe-border);
+}
+
+.koohe-comment {
+	border-bottom: 1px solid var(--koohe-border);
+}
+
+.koohe-comment:last-child {
+	border-bottom: 0;
+}
+
+.koohe-comment .wp-block-avatar img {
+	border-radius: 50%;
+}
+
+.koohe-comment .wp-block-comment-author-name {
+	font-weight: 700;
+	margin: 0;
+}
+
+.koohe-comment .wp-block-comment-date {
+	margin: 0;
+}
+
+.koohe-comment .wp-block-comment-reply-link a {
+	color: var(--koohe-accent);
+	font-weight: 600;
+}
+
+.koohe-comments .comment-form input[type="text"],
+.koohe-comments .comment-form input[type="email"],
+.koohe-comments .comment-form input[type="url"],
+.koohe-comments .comment-form textarea {
+	width: 100%;
+	padding: 10px 14px;
+	border: 1px solid var(--koohe-border);
+	border-radius: var(--koohe-radius-sm);
+	background: var(--koohe-surface-2);
+	color: var(--koohe-text);
+	font: inherit;
+	font-size: .875rem;
+	transition: border-color var(--koohe-transition);
+}
+
+.koohe-comments .comment-form :is(input, textarea):focus {
+	border-color: var(--koohe-accent);
+	outline: none;
+}
+
+.koohe-comments .comment-form .submit {
+	padding: .6rem 1.4rem;
+	border: 0;
+	border-radius: var(--koohe-radius-pill);
+	background: var(--koohe-accent);
+	color: var(--koohe-accent-contrast);
+	font-weight: 700;
+	font-size: .875rem;
+	cursor: pointer;
+	transition: opacity var(--koohe-transition);
+}
+
+.koohe-comments .comment-form .submit:hover {
+	opacity: .88;
+}
+
+/* =========================================================================
+ * 12. پابرگ
+ * ====================================================================== */
+
+.koohe-footer .wp-block-site-title a {
+	font-size: 1.05rem;
+}
+
+.koohe-footer-nav .wp-block-navigation-item__content {
+	color: var(--koohe-muted);
+}
+
+.koohe-footer-nav .wp-block-navigation-item__content:hover {
+	color: var(--koohe-accent);
+}
+
+.koohe-footer-bottom {
+	gap: 10px;
+}
+
+.koohe-footer-bottom p {
+	margin: 0;
+}
+
+.koohe-credit a {
+	color: var(--koohe-accent);
+	font-weight: 600;
+}
+
+/* =========================================================================
+ * 13. صفحه‌ی ۴۰۴ و اشتراک
+ * ====================================================================== */
+
+.koohe-404-box {
+	text-align: center;
+	padding-block: var(--wp--preset--spacing--40, 2rem);
+}
+
+.koohe-404-code {
+	margin: 0;
+	opacity: .9;
+}
+
+.koohe-cta {
+	text-align: center;
+}
+
+.koohe-subscribe-page .koohe-faq .wp-block-details {
+	border: 1px solid var(--koohe-border);
+	border-radius: var(--koohe-radius);
+	background: var(--koohe-surface);
+	margin-block: 10px;
+}
+
+.koohe-subscribe-page .koohe-faq summary {
+	cursor: pointer;
+	font-weight: 700;
+	font-size: .9375rem;
+	list-style: none;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 10px;
+}
+
+.koohe-subscribe-page .koohe-faq summary::-webkit-details-marker {
+	display: none;
+}
+
+.koohe-subscribe-page .koohe-faq summary::after {
+	content: "+";
+	color: var(--koohe-accent);
+	font-size: 1.2em;
+	line-height: 1;
+	transition: transform var(--koohe-transition);
+}
+
+.koohe-subscribe-page .koohe-faq details[open] summary::after {
+	content: "−";
+}
+
+/* =========================================================================
+ * 14. دکمه‌ی بازگشت به بالا
+ * ====================================================================== */
+
+.koohe-to-top {
+	position: fixed;
+	inset-inline-end: 18px;
+	bottom: 18px;
+	z-index: 90;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 42px;
+	height: 42px;
+	border: 1px solid var(--koohe-border);
+	border-radius: 50%;
+	background: var(--koohe-surface);
+	color: var(--koohe-text);
+	box-shadow: var(--koohe-shadow);
+	cursor: pointer;
+	opacity: 0;
+	visibility: hidden;
+	transform: translateY(10px);
+	transition: opacity var(--koohe-transition), transform var(--koohe-transition), visibility var(--koohe-transition), border-color var(--koohe-transition);
+}
+
+.koohe-to-top.is-visible {
+	opacity: 1;
+	visibility: visible;
+	transform: translateY(0);
+}
+
+.koohe-to-top:hover {
+	border-color: var(--koohe-accent);
+	color: var(--koohe-accent);
+}
+
+/* =========================================================================
+ * 15. ووکامرس (پایه — تکمیل در woocommerce.css)
+ * ====================================================================== */
+
+.koohe-woo {
+	margin-block: var(--wp--preset--spacing--40, 2rem);
+}
+
+/* =========================================================================
+ * 16. واکنش‌گرایی
+ * ====================================================================== */
+
+@media (max-width: 1024px) {
+	/*
+	 * بلوک جستجو ظرفش را با کلاس .manacore-search می‌سازد نه
+	 * .manacore-search-box؛ گزینشگر پیشین منطبق نمی‌شد و جستجو در
+	 * تبلت همچنان جای سربرگ را می‌گرفت.
+	 */
+	.koohe-header-end .manacore-search {
+		display: none;
+	}
+}
+
+@media (max-width: 781px) {
+	.koohe-header-inner {
+		gap: 10px;
+	}
+
+	.koohe-account-name {
+		display: none;
+	}
+
+	.koohe-title-columns {
+		flex-wrap: wrap !important;
+	}
+
+	.koohe-title-poster {
+		flex-basis: 150px !important;
+		max-width: 150px;
+	}
+
+	.koohe-with-sidebar {
+		flex-wrap: wrap !important;
+	}
+
+	.koohe-with-sidebar > .wp-block-column {
+		flex-basis: 100% !important;
+	}
+}
+
+@media (max-width: 599px) {
+	.koohe-logo-text a {
+		font-size: 1rem;
+	}
+
+	.koohe-toggle-track {
+		width: 46px;
+		height: 26px;
+	}
+
+	.koohe-toggle-thumb {
+		width: 20px;
+		height: 20px;
+	}
+
+	[dir="rtl"] .koohe-toggle[aria-pressed="true"] .koohe-toggle-thumb {
+		transform: translateX(-20px);
+	}
+
+	html:not([dir="rtl"]) .koohe-toggle[aria-pressed="true"] .koohe-toggle-thumb {
+		transform: translateX(20px);
+	}
+
+	.koohe-footer-cols {
+		gap: 24px;
+	}
+
+	.koohe-to-top {
+		width: 38px;
+		height: 38px;
+		inset-inline-end: 12px;
+		bottom: 12px;
+	}
+}
+
+/* =========================================================================
+ * 16.5 تنوع چیدمان حلقه‌ی کوئری و گروه (P5)
+ *
+ * هر سبک با یک کلاس روی ظرفِ بلوک فعال می‌شود؛ نشانه‌گذاری الگوها
+ * دست‌نخورده می‌ماند، پس روی هر الگوی موجود هم می‌توان اعمالش کرد.
+ * ====================================================================== */
+
+/* ویترین: نخستین آیتم دو ستون و دو سطر را می‌گیرد. */
+.is-style-koohe-showcase .wp-block-post-template.is-layout-grid > li:first-child {
+	grid-column: span 2;
+	grid-row: span 2;
+}
+
+@media (max-width: 599px) {
+	.is-style-koohe-showcase .wp-block-post-template.is-layout-grid > li:first-child {
+		grid-column: span 2;
+		grid-row: auto;
+	}
+}
+
+/*
+ * رتبه‌بندی: شماره با counter تولید می‌شود تا با هر تعداد آیتم و در
+ * هر دو جهت متن درست بماند.
+ */
+.is-style-koohe-ranking .wp-block-post-template {
+	counter-reset: koohe-rank;
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+}
+
+.is-style-koohe-ranking .wp-block-post-template > li {
+	counter-increment: koohe-rank;
+	position: relative;
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	padding-inline-start: clamp(38px, 7%, 62px);
+}
+
+.is-style-koohe-ranking .wp-block-post-template > li::before {
+	content: counter(koohe-rank);
+	position: absolute;
+	inset-inline-start: 0;
+	top: 50%;
+	transform: translateY(-50%);
+	font-size: clamp(1.5rem, 4vw, 2.3rem);
+	font-weight: 800;
+	line-height: 1;
+	color: var(--koohe-muted);
+	opacity: .5;
+	pointer-events: none;
+}
+
+.is-style-koohe-ranking .wp-block-post-featured-image {
+	flex: 0 0 clamp(64px, 14%, 104px);
+	margin-block: 0;
+}
+
+/* فهرست افقی: تصویر کنار متن. */
+.is-style-koohe-listing .wp-block-post-template {
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+}
+
+.is-style-koohe-listing .wp-block-post-template > li {
+	display: flex;
+	align-items: flex-start;
+	gap: 14px;
+	padding-bottom: 12px;
+	border-bottom: 1px solid var(--koohe-border);
+}
+
+.is-style-koohe-listing .wp-block-post-template > li:last-child {
+	border-bottom: 0;
+	padding-bottom: 0;
+}
+
+.is-style-koohe-listing .wp-block-post-featured-image {
+	flex: 0 0 clamp(88px, 20%, 148px);
+	margin-block: 0;
+}
+
+/* متن روی تصویر. */
+.is-style-koohe-overlay .wp-block-post-template > li {
+	position: relative;
+	isolation: isolate;
+	overflow: hidden;
+	border-radius: var(--koohe-radius-lg, 16px);
+}
+
+.is-style-koohe-overlay .wp-block-post-featured-image {
+	margin-block: 0;
+}
+
+.is-style-koohe-overlay .wp-block-post-title,
+.is-style-koohe-overlay .wp-block-post-excerpt,
+.is-style-koohe-overlay .wp-block-post-date,
+.is-style-koohe-overlay .wp-block-post-terms {
+	position: relative;
+	z-index: 1;
+	color: #fff;
+}
+
+.is-style-koohe-overlay .wp-block-post-title a {
+	color: #fff;
+}
+
+.is-style-koohe-overlay .wp-block-post-template > li::after {
+	content: "";
+	position: absolute;
+	inset: 0;
+	background: linear-gradient(to top, rgba(0, 0, 0, .86), rgba(0, 0, 0, .5) 52%, transparent);
+	pointer-events: none;
+}
+
+/* فشرده: فاصله و اندازه‌ی کوچک‌تر برای ستون کنار یا نوار جانبی. */
+.is-style-koohe-compact .wp-block-post-template {
+	gap: 8px;
+}
+
+.is-style-koohe-compact .wp-block-post-title {
+	font-size: .92rem;
+	line-height: 1.6;
+}
+
+.is-style-koohe-compact .wp-block-post-excerpt,
+.is-style-koohe-compact .wp-block-post-date {
+	font-size: .78rem;
+}
+
+/* گروه برجسته. */
+.is-style-koohe-elevated {
+	background: var(--koohe-surface-2);
+	border-radius: var(--koohe-radius-lg, 16px);
+	padding: clamp(14px, 2.5vw, 26px);
+	box-shadow: 0 10px 30px -14px rgba(0, 0, 0, .4);
+}
+
+/* گروه با نوار تأکید کناری. */
+.is-style-koohe-accent-bar {
+	border-inline-start: 3px solid var(--koohe-accent);
+	padding-inline-start: clamp(12px, 2vw, 20px);
+	background: var(--koohe-surface-2);
+	border-radius: var(--koohe-radius, 12px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.is-style-koohe-elevated {
+		box-shadow: none;
+	}
+}
+
+/* =========================================================================
+ * 16.6 ریسپانسیو سیال، هدف لمسی و راحتی دسترسی (UI/UX)
+ *
+ * سه اصل:
+ *   • «سیال نه پله‌ای»: با clamp اندازه‌ها میان ۳۲۰px و نمایشگر بزرگ
+ *     پیوسته تغییر می‌کنند، پس در نقطه‌ی شکست پرش دیده نمی‌شود.
+ *   • ناحیه‌ی لمس بزرگ می‌شود، ظاهر نه (WCAG 2.5.5 هدف ۴۴px).
+ *   • هر افزودنی با prefers-reduced-motion و کنتراست بالا سازگار است.
+ * ====================================================================== */
+
+/* 16.6.1 پهنای امن و جلوگیری از سرریز افقی ------------------------------- */
+
+/*
+ * روی گوشی‌های دارای بریدگی (notch)، محتوا زیر ناحیه‌ی امن می‌رفت.
+ * env() در مرورگرهای بی‌پشتیبانی به مقدار دوم برمی‌گردد، پس بی‌خطر است.
+ */
+.koohe-main {
+	padding-inline: max(0px, env(safe-area-inset-left));
+}
+
+/* عنوان یا نشانی بلند نباید کل صفحه را جانبی‌پیمایش کند. */
+.koohe-main :is(h1, h2, h3, h4, h5, h6, p, li, dd, dt, figcaption) {
+	overflow-wrap: anywhere;
+}
+
+.koohe-main :is(img, video, iframe, svg, table) {
+	max-width: 100%;
+}
+
+/* جدول‌های عریض در موبایل به‌جای شکستن طرح، خودشان پیمایش شوند. */
+@media (max-width: 599px) {
+	.koohe-main :is(.wp-block-table, figure.wp-block-table) {
+		overflow-x: auto;
+		-webkit-overflow-scrolling: touch;
+	}
+}
+
+/* 16.6.2 تیتربندی سیال --------------------------------------------------- */
+
+/*
+ * اندازه‌ی تیترها با clamp به پهنای دید بسته می‌شود. کمینه برای ۳۲۰px
+ * خوانا و بیشینه برای نمایشگر بزرگ متعادل است.
+ */
+.koohe-main .wp-block-post-title,
+.koohe-main .wp-block-query-title {
+	font-size: clamp(1.35rem, 1.1rem + 2.2vw, 2.5rem);
+	line-height: 1.3;
+}
+
+.koohe-main h2.wp-block-heading {
+	font-size: clamp(1.1rem, .95rem + 1.1vw, 1.6rem);
+}
+
+/* 16.6.3 هدف لمسی امن --------------------------------------------------- */
+
+@media (pointer: coarse) {
+	/*
+	 * پیوندهای فهرست و صفحه‌بندی در حالت لمسی به ارتفاع امن می‌رسند.
+	 * از padding استفاده می‌شود نه height تا متن چندخطی هم جا شود.
+	 */
+	.koohe-nav .wp-block-navigation-item__content,
+	.koohe-pagination :is(a, span.page-numbers),
+	.koohe-footer a {
+		min-height: 44px;
+		display: inline-flex;
+		align-items: center;
+	}
+
+	.koohe-to-top {
+		width: 48px;
+		height: 48px;
+	}
+
+	/* دکمه‌ی تغییر حالت و همبرگر هم باید ۴۴px باشند. */
+	.koohe-toggle,
+	.koohe-nav .wp-block-navigation__responsive-container-open,
+	.koohe-nav .wp-block-navigation__responsive-container-close {
+		min-width: 44px;
+		min-height: 44px;
+	}
+}
+
+/* 16.6.4 نوار کنش پایین صفحه در موبایل ----------------------------------- */
+
+/*
+ * در صفحه‌ی اثر، کنش‌های اصلی (دانلود/تماشا) پایین صفحه‌اند و کاربر باید
+ * تا انتها پیمایش کند. این نوار در موبایل آن‌ها را در دسترسِ شست
+ * نگه می‌دارد. تنها زمانی دیده می‌شود که قالب آن را چاپ کرده باشد.
+ */
+.koohe-actionbar {
+	position: fixed;
+	inset-inline: 0;
+	bottom: 0;
+	z-index: 89;
+	display: none;
+	gap: 8px;
+	padding: 10px 12px;
+	/* احترام به ناحیه‌ی امن پایین در گوشی‌های بدون دکمه‌ی خانه. */
+	padding-bottom: calc(10px + env(safe-area-inset-bottom, 0px));
+	background: color-mix(in srgb, var(--koohe-surface) 92%, transparent);
+	border-top: 1px solid var(--koohe-border);
+	backdrop-filter: blur(12px);
+}
+
+.koohe-actionbar > * {
+	flex: 1 1 0;
+	min-height: 44px;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.koohe-actionbar-btn {
+	gap: 6px;
+	padding: 10px 14px;
+	border: 1px solid var(--koohe-border);
+	border-radius: var(--koohe-radius-sm);
+	background: var(--koohe-surface-2);
+	color: var(--koohe-text);
+	font-size: .9rem;
+	font-weight: 600;
+	text-decoration: none;
+	cursor: pointer;
+}
+
+.koohe-actionbar-btn.is-primary {
+	border-color: transparent;
+	background: var(--koohe-accent);
+	color: var(--koohe-accent-contrast);
+}
+
+.koohe-actionbar-btn:focus-visible {
+	outline: 2px solid var(--koohe-accent);
+	outline-offset: 2px;
+}
+
+@media (max-width: 781px) {
+	.koohe-has-actionbar .koohe-actionbar {
+		display: flex;
+	}
+
+	/*
+	 * فضای پایین صفحه باز می‌شود تا نوار روی محتوا و پانوشت نیفتد.
+	 */
+	.koohe-has-actionbar .koohe-main,
+	.koohe-has-actionbar .koohe-footer {
+		padding-bottom: calc(64px + env(safe-area-inset-bottom, 0px));
+	}
+
+	/* دکمه‌ی بالارو بالای نوار می‌نشیند تا هم‌پوشان نشوند. */
+	.koohe-has-actionbar .koohe-to-top {
+		bottom: calc(74px + env(safe-area-inset-bottom, 0px));
+	}
+}
+
+/* 16.6.6 نمایشگرهای بسیار بزرگ ------------------------------------------ */
+
+/*
+ * روی نمایشگر ۲K و بالاتر، متن نباید بی‌نهایت کشیده شود؛ طول خط بهینه
+ * برای خوانایی حدود ۷۵ نویسه است.
+ */
+@media (min-width: 1600px) {
+	.koohe-single .wp-block-post-content > :is(p, ul, ol, blockquote) {
+		max-width: 72ch;
+	}
+}
+
+/* 16.6.7 احترام به تنظیمات کاربر ---------------------------------------- */
+
+@media (prefers-contrast: more) {
+	.koohe-actionbar {
+		background: var(--koohe-surface);
+		backdrop-filter: none;
+	}
+
+	.koohe-to-top,
+	.koohe-card,
+	.is-style-koohe-elevated {
+		border: 1px solid currentColor;
+	}
+}
+
+/* در چاپ، اجزای شناور معنایی ندارند. */
+@media print {
+	.koohe-actionbar {
+		display: none !important;
+	}
+}
+
+/* =========================================================================
+ * 17. دسترس‌پذیری و چاپ
+ * ====================================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+	*,
+	*::before,
+	*::after {
+		animation-duration: .001ms !important;
+		animation-iteration-count: 1 !important;
+		transition-duration: .001ms !important;
+		scroll-behavior: auto !important;
+	}
+}
+
+@media print {
+	.koohe-header,
+	.koohe-footer,
+	.koohe-sidebar,
+	.koohe-to-top,
+	.koohe-comments,
+	.manacore-links,
+	.manacore-player {
+		display: none !important;
+	}
+
+	body {
+		background: #fff;
+		color: #000;
+	}
+}
+
+/* =========================================================================
+ * 18. لایه‌ی کامپوننت‌های سینورا
+ *
+ * این بخش، زبان طراحی مرجع را به‌صورت کلاس‌های نام‌دار و قابل استفاده در
+ * الگوها، بلوک‌ها و partها ارائه می‌دهد. همه‌ی رنگ‌ها از توکن‌های
+ * --koohe-* می‌آیند تا حالت تیره/روشن و تنوع‌های استایل خودکار اعمال شوند.
+ * ====================================================================== */
+
+/* 18.1 ظرف صفحه ---------------------------------------------------------- */
+
+.koohe-container {
+	width: 100%;
+	max-width: var(--koohe-container);
+	margin-inline: auto;
+	padding-inline: var(--koohe-container-pad);
+}
+
+/* 18.2 دکمه‌ها ------------------------------------------------------------- */
+
+.koohe-btn {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 9px;
+	min-height: 43px;
+	padding: 11px 19px;
+	border: 1px solid transparent;
+	border-radius: 7px;
+	font-size: .75rem;
+	font-weight: 600;
+	line-height: 1.6;
+	white-space: nowrap;
+	text-decoration: none;
+	cursor: pointer;
+	transition: background var(--koohe-transition), border-color var(--koohe-transition),
+		color var(--koohe-transition), transform var(--koohe-transition),
+		box-shadow var(--koohe-transition);
+}
+
+.koohe-btn:hover:not(:disabled) {
+	transform: translateY(-2px);
+	text-decoration: none;
+}
+
+.koohe-btn:disabled {
+	cursor: not-allowed;
+	opacity: .45;
+}
+
+.koohe-btn--primary {
+	background: var(--koohe-accent);
+	border-color: var(--koohe-accent);
+	color: var(--koohe-accent-contrast);
+}
+
+.koohe-btn--primary:hover:not(:disabled) {
+	background: color-mix(in srgb, var(--koohe-accent) 82%, #fff);
+	color: var(--koohe-accent-contrast);
+	box-shadow: 0 4px 22px color-mix(in srgb, var(--koohe-accent) 18%, transparent);
+}
+
+.koohe-btn--secondary {
+	background: var(--koohe-surface-3);
+	border-color: var(--koohe-border);
+	color: var(--koohe-text);
+}
+
+.koohe-btn--secondary:hover:not(:disabled) {
+	border-color: var(--koohe-accent);
+	color: var(--koohe-text);
+}
+
+.koohe-btn--glass {
+	background: rgba(255, 255, 255, .06);
+	border-color: rgba(255, 255, 255, .18);
+	color: var(--koohe-text);
+	backdrop-filter: blur(12px);
+	-webkit-backdrop-filter: blur(12px);
+}
+
+.koohe-btn--glass:hover:not(:disabled) {
+	background: rgba(255, 255, 255, .12);
+}
+
+.koohe-btn--small {
+	min-height: 31px;
+	padding: 7px 12px;
+	font-size: .6875rem;
+	gap: 6px;
+}
+
+/* دکمه‌ی آیکنی مربعی. */
+.koohe-icon-btn {
+	width: 36px;
+	height: 36px;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	flex-shrink: 0;
+	border: 0;
+	border-radius: 7px;
+	background: transparent;
+	color: var(--koohe-muted);
+	cursor: pointer;
+	transition: color var(--koohe-transition), background var(--koohe-transition);
+}
+
+.koohe-icon-btn:hover {
+	background: var(--koohe-surface-3);
+	color: var(--koohe-accent);
+}
+
+/* 18.3 پنل و کارت ---------------------------------------------------------- */
+
+.koohe-panel {
+	background: var(--koohe-surface-2);
+	border: 1px solid var(--koohe-border);
+	border-radius: var(--koohe-radius);
+}
+
+.koohe-panel--flush {
+	border-radius: 0;
+}
+
+/* 18.4 نشان‌ها (بج) --------------------------------------------------------- */
+
+.koohe-badge {
+	display: inline-flex;
+	align-items: center;
+	gap: 5px;
+	padding: 4px 7px;
+	border: 1px solid color-mix(in srgb, var(--koohe-border) 60%, transparent);
+	border-radius: 4px;
+	background: color-mix(in srgb, var(--koohe-surface) 85%, transparent);
+	backdrop-filter: blur(8px);
+	color: var(--koohe-text);
+	font-size: .625rem;
+	line-height: 1.6;
+	white-space: nowrap;
+}
+
+.koohe-badge--accent {
+	color: var(--koohe-accent);
+	border-color: color-mix(in srgb, var(--koohe-accent) 25%, transparent);
+	background: color-mix(in srgb, var(--koohe-accent) 8%, transparent);
+}
+
+/* نقطه‌ی «زنده». */
+.koohe-live-dot {
+	display: inline-block;
+	width: 5px;
+	height: 5px;
+	border-radius: 50%;
+	background: var(--koohe-accent);
+	box-shadow: 0 0 9px color-mix(in srgb, var(--koohe-accent) 40%, transparent);
+	flex-shrink: 0;
+}
+
+/* 18.5 عنوان‌ها و خرده‌متن‌ها ------------------------------------------------ */
+
+.koohe-eyebrow {
+	color: var(--koohe-accent);
+	font-size: .625rem;
+	font-weight: 500;
+	letter-spacing: 1.2px;
+}
+
+.koohe-muted {
+	color: var(--koohe-muted);
+	font-size: .8125rem;
+	line-height: 2;
+}
+
+/* سرتیتر بخش‌ها: عنوان + آیکن + لینک «بیشتر». */
+.koohe-section-heading {
+	display: flex;
+	align-items: center;
+	gap: 22px;
+	margin-bottom: 23px;
+	min-height: 37px;
+}
+
+.koohe-section-heading h2,
+.koohe-section-heading h3 {
+	font-size: 1.1875rem;
+	font-weight: 700;
+	line-height: 1.6;
+	margin: 0;
+}
+
+.koohe-section-heading .koohe-section-icon {
+	color: var(--koohe-accent);
+	display: inline-flex;
+	align-items: center;
+}
+
+.koohe-section-heading > .koohe-text-link {
+	margin-inline-start: auto;
+}
+
+/* لینک متنی کوچک با فلش. */
+.koohe-text-link {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	white-space: nowrap;
+	color: var(--koohe-muted);
+	font-size: .6875rem;
+	text-decoration: none;
+	transition: color var(--koohe-transition);
+}
+
+.koohe-text-link:hover {
+	color: var(--koohe-accent);
+}
+
+.koohe-text-link svg {
+	transition: transform var(--koohe-transition);
+}
+
+.koohe-text-link:hover svg {
+	transform: translateX(-3px);
+}
+
+/* 18.6 فرم‌ها ---------------------------------------------------------------- */
+
+.koohe-form :is(input, textarea, select),
+.koohe-field {
+	border: 1px solid var(--koohe-border);
+	border-radius: 7px;
+	background: var(--koohe-surface);
+	color: var(--koohe-text);
+	padding: 11px 13px;
+	font-size: .8125rem;
+	transition: border-color var(--koohe-transition);
+	min-width: 0;
+}
+
+.koohe-form :is(input, textarea, select):focus,
+.koohe-field:focus {
+	outline: none;
+	border-color: var(--koohe-accent);
+}
+
+.koohe-form ::placeholder {
+	color: var(--koohe-muted);
+	opacity: .75;
+}
+
+.koohe-form select {
+	font-size: .75rem;
+	padding: 9px 11px;
+	cursor: pointer;
+}
+
+.koohe-form textarea {
+	width: 100%;
+	resize: vertical;
+	line-height: 2;
+}
+
+.koohe-form input[type="checkbox"] {
+	accent-color: var(--koohe-accent);
+}
+
+/* 18.7 بردکرامب -------------------------------------------------------------- */
+
+.koohe-breadcrumb {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	flex-wrap: wrap;
+	color: var(--koohe-muted);
+	font-size: .625rem;
+	min-height: 20px;
+}
+
+.koohe-breadcrumb a {
+	color: inherit;
+	text-decoration: none;
+}
+
+.koohe-breadcrumb a:hover {
+	color: var(--koohe-accent);
+}
+
+.koohe-breadcrumb [aria-current="page"],
+.koohe-breadcrumb > span:last-child {
+	color: var(--koohe-text);
+}
+
+/* 18.8 حالت خالی ------------------------------------------------------------- */
+
+.koohe-empty-state {
+	min-height: 250px;
+	padding: 35px 22px;
+	border: 1px dashed var(--koohe-border);
+	border-radius: var(--koohe-radius);
+	background: var(--koohe-surface-2);
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	text-align: center;
+	gap: 8px;
+}
+
+.koohe-empty-state svg {
+	color: var(--koohe-accent);
+	opacity: .65;
+}
+
+.koohe-empty-state h3 {
+	font-size: 1.0625rem;
+	line-height: 1.9;
+	margin: 9px 0 0;
+}
+
+.koohe-empty-state p {
+	font-size: .8125rem;
+	color: var(--koohe-muted);
+	line-height: 2.2;
+	max-width: 390px;
+	margin: 0;
+}
+
+/* 18.9 اعلان شناور (تم) ------------------------------------------------------ */
+
+/*
+ * اعلان شناور افزونه (.manacore-toast) در front.css استایل می‌گیرد؛ این کلاس،
+ * نسخه‌ی هم‌زبانِ سمت قالب برای استفاده در الگوها و اسکریپت‌های تم است.
+ */
+.koohe-toast {
+	position: fixed;
+	bottom: 24px;
+	inset-inline-start: 24px;
+	max-width: calc(100% - 48px);
+	z-index: 100010;
+	display: flex;
+	align-items: center;
+	gap: 11px;
+	padding: 16px 18px;
+	border: 1px solid color-mix(in srgb, var(--koohe-accent) 45%, transparent);
+	border-radius: var(--koohe-radius);
+	background: var(--koohe-surface-2);
+	box-shadow: var(--koohe-shadow-lg);
+	font-size: .75rem;
+	animation: koohe-toast-in .2s ease;
+}
+
+.koohe-toast svg {
+	color: var(--koohe-accent);
+	flex-shrink: 0;
+}
+
+.koohe-toast.is-error {
+	border-color: color-mix(in srgb, var(--koohe-danger) 45%, transparent);
+}
+
+.koohe-toast.is-error svg {
+	color: var(--koohe-danger);
+}
+
+@keyframes koohe-toast-in {
+	from {
+		opacity: 0;
+		transform: translateY(8px);
+	}
+}
+
+/* 18.10 اورلی جستجو (⌘K) ------------------------------------------------------ */
+
+.koohe-search-overlay {
+	position: fixed;
+	inset: 0;
+	z-index: 1000;
+	display: flex;
+	align-items: flex-start;
+	justify-content: center;
+	padding: 12vh 16px 16px;
+}
+
+.koohe-search-overlay__backdrop {
+	position: absolute;
+	inset: 0;
+	background: rgba(5, 8, 12, .78);
+	backdrop-filter: blur(6px);
+	-webkit-backdrop-filter: blur(6px);
+}
+
+.koohe-search-overlay__panel {
+	position: relative;
+	z-index: 1;
+	width: min(100%, 640px);
+	max-height: 78vh;
+	overflow: auto;
+	padding: 34px;
+	border: 1px solid var(--koohe-border);
+	border-radius: 15px;
+	background: var(--koohe-surface-2);
+	box-shadow: 0 30px 90px rgba(0, 0, 0, .5);
+	animation: koohe-overlay-in .22s cubic-bezier(.2, .7, .3, 1);
+}
+
+@keyframes koohe-overlay-in {
+	from {
+		opacity: 0;
+		transform: translateY(14px) scale(.98);
+	}
+	to {
+		opacity: 1;
+		transform: none;
+	}
+}
+
+.koohe-search-overlay__close {
+	position: absolute;
+	top: 18px;
+	inset-inline-end: 18px;
+}
+
+.koohe-search-overlay__title {
+	font-size: 1.4375rem;
+	font-weight: 800;
+	line-height: 1.7;
+	margin: 6px 0 18px;
+}
+
+.koohe-search-overlay__form {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	padding: 8px 14px;
+	border: 1px solid var(--koohe-border);
+	border-radius: 10px;
+	background: var(--koohe-surface);
+	color: var(--koohe-muted);
+}
+
+.koohe-search-overlay__form input {
+	flex: 1 1 auto;
+	min-width: 0;
+	border: 0;
+	background: transparent;
+	color: var(--koohe-text);
+	font: inherit;
+	font-size: .9375rem;
+	outline: none;
+}
+
+.koohe-search-overlay__results {
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+	margin-top: 16px;
+	border-top: 1px solid var(--koohe-border);
+	padding-top: 12px;
+}
+
+.koohe-search-overlay__results a {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	padding: 9px 10px;
+	border-radius: 8px;
+	color: var(--koohe-text);
+	text-decoration: none;
+	transition: background var(--koohe-transition);
+}
+
+.koohe-search-overlay__results a:hover,
+.koohe-search-overlay__results a:focus-visible {
+	background: var(--koohe-surface-3);
+}
+
+.koohe-search-overlay__results img {
+	width: 40px;
+	height: 58px;
+	object-fit: cover;
+	border-radius: 6px;
+	background: var(--koohe-surface-3);
+}
+
+.koohe-search-overlay__results strong {
+	display: block;
+	font-size: .875rem;
+	font-weight: 600;
+	line-height: 1.6;
+}
+
+.koohe-search-overlay__results small {
+	display: block;
+	font-size: .6875rem;
+	color: var(--koohe-muted);
+	line-height: 1.6;
+}
+
+.koohe-search-overlay .koohe-empty-state {
+	margin-top: 16px;
+}
+
+body.koohe-search-open {
+	overflow: hidden;
+}
+
+/* 18.10 مگامنوی دسته‌بندی‌ها ------------------------------------------------- */
+
+/*
+ * پنل مگامنو با شورت‌کد [manacore_mega_menu] در قطعه‌ی سربرگ رندر می‌شود
+ * (data-mega-menu) و دکمه‌ی بازکن آن data-koohe-mega-open دارد؛ همان
+ * ساختار سه‌ستونه‌ی مرجع سینورا: شبکه‌ی ژانرها + دسترسی سریع + اثر ویژه.
+ */
+.koohe-nav-mega-toggle {
+	display: inline-flex;
+	align-items: center;
+	gap: 5px;
+	color: var(--koohe-muted);
+	font-size: var(--wp--preset--font-size--small, .8125rem);
+	font-weight: 600;
+	line-height: var(--koohe-header-h, 84px);
+	white-space: nowrap;
+	cursor: pointer;
+	transition: color var(--koohe-transition);
+}
+
+.koohe-nav-mega-toggle:hover,
+.koohe-nav-mega-toggle:focus-visible,
+.koohe-nav-mega-toggle.is-open {
+	color: var(--koohe-text);
+}
+
+.koohe-nav-mega-toggle.is-open svg {
+	transform: rotate(180deg);
+}
+
+.koohe-nav-mega-toggle svg {
+	transition: transform var(--koohe-transition);
+}
+
+.manacore-mega[hidden] {
+	display: none;
+}
+
+.manacore-mega {
+	position: absolute;
+	inset-inline: 0;
+	inset-block-start: var(--koohe-header-h, 84px);
+	z-index: 55;
+	max-width: var(--koohe-container, 1440px);
+	margin: 0 auto;
+	padding: 30px;
+	border: 1px solid var(--koohe-border);
+	border-top: 0;
+	border-radius: 0 0 15px 15px;
+	background: var(--koohe-surface-2);
+	box-shadow: 0 30px 70px rgba(0, 0, 0, .4);
+	display: grid;
+	grid-template-columns: 1.65fr 1fr 1.1fr;
+	gap: 30px;
+}
+
+.manacore-mega__heading {
+	margin: 10px 0 15px;
+	font-size: 1.1875rem;
+}
+
+.manacore-mega__genres {
+	display: grid;
+	grid-template-columns: repeat(var(--mc-mega-columns, 3), 1fr);
+	gap: 7px;
+}
+
+.manacore-mega__genres a {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 9px;
+	border-radius: 5px;
+	color: var(--koohe-muted);
+	font-size: .6875rem;
+	line-height: 1.6;
+	text-decoration: none;
+	transition: background var(--koohe-transition), color var(--koohe-transition);
+}
+
+.manacore-mega__genres a:hover,
+.manacore-mega__genres a:focus-visible {
+	background: var(--koohe-surface-3);
+	color: var(--koohe-accent);
+}
+
+.manacore-mega__quick {
+	display: flex;
+	flex-direction: column;
+	gap: 17px;
+	border-inline-start: 1px solid var(--koohe-border);
+	padding-inline-start: 25px;
+}
+
+.manacore-mega__quick a {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	color: var(--koohe-text);
+	font-size: .6875rem;
+	line-height: 1.6;
+	text-decoration: none;
+	transition: color var(--koohe-transition);
+}
+
+.manacore-mega__quick a svg {
+	color: var(--koohe-accent);
+	flex: none;
+}
+
+.manacore-mega__quick a:hover,
+.manacore-mega__quick a:focus-visible {
+	color: var(--koohe-accent);
+}
+
+.manacore-mega__feature {
+	position: relative;
+	min-height: 200px;
+	border-radius: 10px;
+	overflow: hidden;
+	text-decoration: none;
+}
+
+.manacore-mega__feature img {
+	position: absolute;
+	inset: 0;
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+}
+
+.manacore-mega__feature::after {
+	content: "";
+	position: absolute;
+	inset: 0;
+	background: linear-gradient(0deg, var(--koohe-surface) 5%, transparent 100%);
+}
+
+.manacore-mega__feature > span {
+	position: absolute;
+	z-index: 1;
+	bottom: 21px;
+	inset-inline-start: 20px;
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+	color: #fff;
+}
+
+.manacore-mega__feature small {
+	font-size: .5625rem;
+	color: var(--koohe-accent);
+}
+
+.manacore-mega__feature strong {
+	font-size: 1.25rem;
+}
+
+.manacore-mega__feature span > span {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	font-size: .625rem;
+	color: var(--koohe-accent);
+}
+
+.manacore-mega__feature:hover strong {
+	color: var(--koohe-accent);
+}
+
+/* 18.10 بارگذاری بیشتر -------------------------------------------------------- */
+
+/*
+ * ظرف دکمه‌ی «بازدید بیشتر». در نسخه‌ی بدون JS، لینکِ درونش به صفحه‌ی بعدی
+ * می‌رود (رفتار صفحه‌بندی کلاسیک حفظ می‌شود). خودِ ظرف فقط وقتی نمایش داده
+ * می‌شود که JS آن را پر کند — در غیر این صورت قالب نشانش نمی‌دهد.
+ */
+.koohe-load-more {
+	display: flex;
+	justify-content: center;
+	margin-top: 30px;
+}
+
+.koohe-load-more a {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	min-height: 44px;
+	padding: 10px 26px;
+	border: 1px solid var(--koohe-border);
+	border-radius: var(--koohe-radius-pill, 999px);
+	background: var(--koohe-surface-2);
+	color: var(--koohe-text);
+	font-size: .8125rem;
+	font-weight: 600;
+	line-height: 1.6;
+	text-decoration: none;
+	cursor: pointer;
+	transition: border-color var(--koohe-transition), color var(--koohe-transition),
+		background var(--koohe-transition), transform var(--koohe-transition);
+}
+
+.koohe-load-more a:hover:not(:disabled),
+.koohe-load-more a:focus-visible {
+	border-color: var(--koohe-accent);
+	color: var(--koohe-accent);
+	transform: translateY(-1px);
+}
+
+.koohe-load-more a.is-busy {
+	opacity: .6;
+	pointer-events: none;
+}
+
+/*
+ * حالت Load More روی صفحه‌بندی هسته: فقط وقتی JS فعال است شماره‌ها و
+ * «قبلی» پنهان و پیوند «بعدی» شبیه دکمه می‌شود. بدون JS همه‌چیز کلاسیک می‌ماند.
+ */
+.koohe-pagination--load-more.is-load-more-mode .wp-block-query-pagination-numbers,
+.koohe-pagination--load-more.is-load-more-mode .wp-block-query-pagination-previous {
+	display: none;
+}
+
+.koohe-pagination--load-more.is-load-more-mode .wp-block-query-pagination-next a {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	min-height: 44px;
+	padding: 10px 26px;
+	border: 1px solid var(--koohe-border);
+	border-radius: var(--koohe-radius-pill, 999px);
+	background: var(--koohe-surface-2);
+	color: var(--koohe-text);
+	font-size: .8125rem;
+	font-weight: 600;
+	line-height: 1.6;
+	text-decoration: none;
+	transition: border-color var(--koohe-transition), color var(--koohe-transition),
+		background var(--koohe-transition), transform var(--koohe-transition);
+}
+
+.koohe-pagination--load-more.is-load-more-mode .wp-block-query-pagination-next a:hover {
+	border-color: var(--koohe-accent);
+	color: var(--koohe-accent);
+	transform: translateY(-1px);
+}
+
+.koohe-pagination--load-more.is-load-more-mode .wp-block-query-pagination-next a.is-busy {
+	opacity: .6;
+	pointer-events: none;
+}
+
+/* 18.11 ریسپانسیو کامپوننت‌ها ------------------------------------------------- */
+
+@media (max-width: 768px) {
+	.koohe-section-heading {
+		gap: 13px;
+		flex-wrap: wrap;
+		margin-bottom: 19px;
+	}
+
+	.koohe-section-heading h2,
+	.koohe-section-heading h3 {
+		font-size: 1.0625rem;
+	}
+
+	.koohe-btn {
+		min-height: 40px;
+		padding: 9px 15px;
+	}
+
+	.koohe-toast {
+		inset-inline: 18px;
+		bottom: 18px;
+		max-width: none;
+		padding: 13px 15px;
+	}
+}
+
+@media (max-width: 480px) {
+	.koohe-empty-state {
+		min-height: 220px;
+		padding: 28px 18px;
+	}
+}
+
+/* مگامنو: زیر ۱۳۰۰ پیکسل ستون اثر ویژه جا نمی‌شود (مطابق مرجع). */
+@media (max-width: 1300px) {
+	.manacore-mega {
+		grid-template-columns: 1fr 1fr;
+	}
+
+	.manacore-mega__feature {
+		display: none;
+	}
+}
+
+/* پنل بیرون‌زده از سربرگ موبایل پنهان می‌ماند؛ کشوی ناوبری هسته (از ۶۰۰
+   پیکسل به پایین) خودش زیرمنوهای قابل بازشدن دارد. */
+@media (max-width: 599px) {
+	.koohe-nav-mega-toggle,
+	.manacore-mega {
+		display: none;
+	}
+}
+
+/* 18.12 میان‌برهای کشف ------------------------------------------------------- */
+
+/*
+ * ردیف چهارستونه‌ی دسترسی سریع (بازآفرینی discovery-shortcuts سینورا).
+ * لینک‌ها سمت PHP از آرشیوهای واقعی ساخته می‌شوند (الگوی discovery-shortcuts).
+ */
+.koohe-shortcuts {
+	display: grid;
+	grid-template-columns: repeat(4, 1fr);
+	padding: 22px 0;
+	margin-top: 6px;
+	border-bottom: 1px solid var(--koohe-border);
+}
+
+.koohe-shortcuts a {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	padding: 0 26px;
+	border-inline-start: 1px solid var(--koohe-border);
+	text-decoration: none;
+}
+
+.koohe-shortcuts a:first-child {
+	padding-inline-start: 0;
+}
+
+.koohe-shortcuts a:last-child {
+	border-inline-start: 0;
+	padding-inline-end: 0;
+}
+
+.koohe-shortcuts__icon {
+	color: var(--koohe-muted);
+	transition: color var(--koohe-transition);
+}
+
+.koohe-shortcuts__icon svg {
+	display: block;
+}
+
+.koohe-shortcuts strong {
+	display: block;
+	font-size: .75rem;
+	font-weight: 600;
+	line-height: 1.5;
+	color: var(--koohe-text);
+	transition: color var(--koohe-transition);
+}
+
+.koohe-shortcuts small {
+	display: block;
+	margin-top: 5px;
+	color: var(--koohe-muted);
+	font-size: .5625rem;
+	line-height: 1.6;
+}
+
+.koohe-shortcuts__arrow {
+	margin-inline-start: auto;
+	color: var(--koohe-muted);
+	flex: none;
+	transition: color var(--koohe-transition), transform var(--koohe-transition);
+}
+
+.koohe-shortcuts a:hover strong,
+.koohe-shortcuts a:focus-visible strong,
+.koohe-shortcuts a:hover .koohe-shortcuts__icon,
+.koohe-shortcuts a:focus-visible .koohe-shortcuts__icon {
+	color: var(--koohe-accent);
+}
+
+/* فلش در RTL به چپ اشاره می‌کند؛ هاور آن را کمی جلوتر می‌برد. */
+[dir="rtl"] .koohe-shortcuts a:hover .koohe-shortcuts__arrow {
+	transform: translateX(-3px);
+}
+
+[dir="ltr"] .koohe-shortcuts a:hover .koohe-shortcuts__arrow {
+	transform: translateX(3px);
+}
+
+@media (max-width: 1024px) {
+	.koohe-shortcuts {
+		grid-template-columns: repeat(2, 1fr);
+		row-gap: 18px;
+	}
+
+	.koohe-shortcuts a:nth-child(3) {
+		padding-inline-start: 0;
+		border-inline-start: 0;
+	}
+}
+
+@media (max-width: 599px) {
+	.koohe-shortcuts {
+		grid-template-columns: 1fr;
+	}
+
+	.koohe-shortcuts a {
+		padding: 0;
+		border-inline-start: 0;
+	}
+}

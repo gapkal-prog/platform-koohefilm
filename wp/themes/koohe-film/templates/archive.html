@@ -1,0 +1,39 @@
+<!-- wp:template-part {"slug":"header","tagName":"div","area":"header"} /-->
+
+<!-- wp:group {"tagName":"main","className":"koohe-main koohe-archive","style":{"spacing":{"margin":{"top":"var:preset|spacing|40"},"blockGap":"var:preset|spacing|30"}},"layout":{"type":"constrained"}} -->
+<main id="koohe-main" class="wp-block-group koohe-main koohe-archive" style="margin-top:var(--wp--preset--spacing--40)"><!-- wp:group {"align":"wide","style":{"spacing":{"blockGap":"10px"}},"layout":{"type":"default"}} -->
+<div class="wp-block-group alignwide"><!-- wp:query-title {"type":"archive","level":1,"className":"is-style-koohe-underline"} /-->
+
+<!-- wp:term-description {"fontSize":"small","style":{"color":{"text":"var:preset|color|muted"}}} /-->
+
+<!-- wp:manacore/filter-bar {"taxonomies":"category,post_tag","showSort":true,"showReset":true,"showActiveChips":true} /--></div>
+<!-- /wp:group -->
+
+<!-- wp:query {"queryId":13,"query":{"perPage":18,"pages":0,"offset":0,"postType":"post","order":"desc","orderBy":"date","inherit":true},"align":"wide","className":"koohe-query","layout":{"type":"default"}} -->
+<div class="wp-block-query alignwide koohe-query"><!-- wp:post-template {"layout":{"type":"grid","columnCount":3}} -->
+<!-- wp:group {"className":"koohe-card is-style-koohe-card","style":{"spacing":{"blockGap":"12px","padding":{"top":"12px","bottom":"16px","left":"12px","right":"12px"}}},"layout":{"type":"default"}} -->
+<div class="wp-block-group koohe-card is-style-koohe-card" style="padding-top:12px;padding-right:12px;padding-bottom:16px;padding-left:12px"><!-- wp:post-featured-image {"isLink":true,"aspectRatio":"16/9","style":{"border":{"radius":"10px"}}} /-->
+
+<!-- wp:post-title {"isLink":true,"fontSize":"large"} /-->
+
+<!-- wp:post-excerpt {"excerptLength":22,"fontSize":"small"} /--></div>
+<!-- /wp:group -->
+<!-- /wp:post-template -->
+
+<!-- wp:query-no-results -->
+<!-- wp:paragraph {"align":"center","style":{"color":{"text":"var:preset|color|muted"}}} -->
+<p class="has-text-align-center has-text-color" style="color:var(--wp--preset--color--muted)">محتوایی یافت نشد.</p>
+<!-- /wp:paragraph -->
+<!-- /wp:query-no-results -->
+
+<!-- wp:query-pagination {"paginationArrow":"arrow","className":"koohe-pagination koohe-pagination--load-more","layout":{"type":"flex","justifyContent":"center"},"style":{"spacing":{"margin":{"top":"var:preset|spacing|40"}}}} -->
+<!-- wp:query-pagination-previous /-->
+
+<!-- wp:query-pagination-numbers /-->
+
+<!-- wp:query-pagination-next /-->
+<!-- /wp:query-pagination --></div>
+<!-- /wp:query --></main>
+<!-- /wp:group -->
+
+<!-- wp:template-part {"slug":"footer","tagName":"div","area":"footer"} /-->

@@ -1,0 +1,98 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/theme.json",
+	"version": 3,
+	"title": "سینما قرمز (Cinema)",
+	"slug": "cinema",
+	"settings": {
+		"color": {
+			"palette": [
+				{
+					"slug": "surface",
+					"color": "#101012",
+					"name": "پس‌زمینه"
+				},
+				{
+					"slug": "surface-2",
+					"color": "#18181b",
+					"name": "پس‌زمینه دوم"
+				},
+				{
+					"slug": "surface-3",
+					"color": "#232327",
+					"name": "پس‌زمینه سوم"
+				},
+				{
+					"slug": "foreground",
+					"color": "#f4f4f5",
+					"name": "متن"
+				},
+				{
+					"slug": "muted",
+					"color": "#a1a1aa",
+					"name": "متن کم‌رنگ"
+				},
+				{
+					"slug": "accent",
+					"color": "#e11d48",
+					"name": "رنگ تأکید"
+				},
+				{
+					"slug": "accent-contrast",
+					"color": "#ffffff",
+					"name": "متن روی تأکید"
+				},
+				{
+					"slug": "border",
+					"color": "#2b2b31",
+					"name": "خط جداکننده"
+				},
+				{
+					"slug": "success",
+					"color": "#22c55e",
+					"name": "موفق"
+				},
+				{
+					"slug": "danger",
+					"color": "#f43f5e",
+					"name": "خطا"
+				}
+			]
+		},
+		"custom": {
+			"scheme": {
+				"light": {
+					"surface": "#ffffff",
+					"surface-2": "#f7f7f8",
+					"surface-3": "#ececee",
+					"foreground": "#101012",
+					"muted": "#6b6b75",
+					"accent": "#e11d48",
+					"accent-contrast": "#ffffff",
+					"border": "#e3e3e7",
+					"success": "#16a34a",
+					"danger": "#e11d48",
+					"shadow-soft": "0 6px 24px rgba(16, 16, 18, .08)",
+					"shadow-raised": "0 18px 48px rgba(16, 16, 18, .16)",
+					"overlay": "rgba(16, 16, 18, .55)",
+					"glass": "rgba(255, 255, 255, .74)"
+				},
+				"dark": {
+					"surface": "#101012",
+					"surface-2": "#18181b",
+					"surface-3": "#232327",
+					"foreground": "#f4f4f5",
+					"muted": "#a1a1aa",
+					"accent": "#e11d48",
+					"accent-contrast": "#ffffff",
+					"border": "#2b2b31",
+					"success": "#22c55e",
+					"danger": "#f43f5e",
+					"shadow-soft": "0 8px 30px rgba(0, 0, 0, .5)",
+					"shadow-raised": "0 22px 60px rgba(0, 0, 0, .68)",
+					"overlay": "rgba(0, 0, 0, .74)",
+					"glass": "rgba(16, 16, 18, .74)"
+				}
+			}
+		}
+	}
+}

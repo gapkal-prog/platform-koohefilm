@@ -1,0 +1,112 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/theme.json",
+	"version": 3,
+	"title": "نیمه‌شب آبی (Midnight)",
+	"slug": "midnight",
+	"settings": {
+		"color": {
+			"palette": [
+				{
+					"slug": "surface",
+					"color": "#0d1117",
+					"name": "پس‌زمینه"
+				},
+				{
+					"slug": "surface-2",
+					"color": "#131a24",
+					"name": "پس‌زمینه دوم"
+				},
+				{
+					"slug": "surface-3",
+					"color": "#1b2532",
+					"name": "پس‌زمینه سوم"
+				},
+				{
+					"slug": "foreground",
+					"color": "#e6edf3",
+					"name": "متن"
+				},
+				{
+					"slug": "muted",
+					"color": "#8b98a9",
+					"name": "متن کم‌رنگ"
+				},
+				{
+					"slug": "accent",
+					"color": "#38bdf8",
+					"name": "رنگ تأکید"
+				},
+				{
+					"slug": "accent-contrast",
+					"color": "#06131c",
+					"name": "متن روی تأکید"
+				},
+				{
+					"slug": "border",
+					"color": "#22303f",
+					"name": "خط جداکننده"
+				},
+				{
+					"slug": "success",
+					"color": "#34d399",
+					"name": "موفق"
+				},
+				{
+					"slug": "danger",
+					"color": "#f87171",
+					"name": "خطا"
+				}
+			]
+		},
+		"shadow": {
+			"presets": [
+				{
+					"slug": "soft",
+					"name": "نرم",
+					"shadow": "0 8px 30px rgba(0, 0, 0, .5)"
+				},
+				{
+					"slug": "raised",
+					"name": "برجسته",
+					"shadow": "0 22px 60px rgba(2, 12, 23, .7)"
+				}
+			]
+		},
+		"custom": {
+			"scheme": {
+				"light": {
+					"surface": "#ffffff",
+					"surface-2": "#f2f6fa",
+					"surface-3": "#e4ebf3",
+					"foreground": "#0d1117",
+					"muted": "#5c6b7d",
+					"accent": "#0284c7",
+					"accent-contrast": "#ffffff",
+					"border": "#dbe4ee",
+					"success": "#059669",
+					"danger": "#dc2626",
+					"shadow-soft": "0 6px 24px rgba(13, 17, 23, .08)",
+					"shadow-raised": "0 18px 48px rgba(13, 17, 23, .16)",
+					"overlay": "rgba(13, 17, 23, .55)",
+					"glass": "rgba(255, 255, 255, .74)"
+				},
+				"dark": {
+					"surface": "#0d1117",
+					"surface-2": "#131a24",
+					"surface-3": "#1b2532",
+					"foreground": "#e6edf3",
+					"muted": "#8b98a9",
+					"accent": "#38bdf8",
+					"accent-contrast": "#06131c",
+					"border": "#22303f",
+					"success": "#34d399",
+					"danger": "#f87171",
+					"shadow-soft": "0 8px 30px rgba(0, 0, 0, .5)",
+					"shadow-raised": "0 22px 60px rgba(2, 12, 23, .7)",
+					"overlay": "rgba(2, 12, 23, .74)",
+					"glass": "rgba(13, 17, 23, .74)"
+				}
+			}
+		}
+	}
+}
