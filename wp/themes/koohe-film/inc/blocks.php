@@ -723,6 +723,15 @@ function koohe_mega_feature_card( $block_content, $block ) {
 		return $block_content;
 	}
 
+	/*
+	 * برچسب کنش کارت ویژه از تنظیمات («کشف داستان» پیش‌فرض) و سطر سوم
+	 * «تماشای ‹نام اثر›» می‌ماند — مثل مرجع. قالب متن را با فیلتر
+	 * `koohe_mega_feature_cta` هم قابل تغییر می‌کند.
+	 */
+	$cta_label = class_exists( '\ManaCore\Core\Mega_Menu' )
+		? (string) \ManaCore\Core\Mega_Menu::settings()['cta_label']
+		: __( 'کشف داستان', 'koohe-film' );
+
 	$pattern = '#(<li[^>]*koohe-mega-feature[^>]*>\s*<a[^>]*>)(.*?)(</a>)#s';
 
 	$content = preg_replace_callback(
@@ -745,13 +754,38 @@ function koohe_mega_feature_card( $block_content, $block ) {
 				return $matches[0];
 			}
 
-			$cta = '<span class="koohe-mega-feature__cta">'
-				. esc_html( sprintf( /* translators: %s: نام اثر */ __( 'تماشای %s', 'koohe-film' ), $label ) )
-				. '</span>';
+			/**
+			 * فیلتر متن کنش کارت ویژه‌ی مگامنو.
+			 *
+			 * @param string $label نام اثر.
+			 * @param string $cta   برچسب تنظیم‌شده‌ی کنش.
+			 */
+			$cta_text = (string) apply_filters(
+				'koohe_mega_feature_cta',
+				sprintf( /* translators: %s: نام اثر */ __( 'تماشای %s', 'koohe-film' ), $label ),
+				$cta_label
+			);
+
+			$cta = '<span class="koohe-mega-feature__cta">' . esc_html( $cta_text ) . '</span>';
 
 			/* پوستر: شناسه‌ی اثر از نشانی همان پیوندِ کارت. */
 			$post_id = preg_match( '#href="([^"]+)"#', $matches[1], $href ) ? (int) url_to_postid( $href[1] ) : 0;
-			$image   = $post_id ? (string) get_the_post_thumbnail_url( $post_id, 'large' ) : '';
+
+			/*
+			 * پوستر با زنجیره‌ی مشترک افزونه («تصویر شاخص → backdrop →
+			 * poster») خوانده می‌شود؛ پیش‌تر فقط تصویر شاخص وردپرس بود و
+			 * آثار دارای پوستر دستی بی‌تصویر می‌ماندند.
+			 */
+			$placeholder = defined( 'MANACORE_URL' ) ? MANACORE_URL . 'assets/placeholder.svg' : '';
+
+			if ( $post_id && function_exists( 'manacore_backdrop_url' ) ) {
+				$image = (string) manacore_backdrop_url( $post_id, 'large' );
+				if ( '' !== $placeholder && 0 === strpos( $image, $placeholder ) ) {
+					$image = '';
+				}
+			} else {
+				$image = $post_id ? (string) get_the_post_thumbnail_url( $post_id, 'large' ) : '';
+			}
 
 			$poster = '';
 
@@ -868,22 +902,50 @@ function koohe_primary_navigation_markup() {
 		$link( __( 'اشتراک', 'koohe-film' ), home_url( '/subscribe/' ) ),
 	);
 
-	$hub = home_url( '/categories-hub/' );
+	/*
+	 * داده‌ی مگامنو از سرویس مشترک افزونه می‌آید (`Mega_Menu`): نشانی مرکز
+	 * دسته‌بندی‌ها، تاکسونومی/تعداد ژانرها، متن‌های سرستون و کارت ویژه.
+	 * اگر افزونه‌ی هسته فعال نباشد، همان رفتار پیشین با پیش‌فرض‌های امن
+	 * اجرا می‌شود تا قالب به‌تنهایی هم کار کند.
+	 */
+	$mega = class_exists( '\ManaCore\Core\Mega_Menu' )
+		? \ManaCore\Core\Mega_Menu::settings()
+		: array(
+			'taxonomy'      => 'genre',
+			'number'        => 12,
+			'hub_url'       => '',
+			'eyebrow'       => __( 'یک دنیا انتخاب', 'koohe-film' ),
+			'title'         => __( 'حال‌وهوای امشبت چیه؟', 'koohe-film' ),
+			'quick_label'   => __( 'به انتخاب سینورا', 'koohe-film' ),
+			'feature_label' => __( 'انتخاب ویژه این هفته', 'koohe-film' ),
+			'cta_label'     => __( 'کشف داستان', 'koohe-film' ),
+			'featured_id'   => 0,
+		);
+
+	$hub = class_exists( '\ManaCore\Core\Mega_Menu' )
+		? \ManaCore\Core\Mega_Menu::hub_url()
+		: home_url( '/categories-hub/' );
 
 	/* مگامنوی ژانرها: زیرمنو با ترم‌های واقعی. */
-	$genres = get_terms(
-		array(
-			'taxonomy'   => 'genre',
-			'hide_empty' => false,
-			'number'     => 12,
-		)
-	);
-
 	$genre_links = array();
 
-	if ( ! is_wp_error( $genres ) ) {
-		foreach ( $genres as $genre ) {
-			$genre_links[] = $link( $genre->name, (string) get_term_link( $genre ), 'taxonomy', 'genre', (int) $genre->term_id, 'koohe-mega-genre' );
+	if ( class_exists( '\ManaCore\Core\Mega_Menu' ) ) {
+		foreach ( \ManaCore\Core\Mega_Menu::menu_terms( (string) $mega['taxonomy'], (int) $mega['number'] ) as $genre ) {
+			$genre_links[] = $link( $genre->name, (string) get_term_link( $genre ), 'taxonomy', (string) $genre->taxonomy, (int) $genre->term_id, 'koohe-mega-genre' );
+		}
+	} else {
+		$genres = get_terms(
+			array(
+				'taxonomy'   => 'genre',
+				'hide_empty' => false,
+				'number'     => 12,
+			)
+		);
+
+		if ( ! is_wp_error( $genres ) ) {
+			foreach ( $genres as $genre ) {
+				$genre_links[] = $link( $genre->name, (string) get_term_link( $genre ), 'taxonomy', 'genre', (int) $genre->term_id, 'koohe-mega-genre' );
+			}
 		}
 	}
 
@@ -893,61 +955,113 @@ function koohe_primary_navigation_markup() {
 	}
 
 	/*
-	 * «دسترسی سریع» مرجع (ستون میانی پنل): همان لینک‌های واقعیِ آرشیو که
-	 * پیش‌تر افزونه با `manacore_mega_quick_links` می‌ساخت — حالا آیتم‌های
-	 * واقعی فهرست راهبری‌اند تا مدیر بتواند اضافه/حذفشان کند.
+	 * «دسترسی سریع» ستون میانی: داده از سرویس مشترک افزونه می‌آید
+	 * (`Mega_Menu::quick_links()`) تا متن‌ها از پنل مدیریت قابل تنظیم
+	 * باشند و قالب/شورت‌کد/پنل یک منبع حقیقت داشته باشند. اگر افزونه
+	 * فعال نباشد، همان فهرست پیشینی ساخته می‌شود تا قالب تنها بماند.
 	 */
-	$browse = get_post_type_archive_link( 'movie' );
-	$browse = $browse ? $browse : home_url( '/' );
-
-	$quick_links = array(
-		$link( __( 'بالاترین امتیازها', 'koohe-film' ), add_query_arg( 'mc_sort', 'rating', $browse ), 'custom', '', 0, 'koohe-mega-quick koohe-mega-quick--rating' ),
-		$link( __( 'تازه‌های کوهه', 'koohe-film' ), add_query_arg( 'mc_sort', 'newest', $browse ), 'custom', '', 0, 'koohe-mega-quick koohe-mega-quick--newest' ),
-	);
+	$quick_links = array();
 
 	/*
-	 * «فیلم و سریال کره‌ای» مرجع (`browse.html?country=…`): اگر کشور
-	 * متناظری در تاکسونومی باشد، همان آرشیو ترم پیوند می‌شود.
+	 * نگاشت صریح کلید → کلاس ظاهری. کلاس‌ها در CSS به‌ازای هر ردیف آیکون
+	 * اختصاصی دارند (`.koohe-mega-quick--rating` و…)، پس نگاشت صریح
+	 * می‌ماند تا قرارداد ظاهری پایدار و قابل جست‌وجو بماند.
 	 */
-	$korean = get_terms(
-		array(
-			'taxonomy'   => 'country',
-			'hide_empty' => false,
-			'number'     => 1,
-			'name__like' => 'کره',
-		)
+	$quick_classes = array(
+		'rating' => 'koohe-mega-quick koohe-mega-quick--rating',
+		'newest' => 'koohe-mega-quick koohe-mega-quick--newest',
+		'korean' => 'koohe-mega-quick koohe-mega-quick--korean',
+		'cast'   => 'koohe-mega-quick koohe-mega-quick--cast',
 	);
 
-	if ( ! is_wp_error( $korean ) && $korean ) {
-		$quick_links[] = $link( __( 'فیلم و سریال کره‌ای', 'koohe-film' ), (string) get_term_link( $korean[0] ), 'taxonomy', 'country', (int) $korean[0]->term_id, 'koohe-mega-quick koohe-mega-quick--korean' );
+	if ( class_exists( '\ManaCore\Core\Mega_Menu' ) ) {
+		foreach ( \ManaCore\Core\Mega_Menu::quick_links() as $item ) {
+			$key    = isset( $item['key'] ) ? (string) $item['key'] : '';
+			$kind   = 'custom';
+			$type   = '';
+			$id     = 0;
+
+			/* ردیف «کره‌ای» به آرشیو ترم کشور اشاره می‌کند، نه پیوند دلخواه. */
+			if ( 'korean' === $key ) {
+				$korean = get_terms(
+					array(
+						'taxonomy'   => 'country',
+						'hide_empty' => false,
+						'number'     => 1,
+						'name__like' => 'کره',
+					)
+				);
+
+				if ( ! is_wp_error( $korean ) && $korean ) {
+					$kind = 'taxonomy';
+					$type = 'country';
+					$id   = (int) $korean[0]->term_id;
+				}
+			}
+
+			$quick_links[] = $link(
+				(string) $item['label'],
+				(string) $item['url'],
+				$kind,
+				$type,
+				$id,
+				$quick_classes[ $key ] ?? 'koohe-mega-quick'
+			);
+		}
 	}
 
-	$person_archive = get_post_type_archive_link( 'person' );
+	if ( ! $quick_links ) {
+		$browse = get_post_type_archive_link( 'movie' );
+		$browse = $browse ? $browse : home_url( '/' );
 
-	if ( $person_archive ) {
-		$quick_links[] = $link( __( 'بازیگران و کارگردان‌ها', 'koohe-film' ), $person_archive, 'custom', '', 0, 'koohe-mega-quick koohe-mega-quick--cast' );
+		$quick_links = array(
+			$link( __( 'بالاترین امتیازها', 'koohe-film' ), add_query_arg( 'mc_sort', 'rating', $browse ), 'custom', '', 0, 'koohe-mega-quick koohe-mega-quick--rating' ),
+			$link( __( 'تازه‌های کوهه', 'koohe-film' ), add_query_arg( 'mc_sort', 'newest', $browse ), 'custom', '', 0, 'koohe-mega-quick koohe-mega-quick--newest' ),
+		);
+
+		$person_archive = get_post_type_archive_link( 'person' );
+
+		if ( $person_archive ) {
+			$quick_links[] = $link( __( 'بازیگران و کارگردان‌ها', 'koohe-film' ), $person_archive, 'custom', '', 0, 'koohe-mega-quick koohe-mega-quick--cast' );
+		}
 	}
 
 	/*
 	 * کارت ویژه‌ی ستون آخر (`.mega-feature` مرجع). متن کوتاه روی
-	 * `description` آیتم راهبری می‌نشیند و تیتر همان برچسب آیتم است؛
-	 * مقصد هم بهترین امتیازِ فیلم‌ها است تا کارت همیشه زنده باشد.
+	 * `description` آیتم راهبری می‌نشیند و تیتر همان برچسب آیتم است.
+	 * اثر ویژه از تنظیمات مدیر می‌آید (`mega_featured_id`) و در نبودش
+	 * سرویس افزونه تازه‌ترین اثر دارای پوستر را انتخاب می‌کند؛ اگر افزونه
+	 * نباشد، بهترین امتیاز فیلم‌ها (رفتار پیشین قالب) به کار می‌رود.
 	 */
-	$featured = get_posts(
-		array(
-			'post_type'        => 'movie',
-			'post_status'      => 'publish',
-			'numberposts'      => 1,
-			'meta_key'         => 'manacore_imdb_rating',
-			'orderby'          => 'meta_value_num',
-			'order'            => 'DESC',
-			'no_found_rows'    => true,
-			'suppress_filters' => false,
-		)
-	);
+	$feature_title = __( 'برترین‌های کوهه', 'koohe-film' );
+	$feature_url   = $browse;
 
-	$feature_title = $featured ? get_the_title( $featured[0] ) : __( 'برترین‌های کوهه', 'koohe-film' );
-	$feature_url   = $featured ? get_permalink( $featured[0] ) : $browse;
+	if ( class_exists( '\ManaCore\Core\Mega_Menu' ) ) {
+		$card = \ManaCore\Core\Mega_Menu::featured_card();
+
+		if ( ! empty( $card['id'] ) ) {
+			$feature_title = (string) $card['title'];
+			$feature_url   = (string) $card['url'];
+		}
+	} else {
+		$featured = get_posts(
+			array(
+				'post_type'        => 'movie',
+				'post_status'      => 'publish',
+				'numberposts'      => 1,
+				'meta_key'         => 'manacore_imdb_rating',
+				'orderby'          => 'meta_value_num',
+				'order'            => 'DESC',
+				'no_found_rows'    => true,
+				'suppress_filters' => false,
+			)
+		);
+
+		if ( $featured ) {
+			$feature_title = get_the_title( $featured[0] );
+			$feature_url   = (string) get_permalink( $featured[0] );
+		}
+	}
 
 	/*
 	 * ساختار پنل، سه ستونِ مرجع:
@@ -957,10 +1071,10 @@ function koohe_primary_navigation_markup() {
 	 *   ستون ۳ — کارت ویژه (`.mega-feature`)
 	 */
 	$submenu = array(
-		$link( __( 'یک دنیا انتخاب', 'koohe-film' ), $hub, 'custom', '', 0, 'koohe-mega-eyebrow' ),
-		$link( __( 'حال‌وهوای امشبت چیه؟', 'koohe-film' ), $hub, 'custom', '', 0, 'koohe-mega-title' ),
+		$link( (string) $mega['eyebrow'], $hub, 'custom', '', 0, 'koohe-mega-eyebrow' ),
+		$link( (string) $mega['title'], $hub, 'custom', '', 0, 'koohe-mega-title' ),
 		$group( __( 'ژانرها', 'koohe-film' ), $hub, 'koohe-mega-genres', $genre_links ),
-		$group( __( 'به انتخاب سینورا', 'koohe-film' ), $hub, 'koohe-mega-quick', $quick_links ),
+		$group( (string) $mega['quick_label'], $hub, 'koohe-mega-quick', $quick_links ),
 		/*
 		 * برچسب = نام اثر (`.mega-feature strong` مرجع) و توضیح = سطر
 		 * ریز بالا؛ سطر سوم («تماشای …» + شِوران) را فیلتر رندر تزریق
@@ -973,7 +1087,7 @@ function koohe_primary_navigation_markup() {
 			'',
 			0,
 			'koohe-mega-feature',
-			__( 'انتخاب ویژه این هفته', 'koohe-film' )
+			(string) $mega['feature_label']
 		),
 	);
 
@@ -1047,7 +1161,7 @@ add_action( 'after_switch_theme', 'koohe_seed_primary_navigation' );
  *
  * @var int
  */
-const KOOKE_NAV_MARKUP_VERSION = 2;
+const KOOKE_NAV_MARKUP_VERSION = 3;
 
 /**
  * تازه‌سازی یک‌باره‌ی فهرست راهبری‌ای که خود قالب ساخته است.
@@ -1076,7 +1190,16 @@ function koohe_refresh_seeded_navigation() {
 	$needs_terms   = ! get_option( 'koohe_nav_seed_terms' );
 	$needs_version = (int) get_option( 'koohe_nav_seed_version', 0 ) !== KOOKE_NAV_MARKUP_VERSION;
 
-	if ( ! $needs_terms && ! $needs_version ) {
+	/*
+	 * اثر انگشت تنظیمات مگامنو: با هر تغییر متن/تعداد/کارت ویژه در پنل
+	 * مدیریت، فهرست یک‌بار بازسازی می‌شود تا متن‌های تازه در سایت دیده
+	 * شوند. نشانه‌ی محتوایی (hash) همچنان از دست‌کاری دستی مدیر محافظت
+	 * می‌کند: فهرستِ ویرایش‌شده بازنویسی نمی‌شود.
+	 */
+	$fingerprint     = koohe_nav_settings_fingerprint();
+	$needs_settings  = (string) get_option( 'koohe_nav_seed_settings', '' ) !== $fingerprint;
+
+	if ( ! $needs_terms && ! $needs_version && ! $needs_settings ) {
 		return;
 	}
 
@@ -1141,6 +1264,101 @@ function koohe_refresh_seeded_navigation() {
 	/* حالا فهرست با ترم‌های واقعی و همین نسخه‌ی ساختار ساخته شده است. */
 	update_option( 'koohe_nav_seed_terms', 1 );
 	update_option( 'koohe_nav_seed_version', KOOKE_NAV_MARKUP_VERSION );
+	update_option( 'koohe_nav_seed_settings', $fingerprint );
+}
+
+/**
+ * اثر انگشت تنظیمات مؤثر بر مگامنو.
+ *
+ * فقط کلیدهایی که در ساخت فهرست راهبری مصرف می‌شوند سنجیده می‌شوند؛
+ * تغییر یک تنظیم بی‌ربط نباید فهرست را بازسازی کند.
+ *
+ * @return string
+ */
+function koohe_nav_settings_fingerprint() {
+	if ( ! class_exists( '\ManaCore\Core\Mega_Menu' ) ) {
+		return 'theme-only';
+	}
+
+	$settings = \ManaCore\Core\Mega_Menu::settings();
+
+	$relevant = array(
+		'taxonomy',
+		'number',
+		'hub_url',
+		'eyebrow',
+		'title',
+		'quick_label',
+		'feature_label',
+		'featured_id',
+		'rating_label',
+		'newest_label',
+		'korean_label',
+		'cast_label',
+		'show_korean',
+		'show_cast',
+	);
+
+	$slice = array();
+	foreach ( $relevant as $key ) {
+		$slice[ $key ] = isset( $settings[ $key ] ) ? $settings[ $key ] : '';
+	}
+
+	return md5( (string) wp_json_encode( $slice ) );
+}
+
+/**
+ * بازسازی اجباری فهرست راهبری مگامنو (ابزار پنل مدیریت).
+ *
+ * برخلاف بازسازی خودکار، این یکی از محافظ «فهرست دست‌کاری‌شده» می‌گذرد؛
+ * چون مدیر خودش دکمه را زده و انتظار ساخت دوباره دارد. اگر افزونه‌ی
+ * مگامنو در دسترس نباشد یا فهرست ساخته‌شده‌ی قالب وجود نداشته باشد،
+ * `false` برمی‌گردد تا پنل پیام گویا بدهد.
+ *
+ * @return bool
+ */
+function koohe_rebuild_navigation() {
+	if ( ! function_exists( 'koohe_primary_navigation_markup' ) ) {
+		return false;
+	}
+
+	$menu_id = (int) get_theme_mod( 'koohe_navigation_id', 0 );
+
+	/*
+	 * اگر فهرست ساخته‌شده وجود ندارد، همان مسیر «ساخت نخستین» اجرا
+	 * می‌شود (فقط اگر قبلاً چیزی ساخته نشده باشد).
+	 */
+	if ( ! $menu_id ) {
+		if ( koohe_primary_navigation_id() ) {
+			return true;
+		}
+
+		koohe_seed_primary_navigation();
+
+		return true;
+	}
+
+	$menu = get_post( $menu_id );
+
+	if ( ! $menu || 'wp_navigation' !== $menu->post_type ) {
+		return false;
+	}
+
+	$content = koohe_primary_navigation_markup();
+
+	wp_update_post(
+		array(
+			'ID'           => $menu_id,
+			'post_content' => wp_slash( $content ),
+		)
+	);
+
+	update_option( 'koohe_nav_seed_hash', md5( $content ) );
+	update_option( 'koohe_nav_seed_terms', 1 );
+	update_option( 'koohe_nav_seed_version', KOOKE_NAV_MARKUP_VERSION );
+	update_option( 'koohe_nav_seed_settings', koohe_nav_settings_fingerprint() );
+
+	return true;
 }
 add_action( 'init', 'koohe_refresh_seeded_navigation', 30 );
 

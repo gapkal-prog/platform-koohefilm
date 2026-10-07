@@ -232,6 +232,24 @@ class Blocks {
 							'type'    => 'string',
 							'default' => 'cards',
 						),
+						/*
+						 * `mode` طراحی و منطق باکس را از نوع محتوا جدا می‌کند:
+						 * فیلم → جدول کیفیت، سریال → بسته‌های کامل فصل،
+						 * قسمت → جدول کیفیت همان قسمت. `auto` از نوع پست
+						 * تشخیص می‌دهد تا قالب‌های موجود دست‌نخورده بمانند.
+						 */
+						'mode'       => array(
+							'type'    => 'string',
+							'default' => 'auto',
+						),
+						'packLabel'  => array(
+							'type'    => 'string',
+							'default' => '',
+						),
+						'sizeLabel'  => array(
+							'type'    => 'string',
+							'default' => '',
+						),
 						'subtitle'   => array(
 							'type'    => 'string',
 							'default' => '',
@@ -2159,6 +2177,30 @@ class Blocks {
 				'attributes'  => Block_Support::compose(
 					Block_Support::header_attributes(),
 					array(
+						'boxStyle'       => array(
+							'type'    => 'string',
+							'default' => 'cards',
+						),
+						'showNotice'     => array(
+							'type'    => 'boolean',
+							'default' => true,
+						),
+						'packTitle'      => array(
+							'type'    => 'string',
+							'default' => '',
+						),
+						'sizeLabel'      => array(
+							'type'    => 'string',
+							'default' => '',
+						),
+						'playLabel'      => array(
+							'type'    => 'string',
+							'default' => '',
+						),
+						'showPackList'   => array(
+							'type'    => 'boolean',
+							'default' => true,
+						),
 						'seasonNumber'   => array(
 							'type'    => 'number',
 							'default' => 0,
@@ -3123,6 +3165,9 @@ class Blocks {
 			$post_id,
 			array(
 				'box_style'    => $box_style,
+				'mode'         => (string) $attrs['mode'],
+				'pack_label'   => (string) $attrs['packLabel'],
+				'size_label'   => (string) $attrs['sizeLabel'],
 				'heading'      => (string) $attrs['heading'],
 				'subtitle'     => (string) $attrs['subtitle'],
 				'heading_tag'  => $level,
@@ -3371,28 +3416,44 @@ class Blocks {
 		 * ترتیب تعیین اثر: شناسه‌ی صریح بلوک → `?manacore_id=` صفحه‌ی پخش
 		 * (همان قرارداد `Player::watched_id()`) → اثر جاری → نمونه‌ی
 		 * ویرایشگر. بدون گام دوم، صفحه‌ی پخش خودش را نشان می‌داد نه اثر.
+		 *
+		 * دو شناسه نگه داشته می‌شود:
+		 *   `$display_id` — اثری که سرصفحه/دکمه‌ی بازگشت/امتیاز از آن می‌آید.
+		 *   `$source_id`  — پستی که منبع‌های پخش از آن خوانده می‌شود.
+		 * برای سریال، کاربر از صفحه‌ی سریال می‌آید ولی لینک‌ها روی قسمت‌ها
+		 * ثبت شده‌اند؛ `Player::resolve_target()` قسمتِ درست را پیدا می‌کند
+		 * تا صفحه‌ی پخش خالی نماند.
 		 */
-		$post_id = ! empty( $attrs['postId'] ) ? (int) $attrs['postId'] : Player::watched_id();
-		if ( ! $post_id ) {
-			$post_id = $this->target_post( $attrs, manacore_title_post_types() );
+		$display_id = ! empty( $attrs['postId'] ) ? (int) $attrs['postId'] : Player::watched_id();
+		if ( ! $display_id ) {
+			$display_id = $this->target_post( $attrs, manacore_title_post_types() );
 		}
-		if ( ! $post_id ) {
+		if ( ! $display_id ) {
 			return Block_Support::render_empty( $attrs, 'manacore-player-page' );
 		}
 
-		$title    = get_the_title( $post_id );
-		$original = (string) get_post_meta( $post_id, 'manacore_original_title', true );
-		$rating   = (float) get_post_meta( $post_id, 'manacore_imdb_rating', true );
-		$poster   = (string) get_post_meta( $post_id, 'manacore_backdrop_url', true );
+		// فصل/قسمت درخواستی (از پیوندهای «پخش» جدول دانلود).
+		$req_season  = isset( $_GET['season'] ) ? absint( wp_unslash( $_GET['season'] ) ) : 0; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		$req_episode = isset( $_GET['episode'] ) ? absint( wp_unslash( $_GET['episode'] ) ) : 0; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+
+		$source_id = Player::resolve_target( $display_id, $req_season, $req_episode );
+		if ( ! $source_id ) {
+			$source_id = $display_id;
+		}
+
+		$title    = get_the_title( $display_id );
+		$original = (string) get_post_meta( $display_id, 'manacore_original_title', true );
+		$rating   = (float) get_post_meta( $display_id, 'manacore_imdb_rating', true );
+		$poster   = (string) get_post_meta( $display_id, 'manacore_backdrop_url', true );
 		if ( '' === $poster ) {
-			$poster = (string) get_post_meta( $post_id, 'manacore_poster_url', true );
+			$poster = (string) get_post_meta( $display_id, 'manacore_poster_url', true );
 		}
 
 		/* منبع‌های پخش: هر گروه لینک، یک کیفیت. */
 		$sources   = array();
 		$downloads = array();
 		$download  = '';
-		foreach ( Links::get( $post_id ) as $group ) {
+		foreach ( Links::get( $source_id ) as $group ) {
 			$quality = trim( (string) $group['quality'] );
 			foreach ( $group['items'] as $item ) {
 				$key = '' !== $quality ? $quality : Links::type_label( $item['type'] );
@@ -3415,7 +3476,10 @@ class Blocks {
 			}
 		}
 
-		$trailer = (string) get_post_meta( $post_id, 'manacore_trailer_url', true );
+		$trailer = (string) get_post_meta( $source_id, 'manacore_trailer_url', true );
+		if ( '' === $trailer && $source_id !== $display_id ) {
+			$trailer = (string) get_post_meta( $display_id, 'manacore_trailer_url', true );
+		}
 		if ( ! $sources && $trailer ) {
 			$sources[ __( 'کیفیت اصلی', 'manacore' ) ] = $trailer;
 		}
@@ -3423,17 +3487,46 @@ class Blocks {
 			$download = $trailer;
 		}
 
+		/*
+		 * حالت خالی گویا: در بازدید عمومی پیام `render_empty()` پیش‌فرض
+		 * چیزی چاپ نمی‌کند و کاربر صفحه‌ی سفید می‌بیند؛ اینجا یک کارت
+		 * کوتاه با نام اثر و راه بازگشت ساخته می‌شود تا «صفحه‌ی پخش خالی»
+		 * به «صفحه‌ی بی‌محتوا» تبدیل نشود. در بوم ویرایشگر همان رفتار
+		 * پیشین (`render_empty`) حفظ می‌شود تا نویسنده راهنمای بلوک را ببیند.
+		 */
 		if ( ! $sources ) {
-			return Block_Support::render_empty( $attrs, 'manacore-player-page' );
+			if ( Block_Support::is_editor_preview() ) {
+				return Block_Support::render_empty( $attrs, 'manacore-player-page' );
+			}
+
+			$empty_text = ! empty( $attrs['emptyText'] )
+				? (string) $attrs['emptyText']
+				: __( 'برای این اثر هنوز لینک پخشی ثبت نشده است.', 'manacore' );
+
+			$empty = '<div ' . Block_Support::wrapper( $attrs, array( 'manacore-player-page', 'is-empty' ) ) . '>' // phpcs:ignore WordPress.Security.EscapeOutput
+				. '<div class="player-page player-page--empty" data-manacore-player-page="' . esc_attr( $source_id ) . '">'
+				. '<div class="player-title"><div><p class="eyebrow">' . esc_html( $eyebrow ) . '</p><h1>' . esc_html( $title ) . '</h1></div></div>'
+				. '<div class="demo-notice"><span aria-hidden="true">ⓘ</span><p>' . esc_html( $empty_text ) . '</p></div>'
+				. '<p><a class="manacore-btn is-secondary is-small" href="' . esc_url( (string) get_permalink( $display_id ) ) . '">'
+				. '‹ ' . esc_html( $back_label ) . '</a></p>'
+				. '</div></div>';
+
+			return $empty;
 		}
 
-		/* کیفیت درخواستی (از دکمه‌ی «پخش» جدول دانلود) مقدم است. */
+		/*
+		 * کیفیت درخواستی (از دکمه‌ی «پخش» جدول دانلود) مقدم است؛ ولی فقط
+		 * اگر در همان اثر واقعاً وجود داشته باشد. این «فهرست سفید» جلوی
+		 * مقدار ساختگیِ `?quality=` را می‌گیرد: پیش‌تر هر رشته‌ای که
+		 * سرویس‌دهنده می‌پذیرفت بی‌اثر بود، ولی اکنون ناسازگارها به
+		 * نخستین کیفیت موجود برمی‌گردند (نه پیوند شکسته).
+		 */
 		$requested = isset( $_GET['quality'] ) ? sanitize_text_field( wp_unslash( $_GET['quality'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-		$current   = $requested && isset( $sources[ $requested ] ) ? $requested : (string) key( $sources );
+		$current   = '' !== $requested && isset( $sources[ $requested ] ) ? $requested : (string) key( $sources );
 
 		$eyebrow    = $attrs['eyebrow'] ? (string) $attrs['eyebrow'] : __( 'NOW PLAYING · DEMO', 'manacore' );
 		$back_label = $attrs['backLabel'] ? (string) $attrs['backLabel'] : __( 'بازگشت به جزئیات', 'manacore' );
-		$notice     = $attrs['notice'] ? (string) $attrs['notice'] : (string) get_post_meta( $post_id, 'manacore_custom_notice', true );
+		$notice     = $attrs['notice'] ? (string) $attrs['notice'] : (string) get_post_meta( $display_id, 'manacore_custom_notice', true );
 
 		/*
 		 * مرجع همیشه زیر پلیر یک یادداشت نمونه دارد (`player.js` متن ثابت
@@ -3441,11 +3534,16 @@ class Blocks {
 		 * همین یادداشت پیش‌فرض با نام اثر چاپ می‌شود.
 		 */
 		if ( '' === trim( $notice ) ) {
-			$notice = sprintf(
-				/* translators: %s: نام اثر */
-				__( 'این پلیر با ویدئوی نمونه‌ی آزاد کار می‌کند، نه فایل اصلی %s. کیفیت‌ها واقعی و پیشرفت تماشا قابل ذخیره است.', 'manacore' ),
-				$title
-			);
+			/* متن پیش‌فرض یادداشت پلیر از پنل مدیریت (تب «پخش و دانلود»). */
+			$default_notice = trim( (string) manacore_get_option( 'player_notice_text', '' ) );
+
+			$notice = '' !== $default_notice
+				? str_replace( '{title}', $title, $default_notice )
+				: sprintf(
+					/* translators: %s: نام اثر */
+					__( 'این پلیر با ویدئوی نمونه‌ی آزاد کار می‌کند، نه فایل اصلی %s. کیفیت‌ها واقعی و پیشرفت تماشا قابل ذخیره است.', 'manacore' ),
+					$title
+				);
 		}
 
 		$resolved = Player::resolve( $sources[ $current ] );
@@ -3456,10 +3554,11 @@ class Blocks {
 		 * تیتر «نام اصلی · فصل ۱، قسمت ۳» می‌شود و هم بخش
 		 * «قسمت‌های فصل» زیر پلیر ساخته می‌شود — عیناً رفتار مرجع.
 		 */
-		$series_parent = (int) get_post_meta( $post_id, 'manacore_parent_title', true );
-		$series_id     = 'series' === get_post_type( $post_id ) ? $post_id : $series_parent;
-		$season_number = isset( $_GET['season'] ) ? max( 0, (int) $_GET['season'] ) : (int) get_post_meta( $post_id, 'manacore_season_number', true ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-		$episode_number = isset( $_GET['episode'] ) ? max( 0, (int) $_GET['episode'] ) : (int) get_post_meta( $post_id, 'manacore_episode_number', true ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		$series_parent = (int) get_post_meta( $display_id, 'manacore_parent_title', true );
+		$series_id     = in_array( get_post_type( $display_id ), manacore_serial_post_types(), true ) ? $display_id : $series_parent;
+
+		$season_number  = $req_season ? $req_season : (int) get_post_meta( $source_id, 'manacore_season_number', true );
+		$episode_number = $req_episode ? $req_episode : (int) get_post_meta( $source_id, 'manacore_episode_number', true );
 
 		if ( ! $season_number ) {
 			$season_number = 1;
@@ -3491,13 +3590,22 @@ class Blocks {
 					}
 				)
 			);
+
+			/*
+			 * وقتی نشانی فصل/قسمت مشخص نکرده باشد (مثلاً کلیک روی «پخش» خودِ
+			 * سریال)، قسمتِ فعال همان قسمتی است که پخش می‌شود؛ اگر آن هم
+			 * نامشخص باشد، نخستین قسمت فصل تا فهرست و ناوبری بی‌نشان نمانند.
+			 */
+			if ( ! $episode_number && $episodes ) {
+				$episode_number = (int) get_post_meta( $episodes[0]->ID, 'manacore_episode_number', true );
+			}
 		}
 
 		ob_start();
 		?>
-		<div class="player-page" data-manacore-player-page="<?php echo esc_attr( $post_id ); ?>">
+		<div class="player-page" data-manacore-player-page="<?php echo esc_attr( $source_id ); ?>">
 			<div class="player-top">
-				<a class="text-link" href="<?php echo esc_url( (string) get_permalink( $post_id ) ); ?>">
+				<a class="text-link" href="<?php echo esc_url( (string) get_permalink( $display_id ) ); ?>">
 					<?php echo esc_html( '← ' . $back_label ); ?>
 				</a>
 				<span><span class="live-dot" aria-hidden="true"></span><?php esc_html_e( 'سینما، هر جا که تو باشی.', 'manacore' ); ?></span>
@@ -3614,10 +3722,15 @@ class Blocks {
 				</button>
 
 				<?php
-				$in_watchlist = function_exists( 'manacore_in_watchlist' ) ? (bool) manacore_in_watchlist( $post_id ) : false;
+				/*
+				 * «لیست تماشا» و رویداد «track-download» روی اثری ثبت
+				 * می‌شوند که کاربر واقعاً تماشا می‌کند (`$source_id`)
+				 * نه سریالی که فقط ظرف صفحه است.
+				 */
+				$in_watchlist = function_exists( 'manacore_in_watchlist' ) ? (bool) manacore_in_watchlist( $source_id ) : false;
 				?>
 				<button type="button" class="manacore-btn is-secondary is-small<?php echo $in_watchlist ? ' is-active' : ''; ?>"
-					data-manacore-watchlist="<?php echo esc_attr( $post_id ); ?>"
+					data-manacore-watchlist="<?php echo esc_attr( $source_id ); ?>"
 					aria-pressed="<?php echo $in_watchlist ? 'true' : 'false'; ?>">
 					<span aria-hidden="true">♡</span> <?php esc_html_e( 'لیست تماشا', 'manacore' ); ?>
 				</button>
@@ -3629,7 +3742,7 @@ class Blocks {
 					<a class="manacore-btn is-primary is-small" href="<?php echo esc_url( $download_url ); ?>"
 						rel="nofollow noopener" target="_blank" download
 						data-player-download
-						data-manacore-download="<?php echo esc_attr( $post_id ); ?>">
+						data-manacore-download="<?php echo esc_attr( $source_id ); ?>">
 						<span aria-hidden="true">⇩</span> <?php esc_html_e( 'دانلود نمونه', 'manacore' ); ?>
 					</a>
 				<?php endif; ?>
@@ -4755,22 +4868,8 @@ class Blocks {
 	 * @return string نشانی تصویر.
 	 */
 	protected function media_url( $post_id, $size = 'large' ) {
-		$thumb = get_post_thumbnail_id( $post_id );
-		if ( $thumb ) {
-			$url = wp_get_attachment_image_url( $thumb, $size );
-			if ( $url ) {
-				return $url;
-			}
-		}
-
-		foreach ( array( 'manacore_backdrop_url', 'manacore_poster_url' ) as $key ) {
-			$url = (string) get_post_meta( $post_id, $key, true );
-			if ( $url ) {
-				return $url;
-			}
-		}
-
-		return manacore_poster_url( $post_id, $size );
+		/* همان زنجیره‌ی مشترک `manacore_backdrop_url()` — یک منبع حقیقت. */
+		return manacore_backdrop_url( $post_id, $size );
 	}
 
 	/**
@@ -7213,25 +7312,52 @@ class Blocks {
 		$heading   = $attrs['heading'] ? (string) $attrs['heading'] : __( 'هر فصل، یک داستان تازه', 'manacore' );
 
 		/*
+		 * سبک جعبه از همان فهرست مشترک `Block_Data::download_styles()`
+		 * می‌آید تا با «لینک‌های دانلود» یکی باشد. پیش‌تر این خط از کلید
+		 * `box_style` می‌خواند که در تعریف بلوک وجود نداشت: هشدار
+		 * «Undefined array key» در PHP 8.0+ و بی‌اثر بودن سبک جعبه.
+		 */
+		$box_style = Block_Support::pick( $attrs['boxStyle'], Block_Data::download_styles(), 'cards' );
+
+		$pack_label = '' !== trim( (string) $attrs['packTitle'] )
+			? (string) $attrs['packTitle']
+			: __( 'بسته‌ی کامل فصل', 'manacore' );
+		$size_label = '' !== trim( (string) $attrs['sizeLabel'] )
+			? (string) $attrs['sizeLabel']
+			: __( 'حجم نمونه', 'manacore' );
+		$play_label = '' !== trim( (string) $attrs['playLabel'] )
+			? (string) $attrs['playLabel']
+			: __( 'پخش قسمت %s', 'manacore' );
+
+		/*
 		 * یادداشت بخش، مثل `.demo-notice` مرجع: متن ویژه‌ی اثر (اگر مدیر
 		 * نوشته باشد) و در نبودش متن پیش‌فرض کتابخانه.
 		 */
-		$notice = (string) get_post_meta( $parent, 'manacore_custom_notice', true );
-		if ( '' === trim( $notice ) ) {
-			$notice = (string) apply_filters(
-				'manacore_download_notice',
-				__( 'لینک‌های این نسخه، نمونه ویدئوی آزاد ۱۰ ثانیه‌ای هستند؛ نه فایل اصلی سریال.', 'manacore' ),
-				$parent
-			);
+		$notice = ! empty( $attrs['showNotice'] ) ? (string) get_post_meta( $parent, 'manacore_custom_notice', true ) : '';
+		if ( ! empty( $attrs['showNotice'] ) && '' === trim( $notice ) ) {
+			$default_notice = trim( (string) manacore_get_option( 'download_notice_text', '' ) );
+
+			if ( '' === $default_notice ) {
+				$default_notice = __( 'لینک‌های این نسخه، نمونه ویدئوی آزاد ۱۰ ثانیه‌ای هستند؛ نه فایل اصلی سریال.', 'manacore' );
+			}
+
+			$notice = (string) apply_filters( 'manacore_download_notice', $default_notice, $parent );
 		}
+
+		/*
+		 * «بسته‌های فصل»: لینک‌هایی که مدیر روی پست خودِ سریال ثبت کرده
+		 * است (مثلاً «دانلود کامل فصل ۱ با کیفیت ۱۰۸۰»). پیش‌تر این داده
+		 * هیچ‌جا رندر نمی‌شد، چون فقط لینک‌های قسمت‌ها نمایش داده می‌شدند.
+		 */
+		$packs = ! empty( $attrs['showPackList'] ) ? Links::by_season( $parent ) : array();
 
 		$season_index = 0;
 		$is_multi     = count( $by_season ) > 1;
 
 		ob_start();
 		?>
-		<section class="download-section<?php echo 'cards' === Block_Support::pick( $attrs['box_style'], Block_Data::download_styles(), 'cards' ) ? '' : ' is-' . esc_attr( Block_Support::pick( $attrs['box_style'], Block_Data::download_styles(), 'cards' ) ); ?>"
-			id="download" data-manacore-episodes="<?php echo esc_attr( $parent ); ?>">
+		<section class="download-section manacore-episodes<?php echo 'cards' === $box_style ? '' : ' is-' . esc_attr( $box_style ); ?>"
+			id="episodes" data-manacore-episodes="<?php echo esc_attr( $parent ); ?>">
 			<div class="section-heading">
 				<div class="heading-title">
 					<?php if ( ! empty( $attrs['showIcon'] ) ) : ?>
@@ -7294,21 +7420,67 @@ class Blocks {
 				?>
 				<div class="episode-list" id="episode-list" data-season-panel="<?php echo esc_attr( $season ); ?>" <?php echo $is_open ? '' : 'hidden'; ?>>
 					<?php
+					/*
+					 * ۱) بسته‌های کامل فصل (لینک‌های خودِ سریال برای همین فصل).
+					 *    این جدول هم‌مارک‌آپ جدول قسمت است تا استایل و
+					 *    آزمون‌های هندسی موجود دست‌نخورده بمانند.
+					 */
+					$season_packs = isset( $packs[ $season ] ) ? (array) $packs[ $season ] : (array) ( $packs[0] ?? array() );
+
+					if ( $season_packs ) :
+						?>
+						<div class="download-table download-packs" data-season-packs="<?php echo esc_attr( $season ); ?>">
+							<div class="download-table-header">
+								<span><?php esc_html_e( 'کیفیت تصویر', 'manacore' ); ?></span>
+								<span><?php esc_html_e( 'فرمت', 'manacore' ); ?></span>
+								<span><?php echo esc_html( $size_label ); ?></span>
+								<span><?php esc_html_e( 'پخش و دانلود', 'manacore' ); ?></span>
+							</div>
+							<?php
+							$pack_access = manacore_user_can_access( $parent );
+							$pack_play   = class_exists( '\\ManaCore\\Core\\Player' )
+								? Player::url_for( $parent, 0 < $season ? array( 'season' => $season ) : array() )
+								: '';
+
+							foreach ( $season_packs as $pack_group ) {
+								echo Templates::link_row( $pack_group, $pack_access, $parent, $pack_play, $pack_label ); // phpcs:ignore WordPress.Security.EscapeOutput
+							}
+							?>
+						</div>
+						<?php
+					endif;
+
 					$episode_index = 0;
 					foreach ( $items as $episode ) :
 						$number    = (int) get_post_meta( $episode->ID, 'manacore_episode_number', true );
 						$air_date  = (string) get_post_meta( $episode->ID, 'manacore_air_date', true );
 						$expanded  = $is_open && 0 === $episode_index;
-						$play_url  = class_exists( '\ManaCore\Core\Player' )
-							? add_query_arg(
-								array(
-									'season'  => $season,
-									'episode' => $number,
-								),
-								Player::page_url( $parent )
-							)
-							: '';
 						$sub_label = $air_date ? $air_date : __( 'نسخه نمایشی', 'manacore' );
+
+						/*
+						 * هدف پخش با `Player::resolve_target()` تعیین می‌شود:
+						 * اگر خودِ قسمت لینک داشته باشد، همان قسمت پخش
+						 * می‌شود (نه سریال)؛ وگرنه والد یا نخستین قسمتِ
+						 * دارای لینک. در نبود برگه‌ی پخش، `url_for()`
+						 * رشته‌ی خالی می‌دهد و دکمه ساخته نمی‌شود تا
+						 * پیوندِ ناقص (فقط `?season=…`) به کاربر نرسد.
+						 */
+						$play_url = '';
+
+						if ( class_exists( '\ManaCore\Core\Player' ) ) {
+							$play_target = Player::resolve_target( $parent, $season, $number );
+							$play_args   = array(
+								'season'  => $season,
+								'episode' => $number,
+							);
+
+							if ( $play_target && Player::has_sources( $play_target ) ) {
+								$play_url = Player::url_for( $play_target, $play_args );
+							} elseif ( Player::has_sources( $parent ) ) {
+								$play_url = Player::url_for( $parent, $play_args );
+							}
+						}
+
 						++$episode_index;
 						?>
 						<article class="episode-card<?php echo $expanded ? ' expanded' : ''; ?>">
@@ -7345,7 +7517,8 @@ class Blocks {
 								</button>
 								<?php if ( $play_url ) : ?>
 									<a class="episode-play" href="<?php echo esc_url( $play_url ); ?>"
-										aria-label="<?php echo esc_attr( sprintf( /* translators: %s: شماره قسمت */ __( 'پخش قسمت %s', 'manacore' ), manacore_fa_digits( number_format_i18n( $number ) ) ) ); ?>">
+										title="<?php echo esc_attr( sprintf( $play_label, manacore_fa_digits( number_format_i18n( $number ) ) ) ); ?>"
+										aria-label="<?php echo esc_attr( sprintf( $play_label, manacore_fa_digits( number_format_i18n( $number ) ) ) ); ?>">
 										<svg viewBox="0 0 24 24" width="17" height="17" fill="currentColor" aria-hidden="true"><path d="m8 5 11 7-11 7V5Z"/></svg>
 									</a>
 								<?php endif; ?>

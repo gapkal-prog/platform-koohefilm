@@ -1295,6 +1295,42 @@ table {
 }
 
 /*
+ * ---------------------------------------------------------------------
+ * مهار سرریز پنل در بازه‌ی ۱۰۲۴–۱۴۰۰px
+ * ---------------------------------------------------------------------
+ * نام‌های بلند ژانر («هیجان‌انگیز»، «علمی‌تخیلی») و پدینگ ستون‌ها می‌توانستند
+ * شبکه‌ی `fr` را از عرض پنل بیرون بزنند؛ چون `fr` کمینه‌ی محتوایی خودش را
+ * می‌گیرد، پنل در این بازه سرریز افقی می‌داد.
+ *
+ * راه‌حل: کمینه‌ی صفر برای ردیف‌های شبکه (`minmax(0, …)`) و شکستن واژه‌های
+ * بلند. در عرض‌های بالاتر هیچ چیز عوض نمی‌شود چون نسبت ستون‌ها یکی است.
+ */
+.koohe-nav .wp-block-navigation-item.koohe-mega > .wp-block-navigation__submenu-container {
+	grid-template-columns: minmax(0, 1.65fr) minmax(0, 1fr) minmax(0, 1.1fr);
+}
+
+.koohe-nav .wp-block-navigation-item.koohe-mega > .wp-block-navigation__submenu-container > * {
+	min-width: 0;
+}
+
+.koohe-nav .wp-block-navigation-item.koohe-mega > .wp-block-navigation__submenu-container .wp-block-navigation-item__label {
+	min-width: 0;
+	overflow-wrap: anywhere;
+}
+
+@media (min-width: 981px) and (max-width: 1400px) {
+	.koohe-nav .wp-block-navigation-item.koohe-mega > .wp-block-navigation__submenu-container {
+		max-width: 100%;
+	}
+
+	/* در باریک‌ترین حالت دسکتاپ، ستون‌ها کمی تنگ‌تر و فاصله‌ی داخلی کمتر. */
+	.koohe-nav .wp-block-navigation-item.koohe-mega > .wp-block-navigation__submenu-container {
+		column-gap: 22px;
+		padding: 24px;
+	}
+}
+
+/*
  * روی موبایل پنل تمام‌عرض جایی ندارد؛ همان فهرست تودرتوی کشویی می‌ماند.
  * `min-width: 0` لازم است چون قاعده‌ی عمومی زیرمنو `min-width: 200px`
  * دارد و در کشو ظرف را باریک نگه می‌داشت (سنجیده‌شده: ۲۰۰px).

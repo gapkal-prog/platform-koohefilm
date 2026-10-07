@@ -1,14 +1,23 @@
 <?php
 /**
- * مگامنوی ژانرها — بازآفرینی مگامنوی مرجع سینورا.
+ * مگامنوی ژانرها — سرویس مشترک افزونه و قالب.
  *
- * منوی «دسته‌بندی‌ها» در سربرگ، پنلی تمام‌عرض باز می‌کند با سه ستون:
- *   ۱) شبکه‌ی ژانرها (سه‌ستونه) بر پایه‌ی ترم‌های واقعی تاکسونومی genre؛
- *   ۲) فهرست دسترسی سریع (آثار برتر، تازه‌ها، بازیگران)؛
- *   ۳) اثر ویژه‌ی انتخابی (پوستر با روکش گرادیانی).
+ * این کلاس **داده**ی مگامنو را می‌سازد و از سه جا مصرف می‌شود:
+ *   ۱) قالب کوهه (`inc/blocks.php`) که همان داده را به آیتم‌های واقعی
+ *      فهرست راهبری وردپرس تبدیل می‌کند تا مدیر بتواند در پیشخوان
+ *      ویرایشش کند.
+ *   ۲) شورت‌کد `[manacore_mega_menu]` برای قالب‌های غیرِ کوهه.
+ *   ۳) پنل مدیریت (زبان «مگامنو») برای تنظیم متن‌ها، تعداد و کارت ویژه.
  *
- * ترم‌ها با get_terms خوانده و در ترنزینت cache می‌شوند؛ اگر هنوز ژانری
- * ثبت نشده باشد، به فهرست پیش‌فرض مرجع برمی‌گردیم تا پنل هرگز خالی نماند.
+ * ساختار پنل، بازآفرینی مگامنوی مرجع است: سه ستون
+ *   ۱) شبکه‌ی ژانرها (ترم‌های واقعی تاکسونومی)
+ *   ۲) فهرست دسترسی سریع
+ *   ۳) اثر ویژه‌ی انتخابی (پوستر با روکش گرادیانی)
+ *
+ * **همه‌ی متن‌ها، تعدادها، تاکسونومی، پیوند میانی و اثر ویژه** از تنظیمات
+ * خوانده می‌شوند (`manacore_settings`) و با فیلتر `manacore_mega_settings`
+ * قابل تغییرند. پیش‌فرض‌ها همان متن‌های مرجع‌اند تا ظاهر فعلی سایت
+ * دست‌نخورده بماند؛ ولی هیچ رشته‌ای دیگر سخت‌کد نیست.
  *
  * @package ManaCore\Core
  */
@@ -29,6 +38,104 @@ class Mega_Menu {
 	 */
 	public function hooks() {
 		add_shortcode( 'manacore_mega_menu', array( $this, 'shortcode' ) );
+
+		/*
+		 * با ذخیره‌ی تنظیمات، کش داده‌های مگامنو پاک می‌شود تا تغییر متن
+		 * یا تعداد ژانرها بی‌درنگ دیده شود (ترنزینت‌ها یک‌ساعته‌اند).
+		 */
+		add_action( 'update_option_manacore_settings', array( __CLASS__, 'flush_cache' ) );
+		add_action( 'edited_term', array( __CLASS__, 'flush_cache' ) );
+		add_action( 'created_term', array( __CLASS__, 'flush_cache' ) );
+		add_action( 'delete_term', array( __CLASS__, 'flush_cache' ) );
+	}
+
+	/**
+	 * تنظیمات مگامنو با پیش‌فرض‌های امن.
+	 *
+	 * @return array<string,mixed>
+	 */
+	public static function settings() {
+		$defaults = array(
+			'enabled'        => (bool) manacore_get_option( 'mega_enabled', 1 ),
+			'taxonomy'       => (string) manacore_get_option( 'mega_taxonomy', 'genre' ),
+			'number'         => (int) manacore_get_option( 'mega_terms', 12 ),
+			'columns'        => (int) manacore_get_option( 'mega_columns', 3 ),
+			'hub_url'        => (string) manacore_get_option( 'mega_hub_url', '' ),
+			'eyebrow'        => (string) manacore_get_option( 'mega_eyebrow', __( 'یک دنیا انتخاب', 'manacore' ) ),
+			'title'          => (string) manacore_get_option( 'mega_title', __( 'حال‌وهوای امشبت چیه؟', 'manacore' ) ),
+			'quick_label'    => (string) manacore_get_option( 'mega_quick_label', __( 'به انتخاب سینورا', 'manacore' ) ),
+			'feature_label'  => (string) manacore_get_option( 'mega_feature_label', __( 'انتخاب ویژه این هفته', 'manacore' ) ),
+			'cta_label'      => (string) manacore_get_option( 'mega_cta_label', __( 'کشف داستان', 'manacore' ) ),
+			'featured_id'    => (int) manacore_get_option( 'mega_featured_id', 0 ),
+			'rating_label'   => (string) manacore_get_option( 'mega_rating_label', __( 'بالاترین امتیازها', 'manacore' ) ),
+			'newest_label'   => (string) manacore_get_option( 'mega_newest_label', __( 'تازه‌های کوهه', 'manacore' ) ),
+			'korean_label'   => (string) manacore_get_option( 'mega_korean_label', __( 'فیلم و سریال کره‌ای', 'manacore' ) ),
+			'cast_label'     => (string) manacore_get_option( 'mega_cast_label', __( 'بازیگران و کارگردان‌ها', 'manacore' ) ),
+			'show_korean'    => (bool) manacore_get_option( 'mega_show_korean', 1 ),
+			'show_cast'      => (bool) manacore_get_option( 'mega_show_cast', 1 ),
+		);
+
+		/* تاکسونومی نامعتبر به ژانر برمی‌گردد تا کوئری هرگز خطا ندهد. */
+		if ( ! taxonomy_exists( $defaults['taxonomy'] ) ) {
+			$defaults['taxonomy'] = 'genre';
+		}
+
+		$defaults['number']  = max( 3, min( 30, (int) $defaults['number'] ) );
+		$defaults['columns'] = max( 2, min( 4, (int) $defaults['columns'] ) );
+
+		/**
+		 * فیلتر تنظیمات مگامنو.
+		 *
+		 * @param array<string,mixed> $defaults تنظیمات نرمال‌شده.
+		 */
+		return (array) apply_filters( 'manacore_mega_settings', $defaults );
+	}
+
+	/**
+	 * آیا پنل مگامنو فعال است؟
+	 *
+	 * @return bool
+	 */
+	public static function enabled() {
+		$settings = self::settings();
+
+		return ! empty( $settings['enabled'] );
+	}
+
+	/**
+	 * نشانی «مرکز دسته‌بندی‌ها» (ستون اول و پیوند «دسته‌بندی‌ها»).
+	 *
+	 * اولویت: تنظیم مدیر → برگه‌ی `categories-hub` → برگه‌ی `browse` →
+	 * آرشیو فیلم → خانه. پیش‌تر `/categories-hub/` سخت‌کد بود و اگر آن
+	 * برگه وجود نداشت، همه‌ی پیوندهای ستون اول ۴۰۴ می‌دادند.
+	 *
+	 * @return string
+	 */
+	public static function hub_url() {
+		$settings = self::settings();
+		$url      = trim( (string) $settings['hub_url'] );
+
+		if ( '' === $url ) {
+			foreach ( array( 'categories-hub', 'browse', 'movies' ) as $slug ) {
+				$page = get_page_by_path( $slug, OBJECT, 'page' );
+				if ( $page && 'publish' === get_post_status( $page->ID ) ) {
+					$url = (string) get_permalink( $page->ID );
+					break;
+				}
+			}
+		}
+
+		if ( '' === $url ) {
+			$archive = get_post_type_archive_link( 'movie' );
+			$url     = $archive ? $archive : home_url( '/' );
+		}
+
+		/**
+		 * فیلتر نشانی مرکز دسته‌بندی‌ها.
+		 *
+		 * @param string $url نشانی.
+		 */
+		return (string) apply_filters( 'manacore_mega_hub_url', $url );
 	}
 
 	/**
@@ -38,12 +145,13 @@ class Mega_Menu {
 	 * @return string
 	 */
 	public function shortcode( $atts ) {
-		$atts = shortcode_atts(
+		$settings = self::settings();
+		$atts     = shortcode_atts(
 			array(
-				'taxonomy'  => 'genre',
-				'number'    => 12,
-				'columns'   => 3,
-				'featured'  => 0,
+				'taxonomy' => $settings['taxonomy'],
+				'number'   => $settings['number'],
+				'columns'  => $settings['columns'],
+				'featured' => $settings['featured_id'],
 			),
 			$atts,
 			'manacore_mega_menu'
@@ -60,24 +168,30 @@ class Mega_Menu {
 	}
 
 	/**
-	 * رندر پنل مگامنو.
+	 * رندر پنل مگامنو (برای قالب‌های غیرِ کوهه و پیش‌نمایش).
 	 *
 	 * @param array $args آرگومان‌ها.
 	 * @return string
 	 */
 	public static function render( $args = array() ) {
+		$settings = self::settings();
+
+		if ( empty( $settings['enabled'] ) ) {
+			return '';
+		}
+
 		$args = wp_parse_args(
 			$args,
 			array(
-				'taxonomy' => 'genre',
-				'number'   => 12,
-				'columns'  => 3,
-				'featured' => 0,
+				'taxonomy' => $settings['taxonomy'],
+				'number'   => $settings['number'],
+				'columns'  => $settings['columns'],
+				'featured' => $settings['featured_id'],
 			)
 		);
 
 		$taxonomy = taxonomy_exists( (string) $args['taxonomy'] ) ? (string) $args['taxonomy'] : 'genre';
-		$number   = max( 3, min( 24, (int) $args['number'] ) );
+		$number   = max( 3, min( 30, (int) $args['number'] ) );
 		$columns  = max( 2, min( 4, (int) $args['columns'] ) );
 
 		$terms = self::menu_terms( $taxonomy, $number );
@@ -86,13 +200,14 @@ class Mega_Menu {
 		}
 
 		$featured_id = self::featured_id( (int) $args['featured'] );
+		$backdrop    = $featured_id ? manacore_backdrop_url( $featured_id ) : '';
 
 		ob_start();
 		?>
 		<div class="manacore-mega" data-mega-menu hidden>
 			<div class="manacore-mega__main">
-				<p class="koohe-eyebrow"><?php esc_html_e( 'یک دنیا انتخاب', 'manacore' ); ?></p>
-				<h3 class="manacore-mega__heading"><?php esc_html_e( 'حال‌وهوای امشبت چیه؟', 'manacore' ); ?></h3>
+				<p class="koohe-eyebrow"><?php echo esc_html( (string) $settings['eyebrow'] ); ?></p>
+				<h3 class="manacore-mega__heading"><?php echo esc_html( (string) $settings['title'] ); ?></h3>
 				<div class="manacore-mega__genres" style="--mc-mega-columns:<?php echo esc_attr( $columns ); ?>">
 					<?php foreach ( $terms as $term ) : ?>
 						<a href="<?php echo esc_url( get_term_link( $term ) ); ?>">
@@ -104,7 +219,7 @@ class Mega_Menu {
 			</div>
 
 			<div class="manacore-mega__quick">
-				<p class="koohe-eyebrow"><?php esc_html_e( 'به انتخاب کوهه', 'manacore' ); ?></p>
+				<p class="koohe-eyebrow"><?php echo esc_html( (string) $settings['quick_label'] ); ?></p>
 				<?php foreach ( self::quick_links() as $link ) : ?>
 					<a href="<?php echo esc_url( $link['url'] ); ?>">
 						<svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><?php echo $link['icon']; // phpcs:ignore WordPress.Security.EscapeOutput — SVG ثابت داخلی ?></svg>
@@ -114,16 +229,13 @@ class Mega_Menu {
 			</div>
 
 			<?php if ( $featured_id ) : ?>
-				<?php
-				$backdrop = manacore_poster_url( $featured_id );
-				?>
 				<a class="manacore-mega__feature" href="<?php echo esc_url( get_permalink( $featured_id ) ); ?>">
 					<img src="<?php echo esc_url( $backdrop ); ?>" alt="<?php echo esc_attr( get_the_title( $featured_id ) ); ?>" loading="lazy" decoding="async" />
 					<span>
-						<small><?php esc_html_e( 'انتخاب ویژه این هفته', 'manacore' ); ?></small>
+						<small><?php echo esc_html( (string) $settings['feature_label'] ); ?></small>
 						<strong><?php echo esc_html( get_the_title( $featured_id ) ); ?></strong>
 						<span>
-							<?php esc_html_e( 'کشف داستان', 'manacore' ); ?>
+							<?php echo esc_html( (string) $settings['cta_label'] ); ?>
 							<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m19 12-7 7-7-7" transform="rotate(-90 12 12)"/></svg>
 						</span>
 					</span>
@@ -141,7 +253,10 @@ class Mega_Menu {
 	 * @param int    $number   حداکثر تعداد.
 	 * @return array<int,\WP_Term>
 	 */
-	protected static function menu_terms( $taxonomy, $number ) {
+	public static function menu_terms( $taxonomy, $number ) {
+		$taxonomy = taxonomy_exists( (string) $taxonomy ) ? (string) $taxonomy : 'genre';
+		$number   = max( 3, min( 30, (int) $number ) );
+
 		$cache_key = 'manacore_mega_terms_' . sanitize_key( $taxonomy . '_' . $number );
 		$slugs     = get_transient( $cache_key );
 
@@ -172,15 +287,17 @@ class Mega_Menu {
 			}
 		}
 
-		/*
-		 * اگر هیچ‌کدام از نامک‌های بازگشتی ترم نداشتند (تاکسونومی غریبه)،
-		 * پنل خالی می‌ماند و رندر همان رشته‌ی تهی برمی‌گردد.
+		/**
+		 * فیلتر ترم‌های مگامنو.
+		 *
+		 * @param array<int,\WP_Term> $terms    ترم‌ها.
+		 * @param string              $taxonomy تاکسونومی.
 		 */
-		return $terms;
+		return (array) apply_filters( 'manacore_mega_terms', $terms, $taxonomy );
 	}
 
 	/**
-	 * نامک‌های پیش‌فرض مرجع سینورا برای سایت‌های تازه‌تاسیس.
+	 * نامک‌های پیش‌فرض مرجع برای سایت‌های تازه‌تاسیس.
 	 *
 	 * @return array<int,string>
 	 */
@@ -204,35 +321,62 @@ class Mega_Menu {
 	/**
 	 * پیوندهای دسترسی سریع ستون میانی.
 	 *
-	 * @return array<int,array{url:string,label:string,icon:string}>
+	 * برچسب‌ها از تنظیمات می‌آیند (`mega_rating_label` و…)، پس مدیر
+	 * می‌تواند متن‌ها را بدون کد تغییر دهد.
+	 *
+	 * @return array<int,array{url:string,label:string,icon:string,key:string}>
 	 */
-	protected static function quick_links() {
+	public static function quick_links() {
+		$settings = self::settings();
+
 		$person_base = get_post_type_archive_link( 'person' );
 		$browse_base = get_post_type_archive_link( 'movie' );
-
-		/*
-		 * مرتب‌سازی mc_sort تنها روی آرشیو اعمال می‌شود؛ پس لینک‌های سریع
-		 * به آرشیو فیلم می‌روند (معادل browse.html مرجع سینورا).
-		 */
 		$browse_base = $browse_base ? $browse_base : home_url( '/' );
 
 		$links = array(
 			array(
+				'key'   => 'rating',
 				'url'   => add_query_arg( 'mc_sort', 'rating', $browse_base ),
-				'label' => __( 'بالاترین امتیازها', 'manacore' ),
+				'label' => (string) $settings['rating_label'],
 				'icon'  => '<path d="m12 3-1.5 5.5L5 10l5.5 1.5L12 17l1.5-5.5L19 10l-5.5-1.5L12 3z"/>',
 			),
 			array(
+				'key'   => 'newest',
 				'url'   => add_query_arg( 'mc_sort', 'newest', $browse_base ),
-				'label' => __( 'تازه‌های کوهه', 'manacore' ),
+				'label' => (string) $settings['newest_label'],
 				'icon'  => '<path d="m4 4 16 0M3 8h18M5 4l2 4M10 4l2 4M15 4l2 4M4 8v12h16V8"/>',
 			),
 		);
 
-		if ( $person_base ) {
+		/*
+		 * «فیلم و سریال کره‌ای» تنها وقتی می‌آید که کشور متناظری در
+		 * تاکسونومی وجود داشته باشد؛ وگرنه ردیف بی‌مقصد ساخته می‌شد.
+		 */
+		if ( ! empty( $settings['show_korean'] ) ) {
+			$korean = get_terms(
+				array(
+					'taxonomy'   => 'country',
+					'hide_empty' => false,
+					'number'     => 1,
+					'name__like' => 'کره',
+				)
+			);
+
+			if ( ! is_wp_error( $korean ) && $korean ) {
+				$links[] = array(
+					'key'   => 'korean',
+					'url'   => (string) get_term_link( $korean[0] ),
+					'label' => (string) $settings['korean_label'],
+					'icon'  => '<path d="M5 3v18M5 8h14M19 3v18"/>',
+				);
+			}
+		}
+
+		if ( ! empty( $settings['show_cast'] ) && $person_base ) {
 			$links[] = array(
-				'url'   => $person_base,
-				'label' => __( 'بازیگران و کارگردان‌ها', 'manacore' ),
+				'key'   => 'cast',
+				'url'   => (string) $person_base,
+				'label' => (string) $settings['cast_label'],
 				'icon'  => '<path d="M20 21a8 8 0 0 0-16 0"/><circle cx="12" cy="7" r="4"/>',
 			);
 		}
@@ -240,24 +384,29 @@ class Mega_Menu {
 		/**
 		 * فیلتر پیوندهای دسترسی سریع مگامنو.
 		 *
-		 * @param array<int,array{url:string,label:string,icon:string}> $links پیوندها.
+		 * @param array<int,array{url:string,label:string,icon:string,key:string}> $links پیوندها.
 		 */
 		return (array) apply_filters( 'manacore_mega_quick_links', $links );
 	}
 
 	/**
-	 * اثر ویژه‌ی ستون سوم: شناسه‌ی صریح، وگرنه تازه‌ترین اثر دارای پوستر.
+	 * اثر ویژه‌ی ستون سوم.
+	 *
+	 * اولویت: شناسه‌ی صریح → تنظیمات مدیر → ترنزینت خودکار (تازه‌ترین اثر
+	 * دارای پوستر). پیش‌تر «بهترین امتیاز» در قالب سخت‌کد بود و مدیر هیچ
+	 * راهی برای انتخاب کارت ویژه نداشت.
 	 *
 	 * @param int $featured_id شناسه‌ی صریح اختیاری.
 	 * @return int
 	 */
-	protected static function featured_id( $featured_id ) {
-		$type = $featured_id ? (string) get_post_type( $featured_id ) : '';
-		if ( ! $type || ! array_key_exists( $type, manacore_post_types() ) ) {
-			$featured_id = 0;
+	public static function featured_id( $featured_id = 0 ) {
+		$settings = self::settings();
+
+		if ( ! $featured_id ) {
+			$featured_id = (int) $settings['featured_id'];
 		}
 
-		if ( $featured_id && 'publish' === get_post_status( $featured_id ) ) {
+		if ( $featured_id && 'publish' === get_post_status( $featured_id ) && array_key_exists( (string) get_post_type( $featured_id ), manacore_post_types() ) ) {
 			return (int) $featured_id;
 		}
 
@@ -278,9 +427,9 @@ class Mega_Menu {
 		);
 
 		/*
-		 * نخستین اثر تازه که پوستر واقعی دارد (تصویر شاخص یا آدرس پوسترس
-		 * دستی) انتخاب ویژه می‌شود؛ manacore_poster_url همیشه جایی می‌رود
-		 * (placeholder)، پس واقعی‌بودن پوستر را خودمان می‌سنجیم.
+		 * نخستین اثر تازه که پوستر واقعی دارد (تصویر شاخص یا آدرس پوستر
+		 * دستی) انتخاب ویژه می‌شود؛ `manacore_poster_url` همیشه جایی
+		 * می‌رود (placeholder)، پس واقعی‌بودن پوستر را خودمان می‌سنجیم.
 		 */
 		$id = 0;
 		foreach ( $query->posts as $post ) {
@@ -296,6 +445,57 @@ class Mega_Menu {
 
 		set_transient( 'manacore_mega_featured', $id, HOUR_IN_SECONDS );
 
-		return $id;
+		/**
+		 * فیلتر اثر ویژه‌ی مگامنو.
+		 *
+		 * @param int   $id  شناسه‌ی اثر.
+		 * @param array $settings تنظیمات.
+		 */
+		return (int) apply_filters( 'manacore_mega_featured_id', $id, $settings );
+	}
+
+	/**
+	 * اثر ویژه برای ویرایشگر: عنوان و پیوند کارت.
+	 *
+	 * @return array{id:int,title:string,url:string,image:string}
+	 */
+	public static function featured_card() {
+		$id    = self::featured_id();
+		$image = $id ? manacore_backdrop_url( $id ) : '';
+
+		return array(
+			'id'    => $id,
+			'title' => $id ? get_the_title( $id ) : '',
+			'url'   => $id ? (string) get_permalink( $id ) : '',
+			'image' => $id ? (string) $image : '',
+		);
+	}
+
+	/**
+	 * پاک‌کردن کش مگامنو (ترنزینت‌ها).
+	 *
+	 * @return void
+	 */
+	public static function flush_cache() {
+		global $wpdb;
+
+		if ( ! isset( $wpdb ) || ! is_object( $wpdb ) ) {
+			return;
+		}
+
+		$like = $wpdb->esc_like( '_transient_manacore_mega_' ) . '%';
+
+		$keys = $wpdb->get_col( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+			$wpdb->prepare(
+				"SELECT option_name FROM {$wpdb->options} WHERE option_name LIKE %s OR option_name LIKE %s",
+				$like,
+				$wpdb->esc_like( '_transient_timeout_manacore_mega_' ) . '%'
+			)
+		);
+
+		foreach ( (array) $keys as $key ) {
+			$name = str_replace( array( '_transient_timeout_', '_transient_' ), '', (string) $key );
+			delete_transient( $name );
+		}
 	}
 }

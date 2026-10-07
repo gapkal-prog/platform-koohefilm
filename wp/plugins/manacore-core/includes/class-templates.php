@@ -359,7 +359,17 @@ class Templates {
 	/**
 	 * رندر بخش لینک‌های دانلود.
 	 *
-	 * @param int $post_id شناسه‌ی پست.
+	 * حالت (`mode`) تعیین می‌کند سرصفحه‌ی پیش‌فرض چه باشد و جدول برای کدام
+	 * گونه‌ی محتوا ساخته شود:
+	 *   • `auto`   → بر پایه‌ی نوع پست (سریال/انیمه → `series`، بقیه → `movie`)
+	 *   • `movie`  → جدول کیفیت‌ها (مرجع `detail.html` سینورا)
+	 *   • `series` → بسته‌های کامل فصل روی پست سریال («دانلود کامل فصل‌ها»)
+	 *   • `episode`→ جدول کیفیت‌های یک قسمت
+	 *
+	 * @param int   $post_id شناسه‌ی پست.
+	 * @param array $args    تنظیمات: mode، box_style، heading، subtitle،
+	 *                       heading_tag، show_heading/icon/count/notice/tabs،
+	 *                       types، qualities، season، pack_label، size_label.
 	 * @return string
 	 */
 	public static function links( $post_id, $args = array() ) {
@@ -375,11 +385,16 @@ class Templates {
 				'show_count'   => true,
 				'show_notice'  => true,
 				'show_tabs'    => true,
+				'mode'         => 'auto',
+				'pack_label'   => '',
+				'size_label'   => '',
 				'types'        => array(),
 				'qualities'    => array(),
 				'season'       => 0,
 			)
 		);
+
+		$args['mode'] = self::resolve_mode( $args['mode'], $post_id );
 
 		if ( get_post_meta( $post_id, 'manacore_disable_links', true ) ) {
 			return '';
@@ -408,11 +423,18 @@ class Templates {
 		 * ساختار دقیقاً همان مرجع بماند.
 		 */
 		if ( $args['show_notice'] && '' === trim( (string) $notice ) ) {
-			$notice = (string) apply_filters(
-				'manacore_download_notice',
-				__( 'برای رعایت حقوق نشر، پخش و دانلود این نسخه از نمونه ۱۰ ثانیه‌ای ویدئوی آزاد استفاده می‌کند.', 'manacore' ),
-				$post_id
-			);
+			/*
+			 * متن پیش‌فرض از پنل مدیریت خوانده می‌شود (تب «پخش و دانلود»)
+			 * و در نبودش متن کتابخانه می‌آید؛ پس مدیر می‌تواند لحن/متن
+			 * یادداشت همه‌ی باکس‌ها را یک‌جا عوض کند.
+			 */
+			$default_notice = trim( (string) manacore_get_option( 'download_notice_text', '' ) );
+
+			if ( '' === $default_notice ) {
+				$default_notice = __( 'برای رعایت حقوق نشر، پخش و دانلود این نسخه از نمونه ۱۰ ثانیه‌ای ویدئوی آزاد استفاده می‌کند.', 'manacore' );
+			}
+
+			$notice = (string) apply_filters( 'manacore_download_notice', $default_notice, $post_id );
 		}
 
 		if ( ! $args['show_notice'] ) {
@@ -439,8 +461,16 @@ class Templates {
 		}
 
 		$multi       = $args['show_tabs'] && ( count( $by_season ) > 1 || ! isset( $by_season[0] ) );
-		$heading     = $args['heading'] ? $args['heading'] : __( 'لینک‌های دانلود و پخش', 'manacore' );
+		$heading     = $args['heading'] ? $args['heading'] : self::default_heading( $args['mode'] );
 		$heading_tag = in_array( $args['heading_tag'], array( 'h2', 'h3', 'h4', 'h5', 'h6', 'div' ), true ) ? $args['heading_tag'] : 'h2';
+
+		// برچسب ستون‌ها و نشان‌های سطر، بر پایه‌ی حالت.
+		$size_label = '' !== trim( (string) $args['size_label'] )
+			? (string) $args['size_label']
+			: __( 'حجم نمونه', 'manacore' );
+		$pack_label = '' !== trim( (string) $args['pack_label'] )
+			? (string) $args['pack_label']
+			: __( 'بسته‌ی کامل فصل', 'manacore' );
 
 		// سبک ظاهری با فهرست مشترک اعتبارسنجی می‌شود.
 		$box_style = Block_Support::pick( $args['box_style'], Block_Data::download_styles(), 'cards' );
@@ -455,8 +485,9 @@ class Templates {
 		 */
 		ob_start();
 		?>
-		<section class="download-section<?php echo 'cards' === $box_style ? '' : ' is-' . esc_attr( $box_style ); ?>"
-			id="download" data-manacore-downloads="<?php echo esc_attr( $post_id ); ?>">
+		<section class="download-section<?php echo 'cards' === $box_style ? '' : ' is-' . esc_attr( $box_style ); ?><?php echo 'series' === $args['mode'] ? ' is-series' : ''; ?>"
+			id="download" data-manacore-downloads="<?php echo esc_attr( $post_id ); ?>"
+			data-mode="<?php echo esc_attr( $args['mode'] ); ?>">
 			<div class="section-heading">
 				<div class="heading-title">
 					<?php if ( $args['show_icon'] ) : ?>
@@ -518,11 +549,19 @@ class Templates {
 						<div class="download-table-header">
 							<span><?php esc_html_e( 'کیفیت تصویر', 'manacore' ); ?></span>
 							<span><?php esc_html_e( 'فرمت', 'manacore' ); ?></span>
-							<span><?php esc_html_e( 'حجم نمونه', 'manacore' ); ?></span>
+							<span><?php echo esc_html( $size_label ); ?></span>
 							<span><?php esc_html_e( 'پخش و دانلود', 'manacore' ); ?></span>
 						</div>
 						<?php foreach ( $season_groups as $group ) : ?>
-							<?php echo self::link_row( $group, $has_access, $post_id ); // phpcs:ignore WordPress.Security.EscapeOutput ?>
+							<?php
+							/*
+							 * در حالت سریال، هر گروه «بسته‌ی کامل فصل» است؛
+							 * نشان ریزِ زیر کیفیت همین را به کاربر می‌گوید
+							 * (در حالت فیلم/قسمت، همان برچسب زبان می‌ماند).
+							 */
+							$badge_override = 'series' === $args['mode'] ? $pack_label : '';
+							echo self::link_row( $group, $has_access, $post_id, '', $badge_override ); // phpcs:ignore WordPress.Security.EscapeOutput
+							?>
 						<?php endforeach; ?>
 					</div>
 				</div>
@@ -531,6 +570,128 @@ class Templates {
 		</section>
 		<?php
 		return (string) ob_get_clean();
+	}
+
+	/**
+	 * تعیین حالت باکس دانلود از نوع پست.
+	 *
+	 * @param string $mode    حالت درخواستی (`auto|movie|series|episode`).
+	 * @param int    $post_id شناسه‌ی پست.
+	 * @return string
+	 */
+	public static function resolve_mode( $mode, $post_id = 0 ) {
+		$mode  = sanitize_key( (string) $mode );
+		$types = array( 'auto', 'movie', 'series', 'episode' );
+
+		if ( ! in_array( $mode, $types, true ) ) {
+			$mode = 'auto';
+		}
+
+		if ( 'auto' !== $mode || ! $post_id ) {
+			return $mode;
+		}
+
+		$type = (string) get_post_type( $post_id );
+
+		if ( 'episode' === $type ) {
+			return 'episode';
+		}
+
+		if ( in_array( $type, manacore_serial_post_types(), true ) ) {
+			return 'series';
+		}
+
+		return 'movie';
+	}
+
+	/**
+	 * سرصفحه‌ی پیش‌فرض هر حالت.
+	 *
+	 * @param string $mode حالت.
+	 * @return string
+	 */
+	protected static function default_heading( $mode ) {
+		if ( 'series' === $mode ) {
+			return __( 'دانلود کامل فصل‌ها', 'manacore' );
+		}
+
+		if ( 'episode' === $mode ) {
+			return __( 'لینک‌های این قسمت', 'manacore' );
+		}
+
+		return __( 'لینک‌های دانلود و پخش', 'manacore' );
+	}
+
+	/**
+	 * پالایش گروه‌های لینک بر پایه‌ی نوع و کیفیت.
+	 *
+	 * هر دو فیلتر روی «لینک‌ها» اعمال می‌شوند، نه روی گروه: اگر گروهی
+	 * چند لینک از چند نوع داشته باشد، فقط لینک‌های خواسته‌شده می‌مانند و
+	 * گروهی که هیچ لینکی برایش نماند حذف می‌شود. فصل‌های خالی هم حذف
+	 * می‌شوند تا تبِ «فصل» بدون محتوا ساخته نشود.
+	 *
+	 * این متد پیش‌تر صدا زده می‌شد ولی تعریف نشده بود؛ نتیجه‌اش خطای
+	 * مرگبار (`Call to undefined method`) روی هر سایتی بود که برای بلوک
+	 * «لینک‌های دانلود» فیلتر نوع یا کیفیت انتخاب می‌کرد.
+	 *
+	 * @param array $by_season      گروه‌ها به تفکیک فصل.
+	 * @param array $type_filter    کلیدهای نوع لینک.
+	 * @param array $quality_filter کلیدهای کیفیت.
+	 * @return array
+	 */
+	public static function filter_link_seasons( $by_season, $type_filter = array(), $quality_filter = array() ) {
+		$type_filter    = array_filter( array_map( 'sanitize_key', (array) $type_filter ) );
+		$quality_filter = array_filter( array_map( 'sanitize_key', (array) $quality_filter ) );
+
+		if ( ! $type_filter && ! $quality_filter ) {
+			return (array) $by_season;
+		}
+
+		$out = array();
+
+		foreach ( (array) $by_season as $season => $groups ) {
+			$kept = array();
+
+			foreach ( (array) $groups as $group ) {
+				$quality = sanitize_key( (string) $group['quality'] );
+				$title   = sanitize_key( (string) $group['title'] );
+
+				if ( '' === $quality ) {
+					$quality = $title;
+				}
+
+				if ( $quality_filter && ! in_array( $quality, $quality_filter, true ) ) {
+					continue;
+				}
+
+				$items = (array) $group['items'];
+
+				if ( $type_filter ) {
+					$items = array_values(
+						array_filter(
+							$items,
+							static function ( $item ) use ( $type_filter ) {
+								return in_array( sanitize_key( (string) $item['type'] ), $type_filter, true );
+							}
+						)
+					);
+
+					if ( ! $items ) {
+						continue;
+					}
+
+					$group['items'] = $items;
+				}
+
+				$kept[] = $group;
+			}
+
+			if ( $kept ) {
+				$out[ $season ] = $kept;
+			}
+		}
+
+		return $out;
 	}
 
 	/**
@@ -543,12 +704,14 @@ class Templates {
 	 *   کنش‌ها       → «▶ پخش» برای لینک‌های آنلاین و «⇩ دانلود» برای بقیه؛
 	 *                 گروه ویژه (اشتراکی) به‌جای کنش‌ها دکمه‌ی اشتراک می‌گیرد.
 	 *
-	 * @param array $group      گروه لینک.
-	 * @param bool  $has_access دسترسی کاربر به محتوای ویژه.
-	 * @param int   $post_id    شناسه‌ی اثر.
+	 * @param array  $group             گروه لینک.
+	 * @param bool   $has_access        دسترسی کاربر به محتوای ویژه.
+	 * @param int    $post_id           شناسه‌ی اثر.
+	 * @param string $play_url_override نشانی پخش صریح (برای قسمت‌ها).
+	 * @param string $badge_override    متن نشان ریز زیر کیفیت (مثلاً «بسته‌ی کامل فصل»).
 	 * @return string
 	 */
-	public static function link_row( $group, $has_access, $post_id, $play_url_override = '' ) {
+	public static function link_row( $group, $has_access, $post_id, $play_url_override = '', $badge_override = '' ) {
 		$locked = $group['premium'] && ! $has_access;
 
 		$quality = trim( (string) $group['quality'] );
@@ -556,7 +719,10 @@ class Templates {
 			$quality = trim( (string) $group['title'] );
 		}
 
-		$badge = $group['language'] ? Links::language_label( $group['language'] ) : '';
+		$badge = '' !== trim( (string) $badge_override )
+			? (string) $badge_override
+			: ( $group['language'] ? Links::language_label( $group['language'] ) : '' );
+
 		if ( '' === $badge && $group['premium'] ) {
 			$badge = __( 'ویژه', 'manacore' );
 		}
@@ -582,7 +748,7 @@ class Templates {
 			<div class="download-actions">
 				<?php if ( $locked ) : ?>
 					<a class="manacore-btn is-primary is-small"
-						href="<?php echo esc_url( apply_filters( 'manacore_subscribe_url', home_url( '/subscribe/' ) ) ); ?>">
+						href="<?php echo esc_url( apply_filters( 'manacore_subscribe_url', manacore_get_option( 'subscribe_url', home_url( '/subscribe/' ) ) ) ); ?>">
 						<?php esc_html_e( 'تهیه اشتراک', 'manacore' ); ?>
 					</a>
 				<?php else : ?>
@@ -607,7 +773,13 @@ class Templates {
 									? add_query_arg( 'quality', rawurlencode( $quality ), $play_url_override )
 									: $play_url_override;
 							} else {
-								$play_url = add_query_arg( 'quality', rawurlencode( $quality ), $player );
+								/*
+							 * `add_query_arg()` مقادیر تازه را کدگذاری نمی‌کند
+							 * (`build_query()` بدون urlencode است)؛ پس کدگذاری
+							 * اینجا وظیفه‌ی فراخوان است — وگرنه کیفیت‌های
+							 * فارسی/فاصله‌دار در نشانی می‌شکنند.
+							 */
+							$play_url = add_query_arg( 'quality', rawurlencode( $quality ), $player );
 							}
 							?>
 							<a class="manacore-btn is-secondary is-small" href="<?php echo esc_url( $play_url ); ?>"

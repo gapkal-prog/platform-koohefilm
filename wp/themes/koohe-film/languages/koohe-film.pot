@@ -4,7 +4,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Koohe Film 1.0.0\n"
 "Report-Msgid-Bugs-To: https://manacore.dev\n"
-"POT-Creation-Date: 2026-09-19 08:13+0000\n"
+"POT-Creation-Date: 2026-10-07 20:07+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -132,12 +132,188 @@ msgstr ""
 msgid "ویترین (اولی بزرگ)"
 msgstr ""
 
+#: koohe-film/inc/blocks.php:1018
+msgid "بالاترین امتیازها"
+msgstr ""
+
+#: koohe-film/inc/blocks.php:1019
+msgid "تازه‌های کوهه"
+msgstr ""
+
+#: koohe-film/inc/blocks.php:1025 koohe-film/patterns/discovery-shortcuts.php:38
+msgid "بازیگران و کارگردان‌ها"
+msgstr ""
+
+#: koohe-film/inc/blocks.php:1036
+msgid "برترین‌های کوهه"
+msgstr ""
+
+#: koohe-film/inc/blocks.php:106
+msgid "دکمه‌ی لیست تماشا (کوه فیلم)"
+msgstr ""
+
+#: koohe-film/inc/blocks.php:107
+msgid "افزودن/حذف اثر جاری از لیست تماشای کاربر."
+msgstr ""
+
+#: koohe-film/inc/blocks.php:1076
+msgid "ژانرها"
+msgstr ""
+
+#: koohe-film/inc/blocks.php:109 koohe-film/inc/template-tags.php:376 koohe-film/patterns/title-hero.php:166
+msgid "لیست تماشا"
+msgstr ""
+
+#: koohe-film/inc/blocks.php:109
+msgid "نشان‌شده"
+msgstr ""
+
+#: koohe-film/inc/blocks.php:1097
+msgid "دسته‌بندی‌ها"
+msgstr ""
+
+#: koohe-film/inc/blocks.php:1107
+msgid "درباره ما"
+msgstr ""
+
+#: koohe-film/inc/blocks.php:1108
+msgid "تماس با ما"
+msgstr ""
+
+#: koohe-film/inc/blocks.php:1135 koohe-film/inc/setup.php:55
+msgid "فهرست اصلی"
+msgstr ""
+
+#: koohe-film/inc/blocks.php:131 koohe-film/inc/blocks.php:181
+msgid "متن دکمه"
+msgstr ""
+
+#: koohe-film/inc/blocks.php:132
+msgid "خالی بگذارید تا «لیست تماشا» به کار رود."
+msgstr ""
+
+#: koohe-film/inc/blocks.php:136
+msgid "متن پس از افزودن"
+msgstr ""
+
+#: koohe-film/inc/blocks.php:137
+msgid "خالی بگذارید تا «در لیست تماشا» به کار رود."
+msgstr ""
+
+#: koohe-film/inc/blocks.php:141
+msgid "نمایش آیکن قلب"
+msgstr ""
+
+#: koohe-film/inc/blocks.php:145 koohe-film/inc/blocks.php:190
+msgid "سبک دکمه"
+msgstr ""
+
+#: koohe-film/inc/blocks.php:147 koohe-film/inc/blocks.php:192
+msgid "شیشه‌ای (روی تصویر)"
+msgstr ""
+
+#: koohe-film/inc/blocks.php:148 koohe-film/inc/blocks.php:193
+msgid "تأکیدی"
+msgstr ""
+
+#: koohe-film/inc/blocks.php:149 koohe-film/inc/blocks.php:194
+msgid "ساده"
+msgstr ""
+
+#: koohe-film/inc/blocks.php:160
+msgid "کپی پیوند (کوه فیلم)"
+msgstr ""
+
+#: koohe-film/inc/blocks.php:161
+msgid "دکمه‌ای که نشانی اثر جاری را در کلیپ‌بورد کپی می‌کند."
+msgstr ""
+
+#: koohe-film/inc/blocks.php:163
+msgid "اشتراک‌گذاری"
+msgstr ""
+
+#: koohe-film/inc/blocks.php:163
+msgid "کپی"
+msgstr ""
+
+#: koohe-film/inc/blocks.php:182
+msgid "خالی بگذارید تا «کپی لینک» به کار رود."
+msgstr ""
+
+#: koohe-film/inc/blocks.php:186
+msgid "نمایش آیکن پیوند"
+msgstr ""
+
+#: koohe-film/inc/blocks.php:205
+msgid "نشانِ نوع محتوا (کوه فیلم)"
+msgstr ""
+
+#: koohe-film/inc/blocks.php:206
+msgid "چیپِ کوچکِ نوع اثر: فیلم، سریال، انیمه یا قسمت — همان چیپِ سربرگِ جزئیات در الگوی مرجع."
+msgstr ""
+
+#: koohe-film/inc/blocks.php:208
+msgid "نشان"
+msgstr ""
+
+#: koohe-film/inc/blocks.php:208
+msgid "نوع"
+msgstr ""
+
+#: koohe-film/inc/blocks.php:226
+msgid "برچسب"
+msgstr ""
+
+#: koohe-film/inc/blocks.php:227
+msgid "خالی بگذارید تا نوعِ خودکارِ اثر (فیلم/سریال/انیمه/قسمت) نوشته شود."
+msgstr ""
+
+#: koohe-film/inc/blocks.php:231
+msgid "سبک نشان"
+msgstr ""
+
+#: koohe-film/inc/blocks.php:233
+msgid "تأکیدی (سبز کوه)"
+msgstr ""
+
+#: koohe-film/inc/blocks.php:234
+msgid "ملایم (خاکستری)"
+msgstr ""
+
+#: koohe-film/inc/blocks.php:239
+msgid "پیوند به آرشیو همان نوع محتوا"
+msgstr ""
+
+#: koohe-film/inc/blocks.php:249
+msgid "دکمه‌ی جستجو (کوه فیلم)"
+msgstr ""
+
 #: koohe-film/inc/blocks.php:25
 msgid "کلید حالت تیره/روشن"
 msgstr ""
 
+#: koohe-film/inc/blocks.php:250
+msgid "دکمه‌ی سربرگ که پوسته‌ی جستجوی تمام‌صفحه را باز می‌کند — همان الگوی مرجع: آیکن + متن راهنما + میان‌بر ⌘K."
+msgstr ""
+
+#: koohe-film/inc/blocks.php:252
+msgid "جستجو"
+msgstr ""
+
 #: koohe-film/inc/blocks.php:26
 msgid "دکمه‌ی جابه‌جایی میان حالت تیره و روشن سایت."
+msgstr ""
+
+#: koohe-film/inc/blocks.php:266
+msgid "متن راهنما"
+msgstr ""
+
+#: koohe-film/inc/blocks.php:267
+msgid "خالی بگذارید تا «دنبال چی می‌گردی؟» به کار رود."
+msgstr ""
+
+#: koohe-film/inc/blocks.php:271
+msgid "نمایش میان‌بر ⌘K"
 msgstr ""
 
 #: koohe-film/inc/blocks.php:28 koohe-film/inc/customize.php:168
@@ -148,12 +324,76 @@ msgstr ""
 msgid "روشن"
 msgstr ""
 
+#: koohe-film/inc/blocks.php:287
+msgid "کشوی منوی موبایل (کوه فیلم)"
+msgstr ""
+
+#: koohe-film/inc/blocks.php:288
+msgid "کشوی کنارِ همسان با مرجع: پس‌زمینه‌ی تار، دکمه‌ی بستن، ردیف جستجو، ردیف‌های فهرست راهبری با شِوران، دکمه‌ی اشتراک و یک سطر پایانی."
+msgstr ""
+
+#: koohe-film/inc/blocks.php:290
+msgid "منو"
+msgstr ""
+
+#: koohe-film/inc/blocks.php:290
+msgid "همبرگری"
+msgstr ""
+
+#: koohe-film/inc/blocks.php:312
+msgid "نام قابل‌دسترس گفت‌وگو"
+msgstr ""
+
+#: koohe-film/inc/blocks.php:313
+msgid "خالی بگذارید تا «منوی اصلی» به کار رود."
+msgstr ""
+
+#: koohe-film/inc/blocks.php:317
+msgid "متن ردیف جستجو"
+msgstr ""
+
+#: koohe-film/inc/blocks.php:318
+msgid "خالی بگذارید تا «جستجوی فیلم و سریال» به کار رود."
+msgstr ""
+
+#: koohe-film/inc/blocks.php:322
+msgid "متن دکمه‌ی اشتراک"
+msgstr ""
+
+#: koohe-film/inc/blocks.php:323
+msgid "خالی بگذارید تا «خرید اشتراک» به کار رود."
+msgstr ""
+
+#: koohe-film/inc/blocks.php:327
+msgid "سطر پایانی"
+msgstr ""
+
+#: koohe-film/inc/blocks.php:328
+msgid "خالی بگذارید تا «هر داستان، یک دنیای تازه.» به کار رود."
+msgstr ""
+
 #: koohe-film/inc/blocks.php:38
 msgid "برچسب دسترس‌پذیری"
 msgstr ""
 
 #: koohe-film/inc/blocks.php:39
 msgid "خالی بگذارید تا متن پیش‌فرض به کار رود."
+msgstr ""
+
+#: koohe-film/inc/blocks.php:545
+msgid "دیدگاه‌ها"
+msgstr ""
+
+#: koohe-film/inc/blocks.php:555
+msgid "ترتیب دیدگاه‌ها"
+msgstr ""
+
+#: koohe-film/inc/blocks.php:556
+msgid "جدیدترین دیدگاه‌ها"
+msgstr ""
+
+#: koohe-film/inc/blocks.php:557
+msgid "قدیمی‌ترین دیدگاه‌ها"
 msgstr ""
 
 #: koohe-film/inc/blocks.php:57
@@ -164,16 +404,24 @@ msgstr ""
 msgid "نمایش دکمه‌ی ورود یا نام کاربر و سطح اشتراک."
 msgstr ""
 
-#: koohe-film/inc/blocks.php:60
+#: koohe-film/inc/blocks.php:60 koohe-film/inc/blocks.php:902
 msgid "اشتراک"
 msgstr ""
 
-#: koohe-film/inc/blocks.php:60 koohe-film/inc/compat.php:170 koohe-film/inc/template-tags.php:149
+#: koohe-film/inc/blocks.php:60 koohe-film/inc/compat.php:170 koohe-film/inc/template-tags.php:202
 msgid "ورود"
+msgstr ""
+
+#: koohe-film/inc/blocks.php:616
+msgid "اولین نفری باش که از این داستان می‌نویسد."
 msgstr ""
 
 #: koohe-film/inc/blocks.php:73
 msgid "حق نشر (کوه فیلم)"
+msgstr ""
+
+#: koohe-film/inc/blocks.php:733 koohe-film/inc/blocks.php:921
+msgid "کشف داستان"
 msgstr ""
 
 #: koohe-film/inc/blocks.php:74
@@ -186,6 +434,38 @@ msgstr ""
 
 #: koohe-film/inc/blocks.php:76 koohe-film/inc/customize.php:107 koohe-film/inc/setup.php:99
 msgid "پابرگ"
+msgstr ""
+
+#: koohe-film/inc/blocks.php:765
+msgid "تماشای %s"
+msgstr ""
+
+#: koohe-film/inc/blocks.php:891 koohe-film/patterns/title-hero.php:61
+msgid "خانه"
+msgstr ""
+
+#: koohe-film/inc/blocks.php:901
+msgid "برنامه پخش"
+msgstr ""
+
+#: koohe-film/inc/blocks.php:917
+msgid "یک دنیا انتخاب"
+msgstr ""
+
+#: koohe-film/inc/blocks.php:918
+msgid "حال‌وهوای امشبت چیه؟"
+msgstr ""
+
+#: koohe-film/inc/blocks.php:919
+msgid "به انتخاب سینورا"
+msgstr ""
+
+#: koohe-film/inc/blocks.php:920
+msgid "انتخاب ویژه این هفته"
+msgstr ""
+
+#: koohe-film/inc/blocks.php:954 koohe-film/patterns/collections-row.php:15
+msgid "همه دسته‌بندی‌ها"
 msgstr ""
 
 #: koohe-film/inc/compat.php:169 koohe-film/inc/template-tags.php:48 koohe-film/inc/template-tags.php:90 koohe-film/inc/template-tags.php:107
@@ -360,6 +640,30 @@ msgstr ""
 msgid "نمایش پوستر و افکت کارت‌های فهرست آثار."
 msgstr ""
 
+#: koohe-film/inc/mobile-drawer.php:263
+msgid "حساب کاربری"
+msgstr ""
+
+#: koohe-film/inc/mobile-drawer.php:314
+msgid "منوی اصلی"
+msgstr ""
+
+#: koohe-film/inc/mobile-drawer.php:318
+msgid "جستجوی فیلم و سریال"
+msgstr ""
+
+#: koohe-film/inc/mobile-drawer.php:322
+msgid "خرید اشتراک"
+msgstr ""
+
+#: koohe-film/inc/mobile-drawer.php:326
+msgid "هر داستان، یک دنیای تازه."
+msgstr ""
+
+#: koohe-film/inc/mobile-drawer.php:349
+msgid "بستن منو"
+msgstr ""
+
 #: koohe-film/inc/patterns.php:21
 msgid "الگوهای اختصاصی قالب کوه فیلم."
 msgstr ""
@@ -396,12 +700,68 @@ msgstr ""
 msgid "الگوهای آماده‌ی برگه‌ها مانند اشتراک و تماس."
 msgstr ""
 
-#: koohe-film/inc/setup.php:101
-msgid "ابزارک‌های ستون پابرگ."
+#: koohe-film/inc/plans.php:31
+msgid "پخش و دانلود نمونه‌ها در همه کیفیت‌ها"
 msgstr ""
 
-#: koohe-film/inc/setup.php:55
-msgid "فهرست اصلی"
+#: koohe-film/inc/plans.php:32
+msgid "لیست تماشا و تاریخچه همگام‌شده"
+msgstr ""
+
+#: koohe-film/inc/plans.php:33
+msgid "تحلیل سلیقه و پیشنهادهای مخصوص تو"
+msgstr ""
+
+#: koohe-film/inc/plans.php:34
+msgid "پروفایل و تنظیمات شخصی"
+msgstr ""
+
+#: koohe-film/inc/plans.php:37
+msgid "اعتبار %s ماهه آزمایشی"
+msgstr ""
+
+#: koohe-film/inc/plans.php:56
+msgid "اشتراک یک‌ماهه"
+msgstr ""
+
+#: koohe-film/inc/plans.php:57
+msgid "یک‌ماهه"
+msgstr ""
+
+#: koohe-film/inc/plans.php:58
+msgid "شروع یک داستان تازه"
+msgstr ""
+
+#: koohe-film/inc/plans.php:66
+msgid "اشتراک سه‌ماهه"
+msgstr ""
+
+#: koohe-film/inc/plans.php:67
+msgid "سه‌ماهه"
+msgstr ""
+
+#: koohe-film/inc/plans.php:68
+msgid "انتخاب محبوب سینورایی‌ها"
+msgstr ""
+
+#: koohe-film/inc/plans.php:73
+msgid "انتخاب محبوب"
+msgstr ""
+
+#: koohe-film/inc/plans.php:78
+msgid "اشتراک یک‌ساله"
+msgstr ""
+
+#: koohe-film/inc/plans.php:79
+msgid "یک‌ساله"
+msgstr ""
+
+#: koohe-film/inc/plans.php:80
+msgid "یک سال، هزاران داستان"
+msgstr ""
+
+#: koohe-film/inc/setup.php:101
+msgid "ابزارک‌های ستون پابرگ."
 msgstr ""
 
 #: koohe-film/inc/setup.php:56
@@ -432,8 +792,60 @@ msgstr ""
 msgid "ManaCore — فیلم و سریال"
 msgstr ""
 
-#: koohe-film/inc/template-tags.php:244
+#: koohe-film/inc/template-tags.php:295
 msgid "طراحی و توسعه: %s"
+msgstr ""
+
+#: koohe-film/inc/template-tags.php:377
+msgid "در لیست تماشا"
+msgstr ""
+
+#: koohe-film/inc/template-tags.php:413 koohe-film/patterns/title-hero.php:167
+msgid "کپی لینک"
+msgstr ""
+
+#: koohe-film/inc/template-tags.php:563
+msgid "دنبال چی می‌گردی؟"
+msgstr ""
+
+#: koohe-film/patterns/collections-row.php:15
+msgid "امشب با چه حال‌وهوایی؟"
+msgstr ""
+
+#: koohe-film/patterns/collections-row.php:15
+msgid "مجموعه‌هایی برای هر حس و هر لحظه"
+msgstr ""
+
+#: koohe-film/patterns/collections-row.php:15
+msgid "کالکشن کوهه"
+msgstr ""
+
+#: koohe-film/patterns/discovery-shortcuts.php:20
+msgid "سینمای جهان"
+msgstr ""
+
+#: koohe-film/patterns/discovery-shortcuts.php:21
+msgid "یک بلیت به هزاران دنیا"
+msgstr ""
+
+#: koohe-film/patterns/discovery-shortcuts.php:26
+msgid "دنیای سریال‌ها"
+msgstr ""
+
+#: koohe-film/patterns/discovery-shortcuts.php:27
+msgid "فقط یک قسمت دیگر…"
+msgstr ""
+
+#: koohe-film/patterns/discovery-shortcuts.php:32
+msgid "جهان انیمیشن"
+msgstr ""
+
+#: koohe-film/patterns/discovery-shortcuts.php:33
+msgid "خیال، بدون مرز"
+msgstr ""
+
+#: koohe-film/patterns/discovery-shortcuts.php:39
+msgid "چهره‌های ماندگار"
 msgstr ""
 
 #: koohe-film/patterns/genre-cloud.php:17
@@ -444,12 +856,80 @@ msgstr ""
 msgid "محتوایی برای نمایش یافت نشد."
 msgstr ""
 
+#: koohe-film/patterns/home-duo.php:35
+msgid "هر روز، یک قسمت تازه"
+msgstr ""
+
+#: koohe-film/patterns/home-duo.php:36
+msgid "برنامه هفتگی سریال‌ها"
+msgstr ""
+
+#: koohe-film/patterns/home-duo.php:45
+msgid "برنامه کامل"
+msgstr ""
+
+#: koohe-film/patterns/home-duo.php:47
+msgid "امروز، وقت کشف یک داستان تازه است."
+msgstr ""
+
+#: koohe-film/patterns/home-duo.php:48
+msgid "پیشنهادهای ما"
+msgstr ""
+
+#: koohe-film/patterns/home-duo.php:53
+msgid "از داستان‌هایی که دوست داری، به داستان‌هایی که عاشقشان می‌شوی."
+msgstr ""
+
+#: koohe-film/patterns/home-duo.php:53
+msgid "به اندازه خودت، متفاوت"
+msgstr ""
+
+#: koohe-film/patterns/home-duo.php:53
+msgid "دنیای مخصوص من"
+msgstr ""
+
+#: koohe-film/patterns/home-duo.php:53
+msgid "سلیقه‌ات را کشف کن."
+msgstr ""
+
+#: koohe-film/patterns/landscape-row.php:15
+msgid "سریال‌هایی که نمی‌شود از آن‌ها دل کند"
+msgstr ""
+
+#: koohe-film/patterns/landscape-row.php:15
+msgid "فقط یک قسمت دیگر..."
+msgstr ""
+
+#: koohe-film/patterns/landscape-row.php:15
+msgid "مشاهده همه"
+msgstr ""
+
 #: koohe-film/patterns/latest-movies.php:15
 msgid "آخرین فیلم‌ها"
 msgstr ""
 
 #: koohe-film/patterns/latest-series.php:15
 msgid "آخرین سریال‌ها"
+msgstr ""
+
+#: koohe-film/patterns/magazine-row.php:15
+msgid "ادامه داستان"
+msgstr ""
+
+#: koohe-film/patterns/magazine-row.php:15
+msgid "نقد و بررسی"
+msgstr ""
+
+#: koohe-film/patterns/magazine-row.php:15
+msgid "نقد، معرفی و پشت‌صحنه‌ی فیلم و سریال"
+msgstr ""
+
+#: koohe-film/patterns/magazine-row.php:15
+msgid "همه مقالات"
+msgstr ""
+
+#: koohe-film/patterns/magazine-row.php:15
+msgid "کوهه‌مگ؛ پشت هر قاب، یک داستان"
 msgstr ""
 
 #: koohe-film/patterns/plans-grid.php:17
@@ -468,20 +948,40 @@ msgstr ""
 msgid "آثار مشابه"
 msgstr ""
 
-#: koohe-film/patterns/subscribe-cta.php:17
-msgid "دسترسی نامحدود با اشتراک ویژه"
+#: koohe-film/patterns/subscribe-cta.php:25
+msgid "کوهه پلاس"
 msgstr ""
 
-#: koohe-film/patterns/subscribe-cta.php:21
-msgid "همه‌ی کیفیت‌ها، بدون تبلیغات، با سرعت کامل و پشتیبانی اختصاصی."
+#: koohe-film/patterns/subscribe-cta.php:29
+msgid "داستان‌های بیشتر. محدودیت‌های کمتر."
 msgstr ""
 
-#: koohe-film/patterns/subscribe-cta.php:26
-msgid "تهیه‌ی اشتراک"
+#: koohe-film/patterns/subscribe-cta.php:33
+msgid "با اشتراک کوهه، دنیای فیلم و سریال همیشه همراه توست."
 msgstr ""
 
-#: koohe-film/patterns/subscribe-cta.php:30
-msgid "اطلاعات بیشتر"
+#: koohe-film/patterns/subscribe-cta.php:40
+msgid "اشتراک خودت را انتخاب کن"
+msgstr ""
+
+#: koohe-film/patterns/title-hero.php:129
+msgid "%s دقیقه"
+msgstr ""
+
+#: koohe-film/patterns/title-hero.php:153
+msgid "پخش و دانلود"
+msgstr ""
+
+#: koohe-film/patterns/title-hero.php:170
+msgid "دوبله فارسی و زیرنویس اختصاصی"
+msgstr ""
+
+#: koohe-film/patterns/title-hero.php:26
+msgid "نام اثر"
+msgstr ""
+
+#: koohe-film/patterns/title-hero.php:90 koohe-film/patterns/title-hero.php:94
+msgid "پخش تریلر"
 msgstr ""
 
 #: koohe-film/patterns/top-rated.php:15

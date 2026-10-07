@@ -915,6 +915,43 @@ function manacore_poster_url( $post_id, $size = 'medium_large' ) {
 }
 
 /**
+ * تصویر عریض (Backdrop) اثر، با زنجیره‌ی جانشین مشخص.
+ *
+ * ترتیب: تصویر شاخص → `manacore_backdrop_url` → `manacore_poster_url` →
+ * تصویر جانشین افزونه. پیش‌تر این زنجیره در چند نقطه‌ی کد تکرار شده بود
+ * (باکس‌های محتوا، مگامنو، هیرو) و هرکدام ترتیب متفاوتی داشتند؛ این
+ * تابع یک منبع حقیقت مشترک می‌سازد.
+ *
+ * @param int    $post_id شناسه‌ی اثر.
+ * @param string $size    اندازه‌ی تصویر شاخص.
+ * @return string نشانی تصویر (هرگز خالی).
+ */
+function manacore_backdrop_url( $post_id, $size = 'large' ) {
+	$post_id = (int) $post_id;
+
+	if ( ! $post_id ) {
+		return MANACORE_URL . 'assets/placeholder.svg';
+	}
+
+	$thumb = get_post_thumbnail_id( $post_id );
+	if ( $thumb ) {
+		$url = wp_get_attachment_image_url( $thumb, $size );
+		if ( $url ) {
+			return esc_url_raw( $url );
+		}
+	}
+
+	foreach ( array( 'manacore_backdrop_url', 'manacore_poster_url' ) as $key ) {
+		$url = (string) get_post_meta( $post_id, $key, true );
+		if ( '' !== trim( $url ) ) {
+			return esc_url_raw( $url );
+		}
+	}
+
+	return manacore_poster_url( $post_id, $size );
+}
+
+/**
  * نشانی «حساب کاربری» — مهمان به ورود و عضو به حساب خودش می‌رسد.
  *
  * یک منبع حقیقت برای بلوک‌هایی که به حساب کاربر اشاره می‌کنند (کارت

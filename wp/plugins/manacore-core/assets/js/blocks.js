@@ -1985,11 +1985,41 @@
 				return [
 					optionsPanel( props, __( 'تنظیمات لینک‌ها', 'manacore' ), [
 						{
+							/*
+							 * حالتِ باکس: فیلم = جدول کیفیت‌ها، سریال =
+							 * بسته‌های کامل فصل، قسمت = کیفیت‌های همان
+							 * قسمت. «خودکار» از نوع پست تشخیص می‌دهد تا
+							 * قالب‌های موجود بدون تغییر کار کنند.
+							 */
+							attr: 'mode',
+							type: 'select',
+							label: __( 'حالت نمایش', 'manacore' ),
+							help: __( '«خودکار» از نوع محتوا پیروی می‌کند: فیلم ← جدول کیفیت، سریال ← بسته‌های کامل فصل.', 'manacore' ),
+							options: [
+								{ label: __( 'خودکار (از نوع محتوا)', 'manacore' ), value: 'auto' },
+								{ label: __( 'فیلم — جدول کیفیت‌ها', 'manacore' ), value: 'movie' },
+								{ label: __( 'سریال — بسته‌های فصل', 'manacore' ), value: 'series' },
+								{ label: __( 'قسمت — کیفیت‌های همین قسمت', 'manacore' ), value: 'episode' },
+							],
+						},
+						{
 							attr: 'boxStyle',
 							type: 'select',
 							label: __( 'سبک ظاهری جدول', 'manacore' ),
 							help: __( '«کارتی» همان قاب مرجع است؛ «بدون قاب» فقط خط‌های جداکننده دارد.', 'manacore' ),
 							options: toOptions( data.downloadStyles ),
+						},
+						{
+							attr: 'packLabel',
+							type: 'text',
+							label: __( 'برچسب بسته‌ی فصل', 'manacore' ),
+							help: __( 'در حالت سریال، زیر کیفیت هر ردیف می‌آید. خالی = «بسته‌ی کامل فصل».', 'manacore' ),
+						},
+						{
+							attr: 'sizeLabel',
+							type: 'text',
+							label: __( 'عنوان ستون حجم', 'manacore' ),
+							help: __( 'خالی = «حجم نمونه».', 'manacore' ),
 						},
 						{
 							attr: 'subtitle',
@@ -2907,6 +2937,38 @@
 			case 'manacore/episodes-list':
 				return [
 					optionsPanel( props, __( 'تنظیمات قسمت‌ها', 'manacore' ), [
+						{
+							attr: 'boxStyle',
+							type: 'select',
+							label: __( 'سبک ظاهری جعبه', 'manacore' ),
+							help: __( 'همان فهرست بلوک «لینک‌های دانلود»؛ «کارتی» قاب مرجع است.', 'manacore' ),
+							options: toOptions( data.downloadStyles ),
+						},
+						{ attr: 'showNotice', type: 'toggle', label: __( 'نمایش هشدار اشتراک', 'manacore' ) },
+						{
+							attr: 'showPackList',
+							type: 'toggle',
+							label: __( 'نمایش بسته‌های کامل فصل', 'manacore' ),
+							help: __( 'لینک‌هایی که روی خودِ سریال ثبت شده‌اند (مثل «دانلود کامل فصل ۱») بالای قسمت‌های هر فصل می‌آید.', 'manacore' ),
+						},
+						{
+							attr: 'packTitle',
+							type: 'text',
+							label: __( 'برچسب بسته‌ی فصل', 'manacore' ),
+							help: __( 'خالی = «بسته‌ی کامل فصل».', 'manacore' ),
+						},
+						{
+							attr: 'sizeLabel',
+							type: 'text',
+							label: __( 'عنوان ستون حجم', 'manacore' ),
+							help: __( 'خالی = «حجم نمونه».', 'manacore' ),
+						},
+						{
+							attr: 'playLabel',
+							type: 'text',
+							label: __( 'برچسب دکمه‌ی پخش', 'manacore' ),
+							help: __( 'در راهنمای دسترس‌پذیری دکمه‌ی ▶ استفاده می‌شود. «%s» = شماره‌ی قسمت.', 'manacore' ),
+						},
 						{
 							attr: 'seasonNumber',
 							type: 'number',
