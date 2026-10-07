@@ -64,6 +64,7 @@ class Settings {
 			'watch'    => array( 'download_notice_text', 'player_notice_text', 'subscribe_label', 'subscribe_url', 'download_signing', 'download_ttl' ),
 			'requests' => array( 'requests_enabled', 'requests_guests', 'requests_show_pending', 'requests_heading', 'requests_board_title', 'requests_button', 'requests_intro', 'requests_thanks', 'requests_per_page' ),
 			'mega'     => array( 'mega_enabled', 'mega_show_korean', 'mega_show_cast', 'mega_eyebrow', 'mega_title', 'mega_quick_label', 'mega_feature_label', 'mega_cta_label', 'mega_rating_label', 'mega_newest_label', 'mega_korean_label', 'mega_cast_label', 'mega_taxonomy', 'mega_terms', 'mega_columns', 'mega_hub_url', 'mega_featured_id' ),
+			'tools'    => array( 'links_check_interval', 'links_check_batch', 'links_check_timeout' ),
 		);
 	}
 
@@ -280,6 +281,27 @@ class Settings {
 			$clean['mega_featured_id'] = $featured;
 		}
 
+		/* ---------------- تب وضعیت و ابزارها ---------------- */
+		if ( $do( 'tools' ) ) {
+			/*
+			 * مرزها از خود `Link_Tools` خوانده می‌شوند تا فرم و پاک‌سازی
+			 * هرگز دو عدد متفاوت به مدیر نشان ندهند.
+			 */
+			$limits    = class_exists( __NAMESPACE__ . '\\Link_Tools' ) ? Link_Tools::check_limits() : array( 'batch' => array( 1, 50 ), 'timeout' => array( 2, 15 ) );
+			$intervals = class_exists( __NAMESPACE__ . '\\Link_Tools' ) ? array_keys( Link_Tools::intervals() ) : array( 'off', 'hourly', 'twicedaily', 'daily', 'weekly' );
+
+			$interval = isset( $input['links_check_interval'] ) ? sanitize_key( $input['links_check_interval'] ) : 'daily';
+			$clean['links_check_interval'] = in_array( $interval, $intervals, true ) ? $interval : 'daily';
+
+			$clean['links_check_batch'] = isset( $input['links_check_batch'] )
+				? max( (int) $limits['batch'][0], min( (int) $limits['batch'][1], (int) $input['links_check_batch'] ) )
+				: 10;
+
+			$clean['links_check_timeout'] = isset( $input['links_check_timeout'] )
+				? max( (int) $limits['timeout'][0], min( (int) $limits['timeout'][1], (int) $input['links_check_timeout'] ) )
+				: 5;
+		}
+
 		$merged = array_merge( $existing, $clean );
 
 		/*
@@ -330,6 +352,8 @@ class Settings {
 			'import-error'  => array( 'error', __( 'بازگردانی تنظیمات انجام نشد.', 'manacore' ) ),
 			'failed'        => array( 'error', __( 'ابزار اجرا نشد؛ شرایط پیش‌نیاز را ببینید.', 'manacore' ) ),
 			'link-tool-ok'  => array( 'success', __( 'ابزار لینک اجرا شد؛ نتیجه پایین همین صفحه آمده است.', 'manacore' ) ),
+			'links-check-ok'   => array( 'success', __( 'بررسی لینک‌ها انجام شد؛ نتیجه در کارت «سلامت لینک‌ها» و گزارش‌ها در تب «گزارش خرابی لینک» است.', 'manacore' ) ),
+			'links-check-none' => array( 'warning', __( 'نشانی سنجیدنی‌ای پیدا نشد؛ نشانی‌های همین سایت، دامنه‌های خصوصی و لینک‌های «مگنت» سنجیده نمی‌شوند.', 'manacore' ) ),
 		);
 
 		if ( ! isset( $map[ $notice ] ) ) {
@@ -467,6 +491,18 @@ class Settings {
 			case 'flush-rewrite':
 				flush_rewrite_rules( false );
 				$notice = 'rewrite-ok';
+				break;
+
+			case 'check-links':
+				$result = Link_Tools::check(
+					array(
+						/* اجرای دستی در بودجه‌ی زمان پاسخ صفحه می‌ماند. */
+						'limit'   => Link_Tools::MANUAL_CHECKS,
+						'timeout' => Link_Tools::MANUAL_TIMEOUT,
+					)
+				);
+
+				$notice = empty( $result['checked'] ) ? 'links-check-none' : 'links-check-ok';
 				break;
 		}
 
@@ -1224,6 +1260,7 @@ class Settings {
 				array( __( 'فهرست گزارش‌ها', 'manacore' ), add_query_arg( 'report_status', 'new', self::tab_url( 'reports' ) ) ),
 				array( __( 'درخواست‌های در انتظار', 'manacore' ), add_query_arg( array( 'post_type' => 'manacore_request', 'post_status' => 'pending' ), admin_url( 'edit.php' ) ) ),
 				array( __( 'دیدگاه‌های در صف', 'manacore' ), add_query_arg( 'post_status', 'pending', admin_url( 'edit-comments.php' ) ) ),
+				array( __( 'بررسی خودکار لینک‌ها', 'manacore' ), self::tab_url( 'tools' ) ),
 			)
 		);
 
@@ -1768,6 +1805,7 @@ class Settings {
 
 		$this->render_demo_panel();
 		$this->render_link_tools_panel();
+		$this->render_health_panel();
 		$this->render_backup_panel();
 	}
 
@@ -1819,6 +1857,146 @@ class Settings {
 			__( 'مطمئنید؟ همه‌ی نوشته‌های نمایشی برای همیشه حذف می‌شوند.', 'manacore' )
 		);
 
+		$this->panel_close();
+	}
+
+	/**
+	 * بخش «سلامت لینک‌ها»: سنجش دوره‌ای نشانی‌ها و صف گزارش خودکار.
+	 *
+	 * تنظیمات از همان فرم استاندارد `options.php` ذخیره می‌شود و اجرای
+	 * دستی دکمه‌ی مستقل خودش را دارد (بیرون فرم تنظیمات) تا فرم تودرتو
+	 * ساخته نشود.
+	 *
+	 * @return void
+	 */
+	protected function render_health_panel() {
+		if ( ! class_exists( __NAMESPACE__ . '\\Link_Tools' ) ) {
+			return;
+		}
+
+		$settings = Link_Tools::check_settings();
+		$log      = Link_Tools::check_log();
+		$limits   = Link_Tools::check_limits();
+
+		$this->tab_form(
+			'tools',
+			function () use ( $settings, $log, $limits ) {
+				$this->panel_open(
+					__( 'سلامت لینک‌ها', 'manacore' ),
+					__( 'سنجش دوره‌ای نشانی‌های دانلود: لینکی که «۴۰۴/۴۱۰» بدهد یا پاسخ ندهد، خودکار در صف «گزارش خرابی لینک» ثبت می‌شود و لینکی که دوباره سالم شود، گزارش بازش بسته می‌شود.', 'manacore' )
+				);
+				?>
+				<table class="form-table" role="presentation">
+					<tr>
+						<th scope="row"><label for="links_check_interval"><?php esc_html_e( 'زمان‌بندی', 'manacore' ); ?></label></th>
+						<td>
+							<select id="links_check_interval" name="manacore_settings[links_check_interval]">
+								<?php foreach ( Link_Tools::intervals() as $key => $interval ) : ?>
+									<option value="<?php echo esc_attr( $key ); ?>" <?php selected( $key, $settings['interval'] ); ?>>
+										<?php echo esc_html( $interval['label'] ); ?>
+									</option>
+								<?php endforeach; ?>
+							</select>
+							<p class="description"><?php esc_html_e( 'هر اجرا یک دسته‌ی کوتاه را می‌سنجد و از جایی ادامه می‌دهد که اجرای پیشین ماند؛ پس در چند اجرا همه‌ی لینک‌ها دیده می‌شوند.', 'manacore' ); ?></p>
+						</td>
+					</tr>
+					<tr>
+						<th scope="row"><label for="links_check_batch"><?php esc_html_e( 'تعداد نشانی در هر اجرا', 'manacore' ); ?></label></th>
+						<td>
+							<input type="number" id="links_check_batch" name="manacore_settings[links_check_batch]" class="small-text"
+								min="<?php echo esc_attr( $limits['batch'][0] ); ?>" max="<?php echo esc_attr( $limits['batch'][1] ); ?>"
+								value="<?php echo esc_attr( (int) $settings['batch'] ); ?>" />
+							<p class="description">
+								<?php
+								printf(
+									/* translators: ۱: کمترین تعداد، ۲: بیشترین تعداد */
+									esc_html__( 'بازه‌ی مجاز: %1$s تا %2$s نشانی در هر اجرا.', 'manacore' ),
+									esc_html( manacore_fa_digits( (string) $limits['batch'][0] ) ),
+									esc_html( manacore_fa_digits( (string) $limits['batch'][1] ) )
+								);
+								?>
+							</p>
+						</td>
+					</tr>
+					<tr>
+						<th scope="row"><label for="links_check_timeout"><?php esc_html_e( 'مهلت پاسخ هر نشانی (ثانیه)', 'manacore' ); ?></label></th>
+						<td>
+							<input type="number" id="links_check_timeout" name="manacore_settings[links_check_timeout]" class="small-text"
+								min="<?php echo esc_attr( $limits['timeout'][0] ); ?>" max="<?php echo esc_attr( $limits['timeout'][1] ); ?>"
+								value="<?php echo esc_attr( (int) $settings['timeout'] ); ?>" />
+							<p class="description">
+								<?php
+								printf(
+									/* translators: ۱: کمترین مهلت، ۲: بیشترین مهلت */
+									esc_html__( 'بازه‌ی مجاز: %1$s تا %2$s ثانیه. میزبان‌های کند را با مهلت بلندتر بسنجید.', 'manacore' ),
+									esc_html( manacore_fa_digits( (string) $limits['timeout'][0] ) ),
+									esc_html( manacore_fa_digits( (string) $limits['timeout'][1] ) )
+								);
+								?>
+							</p>
+						</td>
+					</tr>
+				</table>
+				<?php
+				if ( 'off' === $settings['interval'] ) {
+					$this->status_line( false, __( 'بررسی خودکار خاموش است؛ فقط دکمه‌ی اجرای دستی کار می‌کند.', 'manacore' ) );
+				} else {
+					$this->status_line( true, __( 'بررسی خودکار روشن است و پس از ذخیره، زمان‌بندی کرون هم‌گام می‌شود.', 'manacore' ) );
+				}
+				$this->panel_close();
+
+				$this->panel_open( __( 'آخرین بررسی', 'manacore' ), __( 'شمار واقعی سنجش‌های انجام‌شده؛ اگر کرون سایت روی زمان‌بندی خودش باشد، این‌ها پس از هر اجرا به‌روز می‌شوند.', 'manacore' ) );
+
+				if ( empty( $log['time'] ) ) {
+					$this->status_line( true, __( 'هنوز بررسی‌ای اجرا نشده است.', 'manacore' ) );
+				} else {
+					$this->stat_list(
+						array(
+							array( __( 'سنجیده‌شده', 'manacore' ), number_format_i18n( (int) $log['checked'] ) ),
+							array( __( 'سالم', 'manacore' ), number_format_i18n( (int) $log['alive'] ) ),
+							array( __( 'مرده', 'manacore' ), number_format_i18n( (int) $log['dead'] ) ),
+							array( __( 'نامشخص', 'manacore' ), number_format_i18n( (int) $log['unknown'] ) ),
+							array( __( 'گزارش تازه', 'manacore' ), number_format_i18n( (int) $log['filed'] ) ),
+							array( __( 'خودکار بسته‌شده', 'manacore' ), number_format_i18n( (int) $log['resolved'] ) ),
+						)
+					);
+					?>
+					<p class="description">
+						<?php
+						printf(
+							/* translators: ۱: تاریخ و ساعت اجرا، ۲: شمار کل نشانی‌های سنجیدنی */
+							esc_html__( 'آخرین اجرا: %1$s ساعت %2$s — %3$s نشانی در سایت سنجیدنی است.', 'manacore' ),
+							esc_html( manacore_fa_date( wp_date( 'Y-m-d', (int) $log['time'] ) ) ),
+							esc_html( manacore_fa_digits( wp_date( 'H:i', (int) $log['time'] ) ) ),
+							esc_html( number_format_i18n( (int) $log['total'] ) )
+						);
+						?>
+					</p>
+					<?php
+				}
+
+				$this->panel_close();
+			}
+		);
+
+		/* اجرای دستی بیرون از فرم تنظیمات. */
+		$this->panel_open(
+			__( 'اجرای دستی بررسی', 'manacore' ),
+			__( 'چند نشانی همین حالا سنجیده می‌شود؛ برای پویش کامل و بی‌شمار، همان کار را با `wp manacore links-check --limit=200` اجرا کنید.', 'manacore' )
+		);
+		$this->tool_row(
+			'check-links',
+			__( 'بررسی کن', 'manacore' ),
+			__( 'سنجش چند نشانی', 'manacore' ),
+			__( 'نتیجه در کارت «آخرین بررسی» و گزارش‌ها در تب «گزارش خرابی لینک» دیده می‌شوند.', 'manacore' ),
+			'',
+			true
+		);
+		$this->action_links(
+			array(
+				array( __( 'گزارش‌های خرابی لینک', 'manacore' ), self::tab_url( 'reports' ) ),
+			)
+		);
 		$this->panel_close();
 	}
 

@@ -15,6 +15,7 @@ define( 'ABSPATH', '/tmp/fake-wp/' );
 define( 'MANACORE_PATH', dirname( __DIR__ ) . '/plugins/manacore-core/' );
 define( 'MANACORE_VERSION', '1.1.0' );
 define( 'MINUTE_IN_SECONDS', 60 );
+define( 'HOUR_IN_SECONDS', 3600 );
 
 /* ---------------------------------------------------------------
  * چاپ
@@ -178,6 +179,142 @@ function delete_post_meta( $post_id, $key ) {
 function __( $text, $domain = '' ) {
 	return $text;
 }
+
+/* ---------------------------------------------------------------
+ * پوسته‌ی شبکه و زمان‌بندی (برای بخش سلامت لینک‌ها)
+ * ------------------------------------------------------------ */
+
+$GLOBALS['mc_http']        = array(); // url => code | array(head=>,get=>) | 'error'
+$GLOBALS['mc_probes']      = array(); // درخواست‌های انجام‌شده
+$GLOBALS['mc_cron']        = array(); // hook => recurrence
+$GLOBALS['mc_cron_calls']  = array();
+
+/**
+ * پاسخ ساختگی شبکه بر پایه‌ی نگاشت `mc_http`.
+ */
+function mc_http_response( $url, $method ) {
+	$spec = $GLOBALS['mc_http'][ $url ] ?? null;
+
+	if ( null === $spec ) {
+		return new WP_Error( 'connect_error', 'بدون پاسخ ساختگی' );
+	}
+
+	if ( is_array( $spec ) && isset( $spec[ $method ] ) ) {
+		$spec = $spec[ $method ];
+	}
+
+	if ( 'error' === $spec ) {
+		return new WP_Error( 'http_request_failed', 'خطای ساختگی' );
+	}
+
+	return array( 'response' => array( 'code' => (int) $spec ) );
+}
+
+class WP_Error {
+
+	protected $code;
+	protected $message;
+
+	public function __construct( $code = '', $message = '' ) {
+		$this->code    = $code;
+		$this->message = $message;
+	}
+
+	public function get_error_code() {
+		return $this->code;
+	}
+
+	public function get_error_message() {
+		return $this->message;
+	}
+}
+
+function is_wp_error( $thing ) {
+	return $thing instanceof WP_Error;
+}
+
+function wp_remote_head( $url, $args = array() ) {
+	$GLOBALS['mc_probes'][] = array( 'method' => 'HEAD', 'url' => $url, 'args' => $args );
+
+	return mc_http_response( $url, 'head' );
+}
+
+function wp_remote_get( $url, $args = array() ) {
+	$GLOBALS['mc_probes'][] = array( 'method' => 'GET', 'url' => $url, 'args' => $args );
+
+	return mc_http_response( $url, 'get' );
+}
+
+function wp_remote_retrieve_response_code( $response ) {
+	return is_array( $response ) ? (int) ( $response['response']['code'] ?? 0 ) : 0;
+}
+
+function home_url( $path = '/' ) {
+	return 'https://example.com' . ( '/' === $path ? '/' : '/' . ltrim( (string) $path, '/' ) );
+}
+
+function get_option( $name, $default = false ) {
+	return array_key_exists( $name, $GLOBALS['mc_options'] ) ? $GLOBALS['mc_options'][ $name ] : $default;
+}
+
+function update_option( $name, $value, $autoload = null ) {
+	$GLOBALS['mc_options'][ $name ] = $value;
+
+	return true;
+}
+
+function wp_next_scheduled( $hook, $args = array() ) {
+	return isset( $GLOBALS['mc_cron'][ $hook ] ) ? $GLOBALS['mc_cron'][ $hook ]['time'] : false;
+}
+
+function wp_schedule_event( $timestamp, $recurrence, $hook, $args = array() ) {
+	$GLOBALS['mc_cron'][ $hook ] = array( 'time' => $timestamp, 'recurrence' => $recurrence );
+	$GLOBALS['mc_cron_calls'][]  = 'schedule:' . $recurrence;
+
+	return true;
+}
+
+function wp_clear_scheduled_hook( $hook, $args = array() ) {
+	unset( $GLOBALS['mc_cron'][ $hook ] );
+	$GLOBALS['mc_cron_calls'][] = 'clear:' . $hook;
+
+	return 0;
+}
+
+function wp_get_schedule( $hook, $args = array() ) {
+	return isset( $GLOBALS['mc_cron'][ $hook ] ) ? $GLOBALS['mc_cron'][ $hook ]['recurrence'] : false;
+}
+
+/**
+ * جانشین کلاس گزارش‌ها: آزمون باید ببیند کجا و با چه چیزی صدا زده می‌شود.
+ */
+class mc_reports_stub {
+
+	public static $open     = array();
+	public static $inserts  = array();
+	public static $resolved = array();
+
+	public static function has_open( $post_id, $quality = '' ) {
+		return ! empty( self::$open[ (int) $post_id . '|' . (string) $quality ] );
+	}
+
+	public static function insert( $args ) {
+		self::$inserts[] = $args;
+
+		return 1;
+	}
+
+	public static function resolve_url( $post_id, $url ) {
+		self::$resolved[] = array(
+			'post_id' => (int) $post_id,
+			'url'     => (string) $url,
+		);
+
+		return 1;
+	}
+}
+
+class_alias( 'mc_reports_stub', 'ManaCore\\Core\\Reports' );
 
 /* ---------------------------------------------------------------
  * بارگذاری کلاس‌های واقعی
@@ -432,6 +569,232 @@ mc_ok( in_array( 'action:admin_post_manacore_link_tool', $GLOBALS['mc_hooks'], t
 mc_ok( '' !== Link_Tools::reason_label( 'bad-from' ), 'دلیل bad-from برچسب فارسی دارد' );
 mc_ok( '' === Link_Tools::reason_label( 'nope' ), 'دلیل ناشناخته برچسب خالی می‌دهد' );
 mc_ok( 'link-tool-ok' === Link_Tools::NOTICE, 'کد پیام نتیجه ثابت است' );
+
+/* ---------------------------------------------------------------
+ * ۵) بررسی سلامت لینک‌ها (سنجش، ثبت خودکار و زمان‌بندی)
+ * ------------------------------------------------------------ */
+
+echo "\n=== ۵) سلامت لینک‌ها ===\n";
+
+$GLOBALS['mc_links'] = array(
+	10 => array(
+		array(
+			'id'      => 'g1',
+			'title'   => 'فیلم تستی',
+			'quality' => '1080p',
+			'items'   => array(
+				array( 'id' => 'l1', 'label' => 'کیفیت ۱۰۸۰', 'quality' => '1080p', 'url' => 'https://93.184.216.34/a.mkv' ),
+				array( 'id' => 'l2', 'label' => 'کیفیت ۷۲۰', 'quality' => '720p', 'url' => 'https://93.184.216.34/b.mkv' ),
+				array( 'id' => 'l3', 'label' => 'مگنت', 'url' => 'magnet:?xt=urn:btih:abc' ),
+			),
+		),
+	),
+	11 => array(
+		array(
+			'id'      => 'g2',
+			'title'   => 'سریال تستی',
+			'quality' => '1080p',
+			'items'   => array(
+				array( 'id' => 'l4', 'label' => 'کیفیت ۱۰۸۰', 'quality' => '1080p', 'url' => 'https://93.184.216.34/a.mkv' ),
+				array( 'id' => 'l5', 'label' => 'شبکه‌ی داخلی', 'quality' => '1080p', 'url' => 'https://10.0.0.7/c.mkv' ),
+				array( 'id' => 'l6', 'label' => 'روی همین سایت', 'quality' => '480p', 'url' => 'https://example.com/local.mkv' ),
+			),
+		),
+	),
+);
+
+$GLOBALS['mc_types']  = array( 10 => 'movie', 11 => 'series' );
+$GLOBALS['mc_titles'] = array( 10 => 'فیلم تستی', 11 => 'سریال تستی' );
+
+$GLOBALS['mc_http'] = array(
+	'https://93.184.216.34/a.mkv' => 404,
+	'https://93.184.216.34/b.mkv' => 200,
+);
+
+$GLOBALS['mc_options']                 = array();
+$GLOBALS['mc_options']['manacore_settings'] = array(
+	'links_check_interval' => 'daily',
+	'links_check_batch'    => 10,
+	'links_check_timeout'  => 3,
+);
+
+mc_reports_stub::$open     = array();
+mc_reports_stub::$inserts  = array();
+mc_reports_stub::$resolved = array();
+$GLOBALS['mc_probes']      = array();
+
+$run = Link_Tools::check( array( 'limit' => 10 ) );
+
+mc_ok( 2 === $run['total'], 'فقط نشانی‌های سنجیدنی شمرده می‌شوند', 'total=' . $run['total'] );
+mc_ok( 3 === $run['skipped'], 'مگنت، دامنه‌ی خصوصی و نشانی خود سایت کنار گذاشته می‌شوند', 'skipped=' . $run['skipped'] );
+mc_ok( 2 === $run['checked'] && 1 === $run['alive'] && 1 === $run['dead'] && 0 === $run['unknown'], 'شمار سالم/مرده درست است' );
+mc_ok( 2 === $run['filed'], 'برای هر نوشته‌ای که نشانی مرده دارد گزارش ثبت می‌شود', 'filed=' . $run['filed'] );
+mc_ok( 1 === $run['resolved'], 'گزارش بازِ لینکی که سالم شد بسته می‌شود' );
+mc_ok( empty( $run['truncated'] ) && 0 === $run['next'], 'با پوشش کامل، نقطه‌ی ادامه به ابتدا برمی‌گردد' );
+
+$probed = array_column( $GLOBALS['mc_probes'], 'url' );
+mc_ok( ! in_array( 'magnet:?xt=urn:btih:abc', $probed, true ), 'لینک مگنت سنجیده نمی‌شود' );
+mc_ok( ! in_array( 'https://10.0.0.7/c.mkv', $probed, true ), 'نشانی شبکه‌ی خصوصی سنجیده نمی‌شود' );
+mc_ok( ! in_array( 'https://example.com/local.mkv', $probed, true ), 'نشانی همین سایت سنجیده نمی‌شود' );
+mc_ok( 2 === count( $probed ), 'نشانی یکسان دو بار سنجیده نمی‌شود', 'probes=' . count( $probed ) );
+
+mc_ok( 2 === count( mc_reports_stub::$inserts ) && 10 === mc_reports_stub::$inserts[0]['post_id'] && 11 === mc_reports_stub::$inserts[1]['post_id'], 'گزارش برای نوشته‌های درست ثبت شد' );
+mc_ok( 0 === strpos( (string) mc_reports_stub::$inserts[0]['reason'], 'بررسی خودکار: ' ), 'گزارش خودکار نشانه‌ی «بررسی خودکار» دارد', mc_reports_stub::$inserts[0]['reason'] );
+mc_ok( false !== strpos( (string) mc_reports_stub::$inserts[0]['reason'], '۴۰۴' ), 'کد ۴۰۴ در توضیح گزارش آمده است' );
+mc_ok( '1080p' === mc_reports_stub::$inserts[0]['quality'] && 'https://93.184.216.34/a.mkv' === mc_reports_stub::$inserts[0]['link_url'], 'کیفیت و نشانی در گزارش یکی است' );
+mc_ok( 1 === count( mc_reports_stub::$resolved ) && 'https://93.184.216.34/b.mkv' === mc_reports_stub::$resolved[0]['url'], 'گزارش نشانی سالم بسته می‌شود' );
+
+$dead_rows = array_values(
+	array_filter(
+		$run['rows'],
+		static function ( $row ) {
+			return 'dead' === $row['status'];
+		}
+	)
+);
+
+mc_ok( $dead_rows && 'https://93.184.216.34/a.mkv' === $dead_rows[0]['url'], 'ردیف مرده در گزارش اجرا می‌آید' );
+
+$log = $GLOBALS['mc_options'][ Link_Tools::CHECK_LOG ] ?? array();
+mc_ok( isset( $log['checked'] ) && 2 === (int) $log['checked'] && 2 === (int) $log['filed'], 'خلاصه‌ی اجرا در گزینه‌ی لاگ ذخیره می‌شود' );
+
+/* گزارش تکراری برای نوشته‌ای که گزارش باز دارد. */
+mc_reports_stub::$open    = array( '10|1080p' => true );
+mc_reports_stub::$inserts = array();
+
+Link_Tools::check( array( 'limit' => 10 ) );
+
+mc_ok( 1 === count( mc_reports_stub::$inserts ) && 11 === mc_reports_stub::$inserts[0]['post_id'], 'برای نوشته‌ی دارای گزارش باز، گزارش تکراری ثبت نمی‌شود' );
+
+mc_reports_stub::$open = array();
+
+/* اجرای آزمایشی. */
+$options_before           = $GLOBALS['mc_options'];
+mc_reports_stub::$inserts = array();
+mc_reports_stub::$resolved = array();
+
+$dry = Link_Tools::check( array( 'limit' => 10, 'dry_run' => true ) );
+
+mc_ok( 1 === $dry['dead'] && array() === mc_reports_stub::$inserts, 'اجرای آزمایشی گزارشی ثبت نمی‌کند' );
+mc_ok( array() === mc_reports_stub::$resolved, 'اجرای آزمایشی گزارش باز را هم نمی‌بندد' );
+mc_ok( $options_before === $GLOBALS['mc_options'], 'اجرای آزمایشی لاگ را هم نمی‌نویسد' );
+
+/* سنجش یک نشانی: پاسخ کدها و بازگشت به GET. */
+$GLOBALS['mc_http']   = array( 'https://93.184.216.34/b.mkv' => array( 'head' => 405, 'get' => 200 ) );
+$GLOBALS['mc_probes'] = array();
+
+$probe = Link_Tools::probe( 'https://93.184.216.34/b.mkv', 3 );
+
+mc_ok( 'alive' === $probe['status'], 'اگر HEAD پاسخ ندهد با GET دوباره سنجیده می‌شود', $probe['detail'] );
+mc_ok( 2 === count( $GLOBALS['mc_probes'] ) && 'GET' === $GLOBALS['mc_probes'][1]['method'], 'درخواست دوم از نوع GET است' );
+mc_ok( isset( $GLOBALS['mc_probes'][1]['args']['headers']['Range'] ), 'درخواست GET فقط یک بایت می‌خواهد (Range)' );
+mc_ok( (int) $GLOBALS['mc_probes'][0]['args']['timeout'] === 3, 'مهلت درخواست از تنظیمات می‌آید' );
+
+$GLOBALS['mc_http'] = array( 'https://93.184.216.34/slow.mkv' => 'error' );
+$probe              = Link_Tools::probe( 'https://93.184.216.34/slow.mkv', 3 );
+
+mc_ok( 'dead' === $probe['status'] && false !== strpos( $probe['detail'], 'ارتباط' ), 'خطای شبکه مرده حساب می‌شود', $probe['detail'] );
+
+$GLOBALS['mc_http'] = array( 'https://93.184.216.34/x.mkv' => 503 );
+$probe              = Link_Tools::probe( 'https://93.184.216.34/x.mkv', 3 );
+
+mc_ok( 'unknown' === $probe['status'], 'پاسخ ۵۰۳ مرده حساب نمی‌شود (گزارش کاذب نمی‌سازیم)' );
+mc_ok( false !== strpos( $probe['detail'], '503' ), 'کد نامشخص در توضیح می‌آید', $probe['detail'] );
+
+$GLOBALS['mc_http'] = array( 'https://93.184.216.34/gone.mkv' => 410 );
+$probe              = Link_Tools::probe( 'https://93.184.216.34/gone.mkv', 3 );
+
+mc_ok( 'dead' === $probe['status'] && false !== strpos( $probe['detail'], '۴۱۰' ), 'پاسخ ۴۱۰ مرده حساب می‌شود' );
+
+/* سنجیدنی بودن نشانی. */
+mc_ok( false === Link_Tools::is_checkable( 'ftp://93.184.216.34/x.mkv' ), 'طرح غیر http سنجیدنی نیست' );
+mc_ok( false === Link_Tools::is_checkable( 'magnet:?xt=urn:btih:abc' ), 'مگنت سنجیدنی نیست' );
+mc_ok( false === Link_Tools::is_checkable( '' ), 'نشانی خالی سنجیدنی نیست' );
+mc_ok( false === Link_Tools::is_checkable( 'https://127.0.0.1:8080/x.mkv' ), 'نشانی حلقه‌ی محلی سنجیدنی نیست' );
+mc_ok( false === Link_Tools::is_checkable( 'https://definitely-not-real.invalid/x.mkv' ), 'دامنه‌ی بی‌IP سنجیدنی نیست' );
+mc_ok( true === Link_Tools::is_checkable( 'https://93.184.216.34/x.mkv' ), 'نشانی عمومی سنجیدنی است' );
+
+/* پویش دسته‌ای: هر اجرا از جایی که ماند ادامه می‌دهد. */
+$GLOBALS['mc_links'] = array(
+	20 => array(
+		array(
+			'id'      => 'g3',
+			'quality' => '1080p',
+			'items'   => array(
+				array( 'id' => 'm1', 'quality' => '1080p', 'url' => 'https://93.184.216.34/1.mkv' ),
+				array( 'id' => 'm2', 'quality' => '720p', 'url' => 'https://93.184.216.34/2.mkv' ),
+				array( 'id' => 'm3', 'quality' => '480p', 'url' => 'https://93.184.216.34/3.mkv' ),
+			),
+		),
+	),
+);
+
+$GLOBALS['mc_types']  = array( 20 => 'movie' );
+$GLOBALS['mc_titles'] = array( 20 => 'نمونه' );
+$GLOBALS['mc_http']   = array(
+	'https://93.184.216.34/1.mkv' => 200,
+	'https://93.184.216.34/2.mkv' => 200,
+	'https://93.184.216.34/3.mkv' => 200,
+);
+
+$GLOBALS['mc_options'][ Link_Tools::CHECK_LOG ] = array( 'next' => 0 );
+
+$first = Link_Tools::check( array( 'limit' => 2 ) );
+mc_ok( 2 === $first['checked'] && ! empty( $first['truncated'] ) && 2 === $first['next'], 'اجرای نخست دو نشانی می‌سنجد و نقطه‌ی ادامه را نگه می‌دارد' );
+
+$second = Link_Tools::check( array( 'limit' => 2 ) );
+mc_ok( 1 === $second['checked'] && 0 === $second['next'], 'اجرای دوم از همان‌جا ادامه می‌دهد و در پایان به ابتدا برمی‌گردد' );
+mc_ok( false !== strpos( $second['rows'][0]['url'], '/3.mkv' ), 'اجرای دوم از نشانی سوم شروع می‌کند', $second['rows'][0]['url'] );
+
+/* تنظیمات بررسی. */
+$GLOBALS['mc_options']['manacore_settings'] = array(
+	'links_check_interval' => 'off',
+	'links_check_batch'    => 999,
+	'links_check_timeout'  => 1,
+);
+
+$settings = Link_Tools::check_settings();
+
+mc_ok( 'off' === $settings['interval'] && '' === $settings['recurrence'], 'بازه‌ی خاموش زمان‌بندی ندارد' );
+mc_ok( Link_Tools::MAX_CHECKS === $settings['batch'], 'تعداد بیش از سقف به سقف بسته می‌شود' );
+mc_ok( Link_Tools::MIN_TIMEOUT === $settings['timeout'], 'مهلت کمتر از کف به کف بسته می‌شود' );
+
+$GLOBALS['mc_options']['manacore_settings'] = array( 'links_check_interval' => 'nonsense' );
+mc_ok( 'daily' === Link_Tools::check_settings()['interval'], 'بازه‌ی ناشناخته به پیش‌فرض روزانه برمی‌گردد' );
+
+$GLOBALS['mc_options']['manacore_settings'] = array();
+$defaults                                    = Link_Tools::check_settings();
+mc_ok( 'daily' === $defaults['interval'] && Link_Tools::DEFAULT_BATCH === $defaults['batch'], 'پیش از نخستین ذخیره، پیش‌فرض‌های امن اعمال می‌شوند' );
+
+/* زمان‌بندی کرون. */
+$GLOBALS['mc_cron']       = array();
+$GLOBALS['mc_cron_calls'] = array();
+
+Link_Tools::instance()->sync_schedule();
+mc_ok( isset( $GLOBALS['mc_cron'][ Link_Tools::CHECK_EVENT ] ), 'رویداد کرون با پیش‌فرض روزانه ساخته می‌شود' );
+
+$GLOBALS['mc_cron_calls'] = array();
+Link_Tools::instance()->sync_schedule();
+mc_ok( array() === $GLOBALS['mc_cron_calls'], 'هم‌گام‌سازی دوباره زمان‌بندی را دست نمی‌زند' );
+
+$GLOBALS['mc_options']['manacore_settings'] = array( 'links_check_interval' => 'weekly' );
+$GLOBALS['mc_cron_calls']                   = array();
+
+Link_Tools::instance()->sync_schedule();
+mc_ok( 'weekly' === wp_get_schedule( Link_Tools::CHECK_EVENT ), 'تغییر بازه، زمان‌بندی را جایگزین می‌کند' );
+mc_ok( in_array( 'clear:' . Link_Tools::CHECK_EVENT, $GLOBALS['mc_cron_calls'], true ), 'زمان‌بندی پیشین پاک می‌شود' );
+
+$GLOBALS['mc_options']['manacore_settings'] = array( 'links_check_interval' => 'off' );
+Link_Tools::instance()->sync_schedule();
+
+mc_ok( ! isset( $GLOBALS['mc_cron'][ Link_Tools::CHECK_EVENT ] ), 'خاموش‌کردن بررسی، رویداد کرون را پاک می‌کند' );
+
+/* قلاب‌ها و بودجه. */
+Link_Tools::instance()->hooks();
+mc_ok( in_array( 'action:' . Link_Tools::CHECK_EVENT, $GLOBALS['mc_hooks'], true ), 'رویداد کرون به متد cron وصل است' );
+mc_ok( in_array( 'action:admin_init', $GLOBALS['mc_hooks'], true ), 'هم‌گام‌سازی زمان‌بندی روی admin_init است' );
+mc_ok( Link_Tools::MANUAL_CHECKS <= Link_Tools::MAX_CHECKS && Link_Tools::MANUAL_TIMEOUT <= Link_Tools::MAX_TIMEOUT, 'بودجه‌ی اجرای دستی از سقف‌ها بیرون نمی‌زند' );
+
 
 /* ---------------------------------------------------------------
  * پایان

@@ -458,8 +458,39 @@ mc_ok( false !== strpos( $panels['watch'], 'name="manacore_settings[download_ttl
 mc_ok( false !== strpos( $panels['requests'], 'name="manacore_settings[requests_enabled]"' ), 'فیلد فعال‌بودن درخواست‌ها در تب درخواست‌ها هست' );
 mc_ok( false !== strpos( $panels['mega'], 'name="manacore_settings[mega_terms]"' ), 'فیلد تعداد ژانرها در تب مگامنو هست' );
 
-/* تب ابزارها فقط کنش admin-post دارد؛ فرم تنظیمات تودرتو نباید بسازد. */
-mc_ok( false === strpos( $panels['tools'], 'name="manacore_settings[' ), 'تب ابزارها فیلد تنظیمات ندارد (فرم تودرتو نمی‌سازد)' );
+/*
+ * تب ابزارها هم فرم تنظیمات دارد (کارت «سلامت لینک‌ها») هم فرم‌های
+ * admin-post؛ مهم این است که هیچ فرمی درون فرم دیگر نیفتد، وگرنه
+ * مرورگر فرم درونی را دور می‌ریزد و دکمه‌ها بی‌اثر می‌شوند.
+ */
+$form_depth = 0;
+$form_max   = 0;
+$cursor     = 0;
+
+while ( true ) {
+	$open  = strpos( $panels['tools'], '<form', $cursor );
+	$close = strpos( $panels['tools'], '</form>', $cursor );
+
+	if ( false === $open && false === $close ) {
+		break;
+	}
+
+	if ( false !== $open && ( false === $close || $open < $close ) ) {
+		$form_depth++;
+		$form_max = max( $form_max, $form_depth );
+		$cursor   = $open + 5;
+	} else {
+		$form_depth--;
+		$cursor = $close + 7;
+	}
+}
+
+mc_ok( 1 === $form_max && 0 === $form_depth, 'فرم‌های تب ابزارها تودرتو نیستند' );
+mc_ok( false !== strpos( $panels['tools'], 'name="manacore_settings[links_check_interval]"' ), 'تنظیم زمان‌بندی بررسی در تب ابزارها هست' );
+mc_ok( false !== strpos( $panels['tools'], 'name="manacore_settings[links_check_batch]"' ) && false !== strpos( $panels['tools'], 'name="manacore_settings[links_check_timeout]"' ), 'فیلدهای تعداد و مهلت بررسی هم آمده‌اند' );
+mc_ok( false !== strpos( $panels['tools'], 'value="check-links"' ), 'دکمه‌ی اجرای دستی بررسی لینک‌ها هست' );
+mc_ok( false !== strpos( $panels['tools'], '«سلامت لینک‌ها»' ) || false !== strpos( $panels['tools'], 'سلامت لینک‌ها' ), 'کارت «سلامت لینک‌ها» رندر می‌شود' );
+mc_ok( false !== strpos( $panels['tools'], 'value="off"' ) && false !== strpos( $panels['tools'], 'value="weekly"' ), 'گزینه‌های بازه‌ی بررسی (خاموش تا هفتگی) آمده‌اند' );
 mc_ok( false !== strpos( $panels['tools'], 'name="action" value="manacore_tool"' ), 'دکمه‌های ابزار از admin-post می‌آیند' );
 mc_ok( false !== strpos( $panels['tools'], 'name="action" value="manacore_export"' ), 'کارت پشتیبان‌گیری در تب ابزارها هست' );
 mc_ok( false !== strpos( $panels['tools'], '[manacore_my_requests]' ), 'شورت‌کد «درخواست‌های من» در فهرست شورت‌کدها آمده است' );

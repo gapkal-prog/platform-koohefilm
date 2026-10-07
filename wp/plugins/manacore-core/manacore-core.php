@@ -155,5 +155,8 @@ register_deactivation_hook(
 	MANACORE_FILE,
 	static function () {
 		flush_rewrite_rules();
+
+		/* رویداد کرون ابزارها با غیرفعال‌شدن افزونه نباید بماند. */
+		wp_clear_scheduled_hook( 'manacore_links_check' );
 	}
 );

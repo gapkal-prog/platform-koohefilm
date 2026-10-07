@@ -259,6 +259,72 @@ class Reports {
 	}
 
 	/**
+	 * آیا گزارش «تازه‌ای» برای این نوشته باز است؟
+	 *
+	 * مصرفش این است که پویش خودکار لینک‌ها گزارش تکراری نسازد: اگر
+	 * مدیر از پیش گزارش بازِ همان نوشته/کیفیت را در صف دارد، دوباره
+	 * ثبت نمی‌شود و صف با ردیف‌های یکسان پر نمی‌شود.
+	 *
+	 * @param int    $post_id شناسه‌ی نوشته.
+	 * @param string $quality کیفیت (خالی: هر کیفیتی از این نوشته).
+	 * @return bool
+	 */
+	public static function has_open( $post_id, $quality = '' ) {
+		global $wpdb;
+
+		$table = Install::reports_table();
+		$sql   = "SELECT id FROM {$table} WHERE post_id = %d AND status = 'new'"; // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		$args  = array( absint( $post_id ) );
+
+		if ( '' !== (string) $quality ) {
+			$sql   .= ' AND quality = %s';
+			$args[] = (string) $quality;
+		}
+
+		$sql .= ' LIMIT 1';
+
+		$found = $wpdb->get_var( $wpdb->prepare( $sql, $args ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.NotPrepared
+
+		return ! empty( $found );
+	}
+
+	/**
+	 * بستن گزارش‌های بازِ یک نشانی که این بار سالم پاسخ داده است.
+	 *
+	 * گزارش‌های «تازه»ی همان نوشته و همان نشانی «اصلاح‌شده» می‌شوند تا
+	 * صف مدیر خودبه‌خود تمیز بمانَد. گزارش‌های نادیده‌گرفته‌شده دست‌نخورده
+	 * می‌مانند (تصمیم مدیر محترم است).
+	 *
+	 * @param int    $post_id شناسه‌ی نوشته.
+	 * @param string $url     نشانی.
+	 * @return int شمار ردیف‌های بسته‌شده.
+	 */
+	public static function resolve_url( $post_id, $url ) {
+		global $wpdb;
+
+		/* همان پاک‌سازی درج، تا مقایسه با مقدار ذخیره‌شده یکی باشد. */
+		$url = esc_url_raw( str_replace( array( '<', '>' ), '', (string) $url ) );
+
+		if ( '' === $url ) {
+			return 0;
+		}
+
+		$rows = $wpdb->update( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+			Install::reports_table(),
+			array( 'status' => 'fixed' ),
+			array(
+				'post_id'  => absint( $post_id ),
+				'link_url' => $url,
+				'status'   => 'new',
+			),
+			array( '%s' ),
+			array( '%d', '%s', '%s' )
+		);
+
+		return false === $rows ? 0 : (int) $rows;
+	}
+
+	/**
 	 * فهرست گزارش‌ها برای پیشخوان.
 	 *
 	 * @param array $args فیلترها: status, per_page, page.

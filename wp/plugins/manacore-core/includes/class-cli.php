@@ -22,6 +22,7 @@
  *   wp manacore links-domain --from=https://old.example/files --to=https://new.example/files
  *   wp manacore links-copy --source=120 --targets=121,122 --mode=append
  *   wp manacore links-audit
+ *   wp manacore links-check --limit=200
  *
  * @package ManaCore\Core
  */
@@ -76,6 +77,93 @@ class Cli {
 		}
 
 		return $value;
+	}
+
+	/**
+	 * سنجش لینک‌های دانلود و ثبت لینک‌های مرده در صف گزارش‌ها.
+	 *
+	 * ## OPTIONS
+	 *
+	 * [--limit=<number>]
+	 * : سقف نشانی‌های سنجیده‌شده در این اجرا.
+	 *
+	 * [--offset=<number>]
+	 * : نقطه‌ی شروع در فهرست نشانی‌ها؛ پیش‌فرض ادامه‌ی اجرای پیشین است.
+	 *
+	 * [--dry-run]
+	 * : فقط بشمار و نشان بده؛ هیچ گزارشی ثبت یا بسته نشود.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp manacore links-check
+	 *     wp manacore links-check --limit=200
+	 *     wp manacore links-check --dry-run
+	 *
+	 * @param array $args       آرگومان‌های موضعی.
+	 * @param array $assoc_args آرگومان‌های کلیددار.
+	 * @return void
+	 */
+	public function links_check( $args, $assoc_args ) {
+		/* صفر یعنی «نه»؛ پس نبودِ `--offset` را جدا می‌سنجیم. */
+		$offset = array_key_exists( 'offset', (array) $assoc_args ) ? (int) $assoc_args['offset'] : -1;
+
+		$result = Link_Tools::check(
+			array(
+				'limit'   => (int) self::flag( $assoc_args, 'limit', 0 ),
+				'offset'  => $offset,
+				'dry_run' => (bool) self::flag( $assoc_args, 'dry-run', false ),
+			)
+		);
+
+		\WP_CLI::line( sprintf( 'نشانی سنجیدنی: %d   سنجیده‌شده: %d', $result['total'], $result['checked'] ) );
+		\WP_CLI::line( sprintf( 'سالم: %d   مرده: %d   نامشخص: %d', $result['alive'], $result['dead'], $result['unknown'] ) );
+
+		if ( $result['skipped'] ) {
+			\WP_CLI::line( sprintf( 'سنجیده‌نشده (همین سایت/دامنه‌ی خصوصی/مگنت): %d', $result['skipped'] ) );
+		}
+
+		if ( $result['rows'] ) {
+			$rows = array();
+
+			foreach ( $result['rows'] as $row ) {
+				$rows[] = array(
+					'post'    => $row['post_id'],
+					'title'   => $row['title'],
+					'quality' => $row['quality'],
+					'status'  => self::check_status_label( (string) $row['status'] ),
+					'detail'  => $row['detail'],
+					'url'     => $row['url'],
+				);
+			}
+
+			\WP_CLI\Utils::format_items( 'table', $rows, array( 'post', 'title', 'quality', 'status', 'detail', 'url' ) );
+		}
+
+		if ( ! empty( $result['dry_run'] ) ) {
+			\WP_CLI::warning( 'اجرای آزمایشی بود؛ هیچ گزارشی ثبت یا بسته نشد.' );
+		} else {
+			\WP_CLI::success( sprintf( 'گزارش تازه: %d   خودکار بسته‌شده: %d', $result['filed'], $result['resolved'] ) );
+		}
+
+		if ( ! empty( $result['truncated'] ) ) {
+			\WP_CLI::warning( 'نشانی‌های بیشتری مانده‌اند؛ همین فرمان را دوباره اجرا کنید (از همان‌جا ادامه می‌دهد).' );
+		}
+	}
+
+	/**
+	 * برچسب فارسی وضعیت سنجش.
+	 *
+	 * @param string $status کد وضعیت.
+	 * @return string
+	 */
+	protected static function check_status_label( $status ) {
+		$labels = array(
+			'alive'   => 'سالم',
+			'dead'    => 'مرده',
+			'unknown' => 'نامشخص',
+		);
+
+		return $labels[ $status ] ?? $status;
 	}
 
 	/**
