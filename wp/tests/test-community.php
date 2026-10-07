@@ -846,7 +846,10 @@ mc_ok( false !== strpos( $install, "const DB_VERSION = '1.2.0'" ), 'نسخه‌�
 mc_ok( false !== strpos( $install, 'UNIQUE KEY unique_vote (request_id, voter_hash)' ), 'کلید یکتای رأی تکراری هست' );
 
 $settings = file_get_contents( MANACORE_PATH . 'includes/class-settings.php' );
-mc_ok( false !== strpos( $settings, "'requests' =>" ) && false !== strpos( $settings, "'ads'     =>" ), 'هر دو تب در فهرست تب‌ها هستند' );
+mc_ok(
+	(bool) preg_match( "/'requests'\s*=>/", $settings ) && (bool) preg_match( "/'ads'\s*=>/", $settings ),
+	'هر دو تب در فهرست تب‌ها هستند'
+);
 mc_ok( false !== strpos( $settings, "case 'request-page':" ), 'ابزار ساخت برگه‌ی درخواست‌ها ثبت شده است' );
 
 /* ---------------------------------------------------------------

@@ -3,7 +3,7 @@
  * Plugin Name:       ManaCore Core
  * Plugin URI:        https://manacore.dev/manacore-core
  * Description:       موتور اصلی سایت فیلم و سریال: نوع‌های محتوا (فیلم، سریال، انیمه، قسمت)، تاکسونومی‌ها، متاباکس‌های کامل، مدیریت لینک دانلود و پخش، REST API و بلوک‌های ویرایشگر.
- * Version:           1.0.0
+ * Version:           1.1.0
  * Requires at least: 6.5
  * Requires PHP:      7.4
  * Author:            ManaCore
@@ -18,7 +18,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'MANACORE_VERSION', '1.0.0' );
+define( 'MANACORE_VERSION', '1.1.0' );
 define( 'MANACORE_FILE', __FILE__ );
 define( 'MANACORE_PATH', plugin_dir_path( __FILE__ ) );
 define( 'MANACORE_URL', plugin_dir_url( __FILE__ ) );
@@ -89,6 +89,16 @@ function manacore_boot() {
 
 	/* داشبورد تحلیلی: گزارش‌های پیشخوان و ویجت صفحه‌ی نخست مدیریت. */
 	ManaCore\Core\Analytics::instance()->hooks();
+
+	/*
+	 * پشتیبان‌گیری/بازگردانی تنظیمات (JSON) و محتوای نمایشی یک‌کلیکی:
+	 * دو ابزار «تحویل حرفه‌ای» که کار مهاجرت و نمایش قالب به خریدار را
+	 * از چند ساعت به چند دقیقه می‌رسانند.
+	 */
+	ManaCore\Core\Portability::instance()->hooks();
+
+	/* فرمان‌های WP-CLI؛ بیرون از CLI هیچ کاری نمی‌کنند. */
+	ManaCore\Core\Cli::register();
 
 	/*
 	 * ارتقای پایگاه‌داده. یک مقایسه‌ی گزینه‌ی خودبارگذاری‌شده در هر درخواست

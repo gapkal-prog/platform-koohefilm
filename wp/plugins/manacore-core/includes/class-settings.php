@@ -38,13 +38,49 @@ class Settings {
 	public static function tabs() {
 		return array(
 			'general'   => __( 'تنظیمات عمومی', 'manacore' ),
-			'analytics' => __( 'تحلیل و آمار', 'manacore' ),
 			'watch'     => __( 'پخش و دانلود', 'manacore' ),
-			'requests' => __( 'درخواست‌ها', 'manacore' ),
-			'ads'     => __( 'تبلیغات', 'manacore' ),
-			'mega'    => __( 'مگامنو', 'manacore' ),
-			'tools'   => __( 'وضعیت و ابزارها', 'manacore' ),
+			'requests'  => __( 'درخواست‌ها', 'manacore' ),
+			'ads'       => __( 'تبلیغات', 'manacore' ),
+			'mega'      => __( 'مگامنو', 'manacore' ),
+			'analytics' => __( 'تحلیل و آمار', 'manacore' ),
+			'tools'     => __( 'وضعیت و ابزارها', 'manacore' ),
 		);
+	}
+
+	/**
+	 * کلیدهای هر تب — تنها منبع حقیقت «کدام کلید به کدام تب تعلق دارد».
+	 *
+	 * دو مصرف‌کننده دارد: پشتیبان‌گیری/بازگردانی تنظیمات (`Portability`)
+	 * که باید بداند هر کلید را با پاک‌سازی همان تب وارد کند، و آزمون
+	 * نگهبان که می‌سنجد خروجی `sanitize()` هیچ کلیدی بیرون از این فهرست
+	 * ندارد. اگر کلیدی تازه به `sanitize()` اضافه شد و اینجا نیامد،
+	 * آزمون `test-portability.php` شکست می‌خورد.
+	 *
+	 * @return array<string,array<int,string>>
+	 */
+	public static function keys_by_tab() {
+		return array(
+			'general'  => array( 'slug_movie', 'slug_series', 'slug_anime', 'slug_episode', 'slug_person', 'slug_collection', 'enable_ratings', 'enable_watchlist', 'enable_views', 'links_login_only', 'items_per_page', 'default_color_mode', 'custom_qualities' ),
+			'watch'    => array( 'download_notice_text', 'player_notice_text', 'subscribe_label', 'subscribe_url' ),
+			'requests' => array( 'requests_enabled', 'requests_guests', 'requests_show_pending', 'requests_heading', 'requests_board_title', 'requests_button', 'requests_intro', 'requests_thanks', 'requests_per_page' ),
+			'ads'      => array( 'ads_enabled', 'ads_hide_members', 'ads_counters', 'ads_label', 'ads_per_position', 'ads_positions' ),
+			'mega'     => array( 'mega_enabled', 'mega_show_korean', 'mega_show_cast', 'mega_eyebrow', 'mega_title', 'mega_quick_label', 'mega_feature_label', 'mega_cta_label', 'mega_rating_label', 'mega_newest_label', 'mega_korean_label', 'mega_cast_label', 'mega_taxonomy', 'mega_terms', 'mega_columns', 'mega_hub_url', 'mega_featured_id' ),
+		);
+	}
+
+	/**
+	 * همه‌ی کلیدهای تنظیمات، سرتخت (برای جست‌وجوی سریع در فهرست).
+	 *
+	 * @return array<int,string>
+	 */
+	public static function option_keys() {
+		$keys = array();
+
+		foreach ( self::keys_by_tab() as $tab_keys ) {
+			$keys = array_merge( $keys, $tab_keys );
+		}
+
+		return $keys;
 	}
 
 	/**
@@ -302,6 +338,12 @@ class Settings {
 			'rewrite-ok'    => array( 'success', __( 'قواعد پیوندهای یکتا بازسازی شد.', 'manacore' ) ),
 			'report-ok'     => array( 'success', __( 'گزارش به‌روز شد.', 'manacore' ) ),
 			'request-ok'    => array( 'success', __( 'برگه‌ی درخواست‌ها ساخته شد.', 'manacore' ) ),
+			'demo-ok'       => array( 'success', __( 'محتوای نمایشی ساخته شد.', 'manacore' ) ),
+			'demo-exists'   => array( 'warning', __( 'محتوای نمایشی از قبل ساخته شده است؛ دوباره ساخته نشد.', 'manacore' ) ),
+			'demo-removed'  => array( 'success', __( 'محتوای نمایشی حذف شد.', 'manacore' ) ),
+			'import-ok'     => array( 'success', __( 'تنظیمات بازگردانی شد.', 'manacore' ) ),
+			'import-dry'    => array( 'info', __( 'بررسی فایل انجام شد؛ حالت آزمایشی روشن بود و چیزی ذخیره نشد.', 'manacore' ) ),
+			'import-error'  => array( 'error', __( 'بازگردانی تنظیمات انجام نشد.', 'manacore' ) ),
 			'failed'        => array( 'error', __( 'ابزار اجرا نشد؛ شرایط پیش‌نیاز را ببینید.', 'manacore' ) ),
 		);
 
@@ -309,10 +351,55 @@ class Settings {
 			return;
 		}
 
+		$reason = isset( $_GET['manacore_reason'] ) ? sanitize_key( wp_unslash( $_GET['manacore_reason'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+
 		printf(
-			'<div class="notice notice-%1$s is-dismissible"><p>%2$s</p></div>',
+			'<div class="notice notice-%1$s is-dismissible"><p>%2$s</p>',
 			esc_attr( $map[ $notice ][0] ),
 			esc_html( $map[ $notice ][1] )
+		);
+
+		$details = self::notice_details( $notice, $reason );
+
+		if ( '' !== $details ) {
+			echo '<p>' . esc_html( $details ) . '</p>';
+		}
+
+		echo '</div>';
+	}
+
+	/**
+	 * سطر توضیحی زیر پیام مدیریتی (دلیل خطا یا شمار تنظیمات اعمال‌شده).
+	 *
+	 * @param string $notice کد پیام.
+	 * @param string $reason دلیل خطا (فقط برای `import-error`).
+	 * @return string
+	 */
+	protected static function notice_details( $notice, $reason = '' ) {
+		if ( 'import-error' === $notice ) {
+			$reasons = array(
+				'empty'   => __( 'چیزی برای بازگردانی فرستاده نشد؛ فایل JSON یا متن آن را وارد کنید.', 'manacore' ),
+				'json'    => __( 'متن JSON خوانده نشد؛ فایل خراب یا ناقص است.', 'manacore' ),
+				'format'  => __( 'این فایل مربوط به تنظیمات ManaCore نیست.', 'manacore' ),
+				'version' => __( 'فایل با نسخه‌ی تازه‌تری از افزونه ساخته شده است؛ نخست افزونه را به‌روز کنید.', 'manacore' ),
+				'size'    => __( 'حجم فایل بیش از حد مجاز است.', 'manacore' ),
+			);
+
+			return isset( $reasons[ $reason ] ) ? $reasons[ $reason ] : __( 'فایل را بررسی کنید و دوباره تلاش کنید.', 'manacore' );
+		}
+
+		if ( ! in_array( $notice, array( 'import-ok', 'import-dry' ), true ) ) {
+			return '';
+		}
+
+		$applied = isset( $_GET['manacore_applied'] ) ? absint( wp_unslash( $_GET['manacore_applied'] ) ) : 0; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		$skipped = isset( $_GET['manacore_skipped'] ) ? absint( wp_unslash( $_GET['manacore_skipped'] ) ) : 0; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+
+		/* translators: 1: تعداد تنظیم‌های اعمال‌شده، 2: تعداد کلیدهای ناشناخته */
+		return sprintf(
+			__( '%1$s تنظیم اعمال شد و %2$s کلید ناشناخته نادیده گرفته شد.', 'manacore' ),
+			number_format_i18n( $applied ),
+			number_format_i18n( $skipped )
 		);
 	}
 
@@ -341,6 +428,27 @@ class Settings {
 			case 'request-page':
 				$page_id = Requests::create_page();
 				$notice  = $page_id ? 'request-ok' : 'failed';
+				break;
+
+			case 'demo-create':
+				$result = Demo::seed();
+
+				if ( ! empty( $result['created'] ) ) {
+					$notice = 'demo-ok';
+				} else {
+					/* نبودِ «ساخته‌شده» یا یعنی از قبل هست، یا یعنی خطا خورده است. */
+					$notice = empty( $result['skipped'] ) ? 'failed' : 'demo-exists';
+				}
+				break;
+
+			case 'demo-remove':
+				/*
+				 * حذف عمداً idempotent است: اگر محتوایی نباشد هم «انجام شد»
+				 * گزارش می‌شود، چون نتیجه‌ی نهایی (نبودِ محتوای نمایشی)
+				 * همان است و خطا دادن، مدیر را بی‌دلیل می‌ترساند.
+				 */
+				Demo::remove();
+				$notice = 'demo-removed';
 				break;
 
 			case 'mega-rebuild':
@@ -1357,9 +1465,9 @@ class Settings {
 
 	/**
 	 * تب «مگامنو»: تاکسونومی، تعداد، متن‌ها و کارت ویژه.
- *
- * @return void
- */
+	 *
+	 * @return void
+	 */
 	protected function render_mega_tab() {
 		$settings = class_exists( __NAMESPACE__ . '\\Mega_Menu' ) ? Mega_Menu::settings() : array();
 		ob_start();
@@ -1546,8 +1654,128 @@ class Settings {
 				<ul>
 					<li><code>[manacore_mega_menu]</code> — <?php esc_html_e( 'پنل مگامنو', 'manacore' ); ?></li>
 					<li><code>[manacore_player]</code> — <?php esc_html_e( 'پخش‌کننده (با manacore_id)', 'manacore' ); ?></li>
+					<li><code>[manacore_request_form]</code> — <?php esc_html_e( 'فرم درخواست فیلم/سریال', 'manacore' ); ?></li>
+					<li><code>[manacore_requests]</code> — <?php esc_html_e( 'تخته‌ی درخواست‌ها با رأی‌گیری', 'manacore' ); ?></li>
+					<li><code>[manacore_ad position="top"]</code> — <?php esc_html_e( 'جایگاه تبلیغاتی', 'manacore' ); ?></li>
 				</ul>
 			</div>
+			<?php
+			$this->render_demo_card();
+			$this->render_backup_card();
+			?>
+		</div>
+		<?php
+	}
+
+	/**
+	 * کارت «محتوای نمایشی».
+	 *
+	 * خریدار افزونه باید در چند دقیقه سایتی پُر ببیند؛ این ابزار یک دسته
+	 * محتوای نمونه‌ی هم‌خوان با ساختار افزونه (فیلم/سریال/قسمت/عوامل/مجموعه
+	 * + لینک دانلود + دیدگاه) می‌سازد و همان‌ها را هم برمی‌دارد.
+	 *
+	 * @return void
+	 */
+	protected function render_demo_card() {
+		if ( ! class_exists( __NAMESPACE__ . '\\Demo' ) ) {
+			return;
+		}
+
+		$status = Demo::status();
+		?>
+		<div class="card">
+			<h2><?php esc_html_e( 'محتوای نمایشی', 'manacore' ); ?></h2>
+			<p class="description">
+				<?php esc_html_e( 'برای دیدن سریع قالب و افزونه: چند فیلم، سریال با قسمت‌ها، عوامل، مجموعه و دیدگاه نمونه ساخته می‌شود. همه‌ی این نوشته‌ها با نشانه‌ی «نمایشی» ذخیره می‌شوند تا فقط همین‌ها قابل حذف باشند.', 'manacore' ); ?>
+			</p>
+			<?php if ( ! empty( $status['total'] ) ) : ?>
+				<p>
+					<?php
+					printf(
+						/* translators: ۱: تعداد کل نوشته‌ها، ۲: فیلم، ۳: سریال، ۴: قسمت */
+						esc_html__( 'اکنون %1$s نوشته‌ی نمایشی هست (%2$s فیلم، %3$s سریال، %4$s قسمت).', 'manacore' ),
+						esc_html( number_format_i18n( (int) $status['total'] ) ),
+						esc_html( number_format_i18n( (int) $status['counts']['movie'] ) ),
+						esc_html( number_format_i18n( (int) $status['counts']['series'] ) ),
+						esc_html( number_format_i18n( (int) $status['counts']['episode'] ) )
+					);
+					?>
+				</p>
+			<?php else : ?>
+				<p class="description"><?php esc_html_e( 'هنوز محتوای نمایشی‌ای ساخته نشده است.', 'manacore' ); ?></p>
+			<?php endif; ?>
+			<?php
+			if ( empty( $status['total'] ) ) {
+				$this->tool_button( 'demo-create', __( 'ساخت محتوای نمایشی', 'manacore' ) );
+			}
+			$this->tool_button(
+				'demo-remove',
+				__( 'حذف محتوای نمایشی', 'manacore' ),
+				__( 'مطمئنید؟ همه‌ی نوشته‌های نمایشی برای همیشه حذف می‌شوند.', 'manacore' )
+			);
+			?>
+		</div>
+		<?php
+	}
+
+	/**
+	 * کارت «پشتیبان‌گیری و بازگردانی تنظیمات».
+	 *
+	 * @return void
+	 */
+	protected function render_backup_card() {
+		if ( ! class_exists( __NAMESPACE__ . '\\Portability' ) ) {
+			return;
+		}
+
+		$summary = Portability::summary();
+		?>
+		<div class="card">
+			<h2><?php esc_html_e( 'پشتیبان‌گیری تنظیمات', 'manacore' ); ?></h2>
+			<p class="description">
+				<?php
+				printf(
+					/* translators: ۱: تعداد کلیدهای تنظیمات، ۲: تعداد جایگاه‌های تبلیغاتی */
+					esc_html__( 'همه‌ی %1$s کلید تنظیمات (به‌همراه %2$s جایگاه تبلیغاتی) در یک فایل JSON؛ برای انتقال سایت از محیط آزمایش به سایت اصلی یا بازگردانی پس از بازنشانی.', 'manacore' ),
+					esc_html( number_format_i18n( (int) $summary['keys'] ) ),
+					esc_html( number_format_i18n( (int) $summary['ads'] ) )
+				);
+				?>
+			</p>
+			<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
+				<input type="hidden" name="action" value="manacore_export" />
+				<?php wp_nonce_field( 'manacore_export' ); ?>
+				<?php submit_button( __( 'دریافت فایل پشتیبان', 'manacore' ), 'secondary', 'submit', false ); ?>
+			</form>
+
+			<hr />
+
+			<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" enctype="multipart/form-data">
+				<input type="hidden" name="action" value="manacore_import" />
+				<?php wp_nonce_field( 'manacore_import' ); ?>
+				<p>
+					<label for="manacore_import_file"><strong><?php esc_html_e( 'فایل پشتیبان (JSON)', 'manacore' ); ?></strong></label><br />
+					<input type="file" name="manacore_import_file" id="manacore_import_file" accept="application/json,.json" />
+				</p>
+				<p>
+					<label for="manacore_import_json"><strong><?php esc_html_e( 'یا متن JSON', 'manacore' ); ?></strong></label><br />
+					<textarea name="manacore_import_json" id="manacore_import_json" rows="4" class="large-text code" dir="ltr" placeholder='{"format":"manacore-settings","settings":{…}}'></textarea>
+				</p>
+				<p>
+					<label>
+						<input type="checkbox" name="manacore_import_dry" value="1" />
+						<?php esc_html_e( 'فقط بررسی کن (هیچ چیزی ذخیره نشود)', 'manacore' ); ?>
+					</label>
+				</p>
+				<?php
+				/*
+				 * کلیدهای ناشناخته نادیده گرفته می‌شوند و هر تب با پاک‌سازی
+				 * خودش وارد می‌شود؛ پس فایلِ ناقص، بقیه‌ی تنظیمات را صفر
+				 * نمی‌کند.
+				 */
+				submit_button( __( 'بازگردانی تنظیمات', 'manacore' ), 'secondary', 'submit', false, array( 'onclick' => "return confirm('" . esc_js( __( 'تنظیمات فعلی با مقادیر این فایل جایگزین می‌شود. ادامه؟', 'manacore' ) ) . "');" ) );
+				?>
+			</form>
 		</div>
 		<?php
 	}
