@@ -3958,6 +3958,15 @@ class Blocks {
 
 				<?php
 				$download_url = isset( $downloads[ $current ] ) ? $downloads[ $current ] : $download;
+
+		/*
+		 * دکمه‌ی دانلود پلیر هم از همان مسیر امضاشده می‌گذرد (اگر روشن
+		 * باشد). پلیر فقط نشانی را می‌شناسد، پس شناسه‌ی لینک با تطبیق
+		 * نشانی پیدا می‌شود؛ در نبود تطبیق، نشانی خام می‌ماند.
+		 */
+		if ( $download_url && class_exists( '\\ManaCore\\Core\\Downloads' ) ) {
+			$download_url = \ManaCore\Core\Downloads::url_for( (int) $source_id, (string) $download_url, 'direct' );
+		}
 				?>
 				<?php if ( $download_url ) : ?>
 					<a class="manacore-btn is-primary is-small" href="<?php echo esc_url( $download_url ); ?>"

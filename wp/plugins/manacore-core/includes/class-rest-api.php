@@ -371,8 +371,19 @@ class Rest_Api {
 	 * @return \WP_REST_Response
 	 */
 	public function track_download( $request ) {
-		Ratings::instance()->log_stat( (int) $request['post_id'], 'download' );
-		return rest_ensure_response( array( 'ok' => true ) );
+		/*
+		 * شمارش از پنجره‌ی ضدرعدّ‌سازی `Downloads` می‌گذرد تا کلیک دوباره
+		 * (یا رفرش پشت‌سرهم) آمار را باد نکند و با مسیر امضاشده‌ی دانلود
+		 * هم دوباره‌شماری پیش نیاید.
+		 */
+		$counted = Downloads::count( (int) $request['post_id'] );
+
+		return rest_ensure_response(
+			array(
+				'ok'      => true,
+				'counted' => (bool) $counted,
+			)
+		);
 	}
 
 	/**

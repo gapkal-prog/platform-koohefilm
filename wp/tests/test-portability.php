@@ -236,6 +236,11 @@ require_once MANACORE_PATH . 'includes/functions.php';
 require_once MANACORE_PATH . 'includes/trait-singleton.php';
 require_once MANACORE_PATH . 'includes/class-settings.php';
 require_once MANACORE_PATH . 'includes/class-links.php';
+/*
+ * `Settings::sanitize()` کرانه‌ی اعتبار لینک دانلود را از ثابت‌های
+ * `Downloads` می‌خواند (یک منبع حقیقت)، پس این کلاس هم باید بارگذاری شود.
+ */
+require_once MANACORE_PATH . 'includes/class-downloads.php';
 require_once MANACORE_PATH . 'includes/class-install.php';
 require_once MANACORE_PATH . 'includes/class-portability.php';
 require_once MANACORE_PATH . 'includes/class-demo.php';

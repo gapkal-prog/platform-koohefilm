@@ -61,7 +61,7 @@ class Settings {
 	public static function keys_by_tab() {
 		return array(
 			'general'  => array( 'slug_movie', 'slug_series', 'slug_anime', 'slug_episode', 'slug_person', 'slug_collection', 'enable_ratings', 'enable_watchlist', 'enable_views', 'links_login_only', 'items_per_page', 'default_color_mode', 'custom_qualities' ),
-			'watch'    => array( 'download_notice_text', 'player_notice_text', 'subscribe_label', 'subscribe_url' ),
+			'watch'    => array( 'download_notice_text', 'player_notice_text', 'subscribe_label', 'subscribe_url', 'download_signing', 'download_ttl' ),
 			'requests' => array( 'requests_enabled', 'requests_guests', 'requests_show_pending', 'requests_heading', 'requests_board_title', 'requests_button', 'requests_intro', 'requests_thanks', 'requests_per_page' ),
 			'ads'      => array( 'ads_enabled', 'ads_hide_members', 'ads_counters', 'ads_label', 'ads_per_position', 'ads_positions' ),
 			'mega'     => array( 'mega_enabled', 'mega_show_korean', 'mega_show_cast', 'mega_eyebrow', 'mega_title', 'mega_quick_label', 'mega_feature_label', 'mega_cta_label', 'mega_rating_label', 'mega_newest_label', 'mega_korean_label', 'mega_cast_label', 'mega_taxonomy', 'mega_terms', 'mega_columns', 'mega_hub_url', 'mega_featured_id' ),
@@ -220,6 +220,12 @@ class Settings {
 			}
 
 			$clean['subscribe_url'] = isset( $input['subscribe_url'] ) ? esc_url_raw( trim( (string) $input['subscribe_url'] ) ) : '';
+
+			/* امضای لینک دانلود و اعتبار آن (دقیقه، با کرانه‌گذاری). */
+			$clean['download_signing'] = empty( $input['download_signing'] ) ? 0 : 1;
+			$clean['download_ttl']     = isset( $input['download_ttl'] )
+				? max( Downloads::MIN_TTL, min( Downloads::MAX_TTL, (int) $input['download_ttl'] ) )
+				: 1440;
 		}
 
 		/* ---------------- تب درخواست‌ها ---------------- */
@@ -980,6 +986,29 @@ class Settings {
 							<input type="text" id="subscribe_label" name="manacore_settings[subscribe_label]" class="regular-text"
 								value="<?php echo esc_attr( manacore_get_option( 'subscribe_label', '' ) ); ?>"
 								placeholder="<?php esc_attr_e( 'تهیه اشتراک', 'manacore' ); ?>" />
+						</td>
+					</tr>
+				</table>
+
+				<h2 class="title"><?php esc_html_e( 'امضای لینک دانلود', 'manacore' ); ?></h2>
+				<table class="form-table" role="presentation">
+					<tr>
+						<th scope="row"><?php esc_html_e( 'وضعیت', 'manacore' ); ?></th>
+						<td>
+							<label>
+								<input type="checkbox" name="manacore_settings[download_signing]" value="1" <?php checked( 1, (int) manacore_get_option( 'download_signing', 0 ) ); ?> />
+								<?php esc_html_e( 'دکمه‌های دانلود با نشانی امضاشده و زمان‌دار کار کنند', 'manacore' ); ?>
+							</label>
+							<p class="description"><?php esc_html_e( 'با روشن‌کردن این گزینه، نشانی خام فایل روی صفحه نمی‌آید و هر دانلود از یک مسیر داخلی می‌گذرد؛ پس اگر لینک را کسی جای دیگر بگذارد، پس از پایان اعتبار کار نمی‌کند. لینک‌های «پخش» و فایل‌های ضمیمه دست‌نخورده می‌مانند.', 'manacore' ); ?></p>
+						</td>
+					</tr>
+					<tr>
+						<th scope="row"><label for="download_ttl"><?php esc_html_e( 'اعتبار هر لینک (دقیقه)', 'manacore' ); ?></label></th>
+						<td>
+							<input type="number" id="download_ttl" name="manacore_settings[download_ttl]"
+								min="<?php echo esc_attr( Downloads::MIN_TTL ); ?>" max="<?php echo esc_attr( Downloads::MAX_TTL ); ?>"
+								value="<?php echo esc_attr( (int) manacore_get_option( 'download_ttl', 1440 ) ); ?>" class="small-text" />
+							<p class="description"><?php esc_html_e( 'پیش‌فرض ۱۴۴۰ دقیقه (۲۴ ساعت) — کوتاه‌تر یعنی امن‌تر، بلندتر یعنی راحت‌تر برای مدیریت دانلود شبانه.', 'manacore' ); ?></p>
 						</td>
 					</tr>
 				</table>

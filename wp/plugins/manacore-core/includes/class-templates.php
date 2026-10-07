@@ -828,7 +828,18 @@ class Templates {
 								<?php esc_html_e( 'پخش', 'manacore' ); ?>
 							</button>
 						<?php else : ?>
-							<a class="manacore-btn is-primary is-small" href="<?php echo esc_url( $item['url'] ); ?>"
+							<?php
+							/*
+							 * با روشن‌بودن «امضای لینک دانلود»، نشانی خام
+							 * فایل روی صفحه نمی‌آید و جایش یک مسیر داخلی
+							 * زمان‌دار می‌نشیند. خاموش‌بودن گزینه = همان
+							 * رفتار پیشین، بی‌هیچ تغییر در مارک‌آپ.
+							 */
+							$download_url = class_exists( '\\ManaCore\\Core\\Downloads' )
+								? Downloads::url_for( $post_id, (string) $item['url'], (string) $item['type'] )
+								: (string) $item['url'];
+							?>
+							<a class="manacore-btn is-primary is-small" href="<?php echo esc_url( $download_url ); ?>"
 								rel="nofollow noopener" target="_blank"
 								aria-label="<?php echo esc_attr( $label ); ?>"
 								data-manacore-download="<?php echo esc_attr( $post_id ); ?>">

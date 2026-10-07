@@ -95,6 +95,9 @@ function manacore_boot() {
 	 * دو ابزار «تحویل حرفه‌ای» که کار مهاجرت و نمایش قالب به خریدار را
 	 * از چند ساعت به چند دقیقه می‌رسانند.
 	 */
+	/* دانلود امضاشده: مسیر REST زمان‌دار + شمارش سرورسوی دانلود. */
+	ManaCore\Core\Downloads::instance()->hooks();
+
 	ManaCore\Core\Portability::instance()->hooks();
 
 	/* فرمان‌های WP-CLI؛ بیرون از CLI هیچ کاری نمی‌کنند. */
