@@ -70,14 +70,26 @@ class Settings {
 			3
 		);
 
-		add_submenu_page(
-			'manacore',
-			__( 'تنظیمات عمومی', 'manacore' ),
-			__( 'تنظیمات عمومی', 'manacore' ),
-			'manage_options',
-			'manacore',
-			array( $this, 'render' )
-		);
+		/*
+		 * زیرمنوها فقط میان‌برِ تب‌های صفحه‌اند (همان `page=manacore` با
+		 * پارامتر بازگشتی)، نه صفحه‌ی تکراری. پیش‌تر دو ورودی با پارامتر
+		 * یکسان ساخته می‌شد که تب نخست را همیشه باز می‌کرد.
+		 */
+		foreach ( self::tabs() as $slug => $label ) {
+			if ( 'general' === $slug ) {
+				continue; // ورودی خودِ منوی اصلی همین تب است.
+			}
+
+			add_submenu_page(
+				'manacore',
+				$label,
+				$label,
+				'manage_options',
+				'manacore&tab=' . $slug,
+				'__return_null',
+				1
+			);
+		}
 	}
 
 	/**
@@ -464,6 +476,30 @@ class Settings {
 	}
 
 	/**
+	 * فیلدهای پنهان مشترک فرم‌های تنظیمات.
+	 *
+	 * @param string $tab             تب جاری.
+	 * @param bool   $watch_fallback  ارسال شناسه‌ی برگه‌ی پخش به‌صورت پنهان؛
+	 *                                در تبی که خودش این فیلد را دارد `false`.
+	 * @return void
+	 */
+	protected function hidden_fields( $tab, $watch_fallback = true ) {
+		?>
+		<input type="hidden" name="manacore_settings[_tab]" value="<?php echo esc_attr( $tab ); ?>" />
+		<?php
+		/*
+		 * شناسه‌ی برگه‌ی پخش (گزینه‌ی مستقل در همان گروه) در تب‌هایی که
+		 * فیلدش را ندارند پنهان فرستاده می‌شود تا ذخیره‌شان آن را خالی
+		 * نکند. اگر تب خودش فیلد را دارد، مقدار مرئی مقدم است.
+		 */
+		if ( $watch_fallback ) :
+			?>
+		<input type="hidden" name="manacore_watch_page" value="<?php echo esc_attr( (int) get_option( 'manacore_watch_page', 0 ) ); ?>" />
+			<?php
+		endif;
+	}
+
+	/**
 	 * فرم استاندارد یک تب (همه از `options.php` رد می‌شوند).
 	 *
 	 * @param string $tab      کلید تب.
@@ -473,17 +509,9 @@ class Settings {
 	protected function tab_form( $tab, $callback ) {
 		?>
 		<form method="post" action="options.php">
-			<?php settings_fields( 'manacore_settings_group' ); ?>
-			<input type="hidden" name="manacore_settings[_tab]" value="<?php echo esc_attr( $tab ); ?>" />
 			<?php
-			/*
-			 * شناسه‌ی برگه‌ی پخش (گزینه‌ی مستقل در همان گروه) در همه‌ی
-			 * تب‌ها به‌صورت پنهان فرستاده می‌شود تا ذخیره‌ی هر تب آن را
-			 * خالی نکند.
-			 */
-			?>
-			<input type="hidden" name="manacore_watch_page" value="<?php echo esc_attr( (int) get_option( 'manacore_watch_page', 0 ) ); ?>" />
-			<?php
+			settings_fields( 'manacore_settings_group' );
+			$this->hidden_fields( $tab );
 			call_user_func( $callback );
 			submit_button();
 			?>
@@ -648,6 +676,7 @@ class Settings {
 						<td>
 							<textarea id="player_notice_text" name="manacore_settings[player_notice_text]" rows="3" class="large-text"><?php echo esc_textarea( manacore_get_option( 'player_notice_text', '' ) ); ?></textarea>
 							<p class="description"><?php esc_html_e( 'زیر پلیر نمایش داده می‌شود. برای درج نام اثر از {title} استفاده کنید.', 'manacore' ); ?></p>
+							<p class="description"><?php esc_html_e( 'نمونه: پلیر {title} با ویدئوی نمونه کار می‌کند.', 'manacore' ); ?></p>
 						</td>
 					</tr>
 					<tr>
@@ -790,7 +819,59 @@ class Settings {
 	 * @return void
 	 */
 	protected function render_tools_tab() {
+		$settings = class_exists( __NAMESPACE__ . '\\Mega_Menu' ) ? Mega_Menu::settings() : array();
 		?>
+		<style>
+			.manacore-brand-mark{display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:10px;background:#1d2327;color:#fff;font-weight:700;letter-spacing:.5px}
+			.manacore-settings-header{display:flex;align-items:center;gap:12px;margin:14px 0 4px}
+			.manacore-settings-header h1{margin:0;font-size:1.4rem}
+			.manacore-settings-header p{margin:2px 0 0;color:#646970}
+		</style>
+
+		<form method="post" action="options.php" style="max-width:900px">
+			<?php
+			settings_fields( 'manacore_settings_group' );
+			/* این تب فیلد مرئی برگه‌ی پخش دارد، پس پنهان نمی‌فرستیم. */
+			$this->hidden_fields( 'tools', false );
+			?>
+			<h2 class="title"><?php esc_html_e( 'تنظیم تند', 'manacore' ); ?></h2>
+			<table class="form-table" role="presentation">
+				<tr>
+					<th scope="row"><label for="tools_watch_page"><?php esc_html_e( 'برگه‌ی پخش', 'manacore' ); ?></label></th>
+					<td>
+						<?php
+						wp_dropdown_pages(
+							array(
+								'name'              => 'manacore_watch_page',
+								'id'                => 'tools_watch_page',
+								'selected'          => (int) get_option( 'manacore_watch_page', 0 ),
+								'show_option_none'  => __( '— خودکار —', 'manacore' ),
+								'option_none_value' => 0,
+							)
+						);
+						?>
+					</td>
+				</tr>
+				<tr>
+					<th scope="row"><?php esc_html_e( 'پنل مگامنو', 'manacore' ); ?></th>
+					<td>
+						<label>
+							<input type="checkbox" name="manacore_settings[mega_enabled]" value="1" <?php checked( 1, (int) manacore_get_option( 'mega_enabled', 1 ) ); ?> />
+							<?php esc_html_e( 'فعال باشد', 'manacore' ); ?>
+						</label>
+						&nbsp;
+						<label>
+							<?php esc_html_e( 'تعداد ژانرها:', 'manacore' ); ?>
+							<input type="number" name="manacore_settings[mega_terms]" min="3" max="30"
+								value="<?php echo esc_attr( (int) manacore_get_option( 'mega_terms', 12 ) ); ?>" class="small-text" />
+						</label>
+						<input type="hidden" name="manacore_settings[mega_taxonomy]" value="<?php echo esc_attr( isset( $settings['taxonomy'] ) ? $settings['taxonomy'] : 'genre' ); ?>" />
+					</td>
+				</tr>
+			</table>
+			<?php submit_button( __( 'ذخیره‌ی تنظیم تند', 'manacore' ) ); ?>
+		</form>
+
 		<div class="manacore-tools" style="display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));margin-top:16px">
 			<?php
 			$this->render_watch_status();

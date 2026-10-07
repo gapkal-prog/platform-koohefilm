@@ -4,7 +4,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: ManaCore 1.0.0\n"
 "Report-Msgid-Bugs-To: https://manacore.dev\n"
-"POT-Creation-Date: 2026-10-07 20:07+0000\n"
+"POT-Creation-Date: 2026-10-07 20:08+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -2211,16 +2211,16 @@ msgid "محتوا یافت نشد."
 msgstr ""
 
 #: manacore-core/includes/class-account.php:655 manacore-core/includes/class-channel.php:70 manacore-core/includes/class-meta.php:113 manacore-core/includes/class-post-types.php:259
-#: manacore-core/includes/class-settings.php:509 manacore-core/includes/functions.php:31 manacore-core/assets/js/blocks.js:671 manacore-sources/includes/functions.php:115
+#: manacore-core/includes/class-settings.php:537 manacore-core/includes/functions.php:31 manacore-core/assets/js/blocks.js:671 manacore-sources/includes/functions.php:115
 msgid "فیلم"
 msgstr ""
 
-#: manacore-core/includes/class-account.php:656 manacore-core/includes/class-blocks.php:6407 manacore-core/includes/class-post-types.php:280 manacore-core/includes/class-settings.php:510
+#: manacore-core/includes/class-account.php:656 manacore-core/includes/class-blocks.php:6407 manacore-core/includes/class-post-types.php:280 manacore-core/includes/class-settings.php:538
 #: manacore-core/includes/functions.php:32 manacore-sources/includes/functions.php:116
 msgid "سریال"
 msgstr ""
 
-#: manacore-core/includes/class-account.php:657 manacore-core/includes/class-post-types.php:301 manacore-core/includes/class-settings.php:511 manacore-core/includes/functions.php:33
+#: manacore-core/includes/class-account.php:657 manacore-core/includes/class-post-types.php:301 manacore-core/includes/class-settings.php:539 manacore-core/includes/functions.php:33
 #: manacore-sources/includes/functions.php:117
 msgid "انیمه"
 msgstr ""
@@ -2383,7 +2383,7 @@ msgstr ""
 msgid "تعداد قسمت‌های این فصل:"
 msgstr ""
 
-#: manacore-core/includes/class-assets.php:88 manacore-core/includes/class-assets.php:113 manacore-core/includes/class-post-types.php:322 manacore-core/includes/class-settings.php:512
+#: manacore-core/includes/class-assets.php:88 manacore-core/includes/class-assets.php:113 manacore-core/includes/class-post-types.php:322 manacore-core/includes/class-settings.php:540
 #: manacore-core/includes/functions.php:34
 msgid "قسمت"
 msgstr ""
@@ -4290,15 +4290,15 @@ msgstr ""
 msgid "دیدگاه"
 msgstr ""
 
-#: manacore-core/includes/class-mega-menu.php:64 manacore-core/includes/class-settings.php:744
+#: manacore-core/includes/class-mega-menu.php:64 manacore-core/includes/class-settings.php:773
 msgid "یک دنیا انتخاب"
 msgstr ""
 
-#: manacore-core/includes/class-mega-menu.php:65 manacore-core/includes/class-settings.php:745
+#: manacore-core/includes/class-mega-menu.php:65 manacore-core/includes/class-settings.php:774
 msgid "حال‌وهوای امشبت چیه؟"
 msgstr ""
 
-#: manacore-core/includes/class-mega-menu.php:66 manacore-core/includes/class-settings.php:746
+#: manacore-core/includes/class-mega-menu.php:66 manacore-core/includes/class-settings.php:775
 msgid "به انتخاب سینورا"
 msgstr ""
 
@@ -4306,7 +4306,7 @@ msgstr ""
 msgid "انتخاب ویژه این هفته"
 msgstr ""
 
-#: manacore-core/includes/class-mega-menu.php:68 manacore-core/includes/class-settings.php:752 manacore-core/includes/class-templates.php:175
+#: manacore-core/includes/class-mega-menu.php:68 manacore-core/includes/class-settings.php:781 manacore-core/includes/class-templates.php:175
 msgid "کشف داستان"
 msgstr ""
 
@@ -4450,7 +4450,7 @@ msgstr ""
 msgid "گالری تصاویر"
 msgstr ""
 
-#: manacore-core/includes/class-meta.php:285 manacore-core/includes/class-meta.php:534 manacore-core/includes/class-post-types.php:345 manacore-core/includes/class-settings.php:513
+#: manacore-core/includes/class-meta.php:285 manacore-core/includes/class-meta.php:534 manacore-core/includes/class-post-types.php:345 manacore-core/includes/class-settings.php:541
 msgid "عوامل"
 msgstr ""
 
@@ -4578,7 +4578,7 @@ msgstr ""
 msgid "غیرفعال کردن بخش لینک‌ها"
 msgstr ""
 
-#: manacore-core/includes/class-meta.php:473 manacore-core/includes/class-post-types.php:403 manacore-core/includes/class-settings.php:514
+#: manacore-core/includes/class-meta.php:473 manacore-core/includes/class-post-types.php:403 manacore-core/includes/class-settings.php:542
 msgid "مجموعه"
 msgstr ""
 
@@ -4887,88 +4887,88 @@ msgstr ""
 msgid "نشست شما منقضی شده است. صفحه را دوباره بارگذاری کنید."
 msgstr ""
 
-#: manacore-core/includes/class-settings.php:244
+#: manacore-core/includes/class-settings.php:256
 msgid "برگه‌ی پخش ساخته/بازیابی شد."
 msgstr ""
 
-#: manacore-core/includes/class-settings.php:245
+#: manacore-core/includes/class-settings.php:257
 msgid "فهرست راهبری مگامنو بازسازی شد."
 msgstr ""
 
-#: manacore-core/includes/class-settings.php:246
+#: manacore-core/includes/class-settings.php:258
 msgid "کش مگامنو و برگه‌های گذرا پاک شد."
 msgstr ""
 
-#: manacore-core/includes/class-settings.php:247
+#: manacore-core/includes/class-settings.php:259
 msgid "قواعد پیوندهای یکتا بازسازی شد."
 msgstr ""
 
-#: manacore-core/includes/class-settings.php:248
+#: manacore-core/includes/class-settings.php:260
 msgid "ابزار اجرا نشد؛ شرایط پیش‌نیاز را ببینید."
 msgstr ""
 
-#: manacore-core/includes/class-settings.php:270 manacore-sources/includes/class-importer.php:105 manacore-sources/includes/class-rest.php:232
+#: manacore-core/includes/class-settings.php:282 manacore-sources/includes/class-importer.php:105 manacore-sources/includes/class-rest.php:232
 msgid "دسترسی لازم را ندارید."
 msgstr ""
 
-#: manacore-core/includes/class-settings.php:324
+#: manacore-core/includes/class-settings.php:336
 msgid "وضعیت برگه‌ی پخش"
 msgstr ""
 
-#: manacore-core/includes/class-settings.php:331
+#: manacore-core/includes/class-settings.php:343
 msgid "برگه آماده است (شناسه %d)."
 msgstr ""
 
-#: manacore-core/includes/class-settings.php:337
+#: manacore-core/includes/class-settings.php:349
 msgid "برگه‌ی پخش پیدا نشد یا منتشر نشده است؛ دکمه‌های «پخش» فقط مُدال را باز می‌کنند."
 msgstr ""
 
-#: manacore-core/includes/class-settings.php:342 manacore-core/includes/class-settings.php:630
+#: manacore-core/includes/class-settings.php:354 manacore-core/includes/class-settings.php:658
 msgid "نمایش برگه"
 msgstr ""
 
-#: manacore-core/includes/class-settings.php:345
+#: manacore-core/includes/class-settings.php:357
 msgid "ویرایش در ویرایشگر"
 msgstr ""
 
-#: manacore-core/includes/class-settings.php:348
+#: manacore-core/includes/class-settings.php:360
 msgid "ساخت / بازیابی برگه‌ی پخش"
 msgstr ""
 
-#: manacore-core/includes/class-settings.php:349
+#: manacore-core/includes/class-settings.php:361
 msgid "برگه با نامک «watch» ساخته می‌شود و قالب «پخش آنلاین» آن را پر می‌کند. برگه‌ی موجود هرگز بازنویسی نمی‌شود."
 msgstr ""
 
-#: manacore-core/includes/class-settings.php:367
+#: manacore-core/includes/class-settings.php:379
 msgid "وضعیت مگامنو"
 msgstr ""
 
-#: manacore-core/includes/class-settings.php:372
+#: manacore-core/includes/class-settings.php:384
 msgid "فهرست راهبری آیتم مگامنو دارد."
 msgstr ""
 
-#: manacore-core/includes/class-settings.php:375
+#: manacore-core/includes/class-settings.php:387
 msgid "فهرست راهبری فعلی آیتم مگامنو ندارد؛ با دکمه‌ی زیر بسازید."
 msgstr ""
 
-#: manacore-core/includes/class-settings.php:382
+#: manacore-core/includes/class-settings.php:394
 msgid "ژانرهای موجود برای پنل: %s"
 msgstr ""
 
-#: manacore-core/includes/class-settings.php:388
+#: manacore-core/includes/class-settings.php:40 manacore-subscriptions/includes/class-settings.php:103
+msgid "تنظیمات عمومی"
+msgstr ""
+
+#: manacore-core/includes/class-settings.php:400
 msgid "بازسازی فهرست راهبری مگامنو"
 msgstr ""
 
-#: manacore-core/includes/class-settings.php:388
+#: manacore-core/includes/class-settings.php:400
 msgid "مطمئنید؟ فهرست راهبری با ساختار تازه‌ی قالب بازنویسی می‌شود."
 msgstr ""
 
-#: manacore-core/includes/class-settings.php:389
+#: manacore-core/includes/class-settings.php:401
 msgid "با تغییر متن‌ها یا تعداد ژانرها در تب مگامنو، فهرست در نخستین بازدید خودکار به‌روز می‌شود؛ این دکمه برای بازسازی فوری است."
-msgstr ""
-
-#: manacore-core/includes/class-settings.php:40 manacore-core/includes/class-settings.php:75 manacore-core/includes/class-settings.php:76 manacore-subscriptions/includes/class-settings.php:103
-msgid "تنظیمات عمومی"
 msgstr ""
 
 #: manacore-core/includes/class-settings.php:42
@@ -4979,244 +4979,268 @@ msgstr ""
 msgid "وضعیت و ابزارها"
 msgstr ""
 
-#: manacore-core/includes/class-settings.php:430
+#: manacore-core/includes/class-settings.php:442
 msgid "ManaCore — هسته‌ی سایت فیلم و سریال"
 msgstr ""
 
-#: manacore-core/includes/class-settings.php:431
+#: manacore-core/includes/class-settings.php:443
 msgid "طراحی و توسعه توسط گروه ManaCore"
 msgstr ""
 
-#: manacore-core/includes/class-settings.php:502
+#: manacore-core/includes/class-settings.php:530
 msgid "نشانی‌های یکتا (Slug)"
 msgstr ""
 
-#: manacore-core/includes/class-settings.php:504
+#: manacore-core/includes/class-settings.php:532
 msgid "پس از تغییر، به تنظیمات » پیوندهای یکتا بروید و یک‌بار ذخیره کنید."
 msgstr ""
 
-#: manacore-core/includes/class-settings.php:530
+#: manacore-core/includes/class-settings.php:558
 msgid "امکانات"
 msgstr ""
 
-#: manacore-core/includes/class-settings.php:534
+#: manacore-core/includes/class-settings.php:562
 msgid "فعال بودن امتیازدهی کاربران"
 msgstr ""
 
-#: manacore-core/includes/class-settings.php:535
+#: manacore-core/includes/class-settings.php:563
 msgid "فعال بودن لیست تماشا"
 msgstr ""
 
-#: manacore-core/includes/class-settings.php:536
+#: manacore-core/includes/class-settings.php:564
 msgid "شمارش بازدید"
 msgstr ""
 
-#: manacore-core/includes/class-settings.php:537
+#: manacore-core/includes/class-settings.php:565
 msgid "نمایش لینک‌ها فقط برای کاربران وارد شده"
 msgstr ""
 
-#: manacore-core/includes/class-settings.php:547 manacore-sources/includes/class-settings.php:500 manacore-subscriptions/includes/class-settings.php:202
+#: manacore-core/includes/class-settings.php:575 manacore-sources/includes/class-settings.php:500 manacore-subscriptions/includes/class-settings.php:202
 msgid "فعال"
 msgstr ""
 
-#: manacore-core/includes/class-settings.php:553
+#: manacore-core/includes/class-settings.php:581
 msgid "تعداد آیتم در هر صفحه"
 msgstr ""
 
-#: manacore-core/includes/class-settings.php:560
+#: manacore-core/includes/class-settings.php:588
 msgid "حالت رنگی پیش‌فرض"
 msgstr ""
 
-#: manacore-core/includes/class-settings.php:565
+#: manacore-core/includes/class-settings.php:593
 msgid "تیره"
 msgstr ""
 
-#: manacore-core/includes/class-settings.php:566
+#: manacore-core/includes/class-settings.php:594
 msgid "روشن"
 msgstr ""
 
-#: manacore-core/includes/class-settings.php:567
+#: manacore-core/includes/class-settings.php:595
 msgid "خودکار (بر اساس سیستم)"
 msgstr ""
 
-#: manacore-core/includes/class-settings.php:580
+#: manacore-core/includes/class-settings.php:608
 msgid "کیفیت‌های سفارشی"
 msgstr ""
 
-#: manacore-core/includes/class-settings.php:583
+#: manacore-core/includes/class-settings.php:611
 msgid "کیفیت‌های اضافه"
 msgstr ""
 
-#: manacore-core/includes/class-settings.php:588
+#: manacore-core/includes/class-settings.php:616
 msgid "هر خط یک کیفیت. نمونه: remux|BluRay REMUX"
 msgstr ""
 
-#: manacore-core/includes/class-settings.php:609 manacore-core/includes/class-settings.php:612
+#: manacore-core/includes/class-settings.php:637 manacore-core/includes/class-settings.php:640 manacore-core/includes/class-settings.php:840
 msgid "برگه‌ی پخش"
-msgstr ""
-
-#: manacore-core/includes/class-settings.php:620
-msgid "— خودکار (بر پایه‌ی نامک watch) —"
-msgstr ""
-
-#: manacore-core/includes/class-settings.php:626
-msgid "همه‌ی دکمه‌های «پخش» به این برگه می‌روند و شناسه‌ی اثر با پارامتر «manacore_id» می‌آید. خالی بگذارید تا برگه‌ی دارای نامک watch خودکار پیدا شود."
-msgstr ""
-
-#: manacore-core/includes/class-settings.php:637
-msgid "متن‌های پیش‌فرض"
 msgstr ""
 
 #: manacore-core/includes/class-settings.php:64 manacore-core/includes/class-settings.php:65
 msgid "ManaCore"
 msgstr ""
 
-#: manacore-core/includes/class-settings.php:640
-msgid "یادداشت باکس دانلود"
-msgstr ""
-
-#: manacore-core/includes/class-settings.php:643
-msgid "اگر اثری یادداشت اختصاصی نداشته باشد، همین متن زیر سرتیتر باکس دانلود می‌آید. خالی = متن پیش‌فرض افزونه."
-msgstr ""
-
-#: manacore-core/includes/class-settings.php:647
-msgid "یادداشت صفحه‌ی پخش"
-msgstr ""
-
-#: manacore-core/includes/class-settings.php:650
-msgid "زیر پلیر نمایش داده می‌شود. برای درج نام اثر از {title} استفاده کنید."
+#: manacore-core/includes/class-settings.php:648
+msgid "— خودکار (بر پایه‌ی نامک watch) —"
 msgstr ""
 
 #: manacore-core/includes/class-settings.php:654
+msgid "همه‌ی دکمه‌های «پخش» به این برگه می‌روند و شناسه‌ی اثر با پارامتر «manacore_id» می‌آید. خالی بگذارید تا برگه‌ی دارای نامک watch خودکار پیدا شود."
+msgstr ""
+
+#: manacore-core/includes/class-settings.php:665
+msgid "متن‌های پیش‌فرض"
+msgstr ""
+
+#: manacore-core/includes/class-settings.php:668
+msgid "یادداشت باکس دانلود"
+msgstr ""
+
+#: manacore-core/includes/class-settings.php:671
+msgid "اگر اثری یادداشت اختصاصی نداشته باشد، همین متن زیر سرتیتر باکس دانلود می‌آید. خالی = متن پیش‌فرض افزونه."
+msgstr ""
+
+#: manacore-core/includes/class-settings.php:675
+msgid "یادداشت صفحه‌ی پخش"
+msgstr ""
+
+#: manacore-core/includes/class-settings.php:678
+msgid "زیر پلیر نمایش داده می‌شود. برای درج نام اثر از {title} استفاده کنید."
+msgstr ""
+
+#: manacore-core/includes/class-settings.php:679
+msgid "نمونه: پلیر {title} با ویدئوی نمونه کار می‌کند."
+msgstr ""
+
+#: manacore-core/includes/class-settings.php:683
 msgid "پیوند خرید اشتراک"
 msgstr ""
 
-#: manacore-core/includes/class-settings.php:661
+#: manacore-core/includes/class-settings.php:690
 msgid "برچسب دکمه‌ی اشتراک"
 msgstr ""
 
-#: manacore-core/includes/class-settings.php:665 manacore-core/includes/class-templates.php:752 manacore-subscriptions/includes/class-account.php:217 manacore-subscriptions/includes/class-account.php:424
+#: manacore-core/includes/class-settings.php:694 manacore-core/includes/class-templates.php:752 manacore-subscriptions/includes/class-account.php:217 manacore-subscriptions/includes/class-account.php:424
 #: manacore-subscriptions/includes/class-account.php:498
 msgid "تهیه اشتراک"
 msgstr ""
 
-#: manacore-core/includes/class-settings.php:684 manacore-core/includes/class-settings.php:811
+#: manacore-core/includes/class-settings.php:713 manacore-core/includes/class-settings.php:856 manacore-core/includes/class-settings.php:892
 msgid "پنل مگامنو"
 msgstr ""
 
-#: manacore-core/includes/class-settings.php:687
+#: manacore-core/includes/class-settings.php:716
 msgid "نمایش پنل"
 msgstr ""
 
-#: manacore-core/includes/class-settings.php:691
+#: manacore-core/includes/class-settings.php:720
 msgid "پنل مگامنو فعال باشد"
 msgstr ""
 
-#: manacore-core/includes/class-settings.php:696
+#: manacore-core/includes/class-settings.php:725
 msgid "تاکسونومی ژانرها"
 msgstr ""
 
-#: manacore-core/includes/class-settings.php:714
+#: manacore-core/includes/class-settings.php:743
 msgid "تعداد ژانرها"
 msgstr ""
 
-#: manacore-core/includes/class-settings.php:718
+#: manacore-core/includes/class-settings.php:747
 msgid "ترم‌ها به ترتیب بیشترین محتوا انتخاب می‌شوند."
 msgstr ""
 
-#: manacore-core/includes/class-settings.php:722
+#: manacore-core/includes/class-settings.php:751
 msgid "نشانی «مرکز دسته‌بندی‌ها»"
 msgstr ""
 
-#: manacore-core/includes/class-settings.php:727
+#: manacore-core/includes/class-settings.php:756
 msgid "خالی = برگه‌ی categories-hub یا browse یا آرشیو فیلم، هرکدام موجود بود."
 msgstr ""
 
-#: manacore-core/includes/class-settings.php:731
+#: manacore-core/includes/class-settings.php:760
 msgid "کارت ویژه (شناسه‌ی اثر)"
 msgstr ""
 
-#: manacore-core/includes/class-settings.php:735
+#: manacore-core/includes/class-settings.php:764
 msgid "شناسه‌ی فیلم/سریال برای ستون سوم پنل. صفر = خودکار (تازه‌ترین اثر دارای پوستر)."
 msgstr ""
 
-#: manacore-core/includes/class-settings.php:740
+#: manacore-core/includes/class-settings.php:769
 msgid "متن‌های پنل"
 msgstr ""
 
-#: manacore-core/includes/class-settings.php:744
+#: manacore-core/includes/class-settings.php:773
 msgid "سرستون پنل"
 msgstr ""
 
-#: manacore-core/includes/class-settings.php:745
+#: manacore-core/includes/class-settings.php:774
 msgid "تیتر پنل"
 msgstr ""
 
-#: manacore-core/includes/class-settings.php:746
+#: manacore-core/includes/class-settings.php:775
 msgid "سرستون ستون دسترسی سریع"
 msgstr ""
 
-#: manacore-core/includes/class-settings.php:747
+#: manacore-core/includes/class-settings.php:776
 msgid "ردیف «بالاترین امتیازها»"
 msgstr ""
 
-#: manacore-core/includes/class-settings.php:748
+#: manacore-core/includes/class-settings.php:777
 msgid "ردیف «تازه‌ها»"
 msgstr ""
 
-#: manacore-core/includes/class-settings.php:749
+#: manacore-core/includes/class-settings.php:778
 msgid "ردیف «کره‌ای»"
 msgstr ""
 
-#: manacore-core/includes/class-settings.php:750
+#: manacore-core/includes/class-settings.php:779
 msgid "ردیف «بازیگران»"
 msgstr ""
 
-#: manacore-core/includes/class-settings.php:751
+#: manacore-core/includes/class-settings.php:780
 msgid "سطر ریز کارت ویژه"
 msgstr ""
 
-#: manacore-core/includes/class-settings.php:752
+#: manacore-core/includes/class-settings.php:781
 msgid "برچسب کنش کارت ویژه"
 msgstr ""
 
-#: manacore-core/includes/class-settings.php:767
+#: manacore-core/includes/class-settings.php:796
 msgid "ردیف‌های اختیاری"
 msgstr ""
 
-#: manacore-core/includes/class-settings.php:771
+#: manacore-core/includes/class-settings.php:800
 msgid "ردیف «فیلم و سریال کره‌ای» (نیازمند ترم کشور کره)"
 msgstr ""
 
-#: manacore-core/includes/class-settings.php:776
+#: manacore-core/includes/class-settings.php:805
 msgid "ردیف «بازیگران و کارگردان‌ها»"
 msgstr ""
 
-#: manacore-core/includes/class-settings.php:800
+#: manacore-core/includes/class-settings.php:837
+msgid "تنظیم تند"
+msgstr ""
+
+#: manacore-core/includes/class-settings.php:848
+msgid "— خودکار —"
+msgstr ""
+
+#: manacore-core/includes/class-settings.php:860
+msgid "فعال باشد"
+msgstr ""
+
+#: manacore-core/includes/class-settings.php:864
+msgid "تعداد ژانرها:"
+msgstr ""
+
+#: manacore-core/includes/class-settings.php:872
+msgid "ذخیره‌ی تنظیم تند"
+msgstr ""
+
+#: manacore-core/includes/class-settings.php:881
 msgid "کش‌ها و پیوندهای یکتا"
 msgstr ""
 
-#: manacore-core/includes/class-settings.php:801
+#: manacore-core/includes/class-settings.php:882
 msgid "کش داده‌های مگامنو یک‌ساعته است؛ تغییر ترم‌ها یا تنظیمات خودش پاکش می‌کند. این دکمه برای پاک‌سازی دستی است."
 msgstr ""
 
-#: manacore-core/includes/class-settings.php:803
+#: manacore-core/includes/class-settings.php:884
 msgid "پاک‌کردن کش"
 msgstr ""
 
-#: manacore-core/includes/class-settings.php:804
+#: manacore-core/includes/class-settings.php:885
 msgid "بازسازی پیوندهای یکتا"
 msgstr ""
 
-#: manacore-core/includes/class-settings.php:808
+#: manacore-core/includes/class-settings.php:889
 msgid "شورت‌کدها"
 msgstr ""
 
-#: manacore-core/includes/class-settings.php:809
+#: manacore-core/includes/class-settings.php:890
 msgid "برای قالب‌هایی که الگوهای کوهه را ندارند."
 msgstr ""
 
-#: manacore-core/includes/class-settings.php:812
+#: manacore-core/includes/class-settings.php:893
 msgid "پخش‌کننده (با manacore_id)"
 msgstr ""
 

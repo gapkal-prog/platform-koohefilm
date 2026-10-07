@@ -29,8 +29,12 @@ function mc_ok( $ok, $label, $extra = '' ) {
 		$GLOBALS['mc_fail']++;
 	}
 
-	/* داده‌ی کمکی هم روی موفق و هم روی ناموفق چاپ می‌شود (سهل‌ترشدن اشکال‌زدایی). */
-	echo ( $ok ? '  ✓ ' : '  ✗ ' ) . $label . ( '' !== $extra ? "  — {$extra}" : '' ) . "\n";
+	/* داده‌ی کمکی روی موفقیت کوتاه و روی شکست کامل (حداکثر ۶۰۰ نویسه) چاپ می‌شود. */
+	$extra = preg_replace( '/\s+/', ' ', (string) $extra );
+
+	echo ( $ok ? '  ✓ ' : '  ✗ ' ) . $label
+		. ( '' !== $extra ? '  — ' . substr( $extra, 0, $ok ? 40 : 600 ) : '' )
+		. "\n";
 }
 
 /* ---------------------------------------------------------------
@@ -147,7 +151,14 @@ class WP_Query {
 	public function __construct( $args = array() ) {}
 }
 
-function get_post_meta( $id, $key = '', $single = false ) { return $single ? '' : array(); }
+function get_post_meta( $id, $key = '', $single = false ) {
+	/* اثر ۸ پوستر دستی دارد؛ بقیه نه — همان چیزی که زنجیره‌ی backdrop را می‌سنجد. */
+	if ( 8 === (int) $id && 'manacore_poster_url' === $key && $single ) {
+		return 'http://example.test/poster-8.jpg';
+	}
+
+	return $single ? '' : array();
+}
 /*
  * توابع کمکی خودِ افزونه (`manacore_post_types()`، `manacore_backdrop_url()`
  * و…) از functions.php می‌آیند؛ اینجا فقط معادل‌های وردپرسی که آن‌ها
@@ -437,6 +448,47 @@ $GLOBALS['mc_transients']['manacore_mega_featured']       = 5;
 
 mc_ok( ! isset( $GLOBALS['mc_transients']['manacore_mega_terms_genre_12'] ), 'پاک‌سازی کش، ترنزینت ترم‌ها را حذف می‌کند' );
 mc_ok( ! isset( $GLOBALS['mc_transients']['manacore_mega_featured'] ), 'پاک‌سازی کش، ترنزینت کارت ویژه را هم حذف می‌کند' );
+
+/* ---------------------------------------------------------------
+ * ۹) رندر شورت‌کد/پنل مگامنو (قرارداد مارک‌آپ)
+ * ------------------------------------------------------------ */
+
+echo "\n=== ۹) رندر پنل مگامنو ===\n";
+
+update_option(
+	'manacore_settings',
+	array(
+		'mega_enabled'     => 1,
+		'mega_featured_id' => 8,
+		'mega_eyebrow'     => 'سرستون مدیر',
+		'mega_title'       => 'تیتر مدیر',
+		'mega_quick_label' => 'دسترسی سریع مدیر',
+		'mega_terms'       => 12,
+		'mega_taxonomy'    => 'genre',
+	)
+);
+
+$GLOBALS['mc_transients']     = array();
+$GLOBALS['mc_terms']['genre'] = array( $genre_a, $genre_b );
+$GLOBALS['mc_country_hits']   = array();
+
+$html = \ManaCore\Core\Mega_Menu::render();
+
+mc_ok( '' !== $html, 'پنل مگامنو رندر می‌شود' );
+mc_ok( false !== strpos( $html, 'manacore-mega' ), 'ریشه‌ی پنل کلاس manacore-mega دارد' );
+mc_ok( false !== strpos( $html, 'data-mega-menu' ), 'قلاب data-mega-menu برای JS هست' );
+mc_ok( false !== strpos( $html, 'koohe-eyebrow' ), 'سرستون با کلاس کوهه رندر می‌شود' );
+mc_ok( false !== strpos( $html, 'سرستون مدیر' ), 'متن سرستون از تنظیمات می‌آید' );
+mc_ok( false !== strpos( $html, 'تیتر مدیر' ), 'تیتر از تنظیمات می‌آید' );
+mc_ok( false !== strpos( $html, 'دسترسی سریع مدیر' ), 'سرستون ستون میانی از تنظیمات می‌آید' );
+mc_ok( 2 === substr_count( $html, 'genre/drama/' ) + substr_count( $html, 'genre/action/' ), 'هر دو ژانر پیوند می‌خورند' );
+mc_ok( false !== strpos( $html, 'manacore-mega__feature' ), 'کارت ویژه رندر می‌شود' );
+mc_ok( false !== strpos( $html, 'poster-8.jpg' ), 'تصویر کارت ویژه از زنجیره‌ی backdrop می‌آید', $html );
+mc_ok( false !== strpos( $html, 'اثر 8' ), 'نام اثر روی کارت ویژه می‌آید' );
+mc_ok( false !== strpos( $html, '--mc-mega-columns:3' ), 'تعداد ستون به CSS پاس می‌شود' );
+
+update_option( 'manacore_settings', array( 'mega_enabled' => 0 ) );
+mc_ok( '' === \ManaCore\Core\Mega_Menu::render(), 'در حالت خاموش، پنل هیچ خروجی ندارد' );
 
 /* ---------------------------------------------------------------
  * پایان
