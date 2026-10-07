@@ -890,6 +890,69 @@ body:not(.rtl) .manacore-switch input:checked + .manacore-switch-track .manacore
 	margin: 18px 0;
 }
 
+/* ---------- ابزارهای گروهی لینک ---------- */
+.manacore-link-tools hr {
+	margin: 18px 0;
+}
+
+.manacore-link-form {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: flex-end;
+	gap: 12px;
+	margin: 0;
+}
+
+.manacore-link-form > p.description {
+	flex: 1 1 100%;
+	margin: 0;
+}
+
+.manacore-link-form label {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+	font-size: 0.8125rem;
+	color: var(--mc-muted);
+}
+
+.manacore-link-form label span {
+	font-weight: 600;
+	color: #1d2327;
+}
+
+.manacore-link-form input[type="text"],
+.manacore-link-form input[type="number"],
+.manacore-link-form select {
+	min-width: 210px;
+	margin: 0;
+}
+
+.manacore-link-form__check {
+	flex-direction: row;
+	align-items: center;
+	gap: 6px;
+}
+
+.manacore-link-report {
+	margin: 14px 0 0;
+}
+
+.manacore-link-report th {
+	font-size: 0.8125rem;
+}
+
+.manacore-link-report td {
+	font-size: 0.8125rem;
+	word-break: break-word;
+}
+
+.manacore-link-report code,
+.manacore-link-report td[dir="ltr"] {
+	direction: ltr;
+	text-align: left;
+}
+
 /* ---------- موبایل ---------- */
 @media screen and (max-width: 782px) {
 	.manacore-panel {
@@ -914,5 +977,21 @@ body:not(.rtl) .manacore-switch input:checked + .manacore-switch-track .manacore
 	.manacore-reports .column-actions {
 		width: auto;
 		white-space: normal;
+	}
+
+	.manacore-link-form {
+		flex-direction: column;
+		align-items: stretch;
+	}
+
+	.manacore-link-form input[type="text"],
+	.manacore-link-form input[type="number"],
+	.manacore-link-form select {
+		min-width: 0;
+		width: 100%;
+	}
+
+	.manacore-link-form .button {
+		align-self: flex-start;
 	}
 }

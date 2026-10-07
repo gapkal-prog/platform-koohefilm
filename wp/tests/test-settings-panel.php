@@ -281,6 +281,7 @@ function get_post_status( $id ) { return $GLOBALS['mc_posts'][ (int) $id ]->post
 function get_post_field( $field, $id ) { return $GLOBALS['mc_posts'][ (int) $id ]->$field ?? ''; }
 function get_permalink( $id ) { return 'http://example.test/watch/?manacore_id=' . (int) $id; }
 function get_edit_post_link( $id, $ctx = '' ) { return 'http://example.test/wp-admin/post.php?post=' . (int) $id . '&action=edit'; }
+function get_current_user_id() { return 1; }
 function get_the_title( $id ) { return $GLOBALS['mc_posts'][ (int) $id ]->post_title ?? ''; }
 function get_taxonomies( $args = array(), $out = 'names' ) {
 	$taxes = array();
@@ -390,6 +391,7 @@ require_once MANACORE_PATH . 'includes/class-demo.php';
 require_once MANACORE_PATH . 'includes/class-portability.php';
 require_once MANACORE_PATH . 'includes/class-analytics.php';
 require_once MANACORE_PATH . 'includes/class-mega-menu.php';
+require_once MANACORE_PATH . 'includes/class-link-tools.php';
 require_once MANACORE_PATH . 'includes/class-settings.php';
 
 use ManaCore\Core\Settings;
@@ -570,6 +572,92 @@ echo "\n=== ۴) نگه‌بان حذف ماژول بنر ===\n";
 mc_ok( ! file_exists( MANACORE_PATH . 'includes/class-ads.php' ), 'فایل کلاس تبلیغات نیست' );
 mc_ok( ! file_exists( MANACORE_PATH . 'assets/js/admin-ads.js' ), 'اسکریپت پیشخوان تبلیغات نیست' );
 mc_ok( false === strpos( $src, 'manacore_ad' ) && false === strpos( $src, 'ads_positions' ), 'کلید یا شورت‌کد تبلیغاتی در پنل نمانده است' );
+
+/* ---------------------------------------------------------------
+ * ۵) ابزارهای گروهی لینک در تب «وضعیت و ابزارها»
+ * ------------------------------------------------------------ */
+
+echo "\n=== ۵) ابزارهای نگه‌داشت لینک ===\n";
+
+$_GET['tab'] = 'tools';
+
+mc_ok( false !== strpos( $panels['tools'], 'نگه‌داشت لینک‌ها' ), 'بخش «نگه‌داشت لینک‌ها» در تب ابزارها هست' );
+mc_ok( 3 === substr_count( $panels['tools'], 'value="manacore_link_tool"' ), 'سه فرم ابزار لینک رندر می‌شود', (string) substr_count( $panels['tools'], 'value="manacore_link_tool"' ) );
+
+foreach ( array( 'domain', 'copy', 'audit' ) as $tool ) {
+	mc_ok(
+		false !== strpos( $panels['tools'], 'manacore_link_tool_' . $tool ),
+		"نانِس ابزار «{$tool}» در فرم هست"
+	);
+}
+
+mc_ok( false !== strpos( $panels['tools'], 'value="append"' ) && false !== strpos( $panels['tools'], 'value="replace"' ), 'حالت‌های کپی گروه لینک در فرم هستند' );
+mc_ok( false !== strpos( $panels['tools'], 'name="apply"' ), 'گزینه‌ی «اعمال کن» برای جایگزینی پیشوند هست' );
+
+/* نتیجه‌ی پیش‌نمایش جایگزینی: باید کارت آمار و پیام «هیچ چیزی نوشته نشد» بیاید. */
+$GLOBALS['mc_transients']['manacore_link_tool_result_1'] = array(
+	'tool'      => 'domain',
+	'ok'        => true,
+	'reason'    => '',
+	'dry_run'   => true,
+	'scanned'   => 12,
+	'posts'     => 3,
+	'links'     => 5,
+	'truncated' => false,
+	'samples'   => array(
+		array( 'post_id' => 11, 'title' => 'فیلم تستی', 'label' => 'دانلود', 'from' => 'https://old.example/a.mkv', 'to' => 'https://new.example/a.mkv' ),
+	),
+);
+
+ob_start();
+Settings::instance()->render();
+$result_html = (string) ob_get_clean();
+
+mc_ok( false !== strpos( $result_html, 'لینک تغییرکرده' ), 'کارت نتیجه‌ی ابزار لینک رندر می‌شود' );
+mc_ok( false !== strpos( $result_html, 'هیچ چیزی نوشته نشد' ), 'پیام «پیش‌نمایش بود» دیده می‌شود' );
+mc_ok( false !== strpos( $result_html, 'manacore-link-report' ), 'جدول ردیف‌های تغییر در گزارش می‌آید' );
+mc_ok( false !== strpos( $result_html, 'فیلم تستی' ), 'عنوان نوشته در گزارش می‌آید' );
+
+/* نتیجه پس از نمایش پاک می‌شود (رندر دوباره نباید همان را نشان دهد). */
+ob_start();
+Settings::instance()->render();
+$second_html = (string) ob_get_clean();
+
+mc_ok( false === strpos( $second_html, 'manacore-link-report' ), 'نتیجه پس از نمایش یک‌بار پاک می‌شود' );
+
+/* نتیجه‌ی بازرسی: برچسب فارسی ایرادها و پیام دلیل خطا. */
+$GLOBALS['mc_transients']['manacore_link_tool_result_1'] = array(
+	'tool'      => 'audit',
+	'ok'        => true,
+	'reason'    => '',
+	'scanned'   => 4,
+	'truncated' => false,
+	'totals'    => array( 'bad-url' => 1, 'no-quality' => 2, 'no-size' => 0, 'dup-quality' => 0, 'unknown-file' => 0 ),
+	'rows'      => array(
+		array( 'post_id' => 11, 'title' => 'فیلم تستی', 'issue' => 'no-quality', 'label' => 'دانلود', 'quality' => '', 'url' => 'https://new.example/a.mkv' ),
+	),
+);
+
+ob_start();
+Settings::instance()->render();
+$audit_html = (string) ob_get_clean();
+
+mc_ok( false !== strpos( $audit_html, 'بی‌کیفیت' ), 'برچسب فارسی ایراد در گزارش بازرسی می‌آید' );
+mc_ok( false !== strpos( $audit_html, 'نشانی نامعتبر' ), 'همه‌ی دسته‌های ایراد در کارت آمار می‌آیند' );
+
+/* دلیل خطا: باید نشان هشدار با متن فارسی بیاید، نه پیام خام. */
+$GLOBALS['mc_transients']['manacore_link_tool_result_1'] = array(
+	'tool'   => 'domain',
+	'ok'     => false,
+	'reason' => 'bad-from',
+);
+
+ob_start();
+Settings::instance()->render();
+$error_html = (string) ob_get_clean();
+
+mc_ok( false !== strpos( $error_html, 'معتبر نیست' ), 'دلیل خطای ابزار لینک به فارسی نمایش داده می‌شود' );
+mc_ok( false !== strpos( $error_html, 'is-warn' ), 'خطا با نشان هشدار نمایش داده می‌شود' );
 
 /* ---------------------------------------------------------------
  * جمع‌بندی

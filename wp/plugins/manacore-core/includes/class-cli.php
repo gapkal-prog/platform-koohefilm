@@ -19,6 +19,9 @@
  *   wp manacore demo remove
  *   wp manacore rebuild
  *   wp manacore cleanup --yes
+ *   wp manacore links-domain --from=https://old.example/files --to=https://new.example/files
+ *   wp manacore links-copy --source=120 --targets=121,122 --mode=append
+ *   wp manacore links-audit
  *
  * @package ManaCore\Core
  */
@@ -317,6 +320,161 @@ class Cli {
 		}
 
 		\WP_CLI::success( 'پاک‌سازی انجام شد.' );
+	}
+
+	/**
+	 * جایگزینی پیشوند نشانی در همه‌ی لینک‌های دانلود.
+	 *
+	 * ## OPTIONS
+	 *
+	 * --from=<url>
+	 * : پیشوند کنونی (مثلاً `https://old.example/files`).
+	 *
+	 * --to=<url>
+	 * : پیشوند تازه.
+	 *
+	 * [--apply]
+	 * : بدون این پرچم فقط پیش‌نمایش است و چیزی نوشته نمی‌شود.
+	 *
+	 * [--limit=<number>]
+	 * : سقف نوشته‌های بازرسی‌شده.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp manacore links-domain --from=https://old.example/files --to=https://new.example/files
+	 *     wp manacore links-domain --from=https://old.example --to=https://new.example --apply
+	 *
+	 * @param array $args       آرگومان‌های موضعی.
+	 * @param array $assoc_args آرگومان‌های کلیددار.
+	 * @return void
+	 */
+	public function links_domain( $args, $assoc_args ) {
+		$from = (string) self::flag( $assoc_args, 'from', '' );
+		$to   = (string) self::flag( $assoc_args, 'to', '' );
+		$dry  = ! (bool) self::flag( $assoc_args, 'apply', false );
+
+		$result = Link_Tools::replace_domain( $from, $to, $dry, (int) self::flag( $assoc_args, 'limit', 0 ) );
+
+		if ( ! $result['ok'] ) {
+			\WP_CLI::error( Link_Tools::reason_label( (string) $result['reason'] ) );
+		}
+
+		\WP_CLI::line( sprintf( 'نوشته‌ی بازرسی‌شده: %d', $result['scanned'] ) );
+		\WP_CLI::line( sprintf( 'نوشته‌ی تغییرکرده: %d', $result['posts'] ) );
+		\WP_CLI::line( sprintf( 'لینک تغییرکرده: %d', $result['links'] ) );
+
+		foreach ( $result['samples'] as $sample ) {
+			\WP_CLI::line( sprintf( '  #%d  %s  →  %s', $sample['post_id'], $sample['from'], $sample['to'] ) );
+		}
+
+		if ( $dry ) {
+			\WP_CLI::warning( 'پیش‌نمایش بود؛ چیزی نوشته نشد. برای اعمال، `--apply` بدهید.' );
+			return;
+		}
+
+		if ( ! empty( $result['truncated'] ) ) {
+			\WP_CLI::warning( 'سقف نوشته‌ها پر شد؛ با `--limit` بالاتر ادامه دهید.' );
+		}
+
+		\WP_CLI::success( 'تغییرها ذخیره شد.' );
+	}
+
+	/**
+	 * کپی گروه لینک یک اثر روی چند نوشته.
+	 *
+	 * ## OPTIONS
+	 *
+	 * --source=<id>
+	 * : شناسه‌ی نوشته‌ی مبدأ.
+	 *
+	 * --targets=<ids>
+	 * : شناسه‌های مقصد، جداشده با ویرگول.
+	 *
+	 * [--mode=<mode>]
+	 * : `missing` (پیش‌فرض: فقط مقصدهای بی‌لینک)، `append` یا `replace`.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp manacore links-copy --source=120 --targets=121,122
+	 *     wp manacore links-copy --source=120 --targets=121 --mode=append
+	 *
+	 * @param array $args       آرگومان‌های موضعی.
+	 * @param array $assoc_args آرگومان‌های کلیددار.
+	 * @return void
+	 */
+	public function links_copy( $args, $assoc_args ) {
+		$source  = (int) self::flag( $assoc_args, 'source', 0 );
+		$targets = (string) self::flag( $assoc_args, 'targets', '' );
+		$mode    = (string) self::flag( $assoc_args, 'mode', 'missing' );
+
+		$result = Link_Tools::copy_links( $source, $targets, $mode );
+
+		if ( ! $result['ok'] ) {
+			\WP_CLI::error( Link_Tools::reason_label( (string) $result['reason'] ) );
+		}
+
+		\WP_CLI::line( sprintf( 'کپی‌شده: %d   ردشده: %d   نامعتبر: %d', $result['copied'], $result['skipped'], $result['missing'] ) );
+
+		foreach ( $result['details'] as $row ) {
+			\WP_CLI::line( sprintf( '  #%d  %s  (%s)', $row['post_id'], $row['title'], $row['action'] ) );
+		}
+
+		\WP_CLI::success( 'کپی گروه لینک انجام شد.' );
+	}
+
+	/**
+	 * بازرسی ساختاری لینک‌ها (بدون درخواست شبکه).
+	 *
+	 * ## OPTIONS
+	 *
+	 * [--limit=<number>]
+	 * : سقف نوشته‌های بازرسی‌شده.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp manacore links-audit
+	 *
+	 * @param array $args       آرگومان‌های موضعی.
+	 * @param array $assoc_args آرگومان‌های کلیددار.
+	 * @return void
+	 */
+	public function links_audit( $args, $assoc_args ) {
+		$report = Link_Tools::audit( (int) self::flag( $assoc_args, 'limit', 0 ) );
+
+		$labels = array(
+			'bad-url'      => 'نشانی نامعتبر',
+			'no-quality'   => 'بی‌کیفیت',
+			'no-size'      => 'بی‌حجم',
+			'dup-quality'  => 'کیفیت تکراری',
+			'unknown-file' => 'بدون پسوند شناخته‌شده',
+		);
+
+		\WP_CLI::line( sprintf( 'نوشته‌ی بازرسی‌شده: %d', $report['scanned'] ) );
+
+		foreach ( $report['totals'] as $key => $count ) {
+			\WP_CLI::line( sprintf( '  %s: %d', $labels[ $key ] ?? $key, $count ) );
+		}
+
+		if ( $report['rows'] ) {
+			$rows = array();
+
+			foreach ( $report['rows'] as $row ) {
+				$rows[] = array(
+					'post'  => $row['post_id'],
+					'title' => $row['title'],
+					'issue' => $labels[ $row['issue'] ] ?? $row['issue'],
+					'url'   => $row['url'],
+				);
+			}
+
+			\WP_CLI\Utils::format_items( 'table', $rows, array( 'post', 'title', 'issue', 'url' ) );
+		}
+
+		if ( ! empty( $report['truncated'] ) ) {
+			\WP_CLI::warning( 'سقف نوشته‌ها پر شد؛ با `--limit` بالاتر ادامه دهید.' );
+		}
+
+		\WP_CLI::success( 'بازرسی لینک‌ها تمام شد.' );
 	}
 
 	/**

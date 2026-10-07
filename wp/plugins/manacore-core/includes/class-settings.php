@@ -329,6 +329,7 @@ class Settings {
 			'import-dry'    => array( 'info', __( 'بررسی فایل انجام شد؛ حالت آزمایشی روشن بود و چیزی ذخیره نشد.', 'manacore' ) ),
 			'import-error'  => array( 'error', __( 'بازگردانی تنظیمات انجام نشد.', 'manacore' ) ),
 			'failed'        => array( 'error', __( 'ابزار اجرا نشد؛ شرایط پیش‌نیاز را ببینید.', 'manacore' ) ),
+			'link-tool-ok'  => array( 'success', __( 'ابزار لینک اجرا شد؛ نتیجه پایین همین صفحه آمده است.', 'manacore' ) ),
 		);
 
 		if ( ! isset( $map[ $notice ] ) ) {
@@ -1766,6 +1767,7 @@ class Settings {
 		$this->panel_close();
 
 		$this->render_demo_panel();
+		$this->render_link_tools_panel();
 		$this->render_backup_panel();
 	}
 
@@ -1880,5 +1882,248 @@ class Settings {
 		</form>
 		<?php
 		$this->panel_close();
+	}
+
+	/**
+	 * بخش «نگه‌داشت لینک‌ها»: سه ابزار گروهی با پیش‌نمایش.
+	 *
+	 * هر ابزار فرم مستقل خودش را دارد (تب ابزارها فرم تنظیمات ندارد، پس
+	 * فرم تودرتو ساخته نمی‌شود) و نتیجه‌ی آخرین اجرا از ترنزینت کاربر
+	 * خوانده و همان‌جا نمایش داده می‌شود.
+	 *
+	 * @return void
+	 */
+	protected function render_link_tools_panel() {
+		if ( ! class_exists( __NAMESPACE__ . '\\Link_Tools' ) ) {
+			return;
+		}
+
+		$this->panel_open(
+			__( 'نگه‌داشت لینک‌ها', 'manacore' ),
+			__( 'کارهای گروهی روی لینک‌های دانلود: جایگزینی پیشوند نشانی، کپی گروه لینک و بازرسی ساختاری. هر ابزار پیش از نوشتن، پیش‌نمایش می‌دهد.', 'manacore' )
+		);
+
+		$action = esc_url( admin_url( 'admin-post.php' ) );
+		?>
+		<div class="manacore-link-tools">
+			<form method="post" action="<?php echo $action; // phpcs:ignore WordPress.Security.EscapeOutput -- esc_url شده است. ?>" class="manacore-link-form">
+				<input type="hidden" name="action" value="manacore_link_tool" />
+				<input type="hidden" name="tool" value="domain" />
+				<?php wp_nonce_field( 'manacore_link_tool_domain' ); ?>
+				<label>
+					<span><?php esc_html_e( 'از (نشانی کنونی)', 'manacore' ); ?></span>
+					<input type="text" name="from" dir="ltr" placeholder="https://old.example.com/files" required />
+				</label>
+				<label>
+					<span><?php esc_html_e( 'به (نشانی تازه)', 'manacore' ); ?></span>
+					<input type="text" name="to" dir="ltr" placeholder="https://new.example.com/files" required />
+				</label>
+				<label class="manacore-link-form__check">
+					<input type="checkbox" name="apply" value="1" />
+					<span><?php esc_html_e( 'اعمال کن (بدون تیک: فقط پیش‌نمایش)', 'manacore' ); ?></span>
+				</label>
+				<?php submit_button( __( 'اجرا', 'manacore' ), 'secondary', 'submit', false ); ?>
+			</form>
+
+			<hr />
+
+			<form method="post" action="<?php echo $action; // phpcs:ignore WordPress.Security.EscapeOutput -- esc_url شده است. ?>" class="manacore-link-form">
+				<input type="hidden" name="action" value="manacore_link_tool" />
+				<input type="hidden" name="tool" value="copy" />
+				<?php wp_nonce_field( 'manacore_link_tool_copy' ); ?>
+				<label>
+					<span><?php esc_html_e( 'شناسه‌ی نوشته‌ی مبدأ', 'manacore' ); ?></span>
+					<input type="number" name="source" min="1" step="1" required />
+				</label>
+				<label>
+					<span><?php esc_html_e( 'شناسه‌های مقصد (با ویرگول)', 'manacore' ); ?></span>
+					<input type="text" name="targets" dir="ltr" placeholder="120,121,122" required />
+				</label>
+				<label>
+					<span><?php esc_html_e( 'حالت', 'manacore' ); ?></span>
+					<select name="mode">
+						<option value="missing"><?php esc_html_e( 'فقط نوشته‌های بی‌لینک', 'manacore' ); ?></option>
+						<option value="append"><?php esc_html_e( 'افزودن به گروه‌های موجود', 'manacore' ); ?></option>
+						<option value="replace"><?php esc_html_e( 'جایگزینی کامل لینک‌ها', 'manacore' ); ?></option>
+					</select>
+				</label>
+				<?php submit_button( __( 'کپی کن', 'manacore' ), 'secondary', 'submit', false ); ?>
+			</form>
+
+			<hr />
+
+			<form method="post" action="<?php echo $action; // phpcs:ignore WordPress.Security.EscapeOutput -- esc_url شده است. ?>" class="manacore-link-form">
+				<input type="hidden" name="action" value="manacore_link_tool" />
+				<input type="hidden" name="tool" value="audit" />
+				<?php wp_nonce_field( 'manacore_link_tool_audit' ); ?>
+				<p class="description"><?php esc_html_e( 'لینک‌های بی‌کیفیت، بی‌حجم، با کیفیت تکراری و نشانی‌های بدون پسوند فایل شناخته‌شده را فهرست می‌کند. هیچ چیزی نوشته نمی‌شود.', 'manacore' ); ?></p>
+				<?php submit_button( __( 'بازرسی لینک‌ها', 'manacore' ), 'secondary', 'submit', false ); ?>
+			</form>
+		</div>
+		<?php
+		$this->render_link_tool_result();
+
+		$this->panel_close();
+	}
+
+	/**
+	 * نمایش نتیجه‌ی آخرین اجرای ابزار لینک.
+	 *
+	 * @return void
+	 */
+	protected function render_link_tool_result() {
+		$result = Link_Tools::take_result();
+
+		if ( ! $result ) {
+			return;
+		}
+
+		$tool = isset( $result['tool'] ) ? (string) $result['tool'] : '';
+
+		if ( ! empty( $result['reason'] ) ) {
+			$this->status_line( false, Link_Tools::reason_label( (string) $result['reason'] ) );
+
+			return;
+		}
+
+		if ( 'domain' === $tool ) {
+			$this->stat_list(
+				array(
+					array( __( 'نوشته‌ی بازرسی‌شده', 'manacore' ), number_format_i18n( (int) $result['scanned'] ) ),
+					array( __( 'نوشته‌ی تغییرکرده', 'manacore' ), number_format_i18n( (int) $result['posts'] ) ),
+					array( __( 'لینک تغییرکرده', 'manacore' ), number_format_i18n( (int) $result['links'] ) ),
+				)
+			);
+
+			$this->status_line(
+				true,
+				! empty( $result['dry_run'] )
+					? __( 'پیش‌نمایش بود؛ هیچ چیزی نوشته نشد. برای اعمال، تیک «اعمال کن» را بزنید.', 'manacore' )
+					: __( 'تغییرها ذخیره شد.', 'manacore' )
+			);
+
+			$this->render_link_result_rows( $result, 'samples' );
+		}
+
+		if ( 'copy' === $tool ) {
+			$this->stat_list(
+				array(
+					array( __( 'کپی‌شده', 'manacore' ), number_format_i18n( (int) $result['copied'] ) ),
+					array( __( 'ردشده', 'manacore' ), number_format_i18n( (int) $result['skipped'] ) ),
+					array( __( 'شناسه‌ی نامعتبر', 'manacore' ), number_format_i18n( (int) $result['missing'] ) ),
+				)
+			);
+			$this->render_link_result_rows( $result, 'details' );
+		}
+
+		if ( 'audit' === $tool ) {
+			$labels = array(
+				'bad-url'      => __( 'نشانی نامعتبر', 'manacore' ),
+				'no-quality'   => __( 'بی‌کیفیت', 'manacore' ),
+				'no-size'      => __( 'بی‌حجم', 'manacore' ),
+				'dup-quality'  => __( 'کیفیت تکراری', 'manacore' ),
+				'unknown-file' => __( 'بدون پسوند شناخته‌شده', 'manacore' ),
+			);
+
+			$stats = array();
+
+			foreach ( (array) $result['totals'] as $key => $count ) {
+				$stats[] = array( $labels[ $key ] ?? $key, number_format_i18n( (int) $count ) );
+			}
+
+			$this->stat_list( $stats );
+			$this->render_link_result_rows( $result, 'rows', $labels );
+		}
+
+		if ( ! empty( $result['truncated'] ) ) {
+			printf(
+				'<p class="description">%s</p>',
+				esc_html(
+					sprintf(
+						/* translators: %s: تعداد نوشته‌های بازرسی‌شده */
+						__( 'فقط %s نوشته‌ی نخست بازرسی شد. برای سایت بزرگ‌تر، همان کار را با WP-CLI و پرچم `--limit` اجرا کنید.', 'manacore' ),
+						number_format_i18n( Link_Tools::max_posts() )
+					)
+				)
+			);
+		}
+	}
+
+	/**
+	 * جدول ردیف‌های نتیجه‌ی ابزار لینک.
+	 *
+	 * @param array  $result نتیجه.
+	 * @param string $key    کلید ردیف‌ها (`samples`، `details` یا `rows`).
+	 * @param array  $labels برچسب فارسی کدها (اختیاری).
+	 * @return void
+	 */
+	protected function render_link_result_rows( $result, $key, $labels = array() ) {
+		$rows = isset( $result[ $key ] ) ? (array) $result[ $key ] : array();
+
+		if ( ! $rows ) {
+			return;
+		}
+
+		?>
+		<table class="widefat striped manacore-link-report">
+			<thead>
+				<tr>
+					<th scope="col"><?php esc_html_e( 'نوشته', 'manacore' ); ?></th>
+					<th scope="col"><?php esc_html_e( 'جزئیات', 'manacore' ); ?></th>
+					<th scope="col"><?php esc_html_e( 'نشانی', 'manacore' ); ?></th>
+					<th scope="col"><?php esc_html_e( 'کنش', 'manacore' ); ?></th>
+				</tr>
+			</thead>
+			<tbody>
+				<?php foreach ( $rows as $row ) : ?>
+					<tr>
+						<td><?php echo esc_html( $row['title'] ); ?> <span class="description">#<?php echo (int) $row['post_id']; ?></span></td>
+						<td>
+							<?php
+							if ( isset( $row['issue'] ) ) {
+								echo esc_html( $labels[ $row['issue'] ] ?? $row['issue'] );
+							} elseif ( isset( $row['action'] ) ) {
+								echo esc_html( $this->link_action_label( (string) $row['action'] ) );
+							} elseif ( isset( $row['from'] ) ) {
+								echo esc_html( (string) $row['from'] . ' → ' . (string) $row['to'] );
+							}
+							?>
+						</td>
+						<td dir="ltr">
+							<?php
+							if ( isset( $row['url'] ) ) {
+								echo esc_html( (string) $row['url'] );
+							} elseif ( isset( $row['label'] ) && '' !== $row['label'] ) {
+								echo esc_html( (string) $row['label'] );
+							}
+							?>
+						</td>
+						<td>
+							<a href="<?php echo esc_url( get_edit_post_link( (int) $row['post_id'] ) ); ?>">
+								<?php esc_html_e( 'ویرایش', 'manacore' ); ?>
+							</a>
+						</td>
+					</tr>
+				<?php endforeach; ?>
+			</tbody>
+		</table>
+		<?php
+	}
+
+	/**
+	 * برچسب فارسی کنش کپی گروه لینک.
+	 *
+	 * @param string $action کد کنش.
+	 * @return string
+	 */
+	protected function link_action_label( $action ) {
+		$labels = array(
+			'replaced' => __( 'جایگزین شد', 'manacore' ),
+			'appended' => __( 'افزوده شد', 'manacore' ),
+			'skipped'  => __( 'لینک داشت؛ رد شد', 'manacore' ),
+			'missing'  => __( 'نوشته پیدا نشد', 'manacore' ),
+		);
+
+		return $labels[ $action ] ?? $action;
 	}
 }

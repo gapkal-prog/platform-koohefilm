@@ -105,6 +105,12 @@ function manacore_boot() {
 	 */
 	ManaCore\Core\Portability::instance()->hooks();
 
+	/*
+	 * ابزارهای گروهی لینک: جایگزینی پیشوند نشانی، کپی گروه لینک و
+	 * بازرسی ساختاری. کنشش از پنل (admin-post) است، پس در فرانت بی‌اثر.
+	 */
+	ManaCore\Core\Link_Tools::instance()->hooks();
+
 	/* فرمان‌های WP-CLI؛ بیرون از CLI هیچ کاری نمی‌کنند. */
 	ManaCore\Core\Cli::register();
 
