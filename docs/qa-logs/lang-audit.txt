@@ -1,0 +1,38 @@
+/ 
+   ✓ (عامدانه، پوسته) Koohe Film QA
+   ✓ (عامدانه، پوسته) MADE FOR YOU
+   ✓ (عامدانه، محتوا) The Crown
+/movie/ 
+   ✓ (عامدانه، پوسته) Koohe Film QA
+/movie/the-godfather/ 
+   ✓ (عامدانه، پوسته) Koohe Film QA
+   ✓ (عامدانه، محتوا) The Godfather
+   ✓ (عامدانه، محتوا) Big Buck Bunny
+/series/ 
+   ✓ (عامدانه، پوسته) Koohe Film QA
+/collection/best-2024/ 
+   ✓ (عامدانه، پوسته) Koohe Film QA
+/?s=test 
+   ✓ (عامدانه، پوسته) Koohe Film QA
+/subscribe/ 
+   ✓ (عامدانه، پوسته) Koohe Film QA
+   ✓ (عامدانه، پوسته) KOOHE PLUS
+   ✓ (عامدانه، پوسته) Full HD
+/about/ 
+   ✓ (عامدانه، پوسته) Koohe Film QA
+/series/shogun/ 
+   ✓ (عامدانه، پوسته) Koohe Film QA
+/contact/ 
+   ✓ (عامدانه، پوسته) Koohe Film QA
+/categories-hub/ 
+   ✓ (عامدانه، پوسته) Koohe Film QA
+/no-such-page-xyz/ 
+   ✓ (عامدانه، پوسته) Koohe Film QA
+/anime/ 
+   ✓ (عامدانه، پوسته) Koohe Film QA
+/schedule/ 
+   ✓ (عامدانه، پوسته) Koohe Film QA
+   ✓ (عامدانه، پوسته) DATE WITH YOUR STORY
+   ✓ (عامدانه، محتوا) The Crown
+
+pages with latin UI text: 14 / 14 | unexpected: 0 | intentional content: 4

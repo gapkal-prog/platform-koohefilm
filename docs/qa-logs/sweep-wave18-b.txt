@@ -1,0 +1,7 @@
+PASS  article-parity.cjs  ::  
+PASS  schedule-parity.cjs  ::  
+PASS  drawer-parity.cjs  ::  
+PASS  player-parity.cjs  ::  
+PASS  download-parity.cjs  ::  
+PASS  account-parity.cjs  ::  
+---- w18b: 6 PASS / 0 FAIL ----

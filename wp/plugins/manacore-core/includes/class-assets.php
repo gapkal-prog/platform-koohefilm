@@ -186,6 +186,22 @@ class Assets {
 					'error'         => __( 'خطایی رخ داد. دوباره تلاش کنید.', 'manacore' ),
 					'searching'     => __( 'در حال جستجو…', 'manacore' ),
 					'noResults'     => __( 'نتیجه‌ای یافت نشد.', 'manacore' ),
+					/*
+					 * پیام‌های برگه‌ی حساب؛ کلیدها همان کدهایی هستند که
+					 * `Account_Actions` با `?notice=` برمی‌گرداند.
+					 */
+					'account'       => array(
+						'saved'            => __( 'تغییرات ذخیره شد.', 'manacore' ),
+						'error'            => __( 'ذخیره نشد؛ دوباره تلاش کنید.', 'manacore' ),
+						'password-saved'   => __( 'رمز عبور تغییر کرد.', 'manacore' ),
+						'password-mismatch'=> __( 'تکرار رمز جدید یکسان نیست.', 'manacore' ),
+						'password-wrong'   => __( 'رمز فعلی درست نیست.', 'manacore' ),
+						'avatar-saved'     => __( 'عکس پروفایل به‌روز شد.', 'manacore' ),
+						'avatar-removed'   => __( 'عکس پروفایل حذف شد.', 'manacore' ),
+						'avatar-too-big'   => __( 'عکس باید کوچک‌تر از ۵ مگابایت باشد.', 'manacore' ),
+						'avatar-type'      => __( 'فقط تصویر PNG، JPEG یا WebP پذیرفته می‌شود.', 'manacore' ),
+						'avatarMax'        => 5242880,
+					),
 				),
 			)
 		);

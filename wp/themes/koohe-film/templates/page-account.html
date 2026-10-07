@@ -1,0 +1,83 @@
+<!-- wp:template-part {"slug":"header","tagName":"div","area":"header"} /-->
+
+<!-- wp:group {"tagName":"main","className":"koohe-main koohe-page account-page","style":{"spacing":{"margin":{"top":"var:preset|spacing|30"}}},"layout":{"type":"constrained"}} -->
+<main id="koohe-main" class="wp-block-group koohe-main koohe-page account-page" style="margin-top:var(--wp--preset--spacing--30)">
+
+<!-- wp:group {"align":"wide","layout":{"type":"default"}} -->
+<div class="wp-block-group alignwide">
+
+<!-- wp:html -->
+<nav class="breadcrumb" aria-label="مسیر صفحه">
+	<a href="/">خانه</a>
+	<svg class="icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg>
+	<span>حساب کاربری</span>
+</nav>
+<!-- /wp:html -->
+
+</div>
+<!-- /wp:group -->
+
+<!-- wp:manacore/account-greeting {"align":"wide"} /-->
+
+<!-- wp:group {"align":"wide","className":"account-layout","layout":{"type":"default"}} -->
+<div class="wp-block-group alignwide account-layout">
+
+	<!-- wp:manacore/account-nav /-->
+
+	<!-- wp:group {"className":"account-content","layout":{"type":"default"}} -->
+	<div class="wp-block-group account-content">
+
+		<!-- wp:manacore/account-panel {"tab":"overview"} -->
+			<!-- wp:manacore/account-stats /-->
+
+			<!-- wp:manacore/account-welcome /-->
+
+			<!-- wp:group {"className":"account-section","layout":{"type":"default"}} -->
+			<div class="wp-block-group account-section">
+				<!-- wp:manacore/titles-grid {"heading":"منتظر تماشای تو","source":"watchlist","count":4,"columns":4,"columnsTablet":3,"columnsMobile":2,"showRating":true,"showYear":true,"showType":true,"showMore":true,"moreLabel":"مشاهده همه","moreUrl":"account:watchlist","emptyText":"هنوز چیزی به لیست تماشا اضافه نکرده‌ای.","layout":"grid"} /-->
+			</div>
+			<!-- /wp:group -->
+
+			<!-- wp:group {"className":"account-section","layout":{"type":"default"}} -->
+			<div class="wp-block-group account-section">
+				<!-- wp:manacore/titles-grid {"heading":"برای شروع، این‌ها را ببین","source":"recommended","count":4,"columns":4,"columnsTablet":3,"columnsMobile":2,"showRating":true,"showYear":true,"showType":true,"layout":"grid"} /-->
+			</div>
+			<!-- /wp:group -->
+		<!-- /wp:manacore/account-panel -->
+
+		<!-- wp:manacore/account-panel {"tab":"watchlist"} -->
+			<!-- wp:manacore/titles-grid {"heading":"داستان‌هایی که برای بعد نگه داشتی","subheading":"{count} انتخاب، به سلیقه خودت","source":"watchlist","count":24,"columns":4,"columnsTablet":3,"columnsMobile":2,"showTypeTabs":true,"showRating":true,"showYear":true,"showType":true,"emptyTitle":"اینجا جای داستان‌های موردعلاقه توست.","emptyText":"فیلم یا سریال دلخواهت را پیدا کن و با نشان ذخیره، به این لیست اضافه کن.","emptyLinkLabel":"یک داستان پیدا کن ‹","emptyLinkUrl":"discovery","layout":"grid"} /-->
+		<!-- /wp:manacore/account-panel -->
+
+		<!-- wp:manacore/account-panel {"tab":"history"} -->
+			<!-- wp:manacore/account-history /-->
+		<!-- /wp:manacore/account-panel -->
+
+		<!-- wp:manacore/account-panel {"tab":"analytics"} -->
+			<!-- wp:manacore/account-analytics /-->
+
+			<!-- wp:group {"className":"account-section","layout":{"type":"default"}} -->
+			<div class="wp-block-group account-section">
+				<!-- wp:manacore/titles-grid {"heading":"پیشنهاد برای اولین قدم","source":"recommended","count":4,"columns":4,"columnsTablet":3,"columnsMobile":2,"showRating":true,"showYear":true,"showType":true,"layout":"grid"} /-->
+			</div>
+			<!-- /wp:group -->
+		<!-- /wp:manacore/account-panel -->
+
+		<!-- wp:manacore/account-panel {"tab":"subscription"} -->
+			<!-- wp:manacore/account-invoices /-->
+		<!-- /wp:manacore/account-panel -->
+
+		<!-- wp:manacore/account-panel {"tab":"settings"} -->
+			<!-- wp:manacore/account-settings /-->
+		<!-- /wp:manacore/account-panel -->
+
+	</div>
+	<!-- /wp:group -->
+
+</div>
+<!-- /wp:group -->
+
+</main>
+<!-- /wp:group -->
+
+<!-- wp:template-part {"slug":"footer","tagName":"div","area":"footer"} /-->

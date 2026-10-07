@@ -13,5 +13,5 @@
 defined( 'ABSPATH' ) || exit;
 ?>
 <!-- wp:group {"align":"full","className":"koohe-hero-wrap","style":{"spacing":{"padding":{"top":"0","bottom":"0"}}},"layout":{"type":"constrained"}} -->
-<div class="wp-block-group alignfull koohe-hero-wrap" style="padding-top:0;padding-bottom:0"><!-- wp:manacore/hero-slider {"source":"featured","count":6,"height":"large"} /--></div>
+<div class="wp-block-group alignfull koohe-hero-wrap" style="padding-top:0;padding-bottom:0"><!-- wp:manacore/hero-slider {"align":"wide","source":"featured","count":6,"height":"large","showArrows":true,"showDots":true} /--></div>
 <!-- /wp:group -->

@@ -95,8 +95,27 @@ class Plans {
 
 			$clean[ $slug ] = array(
 				'label'    => isset( $level['label'] ) ? (string) $level['label'] : $slug,
+				/* عنوان کارت: اگر نباشد، همان برچسب سطح. */
+				'title'    => ! empty( $level['title'] ) ? (string) $level['title'] : ( isset( $level['label'] ) ? (string) $level['label'] : $slug ),
 				'weight'   => isset( $level['weight'] ) ? (int) $level['weight'] : 10,
 				'featured' => ! empty( $level['featured'] ),
+				/*
+				 * داده‌های نمایشی کارت طرح.
+				 *
+				 * تا پیش از اینجا فقط `label/weight/featured` از فیلتر رد
+				 * می‌شد و بقیه‌ی کلیدها دور ریخته می‌شد؛ یعنی حتی با فیلتر
+				 * هم نمی‌شد کارتِ کاملِ مرجع (تگ‌لاین، قیمت، تخفیف، فهرست
+				 * ویژگی‌ها، نشان) ساخت. اکنون همه‌ی این‌ها اختیاری‌اند و اگر
+				 * نباشند کارت ساده می‌ماند.
+				 */
+				'tag'        => isset( $level['tag'] ) ? (string) $level['tag'] : '',
+				'amount'     => isset( $level['amount'] ) ? (float) $level['amount'] : 0.0,
+				'old_amount' => isset( $level['old_amount'] ) ? (float) $level['old_amount'] : 0.0,
+				'months'     => isset( $level['months'] ) ? max( 1, (int) $level['months'] ) : 1,
+				'currency'   => isset( $level['currency'] ) ? (string) $level['currency'] : __( 'تومان', 'manacore' ),
+				'ribbon'     => isset( $level['ribbon'] ) ? (string) $level['ribbon'] : '',
+				'icon'       => isset( $level['icon'] ) ? sanitize_key( $level['icon'] ) : '',
+				'features'   => isset( $level['features'] ) ? array_values( array_filter( array_map( 'strval', (array) $level['features'] ), 'strlen' ) ) : array(),
 			);
 		}
 
@@ -170,6 +189,136 @@ class Plans {
 		$slugs = array_keys( $this->levels() );
 
 		return $slugs ? (string) end( $slugs ) : '';
+	}
+
+	/* ---------------------------------------------------------------------
+	 * Pricing
+	 * ------------------------------------------------------------------ */
+
+	/**
+	 * Price figures for a plan card.
+	 *
+	 * Source of truth order — mirrors the reference card, which shows an
+	 * original price, the current price, the resulting discount and the
+	 * monthly equivalent:
+	 *
+	 *   1. a mapped WooCommerce product (regular/sale price), because a real
+	 *      shop must never disagree with the checkout;
+	 *   2. the `amount` / `old_amount` given in the level definition (the
+	 *      filter `manacore_subs_levels`), for sites without a shop.
+	 *
+	 * @param string $slug  Level slug.
+	 * @param array  $level Normalised level definition.
+	 * @return array{amount:float,old_amount:float,months:int,currency:string,discount:int,monthly:float,source:string}
+	 */
+	public function price_data( $slug, $level ) {
+		$amount     = isset( $level['amount'] ) ? (float) $level['amount'] : 0.0;
+		$old_amount = isset( $level['old_amount'] ) ? (float) $level['old_amount'] : 0.0;
+		$months     = isset( $level['months'] ) ? (int) $level['months'] : 1;
+		$currency   = isset( $level['currency'] ) ? (string) $level['currency'] : '';
+		$source     = $amount > 0 ? 'level' : '';
+
+		$product_id = $this->product_for_level( $slug );
+
+		if ( $product_id && function_exists( 'wc_get_product' ) ) {
+			$product = wc_get_product( $product_id );
+
+			if ( $product && '' !== (string) $product->get_price() ) {
+				$amount     = (float) $product->get_price();
+				$old_amount = (float) $product->get_regular_price();
+				$source     = 'woo';
+			}
+		}
+
+		$discount = ( $amount > 0 && $old_amount > $amount )
+			? (int) round( ( 1 - ( $amount / $old_amount ) ) * 100 )
+			: 0;
+
+		/**
+		 * Filter the resolved price figures of a plan card.
+		 *
+		 * @param array  $price Price figures.
+		 * @param string $slug  Level slug.
+		 * @param array  $level Level definition.
+		 */
+		return (array) apply_filters(
+			'manacore_subs_price_data',
+			array(
+				'amount'     => $amount,
+				'old_amount' => $old_amount,
+				'months'     => max( 1, $months ),
+				'currency'   => $currency,
+				'discount'   => $discount,
+				'monthly'    => $amount > 0 ? $amount / max( 1, $months ) : 0.0,
+				'source'     => $source,
+			),
+			$slug,
+			$level
+		);
+	}
+
+	/**
+	 * First product id mapped to a level, or 0.
+	 *
+	 * @param string $slug Level slug.
+	 * @return int
+	 */
+	public function product_for_level( $slug ) {
+		$ids = array_keys( $this->product_map(), $slug, true );
+
+		return $ids ? (int) $ids[0] : 0;
+	}
+
+	/**
+	 * Icon markup for a plan card.
+	 *
+	 * A fixed map of inline SVGs (the reference uses ▣ / ♛ / ◌ glyphs); a
+	 * slug keeps the markup safe and themable, and an unknown slug falls
+	 * back to the generic mark.
+	 *
+	 * @param string $slug Icon slug.
+	 * @param int    $size Pixel size.
+	 * @return string
+	 */
+	public function icon_markup( $slug, $size = 22 ) {
+		$paths = array(
+			'grid'   => '<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>',
+			'crown'  => '<path d="m3 8 4 4 5-8 5 8 4-4v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z"/>',
+			'circle' => '<circle cx="12" cy="12" r="7"/>',
+			'star'   => '<path d="m12 3-1.5 5.5L5 10l5.5 1.5L12 17l1.5-5.5L19 10l-5.5-1.5L12 3z"/>',
+			'spark'  => '<path d="M12 3v18M3 12h18"/>',
+		);
+
+		$slug = isset( $paths[ $slug ] ) ? $slug : 'circle';
+
+		/** This map is fixed, so the markup below is trusted. */
+		return sprintf(
+			'<svg width="%1$d" height="%1$d" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">%2$s</svg>',
+			(int) $size,
+			$paths[ $slug ]
+		);
+	}
+
+	/**
+	 * Formatted amount with thousands separators and Persian digits.
+	 *
+	 * @param float $value Value.
+	 * @return string
+	 */
+	public function format_amount( $value ) {
+		$formatted = number_format_i18n( (float) $value );
+
+		/*
+		 * جداکننده‌ی هزارگان فارسی.
+		 *
+		 * `number_format_i18n` در زبان فا_IR ویرگول لاتین می‌گذارد، اما مرجع
+		 * از `Intl.NumberFormat('fa-IR')` استفاده می‌کند که U+066C (٬) را
+		 * می‌نویسد: «۱۱۹٬۰۰۰» در برابر «۱۱۹,۰۰۰» (سنجیده‌شده). ممیز هم به
+		 * ممیز فارسی (٫) تبدیل می‌شود تا قیمت‌های اعشاری درست بنشینند.
+		 */
+		$formatted = strtr( $formatted, array( ',' => '٬', '.' => '٫' ) );
+
+		return function_exists( 'manacore_fa_digits' ) ? manacore_fa_digits( $formatted ) : $formatted;
 	}
 
 	/* ---------------------------------------------------------------------

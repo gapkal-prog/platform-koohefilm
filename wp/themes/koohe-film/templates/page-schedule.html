@@ -1,0 +1,59 @@
+<!-- wp:template-part {"slug":"header","tagName":"div","area":"header"} /-->
+
+<!-- wp:group {"tagName":"main","className":"koohe-main koohe-page schedule-page","style":{"spacing":{"margin":{"top":"var:preset|spacing|30"}}},"layout":{"type":"constrained"}} -->
+<main id="koohe-main" class="wp-block-group koohe-main koohe-page schedule-page" style="margin-top:var(--wp--preset--spacing--30)">
+
+<!-- wp:html -->
+<nav class="breadcrumb" aria-label="مسیر صفحه">
+	<a href="/">خانه</a>
+	<svg class="icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg>
+	<span>برنامه پخش</span>
+</nav>
+<!-- /wp:html -->
+
+<!-- wp:group {"align":"wide","className":"page-title-row","layout":{"type":"default"}} -->
+<div class="wp-block-group alignwide page-title-row">
+	<!-- wp:group {"className":"page-title-text","layout":{"type":"default"}} -->
+	<div class="wp-block-group page-title-text">
+		<!-- wp:paragraph {"className":"eyebrow"} -->
+		<p class="eyebrow">SAVE A DATE WITH YOUR STORY</p>
+		<!-- /wp:paragraph -->
+
+		<!-- wp:post-title {"level":1} /-->
+
+		<!-- wp:paragraph {"className":"muted"} -->
+		<p class="muted">زمان داستان‌های موردعلاقه‌ات را پیدا کن و هیچ قسمتی را از دست نده.</p>
+		<!-- /wp:paragraph -->
+	</div>
+	<!-- /wp:group -->
+
+	<!-- wp:html -->
+	<span class="page-title-icon" aria-hidden="true"><svg width="42" height="42" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M8 2v4m8-4v4M3 10h18M5 4h14a2 2 0 0 1 2 2v14H3V6a2 2 0 0 1 2-2Z"/></svg></span>
+	<!-- /wp:html -->
+</div>
+<!-- /wp:group -->
+
+<!-- wp:group {"align":"wide","className":"schedule-page-layout","layout":{"type":"default"}} -->
+<div class="wp-block-group alignwide schedule-page-layout">
+
+	<!-- wp:manacore/schedule {"layout":"panel","mode":"series","postTypes":["series"],"perDay":8,"activeDay":"today","panelTitle":"قرارهای این هفته","panelSubtitle":"برنامه هفتگی سریال‌ها","panelIcon":"▦","showTimezone":true,"timezoneLabel":"به وقت تهران","showThumb":true,"showOriginalTitle":true,"showSeasonMeta":true,"showTime":true,"showPlay":true,"showFootnote":true,"emptyMessage":"امروز، وقت کشف یک داستان تازه است.","emptyLinkLabel":"پیشنهادهای ما"} /-->
+
+	<!-- wp:group {"tagName":"aside","className":"schedule-page-aside","layout":{"type":"default"}} -->
+	<aside class="wp-block-group schedule-page-aside">
+
+		<!-- wp:manacore/info-card {"variant":"note","iconText":"◷","title":"یک قرار تازه، هر روز.","text":"روز دلخواهت را انتخاب کن؛ با یک کلیک به فصل‌ها، قسمت‌ها و لینک‌های پخش برس.","metaText":"تمام ساعت‌ها به وقت تهران","showMetaDot":true} /-->
+
+		<!-- wp:manacore/info-card {"variant":"promo","title":"هیچ داستانی جا نماند.","text":"سریال‌هایت را در لیست تماشا نگه دار.","linkLabel":"لیست تماشای من","linkUrl":"account:watchlist"} /-->
+
+	</aside>
+	<!-- /wp:group -->
+
+</div>
+<!-- /wp:group -->
+
+<!-- wp:manacore/titles-grid {"align":"wide","heading":"این هفته از کجا شروع کنیم؟","subheading":"سریال‌های محبوب برای یک قرار تازه","source":"latest","postTypes":["series"],"count":6,"columns":4,"columnsTablet":3,"columnsMobile":2,"cardStyle":"poster","imageRatio":"2-3","showRating":true,"showYear":true,"showType":true,"titleLines":1,"showMore":true,"moreLabel":"مشاهده همه","emptyText":"به‌زودی سریال‌های تازه این‌جا می‌نشینند.","layout":"grid"} /-->
+
+</main>
+<!-- /wp:group -->
+
+<!-- wp:template-part {"slug":"footer","tagName":"div","area":"footer"} /-->

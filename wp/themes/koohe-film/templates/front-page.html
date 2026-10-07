@@ -1,7 +1,7 @@
 <!-- wp:template-part {"slug":"header","tagName":"div","area":"header"} /-->
 
 <!-- wp:group {"tagName":"main","className":"koohe-main koohe-home","style":{"spacing":{"blockGap":"var:preset|spacing|50"}},"layout":{"type":"constrained"}} -->
-<main id="koohe-main" class="wp-block-group koohe-main koohe-home"><!-- wp:manacore/hero-slider {"source":"featured","count":6,"height":"large"} /-->
+<main id="koohe-main" class="wp-block-group koohe-main koohe-home"><!-- wp:manacore/hero-slider {"align":"wide","source":"featured","count":6,"height":"medium","showArrows":true,"showDots":true} /-->
 
 <!-- wp:group {"align":"wide","className":"koohe-home-intro","layout":{"type":"flex","flexWrap":"wrap","justifyContent":"space-between","verticalAlignment":"center"}} -->
 <div class="wp-block-group alignwide koohe-home-intro"><!-- wp:group {"className":"koohe-home-intro-copy","layout":{"type":"default"}} -->
@@ -19,7 +19,9 @@
 <!-- /wp:group -->
 
 <!-- wp:group {"className":"koohe-intro-note","layout":{"type":"flex","flexWrap":"nowrap","verticalAlignment":"center"},"style":{"spacing":{"blockGap":"8px"}}} -->
-<div class="wp-block-group koohe-intro-note"><span class="koohe-live-dot" aria-hidden="true"></span>
+<div class="wp-block-group koohe-intro-note"><!-- wp:html -->
+<span class="koohe-live-dot" aria-hidden="true"></span>
+<!-- /wp:html -->
 
 <!-- wp:paragraph {"fontSize":"x-small","style":{"color":{"text":"var:preset|color|muted"}}} -->
 <p class="has-text-color has-x-small-font-size" style="color:var(--wp--preset--color--muted)">به‌روزرسانی روزانه</p>
@@ -33,15 +35,23 @@
 <div class="wp-block-group alignwide koohe-section"><!-- wp:manacore/filter-bar {"taxonomies":"genre,release_year,country,quality","showSort":true} /--></div>
 <!-- /wp:group -->
 
-<!-- wp:manacore/titles-grid {"heading":"آخرین فیلم‌ها","source":"latest","postType":"movie","count":12,"columns":6,"showMore":true,"layout":"grid"} /-->
+<!-- wp:manacore/titles-grid {"align":"wide","heading":"آخرین فیلم‌ها","source":"latest","postType":"movie","count":12,"columns":6,"showMore":true,"layout":"grid"} /-->
 
-<!-- wp:manacore/titles-grid {"heading":"آخرین سریال‌ها","source":"latest","postType":"series","count":12,"columns":6,"showMore":true,"layout":"grid"} /-->
+<!-- wp:manacore/titles-grid {"align":"wide","heading":"آخرین سریال‌ها","source":"latest","postType":"series","count":12,"columns":6,"showMore":true,"layout":"grid"} /-->
 
-<!-- wp:manacore/titles-grid {"heading":"انیمه‌های به‌روز","source":"latest","postType":"anime","count":12,"columns":6,"showMore":true,"layout":"grid"} /-->
+<!-- wp:manacore/titles-grid {"align":"wide","heading":"انیمه‌های به‌روز","source":"latest","postType":"anime","count":12,"columns":6,"showMore":true,"layout":"grid"} /-->
 
-<!-- wp:manacore/titles-grid {"heading":"پرطرفدارترین‌های هفته","source":"trending","count":12,"columns":6,"showMore":false,"layout":"grid","ranked":true} /-->
+<!-- wp:manacore/titles-grid {"align":"wide","heading":"پرطرفدارترین‌های هفته","headingIcon":"fire","source":"trending","count":12,"columns":6,"showMore":true,"layout":"grid","ranked":true,"showTypeTabs":true} /-->
 
-<!-- wp:manacore/titles-grid {"heading":"برترین امتیازها","source":"top_rated","count":12,"columns":6,"showMore":false,"layout":"grid"} /-->
+<!-- wp:manacore/titles-grid {"align":"wide","heading":"برترین امتیازها","source":"top_rated","count":12,"columns":6,"showMore":false,"layout":"grid"} /-->
+
+<!-- wp:pattern {"slug":"koohe-film/home-duo"} /-->
+
+<!-- wp:pattern {"slug":"koohe-film/landscape-row"} /-->
+
+<!-- wp:pattern {"slug":"koohe-film/collections-row"} /-->
+
+<!-- wp:pattern {"slug":"koohe-film/magazine-row"} /-->
 
 <!-- wp:pattern {"slug":"koohe-film/subscribe-cta"} /--></main>
 <!-- /wp:group -->

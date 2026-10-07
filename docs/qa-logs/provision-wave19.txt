@@ -1,0 +1,41 @@
+
+== پیش‌نیازهای سیستمی (PHP، MariaDB، wp-cli)
+   ✓ PHP 8.4.26
+   ✓ پایگاه‌داده wpqa آماده است
+   ✓ wp-cli WP-CLI 2.12.0
+
+== نصب وردپرس در /home/user/.cache/wp
+   ✓ هسته‌ی وردپرس دانلود شد
+   ✓ wp-config.php ساخته شد
+   ✓ وردپرس نصب شد
+   ✓ زبان سایت fa_IR و راست‌به‌چپ (is_rtl=true)
+   ✓ قالب و افزونه‌ها پیوند شدند
+
+== راه‌اندازی قالب/افزونه و محتوای آزمون
+   ✓ قالب koohe-film فعال شد (فهرست راهبری با after_switch_theme ساخته می‌شود)
+   ✓ افزونه‌ی manacore-core فعال شد
+   ✓ افزونه‌ی manacore-sources فعال شد
+   ✓ افزونه‌ی manacore-subscriptions فعال شد
+air-day today=tuesday
+seed ok
+   ✓ محتوای آزمون کاشته شد
+
+== ابزارهای مرورگری (playwright + axe-core)
+   ✓ playwright/axe-core نصب شدند — مرورگر در /home/user/.cache/pw-browsers
+   ✓ پیوند node_modules در wp/tests/browser
+
+== آماده است
+
+سرورها (هر کدام در یک ترمینال جدا یا با ابزار process):
+
+  cinora (مرجع):  php -S 0.0.0.0:8098 -t /home/user/koohefilm/cinora
+  وردپرس (QA):     WP_ROOT=/home/user/.cache/wp php -S 0.0.0.0:8099 -t /home/user/.cache/wp                      /home/user/koohefilm/wp/tests/qa-env/router.php
+
+سپس آزمون‌ها:
+
+  bash /home/user/koohefilm/wp/tests/run.sh
+  cd /home/user/koohefilm/wp/tests/browser && \
+    PLAYWRIGHT_BROWSERS_PATH=/home/user/.cache/pw-browsers node harness-all.cjs
+
+نشانی‌های کلیدی: /movie/the-godfather/ · /series/chernobyl/season-1/episode-1/ ·
+/subscribe/ · /?s=test · ورود مدیر: admin / admin

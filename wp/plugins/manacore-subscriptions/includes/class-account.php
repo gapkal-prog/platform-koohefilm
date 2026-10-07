@@ -22,6 +22,7 @@ class Account {
 	public function hooks() {
 		add_action( 'init', array( $this, 'register_blocks' ) );
 		add_action( 'wp_enqueue_scripts', array( $this, 'assets' ) );
+		add_action( 'enqueue_block_editor_assets', array( $this, 'editor_assets' ) );
 
 		add_shortcode( 'manacore_subscription', array( $this, 'shortcode_status' ) );
 		add_shortcode( 'manacore_plans', array( $this, 'shortcode_plans' ) );
@@ -47,6 +48,78 @@ class Account {
 			MANACORE_SUBS_URL . 'assets/front.css',
 			array(),
 			MANACORE_SUBS_VERSION
+		);
+	}
+
+	/**
+	 * ثبت سمت مرورگر بلوک‌ها.
+	 *
+	 * بلوک‌های فقط-سمت-سرور در ویرایشگر «پشتیبانی‌نشده» (`core/missing`)
+	 * دیده می‌شوند؛ این اسکریپت همان دو بلوک را در کتابخانه‌ی مرورگر ثبت
+	 * می‌کند تا ویرایشگر پیش‌نمایش واقعی و پنل تنظیمات داشته باشد.
+	 */
+	public function editor_assets() {
+		wp_enqueue_script(
+			'manacore-subs-blocks',
+			MANACORE_SUBS_URL . 'assets/js/blocks.js',
+			array( 'wp-blocks', 'wp-element', 'wp-block-editor', 'wp-components', 'wp-i18n', 'wp-server-side-render' ),
+			MANACORE_SUBS_VERSION,
+			true
+		);
+
+		/*
+		 * از inline script استفاده می‌شود (نه wp_localize_script) تا نوع
+		 * داده‌ها — بولین/عدد در تعریف ویژگی‌ها — رشته نشود.
+		 */
+		wp_add_inline_script(
+			'manacore-subs-blocks',
+			'window.manacoreSubsBlocks = ' . wp_json_encode( $this->editor_registry() ) . ';',
+			'before'
+		);
+	}
+
+	/**
+	 * رجیستری ویرایشگر: همان تعریف‌های سمت سرور، بدون تابع‌ها.
+	 *
+	 * @return array
+	 */
+	protected function editor_registry() {
+		return array(
+			'manacore/subscription-status' => array(
+				'title'       => __( 'وضعیت اشتراک', 'manacore' ),
+				'description' => __( 'کارت وضعیت اشتراک کاربر جاری با گزینه‌ی نمایش فشرده.', 'manacore' ),
+				'category'    => 'manacore',
+				'icon'        => 'star-filled',
+				'attributes'  => array(
+					'compact' => array(
+						'type'    => 'boolean',
+						'default' => false,
+					),
+				),
+				'supports'    => array(
+					'html'    => false,
+					'anchor'  => true,
+					'spacing' => array(
+						'margin'  => true,
+						'padding' => true,
+					),
+				),
+			),
+			'manacore/subscription-plans'  => array(
+				'title'       => __( 'پلن‌های اشتراک', 'manacore' ),
+				'description' => __( 'کارت‌های طرح اشتراک با قیمت، تخفیف و ویژگی‌ها.', 'manacore' ),
+				'category'    => 'manacore',
+				'icon'        => 'money-alt',
+				'supports'    => array(
+					'html'    => false,
+					'anchor'  => true,
+					'align'   => array( 'wide', 'full' ),
+					'spacing' => array(
+						'margin'  => true,
+						'padding' => true,
+					),
+				),
+			),
 		);
 	}
 
@@ -206,13 +279,73 @@ class Account {
 			<?php foreach ( $levels as $slug => $level ) : ?>
 				<?php
 				$is_current = ( $slug === $current );
-				$products   = $plans->product_map();
-				$product_id = array_search( $slug, $products, true );
-				$url        = $product_id ? get_permalink( (int) $product_id ) : manacore_subs_url();					?>
-					<div class="manacore-plan<?php echo $is_current ? ' is-current' : ( ! empty( $level['featured'] ) ? ' is-featured' : '' ); ?>">
-					<h4 class="manacore-plan-title"><?php echo esc_html( $level['label'] ); ?></h4>
+				$product_id = $plans->product_for_level( $slug );
+				$url        = $product_id ? get_permalink( $product_id ) : manacore_subs_url();
+				$price      = $plans->price_data( $slug, $level );
 
-					<?php if ( $product_id && function_exists( 'wc_get_product' ) ) : ?>
+				/*
+				 * ساختار کارت عیناً همان کارت `.pricing-card` مرجع است:
+				 * نشان → عنوان → تگ‌لاین → بلوک قیمت (قیمت پیشین، درصد
+				 * تخفیف، قیمت، معادل ماهانه) → فهرست ویژگی‌ها → دکمه.
+				 * هر بخشی که داده نداشته باشد چاپ نمی‌شود تا کارتِ
+				 * نیمه‌پر با قیمت صفر ساخته نشود.
+				 */
+				?>
+				<article class="manacore-plan<?php echo $is_current ? ' is-current' : ( ! empty( $level['featured'] ) ? ' is-featured' : '' ); ?>">
+					<?php if ( ! empty( $level['ribbon'] ) ) : ?>
+						<span class="manacore-plan-ribbon"><?php echo esc_html( $level['ribbon'] ); ?></span>
+					<?php endif; ?>
+
+					<?php if ( ! empty( $level['icon'] ) ) : ?>
+						<span class="manacore-plan-icon"><?php echo $plans->icon_markup( $level['icon'] ); // phpcs:ignore WordPress.Security.EscapeOutput -- نقشه‌ی SVG ثابت. ?></span>
+					<?php endif; ?>
+
+					<h3 class="manacore-plan-title"><?php echo esc_html( isset( $level['title'] ) ? $level['title'] : $level['label'] ); ?></h3>
+
+					<?php if ( ! empty( $level['tag'] ) ) : ?>
+						<p class="manacore-plan-tag"><?php echo esc_html( $level['tag'] ); ?></p>
+					<?php endif; ?>
+
+					<?php if ( $price['amount'] > 0 ) : ?>
+						<div class="manacore-plan-price">
+							<?php if ( $price['old_amount'] > $price['amount'] ) : ?>
+								<del><?php echo esc_html( $plans->format_amount( $price['old_amount'] ) ); ?></del>
+							<?php endif; ?>
+
+							<?php if ( $price['discount'] > 0 ) : ?>
+								<span class="manacore-plan-discount">
+									<?php
+									printf(
+										/* translators: %s: discount percentage. */
+										esc_html__( '%s٪ تخفیف', 'manacore' ),
+										esc_html( manacore_fa_digits( (string) $price['discount'] ) )
+									);
+									?>
+								</span>
+							<?php endif; ?>
+
+							<?php
+							/*
+							 * بدون فاصله‌ی اضافی بین عدد و واحد: مرجع هم همین
+							 * را می‌سازد و فاصله را `gap: 9px` فلکس می‌دهد؛
+							 * متن خوانده‌شده‌ی کارت باید عیناً یکی باشد.
+							 */
+							?>
+							<strong><?php echo esc_html( $plans->format_amount( $price['amount'] ) ); ?><small><?php echo esc_html( $price['currency'] ); ?></small></strong>
+
+							<?php if ( $price['monthly'] > 0 ) : ?>
+								<p>
+									<?php
+									printf(
+										/* translators: %s: monthly equivalent amount. */
+										esc_html__( 'فقط %s در ماه', 'manacore' ),
+										esc_html( $plans->format_amount( $price['monthly'] ) . ' ' . $price['currency'] )
+									);
+									?>
+								</p>
+							<?php endif; ?>
+						</div>
+					<?php elseif ( $product_id && function_exists( 'wc_get_product' ) ) : ?>
 						<?php $product = wc_get_product( (int) $product_id ); ?>
 						<?php if ( $product ) : ?>
 							<div class="manacore-plan-price">
@@ -221,14 +354,26 @@ class Account {
 						<?php endif; ?>
 					<?php endif; ?>
 
+					<?php if ( ! empty( $level['features'] ) ) : ?>
+						<ul class="manacore-plan-features">
+							<?php foreach ( $level['features'] as $feature ) : ?>
+								<li>
+									<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="m5 12 4 4L19 6"/></svg>
+									<?php echo esc_html( $feature ); ?>
+								</li>
+							<?php endforeach; ?>
+						</ul>
+					<?php endif; ?>
+
 					<?php if ( $is_current ) : ?>
 						<span class="manacore-plan-badge"><?php esc_html_e( 'اشتراک فعلی شما', 'manacore' ); ?></span>
 					<?php else : ?>
 						<a class="manacore-btn is-primary" href="<?php echo esc_url( $url ? $url : manacore_subs_url() ); ?>">
-							<?php esc_html_e( 'انتخاب', 'manacore' ); ?>
+							<?php esc_html_e( 'انتخاب این اشتراک', 'manacore' ); ?>
+							<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="m15 18-6-6 6-6"/></svg>
 						</a>
 					<?php endif; ?>
-				</div>
+				</article>
 			<?php endforeach; ?>
 		</div>
 		<?php

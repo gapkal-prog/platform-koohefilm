@@ -1,45 +1,41 @@
 <!-- wp:group {"tagName":"header","className":"koohe-header","style":{"spacing":{"padding":{"top":"0","bottom":"0"}}},"layout":{"type":"constrained"}} -->
 <header class="wp-block-group koohe-header" style="padding-top:0;padding-bottom:0"><!-- wp:group {"align":"full","className":"koohe-header-inner","layout":{"type":"flex","flexWrap":"nowrap","justifyContent":"space-between","verticalAlignment":"center"}} -->
 <div class="wp-block-group alignfull koohe-header-inner"><!-- wp:group {"className":"koohe-header-start","layout":{"type":"flex","flexWrap":"nowrap","verticalAlignment":"center"},"style":{"spacing":{"blockGap":"var:preset|spacing|30"}}} -->
-<div class="wp-block-group koohe-header-start"><!-- wp:group {"className":"koohe-brand","layout":{"type":"flex","flexWrap":"nowrap","verticalAlignment":"center"},"style":{"spacing":{"blockGap":"11px"}}} -->
+<div class="wp-block-group koohe-header-start"><!-- wp:html -->
+<button type="button" class="icon-button mobile-menu-button" data-mobile-open aria-controls="koohe-mobile-drawer" aria-expanded="false" aria-label="باز کردن منو"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button>
+<!-- /wp:html -->
+
+<!-- wp:group {"className":"koohe-brand","layout":{"type":"flex","flexWrap":"nowrap","verticalAlignment":"center"},"style":{"spacing":{"blockGap":"11px"}}} -->
 <div class="wp-block-group koohe-brand"><!-- wp:site-logo {"width":36,"shouldSyncIcon":true} /-->
 
 <!-- wp:site-title {"level":0,"className":"koohe-logo-text"} /--></div>
 <!-- /wp:group -->
 
-<!-- wp:navigation {"overlayMenu":"mobile","className":"koohe-nav","layout":{"type":"flex","justifyContent":"left","flexWrap":"nowrap"},"style":{"spacing":{"blockGap":"23px"}}} /-->
+<!-- wp:navigation {"ariaLabel":"فهرست اصلی","overlayMenu":"never","className":"koohe-nav","layout":{"type":"flex","justifyContent":"left","flexWrap":"nowrap"},"style":{"spacing":{"blockGap":"23px"}}} /-->
 
-<!-- wp:html -->
-<span class="koohe-nav-mega-toggle" data-koohe-mega-open role="button" tabindex="0" aria-haspopup="true" aria-expanded="false"><span>دسته‌بندی‌ها</span><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></span>
-<!-- /wp:html --></div>
+</div>
 <!-- /wp:group -->
 
 <!-- wp:group {"className":"koohe-header-end","layout":{"type":"flex","flexWrap":"nowrap","verticalAlignment":"center"},"style":{"spacing":{"blockGap":"11px"}}} -->
-<div class="wp-block-group koohe-header-end"><!-- wp:manacore/search-box {"placeholder":"دنبال چی می‌گردی؟","size":"small"} /-->
-
-<!-- wp:group {"className":"koohe-icon-btn","tagName":"button","layout":{"type":"default"}} -->
-<button class="wp-block-group koohe-icon-btn" aria-label="جستجو" data-koohe-search-open data-search-hotkey="k"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg></button>
-<!-- /wp:group -->
+<div class="wp-block-group koohe-header-end"><!-- wp:koohe/search-trigger /-->
 
 <!-- wp:koohe/theme-toggle /-->
 
 <!-- wp:koohe/account /-->
 
 <!-- wp:buttons {"className":"koohe-header-cta","style":{"spacing":{"margin":{"left":"0","right":"0"}}}} -->
-<div class="wp-block-buttons koohe-header-cta" style="margin-left:0;margin-right:0"><!-- wp:button {"backgroundColor":"accent","textColor":"accent-contrast","className":"koohe-subscribe-cta koohe-btn--small","fontSize":"small","style":{"border":{"radius":"7px"}}} -->
-<div class="wp-block-button has-custom-font-size koohe-subscribe-cta koohe-btn--small has-small-font-size"><a class="wp-block-button__link wp-element-button has-accent-contrast-color has-accent-background-color has-text-color has-background" style="border-radius:7px" href="/subscribe/">خرید اشتراک</a></div>
+<div class="wp-block-buttons koohe-header-cta" style="margin-left:0;margin-right:0"><!-- wp:button {"backgroundColor":"accent","textColor":"accent-contrast","className":"koohe-subscribe-cta koohe-btn--small","style":{"border":{"radius":"7px"}}} -->
+<div class="wp-block-button koohe-subscribe-cta koohe-btn--small"><a class="wp-block-button__link wp-element-button has-accent-contrast-color has-accent-background-color has-text-color has-background" style="border-radius:7px" href="/subscribe/">خرید اشتراک</a></div>
 <!-- /wp:button --></div>
 <!-- /wp:buttons --></div>
 <!-- /wp:group --></div>
-<!-- /wp:group --></header>
 <!-- /wp:group -->
 
-<!-- wp:shortcode -->
-[manacore_mega_menu]
-<!-- /wp:shortcode -->
+<!-- wp:koohe/mobile-drawer /--></header>
+<!-- /wp:group -->
 
 <!-- wp:html -->
-<div class="koohe-search-overlay" data-koohe-search-overlay hidden>
+<div class="koohe-search-overlay" id="koohe-search-overlay" data-koohe-search-overlay hidden>
 	<div class="koohe-search-overlay__backdrop" data-koohe-search-close></div>
 	<div class="koohe-search-overlay__panel" role="dialog" aria-modal="true" aria-label="جستجو در کوهه">
 		<button class="koohe-icon-btn koohe-search-overlay__close" aria-label="بستن" data-koohe-search-close><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m18 6-12 12M6 6l12 12"/></svg></button>

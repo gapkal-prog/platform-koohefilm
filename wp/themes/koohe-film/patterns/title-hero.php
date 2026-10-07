@@ -10,6 +10,13 @@
  * در بافت صفحه‌ی تکی (single) رندر می‌شود؛ در ویرایشگر با نبود زمینه،
  * کنش‌ها به‌صورت ایستا و بدون شناسه رندر می‌شوند تا خراب نشوند.
  *
+ * یادداشت معماری: امتیاز کاربر. بلوک `manacore/rating-box` به‌همراه کلاس CSS آن (`.manacore-rating-box`، `.manacore-stars`، `.manacore-user-rating`، `.manacore-scores`) و نقطه‌ی پایانی REST «‎/rate» از پیش کامل پیاده شده بود، ولی تنها جایی که این بلوک صدا زده می‌شد «بخش» قدیمی `parts/title-header.html` بود که هیچ الگویی به آن ارجاع نمی‌دهد. نتیجه این بود که کاربر هیچ راهی برای امتیازدادن نداشت و آن CSS بی‌استفاده می‌ماند. حالا در همین هیروِ واقعی — که سه الگوی تک‌اثر از آن استفاده می‌کنند — رندر می‌شود.
+ *
+ * هشدار: کامنت HTML تنها (بیرون از بلوک `core/html`) در محتوای بلوک‌ها،
+ * بلوکِ والد را در ویرایشگر «نامعتبر» می‌کند و کل قالب را از کار می‌اندازد
+ * (خطای «بلوک حاوی محتوای غیرمنتظره یا نامعتبر است»). توضیح‌ها باید در همین
+ * سرصفحه یا داخل بلوک `core/html` بنشینند.
+ *
  * @package KooheFilm
  */
 
@@ -31,7 +38,17 @@ $koohe_id_attr   = $koohe_post_id ? (int) $koohe_post_id : 0;
 $koohe_permalink = $koohe_post_id ? get_permalink( $koohe_post_id ) : '#';
 ?>
 <!-- wp:html -->
-<section class="koohe-detail-hero">
+<!--
+ * کلاس `alignfull` روی خودِ بخش گذاشته می‌شود.
+ *
+ * این الگو در ریشه‌ی `main.koohe-main` رندر می‌شود که چیدمان «محدود»
+ * دارد؛ هر فرزند بدون `align*` به `contentSize` (۸۲۰px) محدود می‌شود.
+ * نتیجه‌ی سنجیده‌شده پیش از این اصلاح: هیرو ۸۲۰px وسط‌چین با تصویر
+ * پس‌زمینه‌ی بریده، در حالی که مرجع `.detail-hero` را تمام‌عرض
+ * (۱۴۴۰px) با `.page-container` درونش می‌سازد و نوار تب زیر آن هم
+ * همین حالا تمام‌عرض است.
+ -->
+<section class="koohe-detail-hero alignfull">
 	<div class="koohe-detail-hero__backdrop" aria-hidden="true">
 		<?php if ( $koohe_post_id && has_post_thumbnail( $koohe_post_id ) ) : ?>
 			<?php echo get_the_post_thumbnail( $koohe_post_id, 'full', array( 'alt' => '' ) ); ?>
@@ -57,7 +74,27 @@ $koohe_permalink = $koohe_post_id ? get_permalink( $koohe_post_id ) : '#';
 					echo get_the_post_thumbnail( $koohe_post_id, 'medium_large', array( 'alt' => esc_attr( $koohe_title ) ) );
 				}
 				?>
-				<a class="koohe-btn koohe-btn--glass" href="#trailer">▶ <?php esc_html_e( 'پخش تریلر', 'koohe-film' ); ?></a>
+				<?php
+				/*
+				 * دکمه‌ی تریلر هیرو مطابق مرجع، به «صفحه‌ی پخش» واقعی می‌رود
+				 * (`/watch/?manacore_id=…`)؛ پیش‌تر `href="#trailer"` بود و
+				 * چون هیچ عنصری با آن شناسه در صفحه نبود، پیوندی مرده می‌شد.
+				 * اگر صفحه‌ی پخش ساخته نشده باشد، همان دکمه مُدال پخش را باز
+				 * می‌کند تا هیچ‌گاه پیوند بی‌مقصد نماند.
+				 */
+				$koohe_watch   = class_exists( '\ManaCore\Core\Player' ) ? \ManaCore\Core\Player::page_url( $koohe_post_id ) : '';
+				$koohe_trailer = $koohe_post_id ? (string) get_post_meta( $koohe_post_id, 'manacore_trailer_url', true ) : '';
+
+				if ( $koohe_watch ) :
+					?>
+					<a class="koohe-btn koohe-btn--glass" href="<?php echo esc_url( $koohe_watch ); ?>">▶ <?php esc_html_e( 'پخش تریلر', 'koohe-film' ); ?></a>
+					<?php
+				elseif ( $koohe_trailer ) :
+					?>
+					<button type="button" class="koohe-btn koohe-btn--glass" data-manacore-play="<?php echo esc_url( $koohe_trailer ); ?>" data-title="<?php echo esc_attr( $koohe_title ); ?>">▶ <?php esc_html_e( 'پخش تریلر', 'koohe-film' ); ?></button>
+					<?php
+				endif;
+				?>
 			</div>
 
 			<div class="koohe-detail-hero__copy">
@@ -114,7 +151,19 @@ $koohe_permalink = $koohe_post_id ? get_permalink( $koohe_post_id ) : '#';
 
 				<div class="koohe-detail-hero__actions">
 					<a class="koohe-btn koohe-btn--primary" href="#download">▶ <?php esc_html_e( 'پخش و دانلود', 'koohe-film' ); ?></a>
-					<button class="koohe-btn koohe-btn--glass koohe-detail-hero__watchlist" type="button" data-manacore-watchlist="<?php echo esc_attr( $koohe_id_attr ); ?>">♡ <?php esc_html_e( 'لیست تماشا', 'koohe-film' ); ?></button>
+					<?php
+					/*
+					 * پیش‌تر این دکمه نه `aria-pressed` داشت و نه کلاس
+					 * `is-active`؛ پس کاربر صفحه‌خوان تا اجرای JS نمی‌فهمید
+					 * اثر در لیست تماشا هست یا نه، و بعد از بازنشانی برگه
+					 * هم نشانه‌ای از وضعیت ذخیره‌شده دیده نمی‌شد. دکمه‌ی
+					 * کارت در افزونه همین کار را درست انجام می‌دهد.
+					 */
+					$koohe_in_watchlist = ( $koohe_id_attr && class_exists( '\ManaCore\Core\Watchlist' ) )
+						? (bool) \ManaCore\Core\Watchlist::instance()->has( (int) $koohe_post_id )
+						: false;
+					?>
+					<button class="koohe-btn koohe-btn--glass koohe-detail-hero__watchlist<?php echo $koohe_in_watchlist ? ' is-active' : ''; ?>" type="button" data-manacore-watchlist="<?php echo esc_attr( $koohe_id_attr ); ?>" aria-pressed="<?php echo $koohe_in_watchlist ? 'true' : 'false'; ?>">♡ <?php esc_html_e( 'لیست تماشا', 'koohe-film' ); ?></button>
 					<button class="koohe-btn koohe-btn--glass" type="button" data-manacore-copy="<?php echo esc_url( $koohe_permalink ); ?>">⧉ <?php esc_html_e( 'کپی لینک', 'koohe-film' ); ?></button>
 				</div>
 
@@ -124,3 +173,7 @@ $koohe_permalink = $koohe_post_id ? get_permalink( $koohe_post_id ) : '#';
 	</div>
 </section>
 <!-- /wp:html -->
+
+<!-- wp:group {"align":"wide","className":"koohe-title-rating","style":{"spacing":{"margin":{"top":"var:preset|spacing|30"}}},"layout":{"type":"constrained"}} -->
+<div class="wp-block-group alignwide koohe-title-rating" style="margin-top:var(--wp--preset--spacing--30)"><!-- wp:manacore/rating-box {"showScores":true,"showBars":true,"showUserRating":true,"showSummary":true} /--></div>
+<!-- /wp:group -->

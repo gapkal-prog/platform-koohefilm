@@ -40,6 +40,8 @@ class Block_Data {
 			'sliderAligns'   => self::slider_alignments(),
 			'downloadStyles' => self::download_styles(),
 			'headingLevels'  => self::heading_levels(),
+			/* نقش‌های چهره برای بازرس بلوک «شبکه‌ی چهره‌ها». */
+			'personRoles'    => self::term_options( 'person_role' ),
 			'imageRatios'    => self::image_ratios(),
 			'metaFields'     => self::meta_fields(),
 			'linkTypes'      => function_exists( 'manacore_link_types' ) ? manacore_link_types() : array(),
@@ -52,7 +54,10 @@ class Block_Data {
 				'contexts'  => Block_Visibility::contexts(),
 				'devices'   => Block_Visibility::devices(),
 			),
+			'pickableTypes'  => self::pickable_types(),
 			'hasSubs'        => function_exists( 'manacore_subs_user_level' ),
+			/* تب‌های برگه‌ی حساب — برای گزینه‌های ویرایشگر (منبع: کلاس Account). */
+			'accountTabs'    => Account::tabs(),
 			// سازگاری با نسخه‌ی قبلی اسکریپت.
 			'genres'         => self::term_options( 'genre' ),
 		);
@@ -81,6 +86,9 @@ class Block_Data {
 			'related'     => __( 'آثار مشابه (بر اساس اثر جاری)', 'manacore' ),
 			'person_works' => __( 'آثار این عامل (صفحه‌ی عامل)', 'manacore' ),
 			'collection'  => __( 'آثار یک مجموعه', 'manacore' ),
+			/* منابع کاربرمحور برگه‌ی حساب (کلاس Account). */
+			'watchlist'   => __( 'لیست تماشای من', 'manacore' ),
+			'recommended' => __( 'پیشنهاد برای من (بر پایه ژانرها)', 'manacore' ),
 		);
 
 		/**
@@ -105,6 +113,34 @@ class Block_Data {
 	 *
 	 * @return array
 	 */
+	/**
+	 * نوع‌های محتوای قابل انتخاب در گزینش‌گر «اثر» ویرایشگر.
+	 *
+	 * گزینش‌گر ویرایشگر برای یافتن یک اثر مشخص (مثلاً سریال میزبانِ قسمت‌ها)
+	 * باید بتواند در REST وردپرس جست‌وجو کند؛ پس هر نوع محتوا همراه با
+	 * `rest_base` خودش برگردانده می‌شود. تنها نوع‌هایی می‌آیند که
+	 * `show_in_rest` دارند، وگرنه گزینش‌گر آن‌ها را بی‌پاسخ می‌گذارد.
+	 *
+	 * @return array نگاشت slug => array( label, restBase ).
+	 */
+	public static function pickable_types() {
+		$out = array();
+
+		foreach ( self::all_post_types() as $slug => $label ) {
+			$object = get_post_type_object( $slug );
+			if ( ! $object || empty( $object->show_in_rest ) ) {
+				continue;
+			}
+
+			$out[ $slug ] = array(
+				'label'    => $label,
+				'restBase' => ! empty( $object->rest_base ) ? $object->rest_base : $slug,
+			);
+		}
+
+		return $out;
+	}
+
 	public static function all_post_types() {
 		$out     = array();
 		$objects = get_post_types(
@@ -238,7 +274,12 @@ class Block_Data {
 			'manacore_card_styles',
 			array(
 				'poster'    => __( 'پوستر', 'manacore' ),
-				'wide'      => __( 'عریض', 'manacore' ),
+				/*
+				 * «عریض» از فهرست حذف شد: با «افقی (۱۶:۹)» هم‌پوشانی کامل
+				 * داشت (هر دو نسبت ۱۶:۹) و در ویرایشگر دو انتخاب برای یک
+				 * نتیجه دیده می‌شد. مقدار کهنه در `Templates::card` به
+				 * «افقی» نگاشت می‌شود تا محتوای قدیمی ظاهرش را از دست ندهد.
+				 */
 				'minimal'   => __( 'مینیمال', 'manacore' ),
 				'text'      => __( 'فقط متن', 'manacore' ),
 				'overlay'   => __( 'متن روی تصویر', 'manacore' ),
@@ -302,7 +343,15 @@ class Block_Data {
 	}
 
 	/**
-	 * سبک‌های ظاهری جعبه‌ی دانلود.
+	 * سبک‌های ظاهری بخش دانلود.
+	 *
+	 * قرارداد تازه (هم‌شکل مرجع `cinora/detail.html`):
+	 *   `cards` → جدول کادردار با سرستون و ردیف‌ها (پیش‌فرض)
+	 *   `table` → همان جدول بدون کادر بیرونی
+	 *
+	 * سبک‌های جعبه‌ای قدیمی (`compact`، `accordion`، `buttons`) با
+	 * حذف CSS آن‌ها بی‌اثر می‌شدند و گزینه‌ی بی‌اثر در ویرایشگر
+	 * نمی‌مانیم؛ پس از فهرست هم برداشته شدند.
 	 *
 	 * @return array
 	 */
@@ -310,11 +359,8 @@ class Block_Data {
 		return (array) apply_filters(
 			'manacore_download_styles',
 			array(
-				'cards'    => __( 'کارتی (پیش‌فرض)', 'manacore' ),
-				'table'    => __( 'جدولی', 'manacore' ),
-				'compact'  => __( 'فشرده', 'manacore' ),
-				'accordion'=> __( 'آکاردئونی', 'manacore' ),
-				'buttons'  => __( 'دکمه‌ای', 'manacore' ),
+				'cards' => __( 'کادردار (پیش‌فرض)', 'manacore' ),
+				'table' => __( 'جدولی بدون کادر', 'manacore' ),
 			)
 		);
 	}
@@ -342,7 +388,7 @@ class Block_Data {
 	 */
 	public static function image_ratios() {
 		return array(
-			''      => __( 'پیش‌فرض پوسته', 'manacore' ),
+			''      => __( 'همراه با سبک کارت', 'manacore' ),
 			'2-3'   => __( 'پوستر ۲:۳', 'manacore' ),
 			'3-4'   => __( 'عمودی ۳:۴', 'manacore' ),
 			'1-1'   => __( 'مربع ۱:۱', 'manacore' ),

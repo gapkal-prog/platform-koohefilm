@@ -1,0 +1,176 @@
+
+══════ عرض 1440px ══════
+
+── سریال ──
+  ✓ سریال / section
+  ✓ سریال / heading
+  ✓ سریال / title
+  ✓ سریال / h2
+  ✓ سریال / icon
+  ✓ سریال / notice
+  ✓ سریال / tabs
+  ✓ سریال / tab
+  ✓ سریال / tabSmall
+  ✓ سریال / table
+  ✓ سریال / header
+  ✓ سریال / row
+  ✓ سریال / quality
+  ✓ سریال / qualityB
+  ✓ سریال / qualitySmall
+  ✓ سریال / format
+  ✓ سریال / size
+  ✓ سریال / actions
+  ✓ سریال / card
+  ✓ سریال / cardBtn
+  ✓ سریال / num
+  ✓ سریال / strong
+  ✓ سریال / small
+  ✓ سریال / subtitle
+  ✓ سریال / play
+  ✓ سریال / playBtn (متن و آیکون)
+  ✓ سریال / playBtn (سبک)
+  ✓ سریال / playBtn (ارتفاع)
+  ✓ سریال / dlBtn (متن و آیکون)
+  ✓ سریال / dlBtn (سبک)
+  ✓ سریال / dlBtn (ارتفاع)
+  ✓ سریال / tableBox
+  ✓ سریال / iconBox
+  ✓ سریال / numBox
+  ✓ سریال / playBox
+  ✓ سریال / ستون‌های سرستون جدول
+  ✓ سریال / ستون‌های ردیف جدول
+  ✓ کارت نخست از سمت سرور باز است
+  ✓ کارت دوم بسته است
+  ✓ دست‌کم یک پنل فصل دیده می‌شود
+  ✓ کلیک کارت دوم آن را باز می‌کند
+  ✓ کارت بازشده ردیف‌های کیفیت دارد (3)
+  ✓ کلیک فصل، پنل همان فصل را نشان می‌دهد
+  ✓ گزینش فصل با نوار هم‌گام است
+
+── فیلم ──
+  ✓ فیلم / section
+  ✓ فیلم / heading
+  ✓ فیلم / title
+  ✓ فیلم / h2
+  ✓ فیلم / icon
+  ✓ فیلم / notice
+  ✓ فیلم / tabs
+  ✓ فیلم / tab
+  ✓ فیلم / tabSmall
+  ✓ فیلم / table
+  ✓ فیلم / header
+  ✓ فیلم / row
+  ✓ فیلم / quality
+  ✓ فیلم / qualityB
+  ✓ فیلم / qualitySmall
+  ✓ فیلم / format
+  ✓ فیلم / size
+  ✓ فیلم / actions
+  ✓ فیلم / card
+  ✓ فیلم / cardBtn
+  ✓ فیلم / num
+  ✓ فیلم / strong
+  ✓ فیلم / small
+  ✓ فیلم / subtitle
+  ✓ فیلم / play
+  ✓ فیلم / playBtn (متن و آیکون)
+  ✓ فیلم / playBtn (سبک)
+  ✓ فیلم / playBtn (ارتفاع)
+  ✓ فیلم / dlBtn (متن و آیکون)
+  ✓ فیلم / dlBtn (سبک)
+  ✓ فیلم / dlBtn (ارتفاع)
+  ✓ فیلم / tableBox
+  ✓ فیلم / iconBox
+  ✓ فیلم / numBox
+  ✓ فیلم / playBox
+  ✓ فیلم / ستون‌های سرستون جدول
+  ✓ فیلم / ستون‌های ردیف جدول
+
+══════ عرض 980px ══════
+
+── سریال ──
+  ✓ سریال / section
+  ✓ سریال / heading
+  ✓ سریال / title
+  ✓ سریال / h2
+  ✓ سریال / icon
+  ✓ سریال / notice
+  ✓ سریال / tabs
+  ✓ سریال / tab
+  ✓ سریال / tabSmall
+  ✓ سریال / table
+  ✓ سریال / header
+  ✓ سریال / row
+  ✓ سریال / quality
+  ✓ سریال / qualityB
+  ✓ سریال / qualitySmall
+  ✓ سریال / format
+  ✓ سریال / size
+  ✓ سریال / actions
+  ✓ سریال / card
+  ✓ سریال / cardBtn
+  ✓ سریال / num
+  ✓ سریال / strong
+  ✓ سریال / small
+  ✓ سریال / subtitle
+  ✓ سریال / play
+  ✓ سریال / playBtn (متن و آیکون)
+  ✓ سریال / playBtn (سبک)
+  ✓ سریال / playBtn (ارتفاع)
+  ✓ سریال / dlBtn (متن و آیکون)
+  ✓ سریال / dlBtn (سبک)
+  ✓ سریال / dlBtn (ارتفاع)
+  ✓ سریال / tableBox
+  ✓ سریال / iconBox
+  ✓ سریال / numBox
+  ✓ سریال / playBox
+  ✓ سریال / ستون‌های سرستون جدول
+  ✓ سریال / ستون‌های ردیف جدول
+  ✓ کارت نخست از سمت سرور باز است
+  ✓ کارت دوم بسته است
+  ✓ دست‌کم یک پنل فصل دیده می‌شود
+  ✓ کلیک کارت دوم آن را باز می‌کند
+  ✓ کارت بازشده ردیف‌های کیفیت دارد (3)
+  ✓ کلیک فصل، پنل همان فصل را نشان می‌دهد
+  ✓ گزینش فصل با نوار هم‌گام است
+
+── فیلم ──
+  ✓ فیلم / section
+  ✓ فیلم / heading
+  ✓ فیلم / title
+  ✓ فیلم / h2
+  ✓ فیلم / icon
+  ✓ فیلم / notice
+  ✓ فیلم / tabs
+  ✓ فیلم / tab
+  ✓ فیلم / tabSmall
+  ✓ فیلم / table
+  ✓ فیلم / header
+  ✓ فیلم / row
+  ✓ فیلم / quality
+  ✓ فیلم / qualityB
+  ✓ فیلم / qualitySmall
+  ✓ فیلم / format
+  ✓ فیلم / size
+  ✓ فیلم / actions
+  ✓ فیلم / card
+  ✓ فیلم / cardBtn
+  ✓ فیلم / num
+  ✓ فیلم / strong
+  ✓ فیلم / small
+  ✓ فیلم / subtitle
+  ✓ فیلم / play
+  ✓ فیلم / playBtn (متن و آیکون)
+  ✓ فیلم / playBtn (سبک)
+  ✓ فیلم / playBtn (ارتفاع)
+  ✓ فیلم / dlBtn (متن و آیکون)
+  ✓ فیلم / dlBtn (سبک)
+  ✓ فیلم / dlBtn (ارتفاع)
+  ✓ فیلم / tableBox
+  ✓ فیلم / iconBox
+  ✓ فیلم / numBox
+  ✓ فیلم / playBox
+  ✓ فیلم / ستون‌های سرستون جدول
+  ✓ فیلم / ستون‌های ردیف جدول
+
+162 / 0

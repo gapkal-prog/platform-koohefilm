@@ -537,6 +537,18 @@ class Block_Visibility {
 		if ( $post_id ) {
 			return (int) $post_id;
 		}
+
+		/*
+		 * صفحه‌ی پخش (`/watch/?manacore_id=…`) هیچ زمینه‌ی پستی ندارد؛ اثر
+		 * جاری از کوئری خوانده می‌شود تا مشخصات، دانلود و کارت‌های مکمل
+		 * همه به همان اثر اشاره کنند.
+		 */
+		if ( class_exists( __NAMESPACE__ . '\\Player' ) ) {
+			$watched = Player::watched_id();
+			if ( $watched ) {
+				return (int) $watched;
+			}
+		}
 		$queried = get_queried_object();
 		if ( $queried instanceof \WP_Post ) {
 			return (int) $queried->ID;

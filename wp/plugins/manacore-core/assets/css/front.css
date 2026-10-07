@@ -38,7 +38,7 @@
 	--mc-text: var(--wp--preset--color--foreground, #14161a);
 	--mc-text-muted: var(--wp--preset--color--muted, #6b7280);
 	--mc-accent: var(--wp--preset--color--accent, #f59e0b);
-	--mc-accent-contrast: #111318;
+	--mc-accent-contrast: var(--wp--preset--color--accent-contrast, #111318);
 	--mc-border: var(--wp--preset--color--border, rgba(0, 0, 0, .1));
 	--mc-success: #16a34a;
 	--mc-danger: #dc2626;
@@ -87,7 +87,7 @@
 	--mc-text: var(--wp--preset--color--foreground, var(--mc-dark-foreground));
 	--mc-text-muted: var(--wp--preset--color--muted, var(--mc-dark-muted));
 	--mc-border: var(--wp--preset--color--border, var(--mc-dark-border));
-	--mc-accent-contrast: #101216;
+	--mc-accent-contrast: var(--wp--preset--color--accent-contrast, #101216);
 	--mc-success: #22c55e;
 	--mc-danger: #ef4444;
 	--mc-warning: #f59e0b;
@@ -102,7 +102,7 @@
  * renders correctly when the visitor picks light.
  */
 [data-color-mode="light"] {
-	--mc-accent-contrast: #111318;
+	--mc-accent-contrast: var(--wp--preset--color--accent-contrast, #111318);
 	--mc-success: #16a34a;
 	--mc-danger: #dc2626;
 	--mc-warning: #d97706;
@@ -127,34 +127,32 @@
 	box-sizing: border-box;
 }
 
+/*
+ * سرتیتر بخش‌ها، هم‌ریتم با `.section-heading` مرجع:
+ * flex + gap ۲۲ + margin-bottom ۲۳ + min-height ۳۷، و پیوند «بیشتر»
+ * با `margin-inline-start: auto` به انتهای سطر می‌چسبد (عیناً مرجع).
+ */
 .manacore-block-head {
 	display: flex;
 	align-items: center;
-	justify-content: space-between;
-	gap: 12px;
-	margin-bottom: 14px;
-	flex-wrap: wrap;
+	gap: 22px;
+	min-height: 37px;
+	margin-bottom: 23px;
 }
 
+/*
+ * تیتر بخش: در مرجع `19px/700` با `line-height: 1.6` و بدون هیچ نشانه‌ی
+ * گرافیکی کنارِ متن است (نشانه، اگر باشد، `.section-icon` است).
+ * پیش‌تر یک نوار اکسنت `::before` اینجا بود که در مرجع وجود ندارد.
+ */
 .manacore-section-title {
-	font-size: clamp(1.05rem, 1.6vw, 1.35rem);
-	font-weight: 700;
-	line-height: 1.4;
+	display: flex;
+	align-items: center;
+	gap: 11px;
 	margin: 0;
-	position: relative;
-	padding-inline-start: 12px;
-}
-
-.manacore-section-title::before {
-	content: "";
-	position: absolute;
-	inset-inline-start: 0;
-	top: 50%;
-	transform: translateY(-50%);
-	width: 4px;
-	height: 1.1em;
-	border-radius: var(--mc-radius-pill);
-	background: var(--mc-accent);
+	font-size: 1.1875rem;
+	font-weight: 700;
+	line-height: 1.6;
 }
 
 .manacore-more-link {
@@ -170,17 +168,26 @@
 	color: var(--mc-accent);
 }
 
+/*
+ * دکمه‌ها دقیقاً معیارهای مرجع را دارند (`.button` سینورا):
+ *   پایه: min-height 43px، padding 11px 19px، فونت 12px، شعاع 7px
+ *   کوچک: min-height 31px، padding 7px 12px، فونت 10px
+ *   ثانویه: پس‌زمینه‌ی `--panel-2` مرجع (سطح سوم ما)
+ * پیش‌تر دکمه‌ها قرصی‌شکل (شعاع ۹۹۹px) و درشت‌تر بودند؛ همان تفاوت
+ * ظاهری‌ای که در بازبینی جدول دانلود و صفحه‌ی پخش دیده شد.
+ */
 .manacore-btn {
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
-	gap: 8px;
-	padding: 10px 18px;
+	gap: 9px;
+	min-height: 43px;
+	padding: 11px 19px;
 	border: 1px solid var(--mc-border);
-	border-radius: var(--mc-radius-pill);
+	border-radius: 7px;
 	background: var(--mc-surface-2);
 	color: var(--mc-text);
-	font-size: .9rem;
+	font-size: .75rem;
 	font-weight: 600;
 	line-height: 1.2;
 	text-decoration: none;
@@ -191,9 +198,14 @@
 
 .manacore-btn:hover,
 .manacore-btn:focus-visible {
-	background: var(--mc-surface-3);
+	border-color: var(--mc-accent);
 	color: var(--mc-text);
-	transform: translateY(-1px);
+	transform: translateY(-2px);
+}
+
+/* ثانویه: سطح سوم (`--panel-2` مرجع). */
+.manacore-btn.is-secondary {
+	background: var(--mc-surface-3);
 }
 
 .manacore-btn.is-primary {
@@ -213,8 +225,10 @@
 }
 
 .manacore-btn.is-small {
-	padding: 6px 12px;
-	font-size: .8rem;
+	min-height: 31px;
+	padding: 7px 12px;
+	gap: 6px;
+	font-size: .625rem;
 }
 
 .manacore-btn[disabled],
@@ -237,14 +251,6 @@
 	white-space: nowrap;
 }
 
-.manacore-chips {
-	display: flex;
-	flex-wrap: wrap;
-	gap: 6px;
-	margin: 0;
-	padding: 0;
-	list-style: none;
-}
 
 .manacore-chip {
 	display: inline-flex;
@@ -279,18 +285,6 @@
 	font-size: .9rem;
 }
 
-.manacore-inline-notice {
-	display: flex;
-	align-items: center;
-	gap: 10px;
-	padding: 12px 16px;
-	border: 1px solid var(--mc-border);
-	border-inline-start: 3px solid var(--mc-accent);
-	border-radius: var(--mc-radius-sm);
-	background: var(--mc-surface-2);
-	color: var(--mc-text-muted);
-	font-size: .85rem;
-}
 
 /* -------------------------------------------------------------------------
  * 3. Grid + cards
@@ -303,6 +297,33 @@
 	margin: 0;
 	padding: 0;
 	list-style: none;
+}
+
+/*
+ * نردبان فاصله‌ی شبکه، عیناً از `.media-grid` مرجع سینورا: پایه ۲۰px و
+ * سپس ۱۸px در ≤۱۳۰۰، ۱۶px در ≤۷۶۸ و ۱۵px در ≤۴۸۰ (شکست‌های خودِ
+ * مرجع). پیش از این
+ * `--mc-gap: clamp(12px, 2vw, 20px)` بود؛ در ۷۶۸px مقدار سِیال ۱۵٫۳۶px و
+ * در ۳۹۰px مقدار ۱۲px می‌داد، در حالی که مرجع همان‌جا ۱۶ و ۱۵ دارد.
+ * مقدار درون‌خطی بلوک (ویژگی «فاصله‌ی شبکه» در ویرایشگر) همچنان برنده
+ * است، چون روی خودِ عنصر نوشته می‌شود.
+ */
+@media (max-width: 1300px) {
+	.manacore-grid-cards {
+		--mc-gap: 18px;
+	}
+}
+
+@media (max-width: 768px) {
+	.manacore-grid-cards {
+		--mc-gap: 16px;
+	}
+}
+
+@media (max-width: 480px) {
+	.manacore-grid-cards {
+		--mc-gap: 15px;
+	}
 }
 
 @media (max-width: 1280px) {
@@ -326,7 +347,6 @@
 @media (max-width: 520px) {
 	.manacore-grid-cards {
 		grid-template-columns: repeat(2, minmax(0, 1fr));
-		--mc-gap: 12px;
 	}
 }
 
@@ -429,7 +449,8 @@
 
 .manacore-card-rating,
 .manacore-card-type,
-.manacore-card-premium {
+.manacore-card-premium,
+.manacore-card-quality {
 	position: absolute;
 	z-index: 2;
 	display: inline-flex;
@@ -443,9 +464,15 @@
 	backdrop-filter: blur(6px);
 }
 
+/*
+ * نوار پایین تصویر مطابق مرجع (`poster-bottom`): کیفیت سمت راست، امتیاز سمت
+ * چپ. پیش‌تر امتیاز و کیفیت هر دو در گوشه‌ی بالا و روی هم می‌افتادند.
+ */
 .manacore-card-rating {
-	inset-block-start: 8px;
-	inset-inline-start: 8px;
+	inset-block-start: auto;
+	inset-block-end: 8px;
+	inset-inline-start: auto;
+	inset-inline-end: 8px;
 	background: rgba(0, 0, 0, .68);
 	color: #ffd166;
 }
@@ -458,16 +485,26 @@
 }
 
 .manacore-card-premium {
-	inset-block-end: 8px;
+	inset-block-end: 38px;
 	inset-inline-start: 8px;
 	background: var(--mc-accent);
 	color: var(--mc-accent-contrast);
 }
 
+/* کیفیت (مثلاً ۱۰۸۰p) — نوار پایین تصویر، مقابل امتیاز. */
+.manacore-card-quality {
+	inset-block-start: auto;
+	inset-block-end: 8px;
+	inset-inline-start: 8px;
+	background: rgba(0, 0, 0, .68);
+	color: #fff;
+}
+
 .manacore-card-fav {
 	position: absolute;
 	inset-block-start: 8px;
-	inset-inline-start: 8px;
+	inset-inline-start: auto;
+	inset-inline-end: 8px;
 	z-index: 3;
 	width: 29px;
 	height: 29px;
@@ -549,23 +586,76 @@
 	box-shadow: 0 15px 35px rgba(0, 0, 0, .08);
 }
 
-.manacore-hero.is-height-small { --mc-hero-h: 42vh; }
-.manacore-hero.is-height-medium { --mc-hero-h: 60vh; }
-.manacore-hero.is-height-large { --mc-hero-h: 78vh; }
+/*
+ * ارتفاع‌ها از مرجع (`hero` سینورا) گرفته شده‌اند، نه از vh:
+ * پایه ۴۱۹px، ≤۹۸۰px برابر ۴۰۲px، ≤۷۶۸px برابر ۴۴۹px، ≥۹۸۱px برابر
+ * ۳۹۰px و ≥۱۶۰۰px برابر ۴۲۵px.
+ *
+ * پیش‌تر ارتفاع ۶۰vh بود؛ در پنجره‌ی ۱۴۴۰×۱۰۰۰ یعنی ۶۰۰px و بوم نهایی
+ * ۷۲۰px رندر می‌شد، در حالی که مرجع ۳۹۰px است. تنوع کوتاه/متوسط/بلند هم
+ * حول همان عدد پایه بازتنظیم شد تا انتخاب‌ها معنادار بمانند.
+ */
+.manacore-hero {
+	--mc-hero-h: 419px;
+}
+
+.manacore-hero.is-height-small { --mc-hero-h: 340px; }
+.manacore-hero.is-height-medium { --mc-hero-h: 419px; }
+.manacore-hero.is-height-large { --mc-hero-h: 520px; }
 /* «تمام‌صفحه» در ویرایشگر گزینه بود ولی قاعده‌ای نداشت و بی‌اثر می‌ماند. */
 .manacore-hero.is-height-full { --mc-hero-h: 100vh; }
 
-.manacore-hero-track {
-	position: relative;
-	/*
-	 * سقف بیشینه از خودِ متغیر خوانده می‌شود تا حالت «تمام‌صفحه» با
-	 * سقف ثابت ۷۲۰px خنثی نشود.
-	 */
-	min-height: clamp(280px, var(--mc-hero-h, 60vh), var(--mc-hero-max, 720px));
+/*
+ * پله‌های واکنش‌گرا برای هر سه حالت، با همان اولویت انتخاب‌گر (کلاسِ
+ * حالت + کلاس پایه) تا قاعده‌ی رسانه‌ای روی مقدار حالت سوار شود.
+ */
+@media (max-width: 768px) {
+	.manacore-hero,
+	.manacore-hero.is-height-medium { --mc-hero-h: 449px; }
+
+	.manacore-hero.is-height-small { --mc-hero-h: 380px; }
+
+	.manacore-hero.is-height-large { --mc-hero-h: 520px; }
 }
 
-.manacore-hero.is-height-full { --mc-hero-max: 100vh; }
+@media (min-width: 769px) and (max-width: 980px) {
+	.manacore-hero,
+	.manacore-hero.is-height-medium { --mc-hero-h: 402px; }
 
+	.manacore-hero.is-height-small { --mc-hero-h: 340px; }
+
+	.manacore-hero.is-height-large { --mc-hero-h: 480px; }
+}
+
+@media (min-width: 981px) {
+	.manacore-hero,
+	.manacore-hero.is-height-medium { --mc-hero-h: 390px; }
+
+	.manacore-hero.is-height-small { --mc-hero-h: 320px; }
+
+	.manacore-hero.is-height-large { --mc-hero-h: 470px; }
+}
+
+@media (min-width: 1600px) {
+	.manacore-hero,
+	.manacore-hero.is-height-medium { --mc-hero-h: 425px; }
+
+	.manacore-hero.is-height-large { --mc-hero-h: 500px; }
+}
+
+.manacore-hero-track {
+	position: relative;
+	height: var(--mc-hero-h, 419px);
+}
+
+/*
+ * اسلاید فعال هم `absolute` می‌ماند.
+ *
+ * پیش‌تر اسلاید فعال `position: relative` می‌شد و ارتفاعش را از محتوا
+ * می‌گرفت؛ نتیجه‌ی سنجیده‌شده در ۱۴۴۰×۱۰۰۰: بوم ۷۲۰px با اسلاید ۲۷۳px،
+ * یعنی تصویر هیرو فقط ۲۷۳px از نوار را می‌پوشاند و تصویر «تمام‌عرض» نمی‌شد.
+ * اکنون همه‌ی اسلایدها `inset: 0` دارند و تصویر کل نوار را پر می‌کند.
+ */
 .manacore-hero-slide {
 	position: absolute;
 	inset: 0;
@@ -579,12 +669,57 @@
 .manacore-hero-slide.is-active {
 	opacity: 1;
 	visibility: visible;
-	position: relative;
 }
 
+/* اندازه‌های درونی مطابق مرجع در دسکتاپ (`@media(min-width:981px)`). */
+@media (min-width: 981px) {
+	.manacore-hero-content {
+		padding-top: 28px;
+	}
+
+	.manacore-hero-title {
+		font-size: 2.5625rem;
+		line-height: 1.55;
+	}
+
+	.manacore-hero-meta {
+		gap: 13px;
+		margin-top: 15px;
+		font-size: .6875rem;
+	}
+
+	.manacore-hero-excerpt {
+		margin-top: 14px;
+		font-size: .75rem;
+		line-height: 2.05;
+	}
+
+	.manacore-hero-actions {
+		margin-top: 18px;
+	}
+
+	.manacore-hero-actions .manacore-btn {
+		font-size: .75rem;
+	}
+}
+
+/*
+ * تصویر هیرو.
+ *
+ * نکته: در این بلوک، کلاس `manacore-hero-bg` روی خودِ تگ `<img>` است، نه
+ * روی یک ظرف؛ پس قاعده‌ی `.manacore-hero-bg img` هرگز به آن نمی‌رسید.
+ * عنصر جانشین‌شده (replaced) با `inset: 0` و `width/height: auto` کشیده
+ * نمی‌شود و با اندازه‌ی ذاتی‌اش (سنجیده‌شده: ۱۲۸۰×۷۲۰ در نوار ۱۳۲۸×۳۹۰)
+ * رندر می‌شد و از کادر بیرون می‌زد. با عرض/ارتفاع صریح، تصویر کل نوار را
+ * پر می‌کند و `object-fit: cover` برش درست را می‌دهد.
+ */
 .manacore-hero-bg {
 	position: absolute;
 	inset: 0;
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	display: block;
 	z-index: -1;
 }
 
@@ -748,270 +883,976 @@ html:not([dir="rtl"]) .manacore-hero-bg::after {
  * 5. Download links
  * ---------------------------------------------------------------------- */
 
-.manacore-links {
-	border: 1px solid var(--mc-border);
-	border-radius: var(--mc-radius);
-	background: var(--mc-surface);
-	overflow: hidden;
+/* -------------------------------------------------------------------------
+ * صفحه‌ی پخش — هم‌شکل `.player-page` مرجع (`player.html`)
+ * ---------------------------------------------------------------------- */
+
+.player-page {
+	padding-top: 30px;
+	padding-bottom: 60px;
 }
 
-.manacore-links-header {
+.player-top {
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
-	gap: 12px;
-	flex-wrap: wrap;
-	padding: 16px 20px;
-	border-bottom: 1px solid var(--mc-border);
-	background: var(--mc-surface-2);
+	margin-bottom: 25px;
 }
 
-.manacore-links-header .manacore-section-title {
-	font-size: 1rem;
-}
-
-.manacore-links-total {
-	font-size: .78rem;
+.player-top > .text-link {
 	color: var(--mc-text-muted);
+	font-size: .6875rem;
+	text-decoration: none;
 }
 
-.manacore-season-tabs {
+.player-top > .text-link:hover {
+	color: var(--mc-accent);
+}
+
+.player-top > span {
 	display: flex;
-	flex-wrap: wrap;
-	gap: 6px;
-	padding: 12px 18px 0;
-	margin: 0;
-	list-style: none;
-}
-
-.manacore-season-tab {
-	padding: 7px 15px;
-	border: 1px solid var(--mc-border);
-	border-radius: var(--mc-radius-pill);
-	background: var(--mc-surface-2);
+	align-items: center;
+	gap: 7px;
 	color: var(--mc-text-muted);
-	font-size: .8rem;
-	font-weight: 600;
-	cursor: pointer;
-	transition: all var(--mc-transition);
+	font-size: .5625rem;
 }
 
-.manacore-season-tab:hover {
-	color: var(--mc-text);
-}
-
-.manacore-season-tab.is-active {
+.live-dot {
+	display: inline-block;
+	flex-shrink: 0;
+	width: 5px;
+	height: 5px;
+	border-radius: 50%;
 	background: var(--mc-accent);
-	border-color: var(--mc-accent);
-	color: var(--mc-accent-contrast);
+	box-shadow: 0 0 9px color-mix(in srgb, var(--mc-accent) 35%, transparent);
 }
 
-.manacore-season-panel {
-	display: none;
-	padding: 14px 18px 18px;
-}
-
-.manacore-season-panel.is-active {
-	display: block;
-	animation: manacore-fade .25s ease;
-}
-
-@keyframes manacore-fade {
-	from { opacity: 0; transform: translateY(6px); }
-	to { opacity: 1; transform: none; }
-}
-
-.manacore-link-group {
-	border: 1px solid var(--mc-border);
-	border-radius: var(--mc-radius-sm);
-	background: var(--mc-surface-2);
-	overflow: hidden;
-}
-
-.manacore-link-group + .manacore-link-group {
-	margin-top: 12px;
-}
-
-.manacore-link-group-head {
+.player-title {
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
-	gap: 10px;
-	flex-wrap: wrap;
-	padding: 11px 14px;
-	background: var(--mc-surface-3);
+	margin-bottom: 23px;
 }
 
-.manacore-link-group-title {
-	font-size: .9rem;
-	font-weight: 700;
+.player-title .eyebrow {
 	margin: 0;
-	color: var(--mc-text);
+	color: var(--mc-accent);
+	font-size: .625rem;
+	font-weight: 500;
+	letter-spacing: 1.2px;
 }
 
-.manacore-link-tags {
-	display: flex;
-	flex-wrap: wrap;
-	gap: 5px;
+.player-title h1 {
+	margin: 10px 0 0;
+	font-size: 1.8125rem;
+	line-height: normal;
 }
 
-.manacore-link-list {
-	margin: 0;
-	padding: 0;
-	list-style: none;
+.player-title div > p:not(.eyebrow) {
+	margin: 9px 0 0;
+	color: var(--mc-text-muted);
+	font-size: .6875rem;
 }
 
-.manacore-link-item {
+.player-badges {
 	display: flex;
 	align-items: center;
 	gap: 10px;
-	flex-wrap: wrap;
-	padding: 10px 14px;
-	border-top: 1px solid var(--mc-border);
-	transition: background var(--mc-transition);
 }
 
-.manacore-link-item:hover {
-	background: var(--mc-surface-3);
+.player-badges > span {
+	display: flex;
+	align-items: center;
+	gap: 5px;
+	padding: 7px 10px;
+	border: 1px solid var(--mc-border);
+	border-radius: 5px;
+	color: var(--mc-text-muted);
+	font-size: .625rem;
+	line-height: normal;
 }
 
-.manacore-link-icon {
-	flex: 0 0 auto;
-	width: 30px;
-	height: 30px;
-	display: grid;
-	place-items: center;
-	border-radius: var(--mc-radius-sm);
-	background: color-mix(in srgb, var(--mc-accent) 12%, transparent);
-	color: var(--mc-accent);
-	font-size: .85rem;
+.player-badges > span span {
+	color: var(--wp--preset--color--rating, #efd18a);
 }
 
-.manacore-link-episode {
-	flex: 0 0 auto;
-	min-width: 52px;
-	padding: 3px 8px;
-	border-radius: var(--mc-radius-sm);
-	background: color-mix(in srgb, var(--mc-accent) 10%, transparent);
-	color: var(--mc-accent);
-	font-size: .74rem;
-	font-weight: 700;
-	text-align: center;
-}
-
-.manacore-link-label {
-	flex: 1 1 180px;
-	min-width: 0;
-	font-size: .85rem;
-	font-weight: 600;
-	color: var(--mc-text);
+.video-frame {
+	position: relative;
+	max-height: 675px;
+	aspect-ratio: 16 / 9;
+	border: 1px solid var(--mc-border);
+	border-radius: 11px 11px 0 0;
+	background: #05080c;
 	overflow: hidden;
-	text-overflow: ellipsis;
+}
+
+.video-frame > video,
+.video-frame > iframe {
+	width: 100%;
+	height: 100%;
+	border: 0;
+	object-fit: contain;
+}
+
+.player-controls {
+	display: flex;
+	align-items: center;
+	flex-wrap: wrap;
+	gap: 11px;
+	padding: 18px 20px;
+	border: 1px solid var(--mc-border);
+	border-top: 0;
+	border-radius: 0 0 10px 10px;
+	background: var(--mc-surface-2);
+}
+
+.player-controls > label {
+	display: flex;
+	align-items: center;
+	gap: 9px;
+	margin-inline-end: auto;
+	color: var(--mc-text-muted);
+	font-size: .625rem;
+}
+
+.player-controls > label svg {
+	color: var(--mc-accent);
+}
+
+.player-controls select {
+	padding: 8px;
+	border: 1px solid var(--mc-border);
+	border-radius: 7px;
+	/* مرجع گزینه‌ها را روی سطح تیره‌تر (`--panel`) می‌نشاند. */
+	background: var(--mc-surface);
+	color: var(--mc-text);
+	font: inherit;
+	font-size: .625rem;
+}
+
+/*
+ * مرجع دکمه‌های نوار کنترل را ۳۴px با فونت ۱۰px می‌کند و — چون
+ * `.button` ساده‌اند نه `.small` — فاصله‌ی آیکون/متن ۹px می‌ماند.
+ */
+.player-controls .manacore-btn {
+	flex: 0 0 auto;
+	gap: 9px;
+	min-height: 34px;
+	padding: 8px 12px;
+	font-size: .625rem;
+}
+
+.player-page .demo-notice {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	margin-top: 17px;
+	padding: 12px 14px;
+	border: 1px solid color-mix(in srgb, var(--mc-accent) 16%, var(--mc-border));
+	border-radius: 7px;
+	background: color-mix(in srgb, var(--mc-accent) 4%, transparent);
+	color: var(--mc-text-muted);
+}
+
+.player-page .demo-notice > svg {
+	flex: 0 0 auto;
+	color: var(--mc-accent);
+}
+
+.player-page .demo-notice > p {
+	margin: 0;
+	font-size: .625rem;
+	line-height: 2;
+}
+
+/*
+ * حالت سینما در صفحه‌ی پخش — عیناً مثل مرجع:
+ * کلاس `cinema-mode` روی ریشه‌ی صفحه می‌نشیند و قاب ویدئو را پهن‌تر
+ * (`aspect-ratio: 2.1`) می‌کند. (پیش‌تر اینجا قاب تمام‌صفحه می‌شد؛ آن
+ * رفتار مربوط به مُدال سراسری است، نه صفحه‌ی پخش.)
+ */
+.player-page.cinema-mode .video-frame {
+	max-height: 760px;
+	aspect-ratio: 2.1;
+}
+
+/*
+ * نردبان واکنش‌گرای صفحه‌ی پخش در مرجع: فقط ۷۶۸ و ۴۸۰.
+ * (پیش‌تر ۹۰۰/۵۹۹ بود که با مرجع نمی‌خواند.)
+ */
+@media (max-width: 768px) {
+	.player-page {
+		padding-top: 25px;
+		padding-bottom: 40px;
+	}
+
+	/* مرجع در ≤۷۶۸ سقف ارتفاع قاب را برمی‌دارد. */
+	.video-frame {
+		max-height: none;
+	}
+
+	/*
+	 * حالت سینما در ≤۷۶۸: مرجع پدینگ افقی کم می‌کند و قاب را به نسبت
+	 * پایه‌ی ۱۶:۹ برمی‌گرداند (فقط سقف ارتفاع می‌ماند).
+	 */
+	.player-page.cinema-mode {
+		padding-inline: 10px;
+	}
+
+	.player-page.cinema-mode .video-frame {
+		aspect-ratio: 16 / 9;
+	}
+
+	.player-page .demo-notice {
+		gap: 8px;
+		padding: 11px 12px;
+	}
+
+	.player-page .demo-notice > p {
+		font-size: .5625rem;
+	}
+
+	.player-top > .text-link {
+		font-size: .625rem;
+	}
+
+	.player-top > span {
+		font-size: .5rem;
+	}
+
+	.player-title h1 {
+		font-size: 1.5625rem;
+	}
+
+	.player-title div > p:not(.eyebrow) {
+		font-size: .625rem;
+	}
+
+	/* مرجع در این عرض نشان‌ها را پنهان می‌کند. */
+	.player-badges {
+		display: none;
+	}
+
+	.player-controls {
+		padding: 15px;
+		gap: 10px;
+	}
+
+	.player-controls > label {
+		width: 100%;
+		margin-inline-end: 0;
+		margin-bottom: 2px;
+	}
+
+	.player-controls > label select {
+		margin-inline-start: auto;
+	}
+
+	.player-controls .manacore-btn {
+		font-size: .5625rem;
+		min-height: 32px;
+		padding: 8px 11px;
+	}
+}
+
+@media (max-width: 480px) {
+	.player-top > span {
+		display: none;
+	}
+
+	.player-title h1 {
+		font-size: 1.4375rem;
+	}
+
+	.player-title div > p:not(.eyebrow) {
+		font-size: .5625rem;
+	}
+
+	.player-controls {
+		gap: 9px;
+		padding: 13px;
+	}
+
+	.player-controls .manacore-btn {
+		gap: 5px;
+		padding: 8px 10px;
+		font-size: .5rem;
+	}
+}
+
+@media (max-width: 599px) {
+	.player-controls {
+		gap: 9px;
+		padding: 13px;
+	}
+
+	.player-controls > label {
+		width: 100%;
+		margin-inline-end: 0;
+	}
+
+	.player-title div > p:not(.eyebrow) {
+		font-size: .5625rem;
+	}
+}
+
+.download-section {
+	margin-top: 33px;
+}
+
+.download-section .section-heading {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 22px;
+	min-height: 37px;
+	/* مرجع: `.section-heading{margin-bottom:23px}`. */
+	margin-bottom: 23px;
+}
+
+.download-section .heading-title {
+	display: flex;
+	align-items: center;
+	gap: 11px;
+}
+
+.download-section .heading-title :is(h2, h3, h4, h5, h6) {
+	margin: 0;
+	font-size: 1.125rem;
+	font-weight: 700;
+	line-height: 1.6;
+}
+
+.download-section .section-icon {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	/*
+	 * نشانه‌ی بخش در مرجع یک نویسه‌ی متنی است؛ جعبه‌ی سنجیده‌شده‌اش
+	 * ۱۳×۲۲ می‌شود، یعنی `line-height: normal` با قلم ۱۴px. پس هر دو
+	 * مقدار صریح پین می‌شوند تا قالب آن‌ها را تغییر ندهد.
+	 */
+	font-size: .875rem;
+	line-height: normal;
+	color: var(--mc-accent);
+}
+
+.download-section .text-link {
+	font-size: .625rem;
+	color: var(--mc-text-muted);
+	text-decoration: none;
+}
+
+.download-section > .muted {
+	margin: 0 0 12px;
+	font-size: .6875rem;
+	color: var(--mc-text-muted);
+}
+
+/* یادداشت اثر، مثل `.demo-notice` مرجع. */
+.download-section .demo-notice {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	margin: 17px 0;
+	padding: 12px 14px;
+	border: 1px solid color-mix(in srgb, var(--mc-accent) 16%, var(--mc-border));
+	border-radius: 7px;
+	background: color-mix(in srgb, var(--mc-accent) 4%, transparent);
+	color: var(--mc-text-muted);
+}
+
+.download-section .demo-notice > svg {
+	flex: 0 0 auto;
+	color: var(--mc-accent);
+}
+
+.download-section .demo-notice > p {
+	margin: 0;
+	font-size: .6875rem;
+	line-height: 2;
+}
+
+/* جدول دانلود. */
+.download-section .download-table {
+	padding: 0 20px;
+	border: 1px solid var(--mc-border);
+	border-radius: 10px;
+	/* `--panel` مرجع (سطح دوم ما)، نه پس‌زمینه‌ی برگه. */
+	background: var(--mc-surface-2);
+}
+
+/* سبک «بدون قاب»: همان خطوط جداکننده، بدون جعبه — حالت فشرده‌ی مرجع. */
+.download-section.is-table .download-table {
+	padding: 0;
+	border: 0;
+	border-top: 1px solid var(--mc-border);
+	border-radius: 0;
+	background: none;
+}
+
+.download-section .download-table-header,
+.download-section .download-row {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) minmax(0, .95fr) minmax(0, .95fr) minmax(0, 184px);
+	align-items: center;
+	gap: 15px;
+}
+
+.download-section .download-table-header {
+	padding: 17px 0;
+	border-bottom: 1px solid var(--mc-border);
+	color: var(--mc-text-muted);
+	font-size: .5625rem;
+}
+
+.download-section .download-row {
+	min-height: 70px;
+	border-bottom: 1px solid var(--mc-border);
+	font-size: .625rem;
+}
+
+.download-section .download-row:last-child {
+	border-bottom: 0;
+}
+
+.download-section .quality-name {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	min-width: 0;
+}
+
+.download-section .quality-name > b {
+	font-family: Arial, sans-serif;
+	font-size: .875rem;
+	font-weight: 600;
+	line-height: 1.15;
+	color: var(--mc-text);
+}
+
+.download-section .quality-name > small {
+	padding: 2px 4px;
+	border: 1px solid var(--mc-border);
+	border-radius: 3px;
+	color: var(--mc-text-muted);
+	font-size: .4375rem;
 	white-space: nowrap;
 }
 
-.manacore-link-note {
-	flex: 1 1 100%;
-	font-size: .74rem;
+.download-section .format-tag {
+	font-family: Arial, sans-serif;
+	font-size: .5625rem;
 	color: var(--mc-text-muted);
-	padding-inline-start: 40px;
 }
 
-.manacore-link-actions {
+.download-section .download-size {
+	color: var(--mc-text-muted);
+	/* مرجع: پایه ۹px و از ۹۸۱px به بالا ۱۰px. */
+	font-size: .5625rem;
+}
+
+/* مرجع در ≥۹۸۱px سرستون جدول و ستون حجم را یک پله بزرگ‌تر می‌کند. */
+@media (min-width: 981px) {
+	.download-section .download-table-header,
+	.download-section .download-size {
+		font-size: .625rem;
+	}
+}
+
+.download-section .download-actions {
+	display: flex;
+	justify-content: flex-end;
+	gap: 8px;
+}
+
+.download-section .download-actions .manacore-btn {
 	flex: 0 0 auto;
-	display: flex;
-	align-items: center;
-	gap: 6px;
-	margin-inline-start: auto;
 }
 
-.manacore-download {
-	display: inline-flex;
-	align-items: center;
-	gap: 6px;
-	padding: 7px 14px;
-	border-radius: var(--mc-radius-pill);
-	background: var(--mc-accent);
-	color: var(--mc-accent-contrast);
-	font-size: .78rem;
-	font-weight: 700;
-	text-decoration: none;
-	box-shadow: 0 4px 14px color-mix(in srgb, var(--mc-accent) 25%, transparent);
-	transition: filter var(--mc-transition), transform var(--mc-transition), box-shadow var(--mc-transition);
-}
-
-.manacore-download:hover,
-.manacore-download:focus-visible {
-	filter: brightness(1.08);
-	color: var(--mc-accent-contrast);
-	transform: translateY(-1px);
-}
-
-.manacore-copy {
-	width: 30px;
-	height: 30px;
-	display: grid;
-	place-items: center;
-	border: 1px solid var(--mc-border);
-	border-radius: var(--mc-radius-sm);
-	background: var(--mc-surface);
-	color: var(--mc-text-muted);
-	cursor: pointer;
-	transition: all var(--mc-transition);
-}
-
-.manacore-copy:hover,
-.manacore-copy.is-copied {
-	background: var(--mc-accent);
-	border-color: var(--mc-accent);
-	color: var(--mc-accent-contrast);
-}
-
-.manacore-locked {
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-	gap: 12px;
-	padding: 36px 24px;
-	text-align: center;
-	color: var(--mc-text-muted);
-}
-
-.manacore-locked-icon {
-	width: 54px;
-	height: 54px;
-	display: grid;
-	place-items: center;
-	border-radius: 50%;
-	background: var(--mc-surface-3);
-	color: var(--mc-accent);
-	font-size: 1.35rem;
-}
-
-.manacore-locked p {
-	margin: 0;
-	font-size: .9rem;
-	line-height: 1.8;
-}
-
-@media (max-width: 520px) {
-	.manacore-link-item {
-		gap: 8px;
-	}
-
-	.manacore-link-label {
-		flex-basis: 100%;
-		white-space: normal;
-	}
-
-	.manacore-link-note {
-		padding-inline-start: 0;
-	}
+/* تب فصل‌ها بالای جدول می‌نشیند. */
+.download-section .manacore-season-tabs {
+	margin-bottom: 14px;
 }
 
 /* -------------------------------------------------------------------------
- * 6. Meta list + rating box
+ * فصل‌ها و قسمت‌ها — ساختار `.season-tabs` + `.episode-card` مرجع
+ * (`detail.html` + `assets/css/style.css` سینورا).
  * ---------------------------------------------------------------------- */
+
+/* نوار فصل‌ها. */
+.download-section .season-tabs {
+	display: flex;
+	gap: 8px;
+	padding-bottom: 5px;
+	overflow-x: auto;
+	scrollbar-width: thin;
+	scrollbar-color: var(--mc-border) transparent;
+}
+
+.download-section .season-tabs > button {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	flex: 0 0 auto;
+	padding: 11px 16px;
+	border: 1px solid var(--mc-border);
+	border-radius: 7px;
+	background: var(--mc-surface-2);
+	color: var(--mc-text-muted);
+	font-size: .6875rem;
+	font-family: inherit;
+	white-space: nowrap;
+	cursor: pointer;
+	transition: border-color .2s, color .2s, background .2s;
+}
+
+.download-section .season-tabs > button small {
+	font-size: .5rem;
+	opacity: .6;
+}
+
+.download-section .season-tabs > button.active,
+.download-section .season-tabs > button:hover,
+.download-section .season-tabs > button:focus-visible {
+	border-color: var(--mc-accent);
+	color: var(--mc-accent);
+	background: color-mix(in srgb, var(--mc-accent) 5%, var(--mc-surface-2));
+}
+
+/* گزینش فصل در سرستون (`.section-heading > select` مرجع). */
+.download-section .manacore-season-select {
+	display: inline-flex;
+	align-items: center;
+}
+
+.download-section .manacore-season-select select {
+	max-width: 12rem;
+	padding: 7px 10px;
+	border: 1px solid var(--mc-border);
+	border-radius: 7px;
+	background: var(--mc-surface-2);
+	color: var(--mc-text);
+	font-family: inherit;
+	font-size: .6875rem;
+}
+
+/* فهرست قسمت‌ها. */
+.download-section .episode-list {
+	display: flex;
+	flex-direction: column;
+	gap: 11px;
+}
+
+.download-section .episode-card {
+	border: 1px solid var(--mc-border);
+	border-radius: 9px;
+	overflow: hidden;
+	background: var(--mc-surface-2);
+}
+
+.download-section .episode-heading {
+	display: flex;
+	align-items: center;
+}
+
+.download-section .episode-heading > button {
+	display: flex;
+	align-items: center;
+	gap: 15px;
+	flex: 1;
+	min-width: 0;
+	padding: 17px;
+	border: 0;
+	background: none;
+	color: inherit;
+	font-family: inherit;
+	font-size: inherit;
+	/* مرجع: `text-align:right` (صفحه راست‌به‌چپ است). */
+	text-align: right;
+	cursor: pointer;
+}
+
+.download-section .episode-number {
+	display: grid;
+	place-items: center;
+	flex-shrink: 0;
+	width: 35px;
+	height: 35px;
+	border: 1px solid var(--mc-border);
+	border-radius: 5px;
+	/* `.episode-number` مرجع روی `--bg` (پس‌زمینه‌ی برگه) می‌نشیند. */
+	background: var(--wp--preset--color--surface, #161c24);
+	color: var(--mc-accent);
+	font-size: .875rem;
+}
+
+.download-section .episode-heading strong {
+	font-size: .6875rem;
+	font-weight: 600;
+}
+
+.download-section .episode-heading small {
+	display: block;
+	margin-top: 5px;
+	color: var(--mc-text-muted);
+	font-size: .5rem;
+}
+
+.download-section .episode-subtitle {
+	margin-inline-start: auto;
+	color: var(--mc-text-muted);
+	font-size: .5625rem;
+}
+
+.download-section .episode-chevron {
+	display: inline-flex;
+	color: var(--mc-text-muted);
+	transition: transform .2s;
+}
+
+.download-section .episode-card.expanded .episode-chevron {
+	transform: rotate(180deg);
+}
+
+.download-section .episode-play {
+	display: grid;
+	place-items: center;
+	flex-shrink: 0;
+	width: 34px;
+	height: 34px;
+	/* مرجع: `margin:0 0 0 19px` — ۱۹px از لبه‌ی چپِ کارت (مقدار فیزیکی). */
+	margin: 0 0 0 19px;
+	border: 1px solid var(--mc-border);
+	border-radius: 50%;
+	background: var(--mc-surface-3);
+	color: var(--mc-accent);
+}
+
+.download-section .episode-play:hover,
+.download-section .episode-play:focus-visible {
+	border-color: var(--mc-accent);
+}
+
+/* جدول دانلود داخل کارت قسمت: بدون قاب، فقط خط بالا (مرجع). */
+.download-section .episode-card .download-table {
+	border: 0;
+	border-top: 1px solid var(--mc-border);
+	border-radius: 0;
+	background: var(--wp--preset--color--surface, #161c24);
+}
+
+/* -------------------------------------------------------------------------
+ * قسمت‌های فصل در صفحه‌ی پخش — `.player-episodes` مرجع.
+ * ---------------------------------------------------------------------- */
+
+.player-episodes {
+	margin-top: 31px;
+}
+
+.player-episodes .section-heading {
+	display: flex;
+	align-items: center;
+	gap: 22px;
+	min-height: 37px;
+	margin-bottom: 23px;
+}
+
+.player-episodes .heading-title {
+	display: flex;
+	align-items: center;
+	gap: 11px;
+}
+
+.player-episodes .heading-title h2 {
+	margin: 0;
+	font-size: 1.1875rem;
+	font-weight: 700;
+	line-height: 1.6;
+}
+
+.player-episodes .section-icon {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	font-size: .875rem;
+	line-height: normal;
+	color: var(--mc-accent);
+}
+
+.player-episodes .episode-navigation {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	margin-inline-start: auto;
+}
+
+.player-episodes .episode-pills {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 9px;
+	padding: 20px;
+	border: 1px solid var(--mc-border);
+	border-radius: 10px;
+	background: var(--mc-surface-2);
+}
+
+.player-episodes .episode-pills > a {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	padding: 9px 13px;
+	border: 1px solid var(--mc-border);
+	border-radius: 6px;
+	color: var(--mc-text-muted);
+	font-size: .625rem;
+	text-decoration: none;
+}
+
+.player-episodes .episode-pills > a:hover,
+.player-episodes .episode-pills > a:focus-visible,
+.player-episodes .episode-pills > a.active {
+	border-color: var(--mc-accent);
+	background: var(--mc-accent);
+	color: var(--mc-accent-contrast);
+}
+
+/*
+ * نردبان واکنش‌گرای مرجع برای بخش قسمت‌ها: ۹۸۰ / ۷۶۸ / ۴۸۰.
+ */
+@media (max-width: 980px) {
+	.player-episodes .section-heading {
+		gap: 15px;
+	}
+
+	.player-episodes .heading-title h2 {
+		font-size: 1.125rem;
+	}
+}
+
+@media (max-width: 768px) {
+	.player-episodes .section-heading {
+		gap: 15px;
+		flex-wrap: wrap;
+		margin-bottom: 19px;
+	}
+
+	.player-episodes .heading-title {
+		gap: 8px;
+	}
+
+	.player-episodes .heading-title h2 {
+		font-size: 1.0625rem;
+	}
+
+	.player-episodes .episode-navigation {
+		margin-inline-start: 0;
+	}
+
+	.player-episodes .episode-pills {
+		gap: 7px;
+		padding: 15px;
+	}
+
+	.player-episodes .episode-pills > a {
+		padding: 8px 11px;
+		font-size: .5625rem;
+	}
+}
+
+@media (max-width: 480px) {
+	.player-episodes .heading-title {
+		gap: 7px;
+	}
+
+	.player-episodes .heading-title h2 {
+		font-size: 1rem;
+	}
+}
+
+/*
+ * نردبان واکنش‌گرای مرجع برای جدول دانلود و سرستون بخش:
+ *   ۱۳۰۰ → ۱۱۰۰ → ۹۸۰ → ۷۶۸ → ۴۸۰ → ۳۶۰
+ * هر پله عیناً همان مقادیر `cinora/assets/css/style.css` است.
+ */
+@media (max-width: 1300px) {
+	.download-section .download-table-header,
+	.download-section .download-row {
+		grid-template-columns: minmax(0, 1fr) minmax(0, .8fr) minmax(0, .8fr) minmax(0, 180px);
+		gap: 10px;
+	}
+}
+
+@media (max-width: 1100px) {
+	.download-section .download-table {
+		padding: 0 15px;
+	}
+
+	.download-section .download-table-header,
+	.download-section .download-row {
+		grid-template-columns: minmax(0, 1fr) minmax(0, .85fr) minmax(0, 170px);
+	}
+
+	.download-section .download-table-header > span:nth-child(3),
+	.download-section .download-size {
+		display: none;
+	}
+
+	.download-section .quality-name {
+		gap: 5px;
+	}
+
+	.download-section .quality-name > small {
+		font-size: .375rem;
+	}
+}
+
+@media (max-width: 980px) {
+	.download-section .section-heading {
+		gap: 15px;
+	}
+
+	.download-section .heading-title :is(h2, h3, h4, h5, h6) {
+		font-size: 1.125rem;
+	}
+
+	.download-section .download-table-header,
+	.download-section .download-row {
+		grid-template-columns: minmax(0, .9fr) minmax(0, .8fr) minmax(0, 147px);
+		gap: 6px;
+	}
+
+	.download-section .download-actions {
+		gap: 6px;
+	}
+
+	.download-section .download-actions .manacore-btn {
+		padding: 7px 9px;
+		font-size: .5rem;
+	}
+
+	.download-section .quality-name > small {
+		display: none;
+	}
+}
+
+@media (max-width: 768px) {
+	.download-section .section-heading {
+		gap: 13px;
+		flex-wrap: wrap;
+		margin-bottom: 19px;
+	}
+
+	.download-section .heading-title {
+		gap: 8px;
+	}
+
+	.download-section .heading-title :is(h2, h3, h4, h5, h6) {
+		font-size: 1.0625rem;
+	}
+
+	.download-section .demo-notice {
+		gap: 8px;
+		padding: 11px 12px;
+	}
+
+	.download-section .demo-notice > p {
+		font-size: .5625rem;
+	}
+
+	.download-section .download-table {
+		padding: 0 12px;
+	}
+
+	.download-section .download-table-header,
+	.download-section .download-row {
+		grid-template-columns: minmax(0, .9fr) minmax(0, .75fr) minmax(0, 165px);
+		gap: 9px;
+	}
+
+	.download-section .download-table-header {
+		font-size: .5rem;
+	}
+
+	.download-section .download-actions .manacore-btn {
+		padding: 7px 10px;
+		font-size: .5625rem;
+	}
+
+	.download-section .quality-name > b {
+		font-size: .875rem;
+	}
+
+	.download-section .format-tag {
+		font-size: .5rem;
+	}
+
+	.download-section .download-row {
+		min-height: 64px;
+	}
+
+	/* مرجع در ≤۷۶۸ فاصله/پدینگ کارت قسمت را کم و زیرنویس را پنهان می‌کند. */
+	.download-section .episode-heading > button {
+		gap: 13px;
+		padding: 15px;
+	}
+
+	.download-section .episode-subtitle {
+		display: none;
+	}
+}
+
+@media (max-width: 480px) {
+	.download-section .heading-title {
+		gap: 7px;
+	}
+
+	.download-section .heading-title :is(h2, h3, h4, h5, h6) {
+		font-size: 1rem;
+	}
+
+	.download-section .download-table {
+		padding: 0 11px;
+	}
+
+	.download-section .download-table-header,
+	.download-section .download-row {
+		grid-template-columns: 63px minmax(50px, 1fr) 149px;
+		gap: 7px;
+	}
+
+	.download-section .download-table-header {
+		font-size: .4375rem;
+		line-height: 1.8;
+	}
+
+	.download-section .download-actions .manacore-btn {
+		gap: 5px;
+		padding: 7px 9px;
+		font-size: .5rem;
+	}
+
+	.download-section .format-tag {
+		font-size: .4375rem;
+	}
+
+	.download-section .quality-name > b {
+		font-size: .8125rem;
+	}
+}
+
+@media (max-width: 360px) {
+	.download-section .download-table-header,
+	.download-section .download-row {
+		grid-template-columns: minmax(0, 1fr) 149px;
+	}
+
+	.download-section .download-table-header > span:nth-child(2),
+	.download-section .format-tag {
+		display: none;
+	}
+}
+
 
 .manacore-meta-list {
 	display: grid;
@@ -1754,83 +2595,6 @@ body.manacore-modal-open {
 }
 
 /* -------------------------------------------------------------------------
- * 11. Episodes
- * ---------------------------------------------------------------------- */
-
-.manacore-episodes .manacore-season + .manacore-season {
-	margin-top: 18px;
-}
-
-.manacore-season > h3 {
-	font-size: .95rem;
-	font-weight: 700;
-	margin: 0 0 10px;
-	color: var(--mc-text);
-}
-
-.manacore-episode-list {
-	display: grid;
-	gap: 1px;
-	margin: 0;
-	padding: 0;
-	list-style: none;
-	border: 1px solid var(--mc-border);
-	border-radius: var(--mc-radius);
-	background: var(--mc-border);
-	overflow: hidden;
-}
-
-.manacore-episode-list > li {
-	display: flex;
-	align-items: center;
-	gap: 12px;
-	padding: 11px 14px;
-	background: var(--mc-surface);
-	transition: background var(--mc-transition);
-}
-
-.manacore-episode-list > li:hover {
-	background: var(--mc-surface-2);
-}
-
-.manacore-episode-number {
-	flex: 0 0 auto;
-	min-width: 34px;
-	height: 30px;
-	display: grid;
-	place-items: center;
-	border-radius: var(--mc-radius-sm);
-	background: color-mix(in srgb, var(--mc-accent) 12%, transparent);
-	color: var(--mc-accent);
-	font-size: .78rem;
-	font-weight: 800;
-	font-variant-numeric: tabular-nums;
-}
-
-.manacore-episode-title {
-	flex: 1 1 auto;
-	min-width: 0;
-	font-size: .86rem;
-	font-weight: 600;
-	color: var(--mc-text);
-	text-decoration: none;
-	overflow: hidden;
-	text-overflow: ellipsis;
-	white-space: nowrap;
-}
-
-.manacore-episode-title:hover {
-	color: var(--mc-accent);
-}
-
-.manacore-episode-date {
-	flex: 0 0 auto;
-	font-size: .74rem;
-	color: var(--mc-text-muted);
-	font-variant-numeric: tabular-nums;
-}
-
-/* -------------------------------------------------------------------------
  * 12. Watchlist page + toast + color mode toggle
  * ---------------------------------------------------------------------- */
 
@@ -2016,25 +2780,63 @@ body.manacore-modal-open {
 	}
 }
 
+/*
+ * «فهرست عمودی» — هم‌شکل `list-layout` مرجع سینورا (`browse.html`):
+ * ردیف‌های فشرده‌ی دوستونه، هر ردیف یک کارتِ کرادربندی‌شده با تصویر
+ * بندانگشتی کوچک کنار متن.
+ *
+ * نکته‌ی مهم: در ساختار کارت ما، `a.manacore-card-link` فرزندِ فلکس است،
+ * نه `.manacore-card-poster` (که داخل پیوند است). قاعده‌ی پیشین `flex` را
+ * روی پوستر می‌گذاشت و بی‌اثر بود؛ نتیجه‌اش کارت‌های ۸۲۰×۱۲۲۲ بود.
+ */
 .manacore-grid-cards.is-list {
-	display: flex;
-	flex-direction: column;
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap: var(--mc-gap, 12px);
+}
+
+.manacore-grid-cards.is-list > * {
+	min-width: 0;
 }
 
 .manacore-grid-cards.is-list .manacore-card {
 	flex-direction: row;
-	align-items: stretch;
+	align-items: center;
+	gap: 16px;
+	padding: 13px;
+	background: var(--mc-surface-2);
+	border: 1px solid var(--mc-border);
+	border-radius: 9px;
 }
 
-.manacore-grid-cards.is-list .manacore-card-poster {
-	flex: 0 0 clamp(96px, 22%, 168px);
+.manacore-grid-cards.is-list .manacore-card-link {
+	flex: 0 0 auto;
+	width: 94px;
 }
 
 .manacore-grid-cards.is-list .manacore-card-body {
 	flex: 1 1 auto;
+	min-width: 0;
 	display: flex;
 	flex-direction: column;
 	justify-content: center;
+	padding: 0;
+}
+
+.manacore-grid-cards.is-list .manacore-card-title {
+	font-size: .75rem;
+	white-space: normal;
+}
+
+.manacore-grid-cards.is-list .manacore-card-meta {
+	margin-block-start: 12px;
+	flex-wrap: wrap;
+}
+
+@media (max-width: 980px) {
+	.manacore-grid-cards.is-list {
+		grid-template-columns: 1fr;
+	}
 }
 
 .manacore-grid-cards.is-masonry {
@@ -2074,6 +2876,115 @@ body.manacore-modal-open {
 
 /* 12.4 اجزای تازه‌ی سرتیتر بخش ------------------------------------------ */
 
+/* نردبان واکنش‌گرای مرجع برای سرتیتر بخش‌ها: ۹۸۰ / ۷۶۸ / ۴۸۰. */
+@media (max-width: 980px) {
+	.manacore-block-head {
+		gap: 15px;
+	}
+
+	.manacore-section-title {
+		font-size: 1.125rem;
+	}
+
+	.manacore-section-subtitle {
+		font-size: .5625rem;
+	}
+}
+
+@media (max-width: 768px) {
+	.manacore-block-head {
+		gap: 13px;
+		flex-wrap: wrap;
+		margin-bottom: 19px;
+	}
+
+	.manacore-section-title {
+		font-size: 1.0625rem;
+	}
+
+	.manacore-section-subtitle {
+		font-size: .5625rem;
+	}
+}
+
+@media (max-width: 480px) {
+	.manacore-section-title {
+		font-size: 1rem;
+	}
+}
+
+/*
+ * تب‌های نوع در سرصفحه‌ی بخش — «`.section-tabs`» مرجع، عیناً:
+ *   پایه: gap ۶ و شروعِ سطر ۲۲px؛ دکمه `6px 13px` با شعاع ۶ و فونت ۱۱px
+ *   به رنگ مُدال، و حالت فعال با ۹٪ رنگ اکسنت (مرجع از `color-mix` استفاده
+ *   می‌کند و ما هم همان را می‌بریم).
+ * نردبان‌ها هم همان پله‌های مرجع‌اند (۹۸۰ / ۷۶۸ / ۴۸۰) و **بعد از** قاعده‌ی
+ * پایه می‌آیند تا آبشار درست بماند.
+ */
+.manacore-block-head .section-tabs {
+	display: flex;
+	gap: 6px;
+	margin-inline-start: 22px;
+}
+
+.manacore-block-head .section-tabs > button {
+	padding: 6px 13px;
+	border: 0;
+	border-radius: 6px;
+	background: transparent;
+	font-family: inherit;
+	font-size: .6875rem;
+	color: var(--mc-text-muted);
+	white-space: nowrap;
+	cursor: pointer;
+	transition: color var(--mc-transition), background-color var(--mc-transition);
+}
+
+.manacore-block-head .section-tabs > button.active {
+	background: color-mix(in srgb, var(--mc-accent) 9%, transparent);
+	color: var(--mc-accent);
+}
+
+.manacore-block-head .section-tabs > button:hover {
+	color: var(--mc-text);
+}
+
+/* کارتی که تبِ فعال آن را پالایش کرده است. */
+.manacore-card.is-filtered-out {
+	display: none;
+}
+
+@media (max-width: 980px) {
+	.manacore-block-head .section-tabs {
+		margin-inline-start: 8px;
+	}
+
+	.manacore-block-head .section-tabs > button {
+		padding: 6px 10px;
+		font-size: .625rem;
+	}
+}
+
+@media (max-width: 768px) {
+	.manacore-block-head .section-tabs {
+		order: 3;
+		margin-inline-start: 0;
+		width: 100%;
+		gap: 4px;
+	}
+
+	.manacore-block-head .section-tabs > button {
+		padding: 6px 12px;
+		font-size: .5625rem;
+	}
+}
+
+@media (max-width: 480px) {
+	.manacore-block-head .section-tabs > button {
+		font-size: .5625rem;
+	}
+}
+
 .manacore-block-head-text {
 	display: flex;
 	flex-direction: column;
@@ -2093,38 +3004,91 @@ body.manacore-modal-open {
 	height: 1em;
 	fill: none;
 	stroke: var(--mc-accent);
-	stroke-width: 1.8;
-	stroke-linecap: round;
-	stroke-linejoin: round;
-}
-
-.manacore-section-subtitle {
-	margin: 0;
-	font-size: .85rem;
-	line-height: 1.6;
-	color: var(--mc-text-muted);
-	padding-inline-start: 12px;
-}
-
-.manacore-more-link {
-	display: inline-flex;
-	align-items: center;
-	gap: 4px;
-}
-
-.manacore-more-icon {
-	width: 1em;
-	height: 1em;
-	fill: none;
-	stroke: currentColor;
+	/* مرجع همه‌ی آیکون‌هایش را با ضخامت ۲ می‌کشد. */
 	stroke-width: 2;
 	stroke-linecap: round;
 	stroke-linejoin: round;
 }
 
-/* آیکون در حالت راست‌به‌چپ باید برگردد. */
-[dir="rtl"] .manacore-more-icon {
-	transform: scaleX(-1);
+/* آیکون سرتیتر بخش‌ها در مرجع ۲۲×۲۲ است (`.section-heading svg`). */
+.manacore-section-title .manacore-section-icon {
+	width: 22px;
+	height: 22px;
+}
+
+/*
+ * رنگ آیکون «داغ» در مرجع گرم است (`.trending-section .section-icon{color:#e8ad84}`)،
+ * نه سبز تاییدی؛ همان تمایزِ طرح را با قلاب `data-icon` نگه می‌داریم.
+ */
+.manacore-section-title .manacore-section-icon[data-icon="fire"] {
+	stroke: #e8ad84;
+}
+
+.manacore-section-subtitle {
+	margin: 5px 0 0;
+	font-size: .625rem;
+	line-height: 1.6;
+	color: var(--mc-text-muted);
+}
+
+.manacore-more-link {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	margin-inline-start: auto;
+	font-size: .6875rem;
+	color: var(--mc-text-muted);
+	white-space: nowrap;
+}
+
+/*
+ * آیکون «مشاهده همه» عیناً آیکون مرجع است: `svg` ۱۶×۱۶ با مسیرِ
+ * خط‌کشی‌شده‌ی چرخیده (`rotate(90 …)`). چون خودِ مسیر در راست‌به‌چپ
+ * رو به چپ (جهت پیش‌رو) است، دیگر نیازی به `scaleX(-1)` نیست؛ آن
+ * آینه‌سازی مخصوص فلشِ توپُرِ پیشین بود و اندازه‌ی آیکون را هم به
+ * `1em` (۱۱px) کوچک می‌کرد در حالی که مرجع ۱۶px است — با سنجش زنده
+ * تأیید شد (`REF 16×16` مقابل `WP 11×11`).
+ */
+.manacore-more-icon {
+	width: 16px;
+	height: 16px;
+	fill: none;
+	stroke: currentColor;
+	stroke-width: 2;
+	stroke-linecap: round;
+	stroke-linejoin: round;
+	transition: transform var(--mc-transition);
+}
+
+.manacore-more-link:hover .manacore-more-icon,
+.manacore-more-link:focus-visible .manacore-more-icon {
+	transform: translateX(-3px);
+}
+
+/*
+ * نردبان «مشاهده همه» — **بعد از** قاعده‌ی پایه می‌آید.
+ *
+ * پیش‌تر این دو بلوک در بخش ۱۲.۴ و پیش از خودِ `.manacore-more-link`
+ * نوشته شده بودند؛ چون قاعده‌ی پایه در آبشار بعد از آن‌ها می‌آمد،
+ * پله‌ها بی‌اثر می‌شدند و پیوند در ۳۹۰px هم ۱۱px می‌ماند (سنجیده‌شده با
+ * `player-parity.cjs`؛ مرجع در همان عرض ۸px است).
+ */
+@media (max-width: 768px) {
+	.manacore-more-link {
+		gap: 5px;
+		font-size: .5625rem;
+	}
+
+	/* مرجع در این عرض فقط `width` آیکون را به ۱۴px می‌رساند؛ ارتفاع ۱۶ می‌ماند. */
+	.manacore-more-link .manacore-more-icon {
+		width: 14px;
+	}
+}
+
+@media (max-width: 480px) {
+	.manacore-more-link {
+		font-size: .5rem;
+	}
 }
 
 /* 12.5 حالت خالی بلوک --------------------------------------------------- */
@@ -2157,6 +3121,11 @@ body.manacore-modal-open {
 	color: var(--mc-text-muted);
 }
 
+/*
+ * سبک «عریض» به «افقی (۱۶:۹)» ادغام شد و دیگر گزینه‌ای در ویرایشگر ندارد؛
+ * قاعده‌اش می‌ماند تا محتوای ذخیره‌شده‌ی قدیمی (پیش از نگاشتِ
+ * `Templates::card`) هم بدون تغییر ظاهر رندر شود.
+ */
 .manacore-card.is-style-wide .manacore-card-poster {
 	aspect-ratio: var(--mc-poster-ratio, 16 / 9);
 }
@@ -2285,6 +3254,21 @@ body.manacore-modal-open {
 	gap: 10px;
 }
 
+/*
+ * چیدمان «سایدبار پیشرفته».
+ *
+ * مرجع این پنل یک ستون ساده است: `.filter-sidebar` با `display:block` و
+ * گروه‌ها که فقط با `margin-top: 23px` از هم فاصله می‌گیرند. اگر فرم در
+ * حالت شبکه بماند، هر `margin-top` با `gap: 12px` جمع می‌شود و فاصله‌ی
+ * میان گروه‌ها به ۳۵px می‌رسد؛ سنجیده شد: پنل ۱۲۲۹px در برابر ۱۱۸۰px
+ * مرجع (با شمار برابری ژانرها).
+ */
+.manacore-filter-form.is-layout-sidebar {
+	display: block;
+	gap: 0;
+	align-items: stretch;
+}
+
 .manacore-filter-reset {
 	font-size: .82rem;
 	color: var(--mc-text-muted);
@@ -2297,22 +3281,7 @@ body.manacore-modal-open {
 	color: var(--mc-accent);
 }
 
-/* 12.10 بندانگشتی قسمت‌ها و اندازه‌ی کادر جستجو ------------------------- */
-
-.manacore-episode-thumb {
-	flex: 0 0 auto;
-	width: 84px;
-	aspect-ratio: 16 / 9;
-	border-radius: calc(var(--mc-radius) / 2);
-	overflow: hidden;
-	background: var(--mc-surface-2);
-}
-
-.manacore-episode-thumb img {
-	width: 100%;
-	height: 100%;
-	object-fit: cover;
-}
+/* 12.10 اندازه‌ی کادر جستجو --------------------------------------------- */
 
 .manacore-search.is-size-small .manacore-search-input {
 	padding-block: 6px;
@@ -2436,8 +3405,10 @@ body.manacore-modal-open {
 	align-items: stretch;
 }
 
-.manacore-grid-cards.is-ranking .manacore-card-poster {
-	flex: 0 0 clamp(80px, 18%, 132px);
+/* بندانگشتی رتبه‌بندی: مانند فهرست، فلکس را روی پیوند می‌گذاریم نه پوستر. */
+.manacore-grid-cards.is-ranking .manacore-card-link {
+	flex: 0 0 auto;
+	width: clamp(80px, 18%, 132px);
 }
 
 .manacore-grid-cards.is-ranking .manacore-card-body {
@@ -2506,6 +3477,101 @@ body.manacore-modal-open {
 	aspect-ratio: var(--mc-poster-ratio, 16 / 9);
 }
 
+/* برش افقی ۱۶:۹ دقیقاً مثل مرجع: بخش بالای کادر تصویر حفظ می‌شود. */
+.manacore-card.is-style-landscape .manacore-card-poster img {
+	object-position: 50% 25%;
+}
+
+/*
+ * چیدمان کارت افقی مطابق مرجع: نشان فصل/قسمت بالا، پخش مرکزی با برچسب
+ * «کشف داستان»، نوار پایین تصویر (امتیاز) و دکمه‌ی لیست تماشا گوشه‌ی مقابل.
+ */
+/* نشان فصل/قسمت — همان زبان بصری «poster-badge» مرجع (پیل تیره‌ی محو). */
+.manacore-card.is-style-landscape .manacore-card-badge {
+	position: absolute;
+	z-index: 2;
+	inset-block-start: 10px;
+	inset-inline-start: 9px;
+	padding: 4px 7px;
+	border: 1px solid rgba(255, 255, 255, .05);
+	border-radius: 4px;
+	background: rgba(18, 24, 31, .85);
+	color: #d9e2d4;
+	font-size: .72rem;
+	font-weight: 500;
+	line-height: 1.6;
+	white-space: nowrap;
+	backdrop-filter: blur(8px);
+}
+
+/* نشان نوع روی تصویر در این سبک حذف می‌شود (مرجع نوع را زیر عنوان می‌آورد). */
+.manacore-card.is-style-landscape .manacore-card-type {
+	display: none;
+}
+
+/* نوار پایین تصویر: کیفیت/امتیاز، مثل «poster-bottom» مرجع. */
+.manacore-card.is-style-landscape .manacore-card-quality {
+	inset-block-start: auto;
+	inset-block-end: 10px;
+	inset-inline-start: 9px;
+}
+
+.manacore-card.is-style-landscape .manacore-card-rating {
+	inset-block-start: auto;
+	inset-block-end: 10px;
+	inset-inline-start: auto;
+	inset-inline-end: 9px;
+}
+
+.manacore-card.is-style-landscape .manacore-card-premium {
+	inset-block-end: 44px;
+	inset-inline-start: auto;
+	inset-inline-end: 9px;
+}
+
+.manacore-card.is-style-landscape .manacore-card-fav {
+	inset-block-start: 10px;
+	inset-inline-start: auto;
+	inset-inline-end: 9px;
+	opacity: 1;
+}
+
+/*
+ * برچسب پخش، مثل مرجع (`.card-play>span`) زیر دایره و بیرون آن می‌نشیند؛
+ * پس سبک افقی هم همان دایره‌ی ۴۶px را دارد و فقط متن زیرش می‌آید.
+ */
+.manacore-card-play-label {
+	font-size: .625rem;
+	line-height: 1.6;
+	color: #eef1f3;
+	text-shadow: 0 2px 8px #000;
+	white-space: nowrap;
+}
+
+/*
+ * اندازه‌ی عنوان کارت افقی مطابق مرجع: ۱۴px در دسکتاپ، ۱۲px در تبلت
+ * (اندازه‌ی پایه) و ۱۱px در موبایل.
+ */
+@media (min-width: 981px) {
+	.manacore-card.is-style-landscape .manacore-card-title {
+		font-size: .875rem;
+	}
+}
+
+/* پله‌ی موبایل: نشان و امتیاز به اندازه‌ی تصویر کوچک می‌شوند (مثل مرجع). */
+@media (max-width: 768px) {
+	.manacore-card.is-style-landscape .manacore-card-badge {
+		font-size: .625rem;
+		padding: 3px 6px;
+	}
+}
+
+@media (max-width: 480px) {
+	.manacore-card.is-style-landscape .manacore-card-title {
+		font-size: .6875rem;
+	}
+}
+
 @media (prefers-reduced-motion: reduce) {
 	.manacore-card.is-style-elevated {
 		transition: none;
@@ -2514,6 +3580,1005 @@ body.manacore-modal-open {
 	.manacore-card.is-style-elevated:hover,
 	.manacore-card.is-style-elevated:focus-within {
 		transform: none;
+	}
+}
+
+
+/* =========================================================================
+ * 14. بخش home-duo مرجع: برنامه‌ی هفتگی + بنر سلیقه
+ * ====================================================================== */
+
+.manacore-schedule {
+	background: var(--mc-surface-2);
+	border: 1px solid var(--mc-border);
+	border-radius: 12px;
+	padding: 24px 26px 18px;
+	min-width: 0;
+}
+
+/* تب‌های روزهای هفته — ۷ ستون مساوی، روز فعال با ته‌رنگ تأکید. */
+.manacore-schedule .week-tabs {
+	display: grid;
+	grid-template-columns: repeat(7, 1fr);
+	gap: 3px;
+	background: var(--mc-surface);
+	padding: 5px;
+	border-radius: 7px;
+	margin-top: 20px;
+	overflow-x: auto;
+	scrollbar-width: none;
+}
+
+.manacore-schedule .manacore-day-tab {
+	position: relative;
+	padding: 10px 3px;
+	border: 0;
+	border-radius: 4px;
+	background: none;
+	color: var(--mc-text-muted);
+	font-family: inherit;
+	font-size: .625rem;
+	/*
+	 * مرجع روی دکمه‌ی روز line-height نمی‌گذارد؛ `1` ارتفاع تب را ۵px
+	 * کوتاه‌تر از مرجع می‌کرد (۴۰ در برابر ۴۵).
+	 */
+	line-height: normal;
+	white-space: nowrap;
+	cursor: pointer;
+	transition: background var(--mc-transition), color var(--mc-transition);
+}
+
+.manacore-schedule .manacore-day-tab:hover {
+	color: var(--mc-text);
+}
+
+.manacore-schedule .manacore-day-tab.active {
+	background: color-mix(in srgb, var(--mc-accent) 11%, transparent);
+	color: var(--mc-accent);
+}
+
+/*
+ * روزهای بی‌برنامه عمداً کم‌رنگ نمی‌شوند.
+ *
+ * پیش‌تر این‌جا `opacity: .55` بود و سنجش axe آن را نقض کنتراست
+ * (`color-contrast` روی `#schedule-tab-tuesday`) دید:متن کم‌رنگ روی
+ * زمینه‌ی تیره از ۴.۵:۱ پایین‌تر می‌افتاد. ویژگی `data-empty` سرجایش
+ * می‌ماند (قلاب رفتار و آزمون)، ولی رنگ عوض نمی‌شود؛ کاربر از پیام
+ * `.schedule-empty` می‌فهمد آن روز برنامه‌ای ندارد.
+ */
+
+.manacore-schedule .today-dot {
+	position: absolute;
+	inset-block-end: 3px;
+	inset-inline-start: 50%;
+	translate: -50% 0;
+	width: 3px;
+	height: 3px;
+	border-radius: 50%;
+	background: var(--mc-accent);
+}
+
+.manacore-schedule-day[hidden] {
+	display: none;
+}
+
+.manacore-schedule-day:focus-visible {
+	outline: 2px solid var(--mc-accent);
+	outline-offset: 3px;
+}
+
+.manacore-schedule .schedule-items {
+	margin-top: 17px;
+	min-height: 88px;
+}
+
+.manacore-schedule .schedule-item {
+	display: flex;
+	align-items: center;
+	gap: 16px;
+	padding: 4px 0 12px;
+	margin-bottom: 12px;
+	border-bottom: 1px solid var(--mc-border);
+	text-decoration: none;
+	color: inherit;
+}
+
+.manacore-schedule .schedule-item:last-child {
+	border-bottom: 0;
+	margin-bottom: 0;
+	padding-bottom: 0;
+}
+
+.manacore-schedule .schedule-item img {
+	width: 49px;
+	height: 69px;
+	border-radius: 5px;
+	object-fit: cover;
+	flex-shrink: 0;
+}
+
+.manacore-schedule .manacore-schedule-item-text {
+	min-width: 0;
+}
+
+.manacore-schedule .schedule-item h3 {
+	margin: 0;
+	font-size: .8125rem;
+	font-weight: 600;
+	/* مرجع روی عنوان ردیف line-height نمی‌گذارد (خط‌ارتفاع جهانی پوسته ۱٫۴ بود). */
+	line-height: normal;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.manacore-schedule .manacore-schedule-item-text span {
+	display: block;
+	margin-top: 3px;
+	font-size: .6875rem;
+	color: var(--mc-text-muted);
+}
+
+.manacore-schedule .schedule-time {
+	display: inline-flex;
+	align-items: center;
+	gap: 5px;
+	margin-inline-start: auto;
+	padding: 6px 9px;
+	border-radius: 5px;
+	background: color-mix(in srgb, var(--mc-accent) 6%, transparent);
+	color: var(--mc-accent);
+	font-size: .6875rem;
+	line-height: normal;
+	white-space: nowrap;
+}
+
+.manacore-schedule .schedule-play {
+	width: 29px;
+	height: 29px;
+	display: grid;
+	place-items: center;
+	border: 1px solid var(--mc-border);
+	border-radius: 50%;
+	background: var(--mc-surface-2);
+	color: var(--mc-accent);
+	flex-shrink: 0;
+}
+
+.manacore-schedule .schedule-footnote {
+	display: flex;
+	align-items: center;
+	gap: 7px;
+	margin-top: 18px;
+	padding-top: 13px;
+	border-top: 1px solid var(--mc-border);
+	color: var(--mc-text-muted);
+	font-size: .5rem;
+	line-height: normal;
+	/* قاعده‌ی جهانی `p` حاشیه‌ی پایین می‌گذاشت و پنل ۸px بلندتر می‌شد. */
+	margin-bottom: 0;
+}
+
+/*
+ * یادداشت پایین از `.live-dot` مشترک استفاده می‌کند (مرجع هم همین کلاس را
+ * در `.schedule-footnote` دارد). قاعده‌ی پایه در بخش عمومی تعریف شده است.
+ */
+.manacore-schedule .schedule-footnote > .live-dot {
+	flex-shrink: 0;
+}
+
+.manacore-schedule .manacore-schedule-empty {
+	margin: 18px 0;
+	color: var(--mc-text-muted);
+	font-size: .75rem;
+}
+
+/* -------------------------------------------------------------------------
+ * پنل کامل «برنامه پخش» (`.schedule-panel .full-schedule` مرجع)
+ *
+ * این بلوک دو چیدمان دارد: `block` برای ستون برنامه در صفحه‌ی نخست و
+ * `panel` برای برگه‌ی «برنامه پخش». چیدمان پنل هم `.schedule-panel` و
+ * `.full-schedule` می‌گیرد تا نام کلاس‌ها عیناً مثل مرجع باشد، هم
+ * `.manacore-schedule` تا همه‌ی قاعده‌های پایه‌ی بالا به آن برسد؛
+ * بازنویسی‌ها specificity بالاتری دارند و بعد از پایه‌ها می‌آیند.
+ *
+ * این قواعد این‌جا (CSS افزونه) می‌مانند نه در پوسته، چون ظاهر خودِ بلوک
+ * است و باید در بوم ویرایشگر هم دیده شود.
+ * ---------------------------------------------------------------------- */
+
+.manacore-schedule.schedule-panel {
+	background: var(--mc-surface-2);
+	padding: 24px 26px 18px;
+	border-radius: 12px;
+}
+
+.manacore-schedule.full-schedule {
+	min-height: 330px;
+	padding: 29px;
+}
+
+.manacore-schedule .schedule-title {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+}
+
+.manacore-schedule .schedule-title .section-icon {
+	color: var(--mc-accent);
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	line-height: normal;
+}
+
+/* نشانه‌ی متنیِ سرصفحه در مرجع ۲۳×۲۳ است (`.section-icon>svg`). */
+.manacore-schedule .schedule-title .section-icon > svg {
+	width: 23px;
+	height: 23px;
+}
+
+.manacore-schedule .schedule-title h2 {
+	margin: 0;
+	font-size: 17px;
+	font-weight: 700;
+	line-height: 1.6;
+}
+
+.manacore-schedule .schedule-title p {
+	margin-top: 5px;
+	font-size: 9px;
+	/*
+	 * مرجع این‌جا line-height ندارد؛ خط‌ارتفاع جهانیِ فارسیِ پوسته
+	 * (۱٫۸۵) ارتفاع زیرتیتر را از ۱۴px به ۱۶٫۶px می‌برد. برای هم‌سانی
+	 * با مرجع، همان `normal` می‌شود.
+	 */
+	line-height: normal;
+	/*
+	 * قاعده‌ی جهانی `p` در پوسته `margin-bottom` می‌گذارد و زیرتیترِ
+	 * مرجع (که فقط `margin-top:5px` دارد) ۹px بلندتر می‌شد.
+	 */
+	margin-bottom: 0;
+	color: var(--mc-text-muted);
+}
+
+/* `.schedule-title>.text-link` مرجع: لنگر به انتهای سطر و ۱۰px. */
+.manacore-schedule .schedule-title > .text-link {
+	margin-inline-start: auto;
+	font-size: 10px;
+	line-height: normal;
+}
+
+/* شِورُنِ پیوند سرصفحه در مرجع ۱۵×۱۵ است (نشانه‌ی بلوک‌های دیگر ۱۶px است). */
+.manacore-schedule .schedule-title > .text-link > svg {
+	width: 15px;
+	height: 15px;
+}
+
+/* «به وقت تهران» — هم‌ارز `.timezone` مرجع. */
+.manacore-schedule .timezone {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	margin-inline-start: auto;
+	font-size: 9px;
+	color: var(--mc-text-muted);
+	white-space: nowrap;
+}
+
+.manacore-schedule.schedule-panel .week-tabs {
+	background: var(--mc-surface);
+	margin-top: 20px;
+	overflow: visible;
+}
+
+.manacore-schedule .schedule-item > div > p {
+	margin-top: 5px;
+	font-size: 9px;
+	line-height: normal;
+	margin-bottom: 0;
+	color: var(--mc-text-muted);
+	text-align: right;
+}
+
+.manacore-schedule .schedule-item > div > span {
+	display: flex;
+	align-items: center;
+	gap: 7px;
+	margin-top: 9px;
+	font-size: 9px;
+	line-height: normal;
+	color: var(--mc-text-muted);
+}
+
+.manacore-schedule .schedule-item > div > span > i {
+	display: inline-block;
+	width: 3px;
+	height: 3px;
+	border-radius: 50%;
+	background: #64707d;
+}
+
+.manacore-schedule.full-schedule .schedule-title h2 {
+	font-size: 17px;
+}
+
+/* نردبان اندازه‌های «پنل کامل» — همه بزرگ‌تر از ستون صفحه‌ی نخست. */
+.manacore-schedule.full-schedule .week-tabs {
+	margin-top: 28px;
+}
+
+.manacore-schedule.full-schedule .manacore-day-tab {
+	font-size: 12px;
+	padding: 15px 5px;
+}
+
+.manacore-schedule.full-schedule .schedule-items {
+	margin-top: 26px;
+	min-height: 139px;
+}
+
+.manacore-schedule.full-schedule .schedule-item {
+	gap: 16px;
+	padding: 10px 0 17px;
+	margin-bottom: 12px;
+}
+
+/*
+ * ردیف آخر پنل: مرجع `border-bottom`، `margin-bottom` و `padding-bottom`
+ * را صفر می‌کند. این‌جا باید با همان specificity جایگزین نوشته شود، وگرنه
+ * قاعده‌ی پنل بالا (۰,۳,۰) بر قاعده‌ی پایه `:last-child` (۰,۲,۱) برنده
+ * می‌شود — همان دامی که پیش‌تر هم دیده بودیم.
+ */
+.manacore-schedule.full-schedule .schedule-item:last-child {
+	margin-bottom: 0;
+	padding-bottom: 0;
+}
+
+.manacore-schedule.full-schedule .schedule-item > img {
+	width: 62px;
+	height: 89px;
+	border-radius: 5px;
+}
+
+.manacore-schedule.full-schedule .schedule-item h3 {
+	font-size: 16px;
+	white-space: normal;
+	overflow: visible;
+}
+
+.manacore-schedule.full-schedule .schedule-item > div > p {
+	font-size: 10px;
+}
+
+.manacore-schedule.full-schedule .schedule-time {
+	background: color-mix(in srgb, var(--mc-accent) 6%, transparent);
+	font-size: 11px;
+	padding: 6px 9px;
+}
+
+.manacore-schedule.full-schedule .schedule-play {
+	background: var(--mc-surface-3);
+}
+
+.manacore-schedule.full-schedule .schedule-footnote {
+	margin-top: 18px;
+	padding-top: 13px;
+	font-size: 8px;
+}
+
+/* نقطه‌ی یادداشت در مرجع کرم‌رنگ و ۴px است، نه نقطه‌ی تأکید ۵px. */
+.manacore-schedule.full-schedule .schedule-footnote > .live-dot {
+	width: 4px;
+	height: 4px;
+	background: #d6b790;
+	box-shadow: none;
+}
+
+/* حالت خالی روز (`.schedule-empty` مرجع) — فقط در حالت «آثار زمان‌بندی‌شده». */
+.manacore-schedule .schedule-empty {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 11px;
+	min-height: 85px;
+	flex-wrap: wrap;
+	color: var(--mc-text-muted);
+	font-size: 11px;
+}
+
+.manacore-schedule .schedule-empty > span {
+	color: var(--mc-accent);
+}
+
+.manacore-schedule .schedule-empty > a {
+	display: flex;
+	align-items: center;
+	gap: 4px;
+	font-size: 10px;
+	color: var(--mc-accent);
+}
+
+.manacore-schedule.full-schedule .schedule-empty {
+	min-height: 120px;
+}
+
+/* -------------------------------------------------------------------------
+ * کارت اطلاعاتی ستون کنار (`.schedule-note-card` و `.sidebar-promo` مرجع)
+ * ---------------------------------------------------------------------- */
+
+.wp-block-manacore-info-card.schedule-note-card {
+	padding: 28px;
+	border: 1px solid var(--mc-border);
+	border-radius: 11px;
+	background: var(--mc-surface-2);
+}
+
+.wp-block-manacore-info-card.schedule-note-card > span:first-child {
+	color: var(--mc-accent);
+}
+
+.wp-block-manacore-info-card.schedule-note-card > h3 {
+	margin-top: 18px;
+	font-size: 19px;
+	line-height: 1.8;
+}
+
+.wp-block-manacore-info-card.schedule-note-card > p {
+	margin-top: 12px;
+	font-size: 11px;
+	line-height: 2.5;
+	color: var(--mc-text-muted);
+}
+
+.wp-block-manacore-info-card.schedule-note-card > span:last-child {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	margin-top: 20px;
+	font-size: 8px;
+	color: var(--mc-text-muted);
+}
+
+.wp-block-manacore-info-card.sidebar-promo {
+	display: block;
+	padding: 25px;
+	border: 1px solid #37432f;
+	border-radius: 10px;
+	background: linear-gradient(140deg, #293422, #182225);
+	color: #edf3e8;
+}
+
+.wp-block-manacore-info-card.sidebar-promo h3 {
+	margin: 14px 0 0;
+	font-size: 19px;
+	line-height: 1.8;
+}
+
+.wp-block-manacore-info-card.sidebar-promo p {
+	margin-top: 8px;
+	font-size: 10px;
+	line-height: 2;
+	color: #a0aca0;
+}
+
+.wp-block-manacore-info-card.sidebar-promo > span {
+	display: flex;
+	align-items: center;
+	gap: 7px;
+	margin-top: 17px;
+	font-size: 10px;
+	color: #c6ed7b;
+}
+
+/* بنر سلیقه — گرادیان سمت راست home-duo. */
+.taste-banner {
+	position: relative;
+	overflow: hidden;
+	display: flex;
+	flex-direction: column;
+	padding: 113px 29px 25px;
+	border: 1px solid color-mix(in srgb, var(--mc-accent) 22%, var(--mc-border));
+	border-radius: var(--mc-radius);
+	background:
+		radial-gradient(ellipse at 18% 10%, #2e3e29 0%, #1a2323 58%, #171e24 100%);
+	color: #edf1e8;
+}
+
+.taste-banner .eyebrow {
+	color: var(--mc-accent);
+	font-size: .625rem;
+	letter-spacing: 1.4px;
+}
+
+.taste-banner h2 {
+	margin: 10px 0 0;
+	font-size: 1.5rem;
+	letter-spacing: -.5px;
+}
+
+.taste-banner p {
+	margin: 12px 0 0;
+	color: #b9c3b3;
+	font-size: .8125rem;
+	line-height: 2;
+}
+
+.taste-banner .text-link {
+	margin-top: 18px;
+	align-self: flex-start;
+	color: var(--mc-accent);
+	font-size: .75rem;
+	text-decoration: none;
+	display: inline-flex;
+	align-items: center;
+	gap: 7px;
+}
+
+.taste-banner .taste-label {
+	position: absolute;
+	inset-block-end: 26px;
+	inset-inline-start: 24px;
+	color: #748273;
+	font-family: Arial, sans-serif;
+	font-size: .5rem;
+	letter-spacing: 2.7px;
+	direction: ltr;
+}
+
+.taste-banner .taste-art {
+	position: absolute;
+	inset-block-start: 24px;
+	inset-inline-start: 50%;
+	translate: -50% 0;
+	width: 165px;
+	height: 82px;
+	display: grid;
+	place-items: center;
+	color: var(--mc-accent);
+}
+
+.taste-banner .taste-art span {
+	position: absolute;
+	border-radius: 50%;
+	background: color-mix(in srgb, var(--mc-accent) 18%, transparent);
+}
+
+.taste-banner .taste-art span:nth-child(1) {
+	width: 82px;
+	height: 82px;
+	inset-inline-start: -22px;
+	inset-block-start: -14px;
+}
+
+.taste-banner .taste-art span:nth-child(2) {
+	width: 52px;
+	height: 52px;
+	inset-inline-end: -12px;
+	inset-block-start: 26px;
+}
+
+.taste-banner .taste-art span:nth-child(3) {
+	width: 30px;
+	height: 30px;
+	inset-inline-start: 46px;
+	inset-block-end: -6px;
+}
+
+.taste-banner .taste-art i {
+	position: absolute;
+	font-size: 11px;
+	font-style: normal;
+}
+
+.taste-banner .taste-art i:first-of-type {
+	inset-inline-end: 6px;
+	inset-block-start: 2px;
+}
+
+.taste-banner .taste-art i:last-of-type {
+	inset-inline-start: 10px;
+	inset-block-end: 6px;
+}
+
+/* دو ستون home-duo با نسبت مرجع. */
+.koohe-home-duo {
+	display: grid;
+	grid-template-columns: 1.7fr 1fr;
+	gap: 22px;
+	margin-top: 30px;
+}
+
+.koohe-home-duo > * {
+	min-width: 0;
+}
+
+@media (min-width: 769px) and (max-width: 980px) {
+	.koohe-home-duo {
+		grid-template-columns: 1.4fr 1fr;
+		gap: 18px;
+	}
+}
+
+@media (max-width: 768px) {
+	.koohe-home-duo {
+		grid-template-columns: 1fr;
+		gap: 20px;
+	}
+
+	/*
+	 * اندازه‌های این بلوک در نردبان «۱۴.۸» پایان فایل آمده است؛ این‌جا
+	 * تکرار نمی‌شود تا دو قاعده‌ی هم‌وزن پشت سر هم نایستد.
+	 */
+
+	.taste-banner {
+		min-height: 268px;
+		padding: 118px 24px 26px;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.manacore-schedule .manacore-day-tab {
+		transition: none;
+	}
+}
+
+
+/* =========================================================================
+ * 15. کالکشن‌ها و مجله (collections-grid / articles-grid مرجع)
+ * ====================================================================== */
+
+.collections-grid {
+	display: grid;
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+	gap: 21px;
+}
+
+.collection-card {
+	position: relative;
+	display: block;
+	height: 204px;
+	overflow: hidden;
+	border: 1px solid var(--mc-border);
+	border-radius: 10px;
+	color: #f0f3f4;
+	text-decoration: none;
+}
+
+.collection-card > img {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	filter: saturate(.72);
+	transition: transform .5s ease;
+}
+
+.collection-card::after {
+	content: "";
+	position: absolute;
+	inset: 0;
+	background: linear-gradient(to top, rgba(11, 16, 25, .86), rgba(11, 16, 25, .18) 62%, rgba(11, 16, 25, .05));
+}
+
+.collection-card:hover > img,
+.collection-card:focus-visible > img {
+	transform: scale(1.06);
+}
+
+.collection-number {
+	position: absolute;
+	z-index: 2;
+	inset-block-start: 19px;
+	inset-inline-end: 22px;
+	color: rgba(255, 255, 255, .46);
+	font-size: .8125rem;
+}
+
+.collection-content {
+	position: absolute;
+	z-index: 2;
+	inset-block-end: 23px;
+	inset-inline-end: 24px;
+	inset-inline-start: 24px;
+	display: block;
+}
+
+.collection-content small {
+	display: block;
+	color: var(--mc-accent);
+	font-size: .625rem;
+	letter-spacing: 1.1px;
+}
+
+.collection-content h3 {
+	margin: 5px 0 0;
+	font-size: .9375rem;
+	font-weight: 700;
+}
+
+.collection-content p {
+	margin: 5px 0 0;
+	color: rgba(240, 243, 244, .72);
+	font-size: .6875rem;
+}
+
+.collection-arrow {
+	position: absolute;
+	z-index: 2;
+	inset-block-end: 25px;
+	inset-inline-start: 21px;
+	width: 33px;
+	height: 33px;
+	display: grid;
+	place-items: center;
+	border: 1px solid rgba(255, 255, 255, .22);
+	border-radius: 50%;
+	background: rgba(255, 255, 255, .06);
+	transition: background var(--mc-transition), color var(--mc-transition);
+}
+
+.collection-card:hover .collection-arrow,
+.collection-card:focus-visible .collection-arrow {
+	background: var(--mc-accent);
+	border-color: var(--mc-accent);
+	color: var(--mc-accent-contrast);
+}
+
+.articles-grid {
+	display: grid;
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+	gap: 23px;
+}
+
+.article-card {
+	display: block;
+	color: inherit;
+	text-decoration: none;
+}
+
+.article-image {
+	position: relative;
+	aspect-ratio: 1.95;
+	overflow: hidden;
+	border-radius: 10px;
+	background: var(--mc-surface-2);
+}
+
+.article-image img {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	transition: transform .5s ease;
+}
+
+.article-card:hover .article-image img {
+	transform: scale(1.04);
+}
+
+.article-image > span {
+	position: absolute;
+	inset-block-start: 13px;
+	inset-inline-end: 13px;
+	padding: 4px 8px;
+	border-radius: 4px;
+	background: rgba(17, 23, 27, .85);
+	color: #d8ddd8;
+	font-size: .5rem;
+	backdrop-filter: blur(10px);
+}
+
+.article-info {
+	padding: 15px 1px 0;
+}
+
+.article-info small {
+	display: flex;
+	align-items: center;
+	gap: 7px;
+	color: var(--mc-text-muted);
+	font-size: .5rem;
+}
+
+.article-info small i {
+	width: 2px;
+	height: 2px;
+	border-radius: 50%;
+	background: currentColor;
+	opacity: .6;
+}
+
+.article-info h3 {
+	margin: 10px 0 0;
+	font-size: .9375rem;
+	font-weight: 700;
+	line-height: 1.9;
+}
+
+.article-info p {
+	margin: 6px 0 0;
+	color: var(--mc-text-muted);
+	font-size: .625rem;
+	line-height: 2.1;
+}
+
+.article-info > span {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	margin-top: 13px;
+	color: var(--mc-accent);
+	font-size: .5625rem;
+}
+
+/*
+ * نردبان کارت مقاله، عیناً از مرجع: در ≤۹۸۰ تیتر ۱۳px و نسبت تصویر ۱٫۷؛
+ * در ≤۷۶۸ تیتر ۱۶px، خلاصه ۱۱px، ریزسطر ۹px، پیوند ۱۰px و شبکه تک‌ستونه.
+ * (شبکه‌ی مقاله‌ها در ۹۸۰px فاصله‌ی ۲۳px مرجع را نگه می‌دارد.)
+ */
+@media (max-width: 980px) {
+	.collections-grid {
+		gap: 16px;
+	}
+
+	.article-info > h3 {
+		font-size: .8125rem;
+	}
+
+	.collection-content {
+		inset-inline-end: 19px;
+	}
+
+	.collection-arrow {
+		inset-block-end: 22px;
+		inset-inline-start: 15px;
+		width: 29px;
+		height: 29px;
+	}
+
+	.article-image {
+		aspect-ratio: 1.7;
+	}
+}
+
+@media (max-width: 768px) {
+	.collections-grid {
+		grid-template-columns: 1fr;
+		gap: 16px;
+	}
+
+	.articles-grid {
+		grid-template-columns: 1fr;
+		gap: 25px;
+	}
+
+	.article-image {
+		aspect-ratio: 1.95;
+	}
+
+	.article-info > h3 {
+		font-size: 1rem;
+	}
+
+	.article-info > p {
+		font-size: .6875rem;
+	}
+
+	.article-info > small {
+		font-size: .5625rem;
+	}
+
+	.article-info > span {
+		font-size: .625rem;
+	}
+
+	.collection-card {
+		height: 201px;
+	}
+}
+
+/* =========================================================================
+ * 16. بنر اشتراک (subscription-banner مرجع)
+ * ====================================================================== */
+
+.subscription-banner {
+	position: relative;
+	display: flex;
+	align-items: center;
+	gap: 24px;
+	min-height: 148px;
+	margin-top: 40px;
+	padding: 27px 34px;
+	overflow: hidden;
+	border: 1px solid color-mix(in srgb, var(--mc-accent) 24%, var(--mc-border));
+	border-radius: 12px;
+	background: linear-gradient(110deg, #1e2a21, #18201f 70%, #1b241f);
+	color: #eef3e9;
+}
+
+.subscription-banner-icon {
+	width: 62px;
+	height: 62px;
+	display: grid;
+	place-items: center;
+	flex-shrink: 0;
+	border: 1px solid color-mix(in srgb, var(--mc-accent) 28%, transparent);
+	border-radius: 15px;
+	background: color-mix(in srgb, var(--mc-accent) 6%, transparent);
+	color: var(--mc-accent);
+}
+
+.subscription-banner .eyebrow {
+	color: var(--mc-accent);
+	font-size: .625rem;
+	letter-spacing: 1.4px;
+}
+
+.subscription-banner h2 {
+	margin: 7px 0 0;
+	font-size: 1.4375rem;
+	color: #eef3e9;
+}
+
+.subscription-banner p {
+	margin: 8px 0 0;
+	color: #99a59a;
+	font-size: .6875rem;
+}
+
+.subscription-banner .manacore-btn,
+.subscription-banner .wp-block-button__link {
+	margin-inline-start: auto;
+	flex-shrink: 0;
+}
+
+.banner-orbit {
+	position: absolute;
+	inset-block-start: -80px;
+	inset-inline-start: -110px;
+	width: 370px;
+	height: 370px;
+	border: 1px solid color-mix(in srgb, var(--mc-accent) 9%, transparent);
+	border-radius: 50%;
+	box-shadow:
+		0 0 0 40px color-mix(in srgb, var(--mc-accent) 2%, transparent),
+		0 0 0 80px color-mix(in srgb, var(--mc-accent) 2%, transparent);
+	pointer-events: none;
+}
+
+@media (max-width: 980px) {
+	.subscription-banner {
+		gap: 17px;
+		padding: 27px 28px;
+	}
+
+	.subscription-banner h2 {
+		font-size: 1.25rem;
+	}
+}
+
+@media (max-width: 768px) {
+	.subscription-banner {
+		flex-wrap: wrap;
+		gap: 18px;
+		min-height: auto;
+		margin-top: 32px;
+		padding: 24px;
+	}
+
+	.subscription-banner-icon {
+		width: 49px;
+		height: 49px;
+		border-radius: 10px;
+	}
+
+	.subscription-banner h2 {
+		font-size: 1.1875rem;
+	}
+
+	.subscription-banner .manacore-btn,
+	.subscription-banner .wp-block-button__link {
+		margin-inline-start: 0;
+		width: 100%;
+		justify-content: center;
 	}
 }
 
@@ -2691,136 +4756,15 @@ body.manacore-modal-open {
 /* 13.6 سبک‌های جعبه‌ی دانلود --------------------------------------------- */
 
 /* جدولی: هر آیتم یک سطر با ستون‌های هم‌تراز. */
-.manacore-links.is-box-table .manacore-link-list {
-	display: table;
-	width: 100%;
-	border-collapse: collapse;
+
+.manacore-hero-arrow {
+	min-width: 32px;
 }
 
-.manacore-links.is-box-table .manacore-link-item {
-	display: table-row;
+.manacore-filter-chip,
+.manacore-season-tab {
+	min-height: 32px;
 }
-
-.manacore-links.is-box-table .manacore-link-item > * {
-	display: table-cell;
-	vertical-align: middle;
-	padding: 10px 8px;
-	border-bottom: 1px solid var(--mc-border);
-}
-
-.manacore-links.is-box-table .manacore-link-icon {
-	width: 34px;
-}
-
-.manacore-links.is-box-table .manacore-link-actions {
-	text-align: end;
-	white-space: nowrap;
-}
-
-@media (max-width: 599px) {
-	/* در نمایشگر کوچک جدول به کارت برمی‌گردد تا سطرها فشرده نشوند. */
-	.manacore-links.is-box-table .manacore-link-list,
-	.manacore-links.is-box-table .manacore-link-item,
-	.manacore-links.is-box-table .manacore-link-item > * {
-		display: revert;
-		border-bottom: 0;
-	}
-}
-
-/* فشرده: فاصله‌ها و اندازه‌ها کوچک‌تر. */
-.manacore-links.is-box-compact .manacore-link-group {
-	padding: 10px 12px;
-}
-
-.manacore-links.is-box-compact .manacore-link-item {
-	padding-block: 6px;
-	font-size: .86rem;
-}
-
-.manacore-links.is-box-compact .manacore-link-group-title {
-	font-size: .95rem;
-}
-
-.manacore-links.is-box-compact .manacore-chip {
-	font-size: .68rem;
-}
-
-/* آکاردئونی: <details> بومی؛ نشانگر پیش‌فرض حذف و با فلش سازگار RTL جانشین می‌شود. */
-.manacore-links.is-box-accordion .manacore-link-group-head {
-	cursor: pointer;
-	list-style: none;
-	position: relative;
-	padding-inline-end: 28px;
-}
-
-.manacore-links.is-box-accordion .manacore-link-group-head::-webkit-details-marker {
-	display: none;
-}
-
-.manacore-links.is-box-accordion .manacore-link-group-head::after {
-	content: "";
-	position: absolute;
-	inset-inline-end: 6px;
-	top: 50%;
-	width: 8px;
-	height: 8px;
-	border-inline-end: 2px solid currentColor;
-	border-bottom: 2px solid currentColor;
-	transform: translateY(-70%) rotate(45deg);
-	opacity: .6;
-	transition: transform .2s ease;
-}
-
-.manacore-links.is-box-accordion .manacore-link-group[open] > .manacore-link-group-head::after {
-	transform: translateY(-30%) rotate(225deg);
-}
-
-.manacore-links.is-box-accordion .manacore-link-group-head:focus-visible {
-	outline: 2px solid var(--mc-accent);
-	outline-offset: 2px;
-}
-
-@media (prefers-reduced-motion: reduce) {
-	.manacore-links.is-box-accordion .manacore-link-group-head::after {
-		transition: none;
-	}
-}
-
-/* دکمه‌ای: آیتم‌ها به دکمه‌های شبکه‌ای تبدیل می‌شوند. */
-.manacore-links.is-box-buttons .manacore-link-list {
-	display: grid;
-	grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-	gap: 8px;
-}
-
-.manacore-links.is-box-buttons .manacore-link-item {
-	flex-wrap: wrap;
-	gap: 6px;
-	padding: 10px 12px;
-	border: 1px solid var(--mc-border);
-	border-radius: var(--mc-radius);
-	background: var(--mc-surface-2);
-}
-
-.manacore-links.is-box-buttons .manacore-link-tags {
-	flex-basis: 100%;
-}
-
-.manacore-links.is-box-buttons .manacore-link-actions {
-	flex-basis: 100%;
-	justify-content: flex-start;
-}
-
-/* =========================================================
- * ۱۴) دسترس‌پذیری، هدف لمسی و ریسپانسیو کامل
- *
- * سه اصل راهنما:
- *   • ناحیه‌ی کلیک بزرگ می‌شود، ظاهر نه. با شبه‌عنصر شفاف، هدف لمسی
- *     به ۴۴px می‌رسد بدون آنکه طرح بصری تغییر کند (WCAG 2.5.5).
- *   • اندازه‌ها سیال‌اند نه پله‌ای؛ با clamp از ۳۲۰px تا نمایشگر بزرگ
- *     پیوسته تغییر می‌کنند و «پرش» در نقطه‌ی شکست ندارند.
- *   • هر جلوه‌ی حرکتی با prefers-reduced-motion خاموش می‌شود.
- * ====================================================== */
 
 /* 14.1 هدف لمسی امن ------------------------------------------------------ */
 
@@ -2829,6 +4773,9 @@ body.manacore-modal-open {
  * دیداری. شبه‌عنصر در مرکز عنصر می‌نشیند و چون شفاف است دیده نمی‌شود.
  * فقط روی نمایشگرهای لمسی/کم‌دقت فعال می‌شود تا در دسکتاپ فاصله‌های
  * فشرده‌ی طراحی حفظ شود.
+ *
+ * (این بخش در یکی از ویرایش‌های پیشین همراه با CSS قدیمی لینک‌های دانلود
+ * پاک شده بود؛ در بازبینی رگرسیون برگردانده شد.)
  */
 @media (pointer: coarse) {
 	.manacore-hero-dot::after,
@@ -2858,8 +4805,10 @@ body.manacore-modal-open {
 		position: relative;
 	}
 
-	/* دکمه‌ی معمولی خودش به ارتفاع امن می‌رسد. */
-	.manacore-btn {
+	/* دکمه‌های معمولی و دکمه‌های نوار کنترل پخش به ارتفاع امن می‌رسند. */
+	.manacore-btn,
+	.player-controls .manacore-btn,
+	.download-section .download-actions .manacore-btn {
 		min-height: 44px;
 	}
 
@@ -2870,16 +4819,6 @@ body.manacore-modal-open {
 	.manacore-hero-dots {
 		gap: 14px;
 	}
-}
-
-/* در نمایشگر غیرلمسی هم هیچ هدفی نباید زیر ۲۴px بماند (WCAG 2.5.8). */
-.manacore-hero-arrow {
-	min-width: 32px;
-}
-
-.manacore-filter-chip,
-.manacore-season-tab {
-	min-height: 32px;
 }
 
 /* 14.2 تمرکز دیدنی یکدست ------------------------------------------------- */
@@ -2971,8 +4910,8 @@ body.manacore-modal-open {
 	overflow-wrap: anywhere;
 }
 
-.manacore-link-item .manacore-link-label,
-.manacore-card-title {
+.manacore-card-title,
+.download-section .quality-name {
 	min-width: 0;
 }
 
@@ -3018,9 +4957,4029 @@ body.manacore-modal-open {
 /* کنتراست بالا: مرزها باید دیده شوند. */
 @media (prefers-contrast: more) {
 	.manacore-card,
-	.manacore-link-group,
+	.download-section .download-table,
 	.manacore-filter-bar,
 	.manacore-btn {
 		border: 1px solid currentColor;
+	}
+}
+
+/* -------------------------------------------------------------------------
+ * 14.8 نردبان پاسخگوی پنل «برنامه پخش» و کارت اطلاعاتی
+ *
+ * اعداد عیناً از مرجع (`@media(max-width:980px|768px|480px)`) گرفته شده‌اند.
+ * این بلوک در پایان فایل است تا هیچ قاعده‌ی پایه‌ای بعد از آن نیاید.
+ * ---------------------------------------------------------------------- */
+
+@media (max-width: 980px) {
+	.manacore-schedule {
+		padding: 21px 19px;
+	}
+
+	.manacore-schedule.schedule-panel {
+		padding: 21px 19px;
+	}
+
+	.manacore-schedule.full-schedule {
+		padding: 23px;
+	}
+
+	.manacore-schedule .schedule-title h2 {
+		font-size: 14px;
+	}
+
+	.manacore-schedule .schedule-title > .text-link {
+		font-size: 8px;
+	}
+
+	.manacore-schedule .timezone {
+		font-size: 8px;
+	}
+
+	.manacore-schedule .manacore-day-tab {
+		font-size: 8px;
+	}
+
+	.manacore-schedule.full-schedule .manacore-day-tab {
+		font-size: 10px;
+	}
+
+	.wp-block-manacore-info-card.schedule-note-card {
+		padding: 22px;
+	}
+}
+
+@media (max-width: 768px) {
+	.manacore-schedule {
+		padding: 21px 20px 16px;
+	}
+
+	.manacore-schedule .manacore-day-tab {
+		font-size: 9px;
+	}
+
+	.manacore-schedule .schedule-title h2 {
+		font-size: 16px;
+	}
+
+	.manacore-schedule .schedule-title > .text-link {
+		font-size: 9px;
+	}
+
+	.manacore-schedule.full-schedule {
+		padding: 23px 20px;
+		min-height: 320px;
+	}
+
+	.manacore-schedule.full-schedule .manacore-day-tab {
+		font-size: 9px;
+		padding: 14px 1px;
+	}
+
+	.manacore-schedule.full-schedule .schedule-title h2 {
+		font-size: 16px;
+	}
+
+	.manacore-schedule.full-schedule .timezone {
+		font-size: 7px;
+	}
+
+	/*
+	 * مرجع در ≤۹۸۰ کارت ستون کنار «برنامه‌ی هفتگی» را جمع‌وجور می‌کند
+	 * (`.schedule-page-aside>.sidebar-promo`)؛ کارت ستون کنار برگه‌ی
+	 * نوشته همان ۲۵px/۱۹px را نگه می‌دارد.
+	 */
+	.wp-block-manacore-info-card.schedule-note-card,
+	.schedule-page-aside > .wp-block-manacore-info-card.sidebar-promo {
+		padding: 21px;
+	}
+
+	.wp-block-manacore-info-card.schedule-note-card > h3,
+	.schedule-page-aside > .wp-block-manacore-info-card.sidebar-promo h3 {
+		font-size: 16px;
+	}
+
+	.wp-block-manacore-info-card.schedule-note-card > p,
+	.schedule-page-aside > .wp-block-manacore-info-card.sidebar-promo p {
+		font-size: 10px;
+	}
+}
+
+@media (max-width: 480px) {
+	.manacore-schedule {
+		padding: 20px 16px 16px;
+	}
+
+	/*
+	 * مرجع در ≤۴۸۰ فقط `.schedule-panel` را می‌نویسد و چون بعد از قاعده‌ی
+	 * `.full-schedule` در ≤۷۶۸ می‌آید، همان برنده می‌شود؛ پس این‌جا هم
+	 * باید صریح نوشته شود، وگرنه padding پنل روی ۲۳px می‌ماند.
+	 */
+	.manacore-schedule.schedule-panel {
+		padding: 20px 16px 16px;
+	}
+
+	.manacore-schedule .manacore-day-tab {
+		font-size: 8px;
+	}
+
+	.manacore-schedule .schedule-title {
+		gap: 9px;
+	}
+
+	.manacore-schedule .schedule-title h2 {
+		font-size: 15px;
+	}
+
+	.manacore-schedule .schedule-title p {
+		font-size: 8px;
+	}
+
+	.manacore-schedule .schedule-title > .text-link {
+		gap: 4px;
+		font-size: 8px;
+	}
+
+	.manacore-schedule .schedule-title .section-icon {
+		font-size: 20px;
+	}
+
+	.manacore-schedule.full-schedule .schedule-title {
+		flex-wrap: wrap;
+	}
+
+	.manacore-schedule.full-schedule .timezone {
+		gap: 4px;
+		font-size: 7px;
+	}
+
+	.manacore-schedule.full-schedule .manacore-day-tab {
+		font-size: 8px;
+	}
+
+	.manacore-schedule .schedule-item {
+		gap: 12px;
+	}
+
+	.manacore-schedule .schedule-item h3 {
+		font-size: 12px;
+	}
+
+	.manacore-schedule.full-schedule .schedule-item > img {
+		width: 52px;
+		height: 77px;
+	}
+
+	.manacore-schedule.full-schedule .schedule-item h3 {
+		font-size: 14px;
+	}
+
+	.manacore-schedule .schedule-time {
+		font-size: 10px;
+		padding: 6px 7px;
+	}
+
+	.manacore-schedule .schedule-time > svg {
+		display: none;
+	}
+
+	.manacore-schedule .schedule-footnote {
+		font-size: 7px;
+	}
+}
+
+/* ======================================================================
+ * 17. بخش «حساب کاربری» مرجع (`account.html`)
+ *
+ * همه‌ی اندازه‌ها عیناً از `cinora/assets/css/style.css` گرفته شده‌اند
+ * (بخش «The personal universe» و جدول‌های پاسخگو)، فقط نام توکن‌های رنگ
+ * به توکن‌های محصول نگاشته شده است:
+ *   --bg → --mc-surface · --panel → --mc-surface-2 · --panel-2 → --mc-surface-3
+ *   --border → --mc-border · --text → --mc-text · --muted → --mc-text-muted
+ *   --accent → --mc-accent · --danger → --mc-danger
+ *
+ * دو نکته‌ی ساختاری نسبت به مرجع:
+ *   ۱) ردیف‌های تب ستون کنار **پیوند**‌اند (`nav>a`) نه `button`؛ چون بی
+ *      جاوااسکریپت هم باید هر تب باز شود (`?tab=…`). اندازه‌ها یکسان است.
+ *   ۲) پوشش `.manacore-block` حاشیه‌ی عمودی پیش‌فرض دارد؛ در برگه‌ی حساب
+ *      صفر می‌شود تا چیدمان مرجع دقیق بماند.
+ * ====================================================================== */
+
+/*
+ * پوشش `.manacore-block` حاشیه‌ی عمودی پیش‌فرض قالب را صفر می‌کند
+ * (نتیجه‌ی `--wp--style--block-gap`). شکل `:where()` عمدی است: specificity
+ * را روی (۰,۱,۰) نگه می‌دارد تا قواعد صریح خودِ بخش‌ها — مثل
+ * `.account-welcome-banner{margin-top:25px}` و `.account-section{margin-top:34px}`
+ * که پایین‌تر می‌آیند — برنده بمانند. با شکل قبلی (۰,۲,۰) حاشیه‌ی ۲۵px
+ * بنر خنثی می‌شد (سنجیده‌شده: `margin-top` بنر ۰ در برابر ۲۵).
+ */
+.account-page :where(.manacore-block) {
+	margin-block: 0;
+}
+
+/*
+ * پایه‌ی `.text-link` مرجع.
+ *
+ * هم‌ارز پوسته‌ای آن `.koohe-text-link` است (theme.css)، اما مارک‌آپ بخش
+ * حساب عیناً نام‌های مرجع را نگه می‌دارد. نبودِ `display:inline-flex`
+ * مرجع، حاشیه‌ی عمودی پیوندهای درونِ جریان را نادیده می‌گرفت — سنجیده‌شده:
+ * میان‌بر بنر خوش‌آمد ۳px زیر پاراگراف می‌افتاد به‌جای ۱۳px و کل بنر ۱۰px
+ * کوتاه می‌شد. `:where()` عمدی است تا قواعد دقیق‌تر همین بخش
+ * (`.account-welcome-banner .text-link{font-size:10px}`) برنده بمانند.
+ */
+.account-page :where(.text-link) {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	white-space: nowrap;
+	color: var(--mc-text-muted);
+	font-size: 11px;
+	transition: color .2s;
+}
+
+.account-page :where(.text-link):hover {
+	color: var(--mc-accent);
+}
+
+/*
+ * رست دکمه‌ها — هم‌ارز `button{cursor:pointer;border:0;background:none;
+ * color:inherit}` و `button,input,textarea,select{font:inherit}` مرجع.
+ *
+ * بدون آن، دکمه‌های متنی برگه (مثل «بارگذاری عکس») با پس‌زمینه‌ی پیش‌فرض
+ * مرورگر می‌آمدند: سنجیده‌شده `#6b6b6b` زیر متن `#8b949f` یعنی نسبت
+ * کنتراست ۱٫۷ و تخلف جدی axe «color-contrast».
+ *
+ * `padding` عمداً ریست **نمی‌شود**: مرجع هم پدینگ پیش‌فرض دکمه (۱px ۶px)
+ * را نگه می‌دارد و همان در هندسه‌ی میان‌برهای برگه دیده می‌شود.
+ */
+.account-page :where(button) {
+	border: 0;
+	background: none;
+	color: inherit;
+	cursor: pointer;
+	font: inherit;
+}
+
+/* ---- سرصفحه‌ی حساب ---- */
+
+.account-greeting {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 20px;
+	margin-bottom: 33px;
+}
+
+.account-greeting h1 {
+	font-size: 30px;
+	line-height: 1.9;
+	margin-top: 7px;
+}
+
+.account-greeting .muted {
+	font-size: 11px;
+	margin-top: 6px;
+}
+
+/* ---- ستون کنار ---- */
+
+.account-sidebar {
+	padding: 18px;
+	border: 1px solid var(--mc-border);
+	border-radius: 11px;
+	background: var(--mc-surface-2);
+}
+
+.account-profile {
+	text-align: center;
+	padding: 16px 0 24px;
+	border-bottom: 1px solid var(--mc-border);
+}
+
+.large-avatar {
+	width: 72px;
+	height: 72px;
+	border-radius: 50%;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	overflow: hidden;
+	border: 1px solid color-mix(in srgb, var(--mc-accent) 35%, var(--mc-border));
+	background: color-mix(in srgb, var(--mc-accent) 7%, var(--mc-surface));
+	color: var(--mc-accent);
+	font-size: 29px;
+}
+
+.large-avatar > img {
+	height: 100%;
+	width: 100%;
+	object-fit: cover;
+}
+
+.account-profile > h3 {
+	font-size: 15px;
+	margin-top: 13px;
+}
+
+.account-profile > p {
+	font-size: 9px;
+	color: var(--mc-text-muted);
+	margin-top: 7px;
+	text-overflow: ellipsis;
+	overflow: hidden;
+}
+
+.membership-pill {
+	display: inline-flex;
+	align-items: center;
+	gap: 7px;
+	font-size: 8px;
+	color: var(--mc-accent);
+	background: color-mix(in srgb, var(--mc-accent) 8%, transparent);
+	padding: 5px 9px;
+	border-radius: 4px;
+	margin-top: 13px;
+}
+
+.account-sidebar > nav {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+	margin-top: 19px;
+}
+
+.account-sidebar nav > a,
+.account-sidebar nav > button {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	font-size: 10px;
+	color: var(--mc-text-muted);
+	padding: 12px 10px;
+	min-height: 39px;
+	text-align: right;
+	border-radius: 5px;
+	text-decoration: none;
+	border: 0;
+	background: none;
+	cursor: pointer;
+}
+
+.account-sidebar nav > a.active,
+.account-sidebar nav > button.active {
+	color: var(--mc-accent);
+	background: color-mix(in srgb, var(--mc-accent) 7%, transparent);
+}
+
+.account-sidebar nav > a:hover,
+.account-sidebar nav > button:hover {
+	color: var(--mc-text);
+	background: var(--mc-surface-3);
+}
+
+.account-sidebar nav > a > span,
+.account-sidebar nav > a > small,
+.account-sidebar nav > button > span,
+.account-sidebar nav > button > small {
+	font-size: 8px;
+	margin-inline-start: auto;
+	color: var(--mc-accent);
+	border-radius: 3px;
+	background: var(--mc-surface);
+	padding: 3px 5px;
+	white-space: nowrap;
+}
+
+.account-logout {
+	display: flex;
+	align-items: center;
+	gap: 11px;
+	font-size: 10px;
+	color: var(--mc-danger);
+	width: 100%;
+	padding: 14px 10px;
+	border-top: 1px solid var(--mc-border);
+	margin-top: 15px;
+	text-decoration: none;
+}
+
+.account-upgrade {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 12px;
+	margin-top: 20px;
+	background: linear-gradient(140deg, #273423, #1c2421);
+	border: 1px solid #c6ed7b28;
+	border-radius: 7px;
+	padding: 20px 12px;
+	text-align: center;
+	text-decoration: none;
+}
+
+.account-upgrade > strong {
+	font-size: 10px;
+	color: #d8e2d2;
+	font-weight: 500;
+}
+
+.account-upgrade > span {
+	color: #c6ed7b;
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	font-size: 8px;
+}
+
+/* ---- محتوای تب‌ها ---- */
+
+.account-content {
+	min-width: 0;
+}
+
+.stat-grid {
+	display: grid;
+	grid-template-columns: repeat(4, minmax(0, 1fr));
+	gap: 16px;
+}
+
+.stat-card {
+	position: relative;
+	padding: 18px;
+	border: 1px solid var(--mc-border);
+	border-radius: 10px;
+	background: var(--mc-surface-2);
+	min-height: 149px;
+	display: flex;
+	flex-direction: column;
+	justify-content: flex-end;
+}
+
+.stat-card > span {
+	position: absolute;
+	top: 16px;
+	inset-inline-start: 18px;
+	width: 30px;
+	height: 30px;
+	display: grid;
+	place-items: center;
+	background: color-mix(in srgb, var(--mc-accent) 6%, transparent);
+	color: var(--mc-accent);
+	border-radius: 6px;
+}
+
+.stat-card > strong {
+	font-size: 26px;
+	font-weight: 600;
+	line-height: 1.8;
+	margin-top: 30px;
+}
+
+.stat-card > strong.small-value {
+	font-size: 13px;
+	line-height: 2.7;
+}
+
+.stat-card > p {
+	font-size: 9px;
+	color: var(--mc-text-muted);
+	margin-top: 5px;
+}
+
+.account-welcome-banner {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 25px;
+	border: 1px solid color-mix(in srgb, var(--mc-accent) 20%, var(--mc-border));
+	background: linear-gradient(120deg, color-mix(in srgb, var(--mc-accent) 4%, var(--mc-surface-2)), var(--mc-surface-2));
+	border-radius: 10px;
+	padding: 26px 29px;
+	margin-top: 25px;
+}
+
+.account-welcome-banner h2 {
+	font-size: 21px;
+	line-height: 1.9;
+	margin-top: 9px;
+}
+
+.account-welcome-banner p {
+	font-size: 10px;
+	line-height: 2.4;
+	color: var(--mc-text-muted);
+	margin-top: 8px;
+}
+
+.account-welcome-banner .text-link {
+	color: var(--mc-accent);
+	font-size: 10px;
+	margin-top: 13px;
+	/*
+	 * مرجع این میان‌بر را با `<button>` می‌سازد؛ پدینگ پیش‌فرض مرورگر
+	 * (۱px بالا/پایین و ۶px چپ/راست) رویش می‌ماند. ما `<a>` هستیم تا
+	 * بی‌جاوااسکریپت هم کار کند، پس همان پدینگ صریح نوشته می‌شود
+	 * (سنجیده‌شده: ارتفاع ۱۷↔۱۵ و پهنای ۸۲↔۷۰).
+	 */
+	padding: 1px 6px;
+}
+
+.account-welcome-banner > span[aria-hidden="true"] {
+	color: var(--mc-accent);
+	opacity: .45;
+}
+
+.account-section {
+	margin-top: 34px;
+}
+
+.account-content .manacore-grid-cards {
+	grid-template-columns: repeat(4, minmax(0, 1fr));
+	gap: 18px;
+}
+
+.account-content .manacore-card-poster {
+	aspect-ratio: 3 / 4;
+}
+
+.account-content .section-heading h2 {
+	font-size: 18px;
+}
+
+.account-content .empty-state {
+	min-height: 235px;
+}
+
+/* ---- تاریخچه‌ی تماشا ---- */
+
+.history-list {
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+}
+
+.history-item {
+	display: flex;
+	align-items: center;
+	gap: 19px;
+	padding: 15px;
+	background: var(--mc-surface-2);
+	border: 1px solid var(--mc-border);
+	border-radius: 9px;
+}
+
+.history-item > img {
+	width: 67px;
+	height: 95px;
+	object-fit: cover;
+	border-radius: 5px;
+}
+
+.history-item > div {
+	flex: 1;
+	min-width: 0;
+}
+
+.history-item h3 {
+	font-size: 13px;
+}
+
+.history-item p {
+	font-size: 9px;
+	color: var(--mc-text-muted);
+	line-height: 2;
+	margin-top: 7px;
+}
+
+.history-item small {
+	font-size: 8px;
+	color: var(--mc-text-muted);
+	display: block;
+	margin-top: 10px;
+}
+
+.history-progress {
+	height: 3px;
+	background: var(--mc-border);
+	border-radius: 3px;
+	overflow: hidden;
+	margin-top: 13px;
+	width: min(100%, 310px);
+}
+
+.history-progress > span {
+	display: block;
+	height: 100%;
+	background: var(--mc-accent);
+}
+
+/* ---- تحلیل سلیقه ---- */
+
+.analytics-grid {
+	display: grid;
+	grid-template-columns: 1.2fr 1fr;
+	gap: 20px;
+}
+
+.analytics-card {
+	border: 1px solid var(--mc-border);
+	border-radius: 10px;
+	background: var(--mc-surface-2);
+	padding: 24px;
+	min-width: 0;
+}
+
+.analytics-card > h3 {
+	font-size: 14px;
+	font-weight: 650;
+}
+
+.analytics-card > p {
+	font-size: 9px;
+	color: var(--mc-text-muted);
+	margin-top: 8px;
+}
+
+.genre-chart-body {
+	display: flex;
+	align-items: center;
+	gap: 24px;
+	margin-top: 30px;
+	padding-bottom: 8px;
+}
+
+.donut-chart {
+	width: 149px;
+	height: 149px;
+	border-radius: 50%;
+	padding: 13px;
+	flex-shrink: 0;
+	transform: rotate(-.01deg);
+}
+
+.donut-chart > span {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	width: 100%;
+	height: 100%;
+	border-radius: 50%;
+	background: var(--mc-surface-2);
+	gap: 9px;
+}
+
+.donut-chart strong {
+	font-size: 12px;
+	font-weight: 600;
+}
+
+.donut-chart small {
+	font-size: 8px;
+	color: var(--mc-text-muted);
+}
+
+.chart-legend {
+	flex: 1;
+}
+
+.chart-legend > div {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	margin-top: 15px;
+	font-size: 10px;
+}
+
+.chart-legend > div > span {
+	width: 6px;
+	height: 6px;
+	border-radius: 50%;
+	flex-shrink: 0;
+}
+
+.chart-legend p {
+	color: var(--mc-text-muted);
+	white-space: nowrap;
+}
+
+.chart-legend b {
+	font-size: 9px;
+	font-weight: 500;
+	margin-inline-start: auto;
+}
+
+.chart-legend > .muted {
+	font-size: 11px;
+}
+
+.format-stat {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	margin-top: 25px;
+}
+
+.format-stat > span {
+	display: grid;
+	place-items: center;
+	width: 37px;
+	height: 37px;
+	border-radius: 8px;
+	background: color-mix(in srgb, var(--mc-accent) 8%, transparent);
+	color: var(--mc-accent);
+}
+
+.format-stat strong {
+	font-size: 11px;
+	font-weight: 500;
+	display: block;
+}
+
+.format-stat small {
+	display: block;
+	font-size: 8px;
+	color: var(--mc-text-muted);
+	margin-top: 6px;
+}
+
+.format-stat > b {
+	font-size: 19px;
+	font-weight: 500;
+	margin-inline-start: auto;
+	color: var(--mc-accent);
+}
+
+.format-stat.series > span {
+	background: #9dbeef0a;
+	color: #9dbeef;
+}
+
+.format-stat.series > b {
+	color: #9dbeef;
+}
+
+.format-progress {
+	height: 4px;
+	background: var(--mc-border);
+	border-radius: 3px;
+	overflow: hidden;
+	margin-top: 13px;
+}
+
+.format-progress > span {
+	height: 100%;
+	display: block;
+	background: var(--mc-accent);
+}
+
+.format-progress.series > span {
+	background: #9dbeef;
+}
+
+.bar-chart {
+	display: flex;
+	justify-content: space-between;
+	align-items: flex-end;
+	gap: 9px;
+	min-height: 162px;
+	margin-top: 17px;
+}
+
+.bar-chart > div {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: flex-end;
+	width: 100%;
+	gap: 10px;
+}
+
+.bar-chart i {
+	display: block;
+	width: min(24px, 100%);
+	border-radius: 3px 3px 0 0;
+	background: linear-gradient(var(--mc-accent), color-mix(in srgb, var(--mc-accent) 40%, transparent));
+	min-height: 3px;
+}
+
+.bar-chart span {
+	font-size: 9px;
+	color: var(--mc-text-muted);
+}
+
+.bar-chart small {
+	font-size: 8px;
+	color: var(--mc-text-muted);
+	white-space: nowrap;
+}
+
+.country-bars {
+	margin-top: 26px;
+}
+
+.country-bars > div {
+	margin-top: 18px;
+}
+
+.country-bars > div > span {
+	display: flex;
+	justify-content: space-between;
+	gap: 15px;
+	font-size: 10px;
+	color: var(--mc-text-muted);
+}
+
+.country-bars b {
+	font-size: 9px;
+	font-weight: 400;
+	color: var(--mc-text);
+}
+
+.country-bars > div > i {
+	display: block;
+	background: var(--mc-border);
+	height: 4px;
+	margin-top: 10px;
+	border-radius: 3px;
+	overflow: hidden;
+}
+
+.country-bars i > span {
+	display: block;
+	height: 100%;
+	background: var(--mc-accent);
+}
+
+.country-bars > .muted {
+	font-size: 11px;
+	margin-top: 45px;
+	text-align: center;
+}
+
+.analytics-privacy {
+	display: flex;
+	align-items: center;
+	gap: 9px;
+	font-size: 9px;
+	color: var(--mc-text-muted);
+	line-height: 2;
+	margin-top: 28px;
+}
+
+.analytics-privacy > span {
+	color: var(--mc-accent);
+}
+
+/* ---- اشتراک و صورت‌حساب ---- */
+/*
+ * عنوان فرعی بخش‌ها. قاعده‌ی `.account-page ...` عمدی است: صفرسازی حاشیه‌ی
+ * تیترها (`.account-page :where(h1, h2, h3, h4, p)` در `theme.css`) هم‌وزن
+ * (۰,۱,۰) است و چون `theme.css` **بعد از** CSS افزونه بار می‌شود، برنده
+ * می‌شد و این حاشیه‌ها بی‌اثر می‌ماندند (سنجیده‌شده: `margin` عنوان ۰ در
+ * برابر ۱۷/۲۰ مرجع، کارت پروفایل ۵۸۹ در برابر ۶۳۶ مرجع).
+ */
+.account-page .subsection-title {
+	font-size: 16px;
+	margin-bottom: 20px;
+	display: flex;
+	align-items: center;
+	gap: 9px;
+}
+
+.subsection-title > span {
+	color: var(--mc-accent);
+}
+
+
+.subscription-status-card {
+	display: flex;
+	align-items: center;
+	gap: 24px;
+	border: 1px solid color-mix(in srgb, var(--mc-accent) 20%, var(--mc-border));
+	background: var(--mc-surface-2);
+	padding: 29px;
+	border-radius: 11px;
+}
+
+.subscription-status-card > span[aria-hidden="true"] {
+	color: var(--mc-accent);
+}
+
+.subscription-status-card h2 {
+	font-size: 20px;
+	line-height: 2;
+	margin-top: 5px;
+}
+
+.subscription-status-card p:not(.eyebrow) {
+	font-size: 10px;
+	line-height: 2.3;
+	color: var(--mc-text-muted);
+	margin-top: 9px;
+}
+
+.subscription-status-card > .button {
+	margin-inline-start: auto;
+	font-size: 10px;
+}
+
+.invoice-table {
+	border: 1px solid var(--mc-border);
+	border-radius: 9px;
+	overflow: hidden;
+	background: var(--mc-surface-2);
+}
+
+.invoice-row {
+	display: grid;
+	grid-template-columns: 1.1fr .95fr 1.3fr .6fr 30px;
+	gap: 15px;
+	align-items: center;
+	padding: 15px 20px;
+	border-bottom: 1px solid var(--mc-border);
+	font-size: 10px;
+}
+
+.invoice-row:last-child {
+	border-bottom: 0;
+}
+
+.invoice-header {
+	color: var(--mc-text-muted);
+	font-size: 9px;
+	background: var(--mc-surface-3);
+}
+
+.invoice-row strong {
+	font-weight: 500;
+}
+
+.invoice-row > span {
+	color: var(--mc-text-muted);
+}
+
+.invoice-status {
+	font-size: 8px;
+	font-weight: 500;
+	border-radius: 4px;
+	padding: 5px 7px;
+	background: color-mix(in srgb, var(--mc-accent) 8%, transparent);
+	color: var(--mc-accent);
+	text-align: center;
+}
+
+/* ---- تنظیمات حساب ---- */
+
+.settings-card {
+	padding: 26px;
+	background: var(--mc-surface-2);
+	border: 1px solid var(--mc-border);
+	border-radius: 10px;
+	margin-bottom: 22px;
+}
+
+.settings-card > form:first-of-type {
+	margin-top: 0;
+}
+
+.settings-avatar {
+	display: flex;
+	align-items: center;
+	gap: 23px;
+	margin-bottom: 30px;
+}
+
+.settings-avatar > div {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	gap: 11px;
+}
+
+.settings-avatar small {
+	font-size: 9px;
+	color: var(--mc-text-muted);
+}
+
+.settings-avatar .text-link {
+	font-size: 8px;
+}
+
+.settings-avatar label {
+	cursor: pointer;
+}
+
+.settings-fields {
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap: 20px;
+}
+
+.settings-fields small {
+	font-size: 8px;
+	color: var(--mc-text-muted);
+}
+
+/*
+ * مرجع `opacity:.8` را هم دارد، اما با پس‌زمینه‌ی تیره‌ی خودش نسبت
+ * کنتراست ۴٫۰ می‌داد (< ۴٫۵ یعنی تخلف axe «color-contrast»). فقط شفافیت
+ * برداشته شد؛ رنگ `muted` خودش به‌اندازه‌ی کافی کم‌رنگ‌تر از مقدارهای
+ * واقعی است و ظاهر مرجع حفظ می‌شود.
+ */
+.settings-fields input[readonly] {
+	color: var(--mc-text-muted);
+}
+
+/*
+ * ---- فیلدهای فرم (رست مرجع) ----
+ *
+ * مرجع سراسری `input,textarea,select{border:1px solid var(--border);
+ * border-radius:7px;background:var(--bg);color:var(--text);padding:11px 13px}` و
+ * `select{font-size:12px;padding:9px 11px}` دارد. بدون آن، فیلدهای برگه‌ی
+ * حساب به ظاهر پیش‌فرض مرورگر می‌افتند (`color-scheme: dark` یعنی پس‌زمینه‌ی
+ * خاکستری و متن سفید — سنجیده‌شده: `rgb(59,59,59)` و پدینگ `1px 2px`).
+ */
+
+.account-page :where(
+	input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]),
+	textarea,
+	select
+) {
+	border: 1px solid var(--mc-border);
+	border-radius: 7px;
+	background: var(--mc-surface);
+	color: var(--mc-text);
+	padding: 11px 13px;
+	min-width: 0;
+	transition: border-color .2s;
+}
+
+.account-page :where(input, textarea, select):focus {
+	outline: none;
+	border-color: var(--mc-accent);
+}
+
+.account-page :where(input, textarea)::placeholder {
+	color: var(--mc-text-muted);
+	opacity: .75;
+}
+
+.account-page select {
+	font-size: 12px;
+	padding: 9px 11px;
+	cursor: pointer;
+}
+
+.account-page input[type="checkbox"] {
+	accent-color: var(--mc-accent);
+}
+
+.account-page textarea {
+	width: 100%;
+	resize: vertical;
+	line-height: 2;
+}
+
+.form-label {
+	display: flex;
+	flex-direction: column;
+	gap: 9px;
+	font-size: 11px;
+	color: var(--mc-text);
+	margin-bottom: 19px;
+}
+
+.form-label > input {
+	height: 44px;
+	width: 100%;
+	font-size: 12px;
+}
+
+/*
+ * ریتم عمودی کارت‌های تنظیمات — همان قواعد مرجع، اما منطبق با ساختار این
+ * افزونه. مرجع `form` را خودِ کارت می‌گیرد (`.settings-card>.button{margin-top:19px}`
+ * و `.settings-card form{margin-top:20px}`)؛ این‌جا کارت یک `section` است و
+ * فرم‌ها داخل آن‌اند، پس همان معنی با ساختار بومی نوشته می‌شود:
+ *   • فرم آواتار اولین فرزند است → بدون حاشیه‌ی بالا
+ *   • فرم پروفایل درست بعد از آواتار می‌آید و فاصله‌اش همان `margin-bottom:30px`
+ *     بلوک آواتار است (مرجع هم فاصله‌ی دیگری ندارد)
+ *   • فرم رمز عبور بعد از متن راهنما می‌آید → ۲۰px
+ *   • دکمه‌ی ذخیره‌ی هر فرم ۱۹px بالای خود دارد
+ */
+.account-page .settings-card form {
+	margin-top: 20px;
+}
+
+.account-page .settings-card > .settings-avatar,
+.account-page .settings-card .settings-avatar + form {
+	margin-top: 0;
+}
+
+.account-page .settings-card form > .button {
+	margin-top: 19px;
+}
+
+.account-page .settings-card .subsection-title {
+	margin-top: 17px;
+}
+
+.settings-toggle-row {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 19px 0;
+	border-top: 1px solid var(--mc-border);
+	gap: 20px;
+}
+
+.settings-toggle-row strong {
+	font-size: 11px;
+	font-weight: 600;
+}
+
+.settings-toggle-row p {
+	font-size: 9px;
+	color: var(--mc-text-muted);
+	margin-top: 7px;
+}
+
+.settings-toggle-row select {
+	font-size: 10px;
+}
+
+.settings-export {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 20px;
+}
+
+.settings-export h3 {
+	font-size: 15px;
+}
+
+.settings-export p {
+	font-size: 10px;
+	margin-top: 8px;
+}
+
+.settings-export > .button {
+	margin-top: 0;
+	font-size: 10px;
+}
+
+/* ---- نردبان پاسخگو (همان پله‌های مرجع) ---- */
+
+@media (max-width: 1300px) {
+	.analytics-card {
+		padding: 21px;
+	}
+
+	.donut-chart {
+		width: 125px;
+		height: 125px;
+	}
+
+	.genre-chart-body {
+		gap: 16px;
+	}
+
+	.account-content .manacore-grid-cards {
+		gap: 16px;
+	}
+
+	.bar-chart small {
+		font-size: 7px;
+	}
+}
+
+@media (max-width: 1100px) {
+	.account-content .manacore-grid-cards {
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+	}
+
+	.stat-grid {
+		gap: 11px;
+	}
+
+	.stat-card {
+		padding: 15px;
+	}
+
+	.stat-card > strong.small-value {
+		font-size: 11px;
+	}
+
+	.analytics-grid {
+		grid-template-columns: 1fr;
+	}
+
+	.donut-chart {
+		width: 158px;
+		height: 158px;
+	}
+
+	.chart-legend {
+		max-width: 200px;
+	}
+
+	.genre-chart-body {
+		justify-content: space-around;
+	}
+}
+
+@media (max-width: 980px) {
+	.account-greeting h1 {
+		font-size: 27px;
+	}
+
+	.stat-grid {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+
+	.stat-card {
+		min-height: 133px;
+	}
+
+	.stat-card > strong.small-value {
+		font-size: 16px;
+	}
+
+	.account-welcome-banner {
+		padding: 22px;
+	}
+
+	.account-welcome-banner > span[aria-hidden="true"] {
+		font-size: 45px;
+	}
+
+	.account-welcome-banner h2 {
+		font-size: 18px;
+	}
+
+	.account-content .section-heading {
+		flex-wrap: wrap;
+	}
+
+	.account-content .manacore-grid-cards {
+		gap: 15px;
+	}
+
+	.subscription-status-card {
+		padding: 23px;
+		flex-wrap: wrap;
+	}
+
+	.subscription-status-card > .button {
+		margin-inline-start: 0;
+	}
+
+	.invoice-row {
+		padding: 15px 14px;
+		font-size: 9px;
+		gap: 10px;
+	}
+
+	.settings-fields {
+		grid-template-columns: 1fr;
+	}
+
+	.settings-export {
+		flex-wrap: wrap;
+	}
+}
+
+@media (max-width: 768px) {
+	.account-greeting {
+		margin-bottom: 25px;
+		align-items: flex-start;
+		flex-wrap: wrap;
+	}
+
+	.account-greeting h1 {
+		font-size: 25px;
+		line-height: 1.9;
+	}
+
+	.account-greeting .muted {
+		font-size: 10px;
+		line-height: 2.3;
+	}
+
+	.account-greeting > .button {
+		font-size: 10px;
+		min-height: 35px;
+		padding: 8px 13px;
+	}
+
+	.account-sidebar {
+		padding: 9px;
+		border-radius: 9px;
+	}
+
+	.account-profile,
+	.account-upgrade,
+	.account-logout {
+		display: none;
+	}
+
+	.account-sidebar > nav {
+		flex-direction: row;
+		overflow-x: auto;
+		gap: 4px;
+		margin: 0;
+		scrollbar-width: none;
+	}
+
+	.account-sidebar nav > a,
+	.account-sidebar nav > button {
+		width: auto;
+		flex-shrink: 0;
+		padding: 10px 12px;
+		font-size: 9px;
+		gap: 7px;
+		white-space: nowrap;
+		min-height: 38px;
+	}
+
+	.account-sidebar nav > a > small,
+	.account-sidebar nav > button > small {
+		display: none;
+	}
+
+	.stat-grid {
+		gap: 13px;
+	}
+
+	.stat-card {
+		min-height: 141px;
+		padding: 19px;
+	}
+
+	.stat-card > strong {
+		font-size: 28px;
+	}
+
+	.stat-card > strong.small-value {
+		font-size: 15px;
+	}
+
+	.stat-card > p {
+		font-size: 9px;
+	}
+
+	.account-welcome-banner {
+		padding: 22px;
+		gap: 12px;
+	}
+
+	.account-welcome-banner h2 {
+		font-size: 18px;
+	}
+
+	.account-welcome-banner > span[aria-hidden="true"] {
+		display: none;
+	}
+
+	.account-welcome-banner p {
+		font-size: 10px;
+	}
+
+	.account-content .manacore-grid-cards {
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+		gap: 15px;
+	}
+
+	.account-content .manacore-card-poster {
+		aspect-ratio: 2 / 3;
+	}
+
+	.account-content .empty-state {
+		min-height: 239px;
+	}
+
+	.history-item {
+		gap: 13px;
+		padding: 13px;
+	}
+
+	.history-item > img {
+		width: 53px;
+		height: 78px;
+	}
+
+	.history-item h3 {
+		font-size: 12px;
+	}
+
+	.history-item p {
+		font-size: 8px;
+	}
+
+	.history-item small {
+		font-size: 7px;
+		line-height: 2;
+	}
+
+	.history-item > .button {
+		font-size: 8px;
+		padding: 7px 9px;
+	}
+
+	.analytics-card {
+		padding: 24px;
+	}
+
+	.donut-chart {
+		width: 146px;
+		height: 146px;
+	}
+
+	.chart-legend {
+		max-width: none;
+	}
+
+	.genre-chart-body {
+		gap: 25px;
+		justify-content: space-around;
+	}
+
+	.analytics-privacy {
+		font-size: 8px;
+		align-items: flex-start;
+	}
+
+	.bar-chart small {
+		font-size: 8px;
+	}
+
+	.subscription-status-card {
+		gap: 17px;
+		padding: 23px;
+	}
+
+	.subscription-status-card h2 {
+		font-size: 19px;
+	}
+
+	.invoice-row {
+		grid-template-columns: .9fr .95fr 1.15fr .5fr 25px;
+		gap: 7px;
+		padding: 12px 13px;
+		font-size: 8px;
+	}
+
+	.invoice-header {
+		font-size: 7px;
+	}
+
+	.invoice-status {
+		font-size: 7px;
+		padding: 4px;
+	}
+
+	.invoice-row .icon-button {
+		width: 25px;
+		height: 27px;
+	}
+
+	.settings-card {
+		padding: 23px;
+	}
+
+	.settings-avatar {
+		gap: 17px;
+	}
+
+	.settings-avatar small {
+		font-size: 8px;
+	}
+
+	.settings-fields {
+		grid-template-columns: 1fr;
+		gap: 0;
+	}
+
+	.settings-toggle-row strong {
+		font-size: 10px;
+	}
+
+	.settings-toggle-row p {
+		font-size: 8px;
+		line-height: 2;
+	}
+
+	.settings-toggle-row select {
+		font-size: 9px;
+		max-width: 137px;
+	}
+}
+
+@media (max-width: 480px) {
+	.account-greeting h1 {
+		font-size: 23px;
+	}
+
+	.account-content .manacore-grid-cards {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		gap: 16px;
+	}
+
+	.stat-card > strong {
+		font-size: 25px;
+	}
+
+	.stat-card > strong.small-value {
+		font-size: 14px;
+	}
+
+	.account-welcome-banner h2 {
+		font-size: 17px;
+	}
+
+	.genre-chart-body {
+		gap: 18px;
+	}
+
+	.bar-chart small {
+		font-size: 7px;
+	}
+
+	.history-item {
+		gap: 11px;
+		padding: 12px;
+	}
+
+	.history-item > img {
+		width: 45px;
+		height: 67px;
+	}
+
+	.history-item h3 {
+		font-size: 11px;
+	}
+
+	.history-item p {
+		font-size: 7px;
+	}
+
+	.history-item > .button {
+		font-size: 7px;
+		gap: 5px;
+		padding: 7px 8px;
+	}
+
+	.donut-chart {
+		width: 133px;
+		height: 133px;
+		padding: 12px;
+	}
+
+	.chart-legend p {
+		font-size: 9px;
+	}
+
+	.chart-legend b {
+		font-size: 8px;
+	}
+
+	.settings-card {
+		padding: 20px;
+	}
+
+	.settings-avatar .large-avatar {
+		width: 62px;
+		height: 62px;
+	}
+
+	.settings-avatar small {
+		font-size: 7px;
+		line-height: 2;
+	}
+
+	.settings-toggle-row {
+		gap: 15px;
+	}
+
+	.settings-toggle-row select {
+		max-width: 126px;
+		font-size: 8px;
+	}
+
+	.invoice-row {
+		font-size: 7px;
+		grid-template-columns: .85fr .9fr 1.25fr .55fr 22px;
+		padding: 12px 10px;
+		gap: 5px;
+	}
+
+	.invoice-status {
+		font-size: 6px;
+		padding: 4px 3px;
+	}
+}
+
+@media (max-width: 360px) {
+	.donut-chart {
+		width: 118px;
+		height: 118px;
+	}
+
+	.chart-legend > div {
+		gap: 5px;
+	}
+
+	.chart-legend p {
+		font-size: 8px;
+	}
+
+	.genre-chart-body {
+		gap: 14px;
+	}
+}
+
+
+/* =====================================================================
+ * ۱۸) «سرصفحه‌ی برگه» و برگه‌ی «پخش زنده»
+ *     هم‌ارز `.page-title-row` / `.info-intro` / `.magazine-intro` و
+ *     `.live-page` در مرجع Cinora (`live.html`).
+ *
+ *     همه‌ی اعداد از `cinora/assets/css/style.css` گرفته شده و به توکن‌های
+ *     این پروژه نگاشت شده‌اند: `--bg→--mc-surface`، `--panel→--mc-surface-2`،
+ *     `--border→--mc-border`، `--muted→--mc-text-muted`، `--accent→--mc-accent`.
+ *
+ *     نردبان پاسخ‌گو عیناً پله‌های مرجع است: ۱۱۰۰ / ۹۸۰ / ۷۶۸ / ۴۸۰ / ۳۶۰.
+ * ===================================================================== */
+
+/*
+ * ---------------------------------------- ۱۸.۱) سرصفحه‌ی برگه
+ *
+ * چیدمان `split` همان `.page-title-row` است (قاعده‌اش در پوسته هست)؛ این
+ * بخش فقط چیزهایی را می‌آورد که بلوک تازه اضافه می‌کند: ساعت زنده، جعبه‌ی
+ * آیکون، و قاعده‌های ریزسطر/توضیح برای هر سه چیدمان.
+ */
+.page-intro .page-title-row {
+	margin-bottom: 30px;
+}
+
+.page-intro-split .page-title-row .eyebrow,
+.page-intro-centered .info-intro .eyebrow,
+.page-intro-magazine .magazine-intro .eyebrow {
+	margin: 0;
+	color: var(--mc-accent);
+	font-size: .625rem;
+	font-weight: 500;
+	letter-spacing: 1.2px;
+}
+
+/* مرجع: `.live-clock{font-size:20px;color:var(--accent)}` و `small` ۹px. */
+.page-intro .live-clock {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	font-size: 1.25rem;
+	color: var(--mc-accent);
+}
+
+.page-intro .live-clock b {
+	font-weight: 600;
+	/* عدد ساعت در فونت فارسی جابه‌جا نشود. */
+	font-variant-numeric: tabular-nums;
+}
+
+.page-intro .live-clock small {
+	font-size: .5625rem;
+	color: var(--mc-text-muted);
+}
+
+/*
+ * جعبه‌ی آیکون سرصفحه‌ی برگه‌های مرجع (`.pricing-crown` ۶۶×۶۶ با چرخش
+ * ملایم). پوسته همین قاب را برای برگه‌ی اشتراک دارد؛ این‌جا هر دو نام
+ * کلاس با هم رندر می‌شوند تا قاعده تکرار نشود و نام مرجع هم محفوظ بماند.
+ */
+.page-intro .pricing-crown {
+	margin: 0;
+}
+
+/* چیدمان میانی (`.info-intro` مرجع). */
+.page-intro-centered .info-intro {
+	max-width: 900px;
+	margin: auto;
+	padding-top: 29px;
+	text-align: center;
+}
+
+.page-intro-centered .info-intro h1 {
+	margin-top: 15px;
+	font-size: 2.1875rem;
+	line-height: 1.9;
+}
+
+.page-intro-centered .info-intro > p:not(.eyebrow) {
+	margin-top: 15px;
+	font-size: .75rem;
+	line-height: 2.5;
+	color: var(--mc-text-muted);
+}
+
+/* چیدمان مجله (`.magazine-intro` مرجع). */
+.page-intro-magazine .magazine-intro h1 {
+	margin-top: 13px;
+	font-size: 2.25rem;
+	line-height: 1.9;
+}
+
+.page-intro-magazine .magazine-intro h1 > span,
+.page-intro-magazine .magazine-intro h1 > .accent {
+	color: var(--mc-accent);
+}
+
+.page-intro-magazine .magazine-intro > .muted {
+	margin-top: 8px;
+	font-size: .75rem;
+}
+
+/*
+ * ---------------------------------------- ۱۸.۲) برگه‌ی پخش زنده
+ *
+ * مرجع برای این برگه‌ها `padding-top:30px;padding-bottom:60px` دارد و
+ * ریست سراسری `h1..h4,p{margin:0}` — همان درسی که در برگه‌ی حساب کاربری
+ * گرفته شد (قاعده‌ی هم‌وزن پوسته، حاشیه‌های مرجع را می‌خورد). پس ریست
+ * عمداً **محدود به همین برگه** است، نه سراسری.
+ */
+.live-page {
+	padding-top: 30px;
+	padding-bottom: 60px;
+	line-height: normal;
+}
+
+.live-page :where(h1, h2, h3, h4, p) {
+	margin-block: 0;
+}
+
+.live-layout {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) 305px;
+	gap: 27px;
+	align-items: start;
+}
+
+.live-player {
+	min-width: 0;
+}
+
+.live-video-frame {
+	position: relative;
+	aspect-ratio: 16 / 9;
+	border-radius: 11px 11px 0 0;
+	overflow: hidden;
+	background: #070a11;
+	border: 1px solid var(--mc-border);
+}
+
+.live-video-frame > video {
+	width: 100%;
+	height: 100%;
+	object-fit: contain;
+}
+
+.on-air {
+	position: absolute;
+	top: 18px;
+	left: 18px;
+	display: flex;
+	align-items: center;
+	gap: 7px;
+	padding: 7px 9px;
+	border-radius: 4px;
+	background: #d54d59e6;
+	color: #fff;
+	font-family: Arial, sans-serif;
+	font-size: .5625rem;
+	font-weight: 600;
+	letter-spacing: .7px;
+	pointer-events: none;
+}
+
+.on-air > span {
+	width: 4px;
+	height: 4px;
+	flex-shrink: 0;
+	border-radius: 50%;
+	background: #fff;
+	animation: manacore-pulse 2s infinite;
+}
+
+@keyframes manacore-pulse {
+	50% {
+		opacity: .35;
+	}
+}
+
+/* قاب خطای ویدئو (`.video-error` مرجع) — تا رخداد خطا پنهان است. */
+.live-video-frame .video-error {
+	position: absolute;
+	inset: 0;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	gap: 18px;
+	background: #090e17dd;
+	color: #fff;
+	font-size: .8125rem;
+}
+
+.live-video-frame .video-error.hidden {
+	display: none;
+}
+
+.live-now-info {
+	display: flex;
+	align-items: center;
+	gap: 17px;
+	padding: 22px;
+	border: 1px solid var(--mc-border);
+	border-top: 0;
+	border-radius: 0 0 10px 10px;
+	background: var(--mc-surface-2);
+}
+
+.live-channel-logo {
+	display: grid;
+	place-items: center;
+	width: 46px;
+	height: 46px;
+	flex-shrink: 0;
+	border: 1px solid color-mix(in srgb, var(--mc-accent) 22%, var(--mc-border));
+	border-radius: 9px;
+	background: color-mix(in srgb, var(--mc-accent) 7%, transparent);
+	color: var(--mc-accent);
+}
+
+.live-now-info small {
+	font-size: .5rem;
+	color: var(--mc-accent);
+}
+
+.live-now-info h2 {
+	margin-top: 6px;
+	font-size: 1.1875rem;
+	line-height: 1.8;
+}
+
+.live-now-info p {
+	margin-top: 5px;
+	font-size: .5625rem;
+	color: var(--mc-text-muted);
+}
+
+.live-player-actions {
+	display: flex;
+	gap: 8px;
+	margin-inline-start: auto;
+}
+
+.live-player-actions > .icon-button {
+	border: 1px solid var(--mc-border);
+}
+
+/* یادداشت زیر پخش‌کننده — همان `.demo-notice` مرجع. */
+.live-page .demo-notice {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	margin: 17px 0;
+	padding: 12px 14px;
+	border: 1px solid color-mix(in srgb, var(--mc-accent) 16%, var(--mc-border));
+	border-radius: 7px;
+	background: color-mix(in srgb, var(--mc-accent) 4%, transparent);
+	color: var(--mc-text-muted);
+}
+
+.live-page .demo-notice > svg {
+	flex-shrink: 0;
+	color: var(--mc-accent);
+}
+
+.live-page .demo-notice > p {
+	font-size: .625rem;
+	line-height: 2;
+}
+
+/*
+ * «قاب‌های امروز» — شبکه‌ی زمان‌بندی واقعی زیر پخش‌کننده.
+ * مرجع: `.live-program{margin-top:28px}` و `.program-grid` سه ستون.
+ */
+.live-program {
+	margin-top: 28px;
+}
+
+.live-program h2 {
+	font-size: 1.125rem;
+}
+
+.live-program .section-heading {
+	margin-bottom: 23px;
+}
+
+.program-grid {
+	display: grid;
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+	gap: 13px;
+}
+
+.program-grid > div {
+	padding: 19px;
+	border: 1px solid var(--mc-border);
+	border-radius: 9px;
+	background: var(--mc-surface-2);
+}
+
+.program-grid > div.active {
+	border-color: color-mix(in srgb, var(--mc-accent) 30%, var(--mc-border));
+	background: color-mix(in srgb, var(--mc-accent) 5%, var(--mc-surface-2));
+}
+
+.program-grid small {
+	font-size: .5rem;
+	color: var(--mc-text-muted);
+}
+
+.program-grid > div.active > small {
+	color: var(--mc-accent);
+}
+
+.program-grid h3 {
+	margin-top: 12px;
+	font-size: .8125rem;
+	/*
+	 * مرجع `body{line-height:normal}` دارد و تیتر قاب همین را ارث می‌برد؛
+	 * پوسته‌ی ما برای `h3` خط‌ارتفاع ۱٫۴ می‌گذارد که ارتفاع قاب را ۲px کم
+	 * می‌کند. پس صریحاً همان `normal` مرجع بازنویسی می‌شود.
+	 */
+	line-height: normal;
+}
+
+.program-grid h3 a {
+	color: inherit;
+	text-decoration: none;
+}
+
+.program-grid h3 a:hover,
+.program-grid h3 a:focus-visible {
+	color: var(--mc-accent);
+}
+
+.program-grid > div > span {
+	display: flex;
+	align-items: center;
+	gap: 5px;
+	margin-top: 15px;
+	font-size: .625rem;
+	color: var(--mc-text-muted);
+}
+
+/*
+ * ---------------------------------------- ۱۸.۳) ستون کانال‌ها
+ *
+ * سرتیتر ستون کنار، همان `.section-heading` مرجع است؛ چون این کلاس در
+ * پوسته فقط به‌صورت مستقل در دو جا تعریف شده، قاعده‌ی پایه‌اش را همین‌جا
+ * و برای همین بلوک می‌آوریم تا رفتارش در نشستن کنار هم درست باشد.
+ */
+.live-channels .section-heading {
+	display: flex;
+	align-items: center;
+	gap: 22px;
+	min-height: 37px;
+	margin-bottom: 23px;
+}
+
+.live-channels > .section-heading {
+	justify-content: space-between;
+	gap: 10px;
+	margin-bottom: 19px;
+}
+
+.live-channels h2 {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	font-size: .9375rem;
+	font-weight: 700;
+	line-height: 1.6;
+}
+
+.live-channels h2 > svg {
+	color: var(--mc-accent);
+}
+
+.live-channels .section-heading > span {
+	font-size: .5rem;
+	color: var(--mc-text-muted);
+}
+
+/*
+ * کارت کانال. در مرجع `button.channel-card` بود که با JS ساخته می‌شد؛
+ * این‌جا **پیوند واقعی** است تا بدون جاوااسکریپت هم کار کند، پس همان
+ * هندسه عیناً حفظ می‌شود و فقط پیش‌فرض‌های مرورگر برای لنگر صفر می‌شوند.
+ */
+.channel-card {
+	display: flex;
+	align-items: center;
+	gap: 13px;
+	min-height: 87px;
+	margin-top: 13px;
+	padding: 20px 17px;
+	border: 1px solid var(--mc-border);
+	border-radius: 9px;
+	background: var(--mc-surface-2);
+	color: var(--mc-text);
+	text-align: right;
+	text-decoration: none;
+	transition: border-color .2s, background .2s;
+}
+
+.channel-card.active {
+	border-color: color-mix(in srgb, var(--mc-accent) 70%, var(--mc-border));
+	background: color-mix(in srgb, var(--mc-accent) 5%, var(--mc-surface-2));
+}
+
+.channel-card:hover,
+.channel-card:focus-visible {
+	border-color: color-mix(in srgb, var(--mc-accent) 45%, var(--mc-border));
+}
+
+.channel-icon {
+	display: grid;
+	place-items: center;
+	width: 40px;
+	height: 40px;
+	flex-shrink: 0;
+	border: 1px solid var(--mc-border);
+	border-radius: 8px;
+	color: var(--mc-accent);
+}
+
+.channel-icon > svg {
+	width: 20px;
+	height: 20px;
+}
+
+.channel-card strong {
+	display: block;
+	font-size: .6875rem;
+	font-weight: 600;
+}
+
+.channel-card small {
+	display: block;
+	margin-top: 9px;
+	font-size: .5rem;
+	color: var(--mc-text-muted);
+}
+
+/* فلش پخش در کارت غیرفعال (مرجع: `svg` انتهای کارت). */
+.channel-card > svg {
+	margin-inline-start: auto;
+	flex-shrink: 0;
+	color: var(--mc-text-muted);
+}
+
+.channel-on-air {
+	display: flex;
+	align-items: center;
+	gap: 5px;
+	margin-inline-start: auto;
+	flex-shrink: 0;
+	font-size: .5rem;
+	color: var(--mc-accent);
+}
+
+.live-sidebar-note {
+	margin-top: 25px;
+	padding: 30px 24px;
+	border: 1px solid var(--mc-border);
+	border-radius: 10px;
+	background: radial-gradient(
+		ellipse at 80% 0%,
+		color-mix(in srgb, var(--mc-accent) 5%, transparent),
+		var(--mc-surface-2) 70%
+	);
+	text-align: center;
+}
+
+.live-sidebar-note > svg {
+	display: block;
+	margin: auto;
+	color: var(--mc-accent);
+}
+
+.live-sidebar-note h3 {
+	margin-top: 22px;
+	font-size: 1.25rem;
+	line-height: normal;
+}
+
+.live-sidebar-note p {
+	margin-top: 12px;
+	font-size: .6875rem;
+	line-height: 2.3;
+	color: var(--mc-text-muted);
+}
+
+.live-sidebar-note > a {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 9px;
+	margin-top: 21px;
+	/* ارتفاع خط پوسته بلندتر از مرجع است؛ همان `normal` مرجع بازنویسی می‌شود. */
+	line-height: normal;
+	font-size: .625rem;
+	color: var(--mc-accent);
+	text-decoration: none;
+}
+
+.live-sidebar-note > a:hover,
+.live-sidebar-note > a:focus-visible {
+	text-decoration: underline;
+}
+
+/* ---------------------------------------- ۱۸.۴) نردبان پاسخ‌گو */
+
+/* مرجع: `@media(max-width:1100px)` */
+@media (max-width: 1100px) {
+	.live-layout {
+		grid-template-columns: minmax(0, 1fr) 255px;
+		gap: 22px;
+	}
+
+	.channel-card {
+		padding: 16px 12px;
+		gap: 10px;
+	}
+
+	.live-now-info h2 {
+		font-size: 1.0625rem;
+	}
+}
+
+/* مرجع: `@media(max-width:980px)` */
+@media (max-width: 980px) {
+	.live-layout {
+		grid-template-columns: minmax(0, 1fr) 228px;
+		gap: 18px;
+	}
+
+	.live-now-info {
+		padding: 18px;
+		gap: 12px;
+	}
+
+	.live-now-info h2 {
+		font-size: .9375rem;
+	}
+
+	.channel-icon {
+		width: 32px;
+		height: 32px;
+	}
+
+	.channel-icon > svg {
+		width: 20px;
+		height: 20px;
+	}
+
+	.channel-card {
+		gap: 9px;
+	}
+
+	.channel-card strong {
+		font-size: .625rem;
+	}
+
+	.channel-card small {
+		font-size: .4375rem;
+	}
+
+	.program-grid > div {
+		padding: 15px;
+	}
+
+	.program-grid h3 {
+		font-size: .6875rem;
+	}
+}
+
+/* مرجع: `@media(max-width:768px)` */
+@media (max-width: 768px) {
+	.live-page {
+		padding-top: 25px;
+		padding-bottom: 40px;
+	}
+
+	.page-intro-centered .info-intro h1 {
+		font-size: 1.8125rem;
+	}
+
+	.page-intro-centered .info-intro > p:not(.eyebrow) {
+		font-size: .6875rem;
+	}
+
+	.page-intro-magazine .magazine-intro h1 {
+		font-size: 1.875rem;
+	}
+
+	.page-intro-magazine .magazine-intro > .muted {
+		font-size: .6875rem;
+	}
+
+	.live-layout {
+		display: block;
+	}
+
+	.live-channels {
+		margin-top: 29px;
+	}
+
+	.live-now-info {
+		padding: 19px;
+		gap: 12px;
+	}
+
+	.live-now-info h2 {
+		font-size: 1.0625rem;
+	}
+
+	.live-channel-logo {
+		width: 40px;
+		height: 40px;
+	}
+
+	.live-player-actions {
+		gap: 5px;
+	}
+
+	.live-player-actions .icon-button {
+		width: 29px;
+		height: 31px;
+	}
+
+	.live-page .demo-notice {
+		padding: 11px 12px;
+		gap: 8px;
+	}
+
+	.live-page .demo-notice > p {
+		font-size: .5625rem;
+	}
+
+	.page-intro .live-clock {
+		gap: 7px;
+		font-size: 1rem;
+	}
+
+	.page-intro .live-clock small {
+		display: none;
+	}
+
+	.channel-card {
+		padding: 20px;
+		gap: 16px;
+	}
+
+	.channel-card strong {
+		font-size: .8125rem;
+	}
+
+	.channel-card small {
+		font-size: .5625rem;
+	}
+
+	.channel-icon {
+		width: 42px;
+		height: 42px;
+	}
+
+	.channel-icon > svg {
+		width: 25px;
+		height: 25px;
+	}
+
+	.channel-on-air {
+		font-size: .5625rem;
+	}
+
+	.program-grid {
+		gap: 10px;
+	}
+
+	.program-grid > div {
+		padding: 16px 13px;
+	}
+
+	.program-grid h3 {
+		font-size: .6875rem;
+		line-height: 1.8;
+	}
+
+	.program-grid small {
+		font-size: .4375rem;
+	}
+}
+
+/* مرجع: `@media(max-width:480px)` */
+@media (max-width: 480px) {
+	.page-intro-centered .info-intro h1 {
+		font-size: 1.625rem;
+	}
+
+	.page-intro-centered .info-intro .eyebrow {
+		font-size: .5rem;
+	}
+
+	.page-intro-magazine .magazine-intro h1 {
+		font-size: 1.6875rem;
+	}
+
+	.live-now-info {
+		padding: 17px 14px;
+		gap: 10px;
+	}
+
+	.live-now-info h2 {
+		font-size: .875rem;
+	}
+
+	.live-now-info p {
+		font-size: .5rem;
+	}
+
+	.live-player-actions {
+		flex-direction: column;
+		gap: 5px;
+	}
+
+	.live-player-actions .icon-button {
+		width: 26px;
+		height: 26px;
+	}
+
+	.live-channel-logo {
+		width: 35px;
+		height: 38px;
+	}
+
+	.live-channel-logo > svg {
+		width: 23px;
+		height: 23px;
+	}
+
+	.program-grid > div {
+		padding: 15px 11px;
+	}
+
+	.program-grid h3 {
+		font-size: .625rem;
+	}
+
+	.program-grid small {
+		font-size: .375rem;
+	}
+
+	.program-grid > div > span {
+		font-size: .5rem;
+	}
+}
+
+/* مرجع: `@media(max-width:360px)` */
+@media (max-width: 360px) {
+	.program-grid h3 {
+		font-size: .5625rem;
+	}
+}
+
+
+/* =====================================================================
+ * ۱۹) برگه‌ی «بازیگران و عوامل» و برگه‌ی «چهره‌»
+ *     هم‌ارز `cinora/cast.html` و نمای چهره‌ی همان برگه (`.person-hero`).
+ *
+ *     نگاشت توکن‌های مرجع به این پروژه مثل بخش ۱۸ است:
+ *     `--panel → --mc-surface-2`، `--panel-2 → --mc-surface-3`،
+ *     `--bg → --mc-surface`، `--border → --mc-border`،
+ *     `--muted → --mc-text-muted`، `--accent → --mc-accent`.
+ *     نردبان پاسخ‌گو هم عیناً پله‌های مرجع است: ۹۸۰ / ۷۶۸ / ۴۸۰.
+ * ===================================================================== */
+
+.cast-page,
+.person-page {
+	padding-top: 30px;
+	padding-bottom: 60px;
+	line-height: normal;
+}
+
+.cast-page :where(h1, h2, h3, h4, p),
+.person-page :where(h1, h2, h3, h4, p) {
+	margin-block: 0;
+}
+
+/* ---------------------------- ۱۹.۱) شبکه‌ی چهره‌ها ---------------------------- */
+
+/*
+ * شمار ستون‌ها متغیر بلوک است؛ در پله‌های تنگ‌تر مثل مرجع دو ستون می‌شود
+ * (مرجع هم ۴ → ۲ → ۲ می‌رود)، پس انتخاب «ستون‌ها» فقط دسکتاپ را تغییر می‌دهد.
+ */
+.people-grid {
+	display: grid;
+	grid-template-columns: repeat(var(--manacore-people-columns, 4), minmax(0, 1fr));
+	gap: 28px;
+	margin-top: 32px;
+}
+
+/* حالت خالی یک ردیف کامل می‌گیرد، وگرنه وسط کارت‌ها گیر می‌کند. */
+.people-grid > .empty-state {
+	grid-column: 1 / -1;
+}
+
+.person-card {
+	display: block;
+	color: var(--mc-text);
+	text-decoration: none;
+}
+
+.person-card > div {
+	position: relative;
+	aspect-ratio: 3 / 4;
+	overflow: hidden;
+	border: 1px solid var(--mc-border);
+	border-radius: 11px;
+	background: var(--mc-surface-3);
+}
+
+.person-card img {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	object-position: 50% 12%;
+	filter: saturate(.6);
+	transition: transform .4s, filter .4s;
+}
+
+.person-card:hover img {
+	transform: scale(1.04);
+	filter: saturate(1);
+}
+
+.person-card > div:after {
+	content: "";
+	position: absolute;
+	inset: 0;
+	background: linear-gradient(to top, rgba(11, 17, 26, .68), transparent 55%);
+	pointer-events: none;
+}
+
+.person-card > div > span {
+	position: absolute;
+	top: 15px;
+	right: 15px;
+	z-index: 1;
+	padding: 5px 9px;
+	border: 1px solid rgba(255, 255, 255, .125);
+	border-radius: 4px;
+	background: rgba(14, 21, 27, .79);
+	color: var(--mc-accent);
+	font-size: 8px;
+}
+
+.person-card > div > i {
+	display: grid;
+	place-items: center;
+	position: absolute;
+	bottom: 18px;
+	left: 18px;
+	z-index: 1;
+	width: 36px;
+	height: 36px;
+	border: 1px solid rgba(255, 255, 255, .21);
+	border-radius: 50%;
+	background: rgba(255, 255, 255, .05);
+	color: #e6eae1;
+}
+
+.person-card > h2 {
+	margin-top: 16px;
+	font-size: 18px;
+}
+
+.person-card > p {
+	margin-top: 7px;
+	color: var(--mc-text-muted);
+	font-size: 11px;
+	text-align: right;
+}
+
+.person-card > small {
+	display: block;
+	margin-top: 10px;
+	color: var(--mc-accent);
+	font-size: 9px;
+}
+
+.person-card:hover > h2,
+.person-card:focus-visible > h2 {
+	color: var(--mc-accent);
+}
+
+.person-card:focus-visible > div {
+	outline: 2px solid var(--mc-accent);
+	outline-offset: 3px;
+}
+
+/* ---------------------------- ۱۹.۲) برگه‌ی چهره ---------------------------- */
+
+.person-hero {
+	position: relative;
+	display: flex;
+	align-items: center;
+	gap: 45px;
+	overflow: hidden;
+	padding: 37px;
+	border: 1px solid var(--mc-border);
+	border-radius: 14px;
+	background: linear-gradient(135deg, var(--mc-surface-2), var(--mc-surface));
+}
+
+.person-hero-decoration {
+	position: absolute;
+	left: 30px;
+	top: 28px;
+	color: var(--mc-accent);
+	opacity: .15;
+}
+
+.person-portrait {
+	position: relative;
+	flex-shrink: 0;
+	width: 232px;
+	aspect-ratio: 3 / 4;
+	overflow: hidden;
+	border: 1px solid var(--mc-border);
+	border-radius: 9px;
+	background: var(--mc-surface-3);
+}
+
+/*
+ * قاب چهره: بلوک «تصویر شاخص» تصویر را داخل `figure` می‌گذارد؛ پس
+ * سلکتور فرزندِ مستقیم کار نمی‌کند و همان قاعده برای هر `img` قاب
+ * نوشته شده است.
+ */
+.person-portrait img {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	object-position: 50% 12%;
+}
+
+.person-portrait figure {
+	margin: 0;
+	width: 100%;
+	height: 100%;
+}
+
+/*
+ * نشان نقش روی تصویر. بلوک «شناسنامه‌ی چهره» با گونه‌ی «نشان نقش»
+ * این را می‌سازد؛ اگر نقش ثبت نشده باشد، عنصر رندر نمی‌شود.
+ */
+.person-portrait .person-role {
+	position: absolute;
+	right: 0;
+	bottom: 0;
+	left: 0;
+	padding: 13px;
+	background: rgba(14, 20, 26, .855);
+	color: var(--mc-accent);
+	text-align: center;
+	font-size: 10px;
+	backdrop-filter: blur(10px);
+}
+
+.person-copy {
+	max-width: 730px;
+	z-index: 1;
+}
+
+/*
+ * انتخاب‌گر با کلاس برگه تقویت شده است: در `theme.css` قاعده‌ی
+ * `.koohe-main .wp-block-post-title` (دو کلاس) اندازه‌ی clamp می‌دهد و
+ * از `.person-copy > h1` قوی‌تر بود؛ نتیجه، تیتر ۴۰/۳۴/۲۶ به‌جای
+ * ۳۸/۳۲/۳۰ مرجع می‌شد.
+ */
+.person-page .person-copy > h1 {
+	margin-top: 9px;
+	font-size: 38px;
+	line-height: 1.9;
+}
+
+.person-english {
+	color: var(--mc-text-muted);
+	font-size: 15px;
+	text-align: right;
+}
+
+.person-facts {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 20px;
+	margin-top: 23px;
+}
+
+.person-facts > span {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	color: var(--mc-text-muted);
+	font-size: 10px;
+}
+
+/* در مرجع نشانه‌ها گیومه‌ی متنی‌اند؛ قاعده‌ی رنگ برای حالت SVG هم می‌ماند. */
+.person-facts svg,
+.person-facts .person-fact-icon {
+	color: var(--mc-accent);
+}
+
+.person-copy > h2 {
+	margin-top: 29px;
+	font-size: 17px;
+}
+
+.person-bio {
+	margin-top: 12px;
+	color: var(--mc-text-muted);
+	font-size: 12px;
+	line-height: 2.5;
+}
+
+.person-copy > .button,
+.person-copy > .manacore-cta,
+.person-copy > .manacore-cta > .button {
+	margin-top: 25px;
+	font-size: 11px;
+}
+
+/* ------------------------- ۱۹.۳) کارت کوچک چهره‌ها ------------------------- */
+
+.cast-grid {
+	display: grid;
+	grid-template-columns: repeat(4, minmax(0, 1fr));
+	gap: 19px;
+}
+
+.cast-card {
+	text-align: center;
+}
+
+.cast-card > img {
+	width: 100%;
+	aspect-ratio: 3 / 4;
+	object-fit: cover;
+	object-position: 50% 18%;
+	border: 1px solid var(--mc-border);
+	border-radius: 8px;
+	filter: saturate(.72);
+	transition: filter .3s;
+}
+
+.cast-card:hover > img,
+.cast-card:focus-visible > img {
+	filter: saturate(1);
+}
+
+.cast-card h3 {
+	margin-top: 11px;
+	font-size: 11px;
+}
+
+.cast-card p {
+	margin-top: 5px;
+	color: var(--mc-text-muted);
+	font-size: 9px;
+}
+
+/* مرجع: `@media(max-width:980px)` */
+@media (max-width: 980px) {
+	.people-grid {
+		gap: 22px;
+	}
+
+	.person-card > h2 {
+		font-size: 16px;
+	}
+
+	.person-hero {
+		gap: 30px;
+		padding: 28px;
+	}
+
+	.person-portrait {
+		width: 200px;
+	}
+
+	.cast-grid {
+		gap: 15px;
+	}
+}
+
+/* مرجع: `@media(max-width:768px)` */
+@media (max-width: 768px) {
+	.cast-page,
+	.person-page {
+		padding-top: 25px;
+		padding-bottom: 40px;
+	}
+
+	.people-grid {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		gap: 24px 18px;
+	}
+
+	.person-card > h2 {
+		font-size: 16px;
+	}
+
+	.person-card > p {
+		font-size: 9px;
+	}
+
+	.person-card > div > i {
+		width: 30px;
+		height: 30px;
+	}
+
+	.person-hero {
+		display: block;
+		padding: 27px;
+	}
+
+	.person-portrait {
+		width: 185px;
+		margin-bottom: 27px;
+	}
+
+	.person-page .person-copy > h1 {
+		font-size: 32px;
+	}
+
+	.person-english {
+		font-size: 13px;
+	}
+
+	.person-facts {
+		gap: 14px;
+	}
+
+	.person-facts > span {
+		font-size: 9px;
+	}
+
+	.person-bio {
+		font-size: 12px;
+		line-height: 2.5;
+	}
+
+	.person-hero-decoration {
+		left: 25px;
+		top: 42px;
+		opacity: .2;
+	}
+
+	.cast-grid {
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+		gap: 15px;
+	}
+
+	.cast-card h3 {
+		font-size: 10px;
+	}
+
+	.cast-card p {
+		font-size: 8px;
+	}
+}
+
+/* مرجع: `@media(max-width:480px)` */
+@media (max-width: 480px) {
+	.people-grid {
+		gap: 23px 16px;
+	}
+
+	.person-card > h2 {
+		font-size: 14px;
+	}
+
+	.person-card > p {
+		font-size: 8px;
+	}
+
+	.person-card > small {
+		font-size: 8px;
+	}
+
+	.person-card > div > span {
+		top: 12px;
+		right: 12px;
+		font-size: 7px;
+	}
+
+	.person-hero {
+		padding: 24px;
+	}
+
+	.person-portrait {
+		width: 174px;
+	}
+
+	.person-page .person-copy > h1 {
+		font-size: 30px;
+	}
+
+	.cast-grid {
+		gap: 12px;
+	}
+
+	.cast-card h3 {
+		font-size: 9px;
+		line-height: 2;
+	}
+}
+
+/* =========================================================================
+ * ۲۰) برگه‌ی «سینورامگ» — هم‌ارز `cinora/magazine.html`
+ *
+ * ساختار مرجع: `.magazine-intro` (ریزسطر، تیتر با واژه‌ی تأکیدی، توضیح) و
+ * سپس `.magazine-feature-grid` که یک مقاله‌ی ویژه‌ی بزرگ و کارت‌های کوچک
+ * کنارش را می‌چیند؛ همه‌ی اعداد از `style.css` مرجع برداشته شده‌اند.
+ * ====================================================================== */
+
+.magazine-page {
+	padding-top: 30px;
+	padding-bottom: 60px;
+}
+
+/*
+ * برچسب دسته روی تصویر (`.exclusive-tag` مرجع). در بخش ۱۹ هم برای
+ * سرصفحه‌ی مجله به کار می‌رود؛ رنگ‌ها از توکن‌های پوسته می‌آیند.
+ */
+.exclusive-tag {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	padding: 6px 9px;
+	color: var(--mc-accent);
+	background: color-mix(in srgb, var(--mc-accent) 8%, transparent);
+	border: 1px solid color-mix(in srgb, var(--mc-accent) 22%, transparent);
+	font-size: 9px;
+	border-radius: 4px;
+}
+
+.magazine-feature-grid {
+	display: grid;
+	grid-template-columns: 1.7fr 1fr;
+	gap: 22px;
+	margin-top: 30px;
+}
+
+.magazine-feature {
+	position: relative;
+	height: 432px;
+	border-radius: 12px;
+	overflow: hidden;
+	border: 1px solid var(--mc-border);
+	color: #f0f3f3;
+	text-decoration: none;
+}
+
+.magazine-feature > img {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+}
+
+/* پرده‌ی خوانایی: مرجع روی کارت ویژه گرادیان تیره ندارد ولی روی تصویر
+   روشن متن سفید خوانا نمی‌ماند؛ همان پرده‌ی کارت‌های کوچک با شدت کمتر. */
+.magazine-feature:after,
+.magazine-side-features > a:after {
+	content: "";
+	position: absolute;
+	inset: 0;
+	background: linear-gradient(to top, #0e141bf5 3%, transparent 62%);
+}
+
+.magazine-side-features > a:after {
+	background: linear-gradient(to top, #0e141bf5 3%, #0e141b30 80%);
+}
+
+.magazine-feature > div {
+	position: absolute;
+	inset-block-end: 30px;
+	inset-inline: 31px;
+	z-index: 1;
+}
+
+.magazine-feature h2 {
+	margin-top: 13px;
+	font-size: 28px;
+	line-height: 1.9;
+}
+
+.magazine-feature div > p {
+	margin-top: 9px;
+	font-size: 11px;
+	line-height: 2.2;
+	color: #bac4ca;
+}
+
+/*
+ * مرجع: تیتر و خلاصه‌ی کارت ویژه حاشیه‌ی پایین ندارند.
+ *
+ * چرا لازم شد (سنجیده‌شده در ۳۹۰/۴۸۰/۷۶۸/۹۸۰/۱۱۰۰/۱۴۴۰): حاشیه‌ی
+ * پیش‌فرض مرورگر روی `h2` (۰٫۸۳em = ۱۹٫۹۲px) و `p` (۱em) بلوک متن کارت
+ * را ۱۷px بلندتر از مرجع می‌کرد و چون این بلوک به پایین کارت چسبیده
+ * است، تیتر ۱۴–۱۸px بالاتر از جای مرجع می‌نشست (همان چیزی که یک بار
+ * «جای تیتر کارت ویژه» ثبت شده بود). حاشیه‌ی بالای هر دو دست‌نخورده
+ * است، پس فاصله‌های ۱۳ و ۹ مرجع سرِ جای خود می‌مانند.
+ */
+.magazine-feature h2,
+.magazine-feature div > p {
+	margin-bottom: 0;
+}
+
+/*
+ * ریزسطر «زمان مطالعه» و نشان دسته در مرجع `line-height: normal` دارند؛
+ * خط‌ارتفاع ۱٫۸۵ پوسته (برای متن فارسی) جعبه‌شان را ۳ و ۴px بلند می‌کرد.
+ */
+.magazine-feature small,
+.magazine-feature .exclusive-tag {
+	line-height: normal;
+}
+
+/*
+ * شِورُن پایانی در مرجع یک نویسه‌ی متنی است و ردیف ۱۵px می‌ماند؛
+ * آیکن ۱۶px ردیف را بلند می‌کرد. آیکنِ ساعت از قبل ۱۳px است.
+ */
+.magazine-feature small > svg {
+	width: 13px;
+	height: 13px;
+}
+
+.magazine-feature small {
+	display: flex;
+	align-items: center;
+	gap: 7px;
+	margin-top: 18px;
+	font-size: 10px;
+	color: var(--mc-accent);
+}
+
+.magazine-feature small > svg:last-child {
+	margin-inline-start: auto;
+}
+
+.magazine-side-features {
+	display: grid;
+	grid-template-rows: repeat(2, 1fr);
+	gap: 20px;
+}
+
+.magazine-side-features > a {
+	position: relative;
+	border-radius: 11px;
+	overflow: hidden;
+	border: 1px solid var(--mc-border);
+	color: #edf1f3;
+	text-decoration: none;
+}
+
+.magazine-side-features img {
+	position: absolute;
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+}
+
+.magazine-side-features a > div {
+	position: absolute;
+	inset-block-end: 22px;
+	inset-inline: 23px;
+	z-index: 1;
+}
+
+.magazine-side-features small {
+	font-size: 8px;
+	color: var(--mc-accent);
+}
+
+.magazine-side-features h3 {
+	margin-top: 8px;
+	font-size: 18px;
+	line-height: 1.9;
+}
+
+.magazine-side-features div > span {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	margin-top: 12px;
+	font-size: 8px;
+	color: #b9c2c9;
+}
+
+@media (max-width: 980px) {
+	.magazine-feature-grid {
+		grid-template-columns: 1.45fr 1fr;
+	}
+
+	.magazine-side-features h3 {
+		font-size: 15px;
+	}
+
+	.magazine-feature {
+		height: 389px;
+	}
+
+	.magazine-feature h2 {
+		font-size: 23px;
+	}
+
+	.magazine-feature > div {
+		inset-block-end: 24px;
+		inset-inline: 24px;
+	}
+}
+
+@media (max-width: 768px) {
+	.magazine-feature-grid {
+		grid-template-columns: 1fr;
+		gap: 19px;
+	}
+
+	.magazine-feature {
+		height: 374px;
+	}
+
+	.magazine-feature h2 {
+		font-size: 25px;
+	}
+
+	.magazine-feature > div {
+		inset-block-end: 25px;
+	}
+
+	.magazine-side-features {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		grid-template-rows: 1fr;
+		gap: 15px;
+		min-height: 202px;
+	}
+
+	.magazine-side-features a > div {
+		inset-block-end: 17px;
+		inset-inline: 16px;
+	}
+
+	.magazine-side-features h3 {
+		font-size: 14px;
+		line-height: 2;
+	}
+
+	.magazine-side-features small {
+		font-size: 7px;
+	}
+}
+
+@media (max-width: 480px) {
+	.magazine-feature h2 {
+		font-size: 24px;
+	}
+
+	.magazine-side-features h3 {
+		font-size: 12px;
+	}
+
+	.magazine-side-features a > div {
+		inset-inline: 13px;
+	}
+
+	.magazine-side-features div > span {
+		font-size: 7px;
+	}
+}
+
+/* =========================================================================
+ * ۲۱) برگه‌ی تک‌نوشته (`.article-page`) — هم‌ارز `cinora/article.html`
+ *
+ * اعداد عیناً از مرجع گرفته شده‌اند: سرصفحه‌ی مقاله (`.article-page-header`)،
+ * سطر نویسنده (`.article-author`)، شبکه‌ی متن و ستون کنار
+ * (`.article-layout`)، پوشش ۱۶:۹، پاراگراف لید، نقل‌قول، فصل‌ها، برچسب‌ها،
+ * کارت فهرست (`.toc-card`)، نوار پیشرفت (`.reading-progress`) و ردیف
+ * «بعد از خواندن، ببین.» (`.article-related`).
+ *
+ * ساختار از خودِ ویرایشگر می‌آید: پاراگراف نخست `.article-lead` می‌گیرد و
+ * هر تیتر `h2` سطح بالا، داخل `<div id="article-chapters">` به یک
+ * `<section class="article-chapter">` با `<span>` شماره تبدیل می‌شود
+ * (کلاس `Article` در افزونه) — پس نویسنده فقط متن می‌نویسد.
+ * ========================================================================= */
+
+.article-page {
+	padding-top: 30px;
+	padding-bottom: 60px;
+}
+
+/* ---------- سرصفحه ---------- */
+.article-page-header {
+	max-width: 1050px;
+	margin-bottom: 35px;
+}
+
+.article-page-header h1 {
+	margin-top: 19px;
+	font-size: 35px;
+	line-height: 1.85;
+}
+
+.article-page-header > p {
+	margin-top: 12px;
+	color: var(--mc-text-muted);
+	font-size: 13px;
+	line-height: 2.4;
+}
+
+.article-author {
+	display: flex;
+	align-items: center;
+	gap: 11px;
+	margin-top: 22px;
+}
+
+.article-author strong {
+	display: block;
+	font-size: 10px;
+	font-weight: 600;
+}
+
+.article-author small {
+	display: block;
+	margin-top: 5px;
+	color: var(--mc-text-muted);
+	font-size: 9px;
+}
+
+/* نگاره‌ی نویسنده: دایره‌ی اکسنت‌رنگ مرجع (`.comment-avatar`). */
+.article-author .comment-avatar {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 33px;
+	height: 33px;
+	border: 1px solid color-mix(in srgb, var(--mc-accent) 18%, transparent);
+	border-radius: 50%;
+	background: color-mix(in srgb, var(--mc-accent) 10%, var(--mc-surface));
+	color: var(--mc-accent);
+	font-size: 14px;
+	text-transform: uppercase;
+}
+
+.article-author > .icon-button {
+	margin-inline-start: auto;
+	border: 1px solid var(--mc-border);
+}
+
+/* ---------- شبکه‌ی متن + ستون کنار ---------- */
+.article-layout {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) 279px;
+	gap: 46px;
+	align-items: start;
+}
+
+.article-body {
+	min-width: 0;
+}
+
+/*
+ * متن مقاله کل پهنای ستون را می‌خواند (مرجع در ۱۴۴۰: ۱۰۰۳px).
+ * چیدمان «محدودِ» خودِ `core/post-content` عرض فرزندان را به
+ * `contentSize` قالب (۸۲۰px) می‌بندد و وسط‌چین می‌کند؛ اینجا متغیر
+ * محلی بازنویسی می‌شود تا پاراگراف لید و فصل‌ها همان پهنای مرجع را
+ * داشته باشند. کلاس‌ها و پوشش‌های خودِ بلوک دست‌نخورده می‌مانند.
+ */
+.article-body .wp-block-post-content {
+	--wp--style--global--content-size: 100%;
+	--wp--style--global--wide-size: 100%;
+}
+
+.article-cover,
+.article-body .article-cover img {
+	width: 100%;
+	aspect-ratio: 16 / 9;
+	object-fit: cover;
+	border-radius: 11px;
+	border: 1px solid var(--mc-border);
+}
+
+/*
+ * `p.article-lead` با یک کلاس بیشتر نوشته می‌شود تا قاعده‌ی عمومی
+ * `.article-body p` (که پایین‌تر و با ویژگی بیشتر است) آن را نپوشاند.
+ */
+.article-body p.article-lead {
+	margin-top: 29px;
+	font-size: 16px;
+	font-weight: 450;
+	line-height: 2.5;
+}
+
+.article-body blockquote {
+	margin: 29px 0 12px;
+	padding: 23px 27px;
+	border-inline-start: 3px solid var(--mc-accent);
+	border-radius: 5px;
+	background: var(--mc-surface);
+	color: var(--mc-text);
+	font-size: 19px;
+	line-height: 2.5;
+}
+
+/* ---------- فصل‌ها (ساختار مرجع: `#article-chapters > section`) ---------- */
+.article-chapter {
+	position: relative;
+	padding: 33px 0 30px;
+	border-bottom: 1px solid var(--mc-border);
+	scroll-margin-top: 140px;
+}
+
+.article-chapter > span {
+	color: var(--mc-accent);
+	font-size: 10px;
+}
+
+/*
+ * قالب `.koohe-main h2.wp-block-heading` (هم‌ویژگی، اما دیرتر بار می‌شود)
+ * اندازه‌ی تیترها را با `clamp()` می‌نویسد؛ شناسه‌ی پوشش فصل‌ها از آن
+ * قوی‌تر است و اندازه‌ی مرجع را تضمین می‌کند.
+ */
+#article-chapters .article-chapter h2 {
+	margin: 13px 0 0;
+	font-size: 24px;
+}
+
+#article-chapters .article-chapter p {
+	margin-top: 17px;
+	color: var(--mc-text-muted);
+	font-size: 14px;
+	line-height: 2.7;
+	text-align: justify;
+}
+
+/* متن پایه (پاراگراف‌های بیرون فصل — مثل بلوک‌های پس از لید). */
+.article-body p {
+	margin-top: 15px;
+	font-size: 13px;
+	line-height: 2;
+}
+
+.article-tags {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 10px;
+	margin-top: 24px;
+}
+
+/* هر برچسب با «#» می‌آید (مرجع: `#سینما`)، پس پیشوند بلوک لازم نیست. */
+.article-tags a::before {
+	content: "#";
+	margin-inline-end: 2px;
+}
+
+.article-tags .wp-block-post-terms__separator {
+	display: none;
+}
+
+.article-tags a,
+.article-tags > a {
+	padding: 7px 10px;
+	border: 1px solid var(--mc-border);
+	border-radius: 5px;
+	background: var(--mc-surface);
+	color: var(--mc-text-muted);
+	font-size: 9px;
+}
+
+/* ---------- ستون کنار ---------- */
+/*
+ * ستون کنارِ مقاله، عیناً مرجع: `position:sticky; top:107px` و **بلوک** (نه
+ * flex). چرا مهم است؟ بلوک‌های داخل آن (`.manacore-block`) حاشیه‌ی عمودی
+ * `--mc-gap` دارند و کارت ترویجی `margin-top:23px` مرجع؛ در ظرف flex
+ * حاشیه‌ها جمع نمی‌شوند و فاصله‌ی ردیف‌ها ۲۰+۲۳=۴۳px می‌شد، در حالی که
+ * مرجع ۲۳px دارد. با ظرف بلوک، همان حاشیه‌ها به ۲۳px جمع می‌شوند و
+ * مقدار محاسبه‌شده‌ی `display` هم با مرجع یکی است.
+ */
+.article-sidebar {
+	position: sticky;
+	top: 107px;
+	display: block;
+}
+
+/* کارت ترویجی ستون کنار: فاصله‌ی مرجع (`.sidebar-promo{margin-top:23px}`). */
+.article-sidebar > .sidebar-promo {
+	margin-top: 23px;
+}
+
+.toc-card {
+	padding: 23px;
+	border: 1px solid var(--mc-border);
+	border-radius: 10px;
+	background: var(--mc-surface);
+}
+
+.toc-card > .eyebrow {
+	font-size: 9px;
+}
+
+.toc-card h3 {
+	margin-top: 12px;
+	font-size: 16px;
+	line-height: 2;
+}
+
+.toc-card nav {
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+	margin-top: 20px;
+}
+
+.toc-card nav > a {
+	display: flex;
+	align-items: center;
+	gap: 9px;
+	padding: 10px 8px;
+	border-radius: 5px;
+	color: var(--mc-text-muted);
+	font-size: 10px;
+}
+
+.toc-card nav > a > span {
+	width: 20px;
+	padding: 3px 0;
+	border: 1px solid var(--mc-border);
+	border-radius: 4px;
+	font-size: 9px;
+	text-align: center;
+}
+
+.toc-card nav > a.active {
+	color: var(--mc-accent);
+	background: color-mix(in srgb, var(--mc-accent) 5%, transparent);
+}
+
+.reading-progress {
+	overflow: hidden;
+	height: 3px;
+	margin-top: 23px;
+	border-radius: 3px;
+	background: var(--mc-border);
+}
+
+.reading-progress > span {
+	display: block;
+	width: 0;
+	height: 100%;
+	background: var(--mc-accent);
+}
+
+.toc-card > small {
+	display: block;
+	margin-top: 12px;
+	color: var(--mc-text-muted);
+	font-size: 8px;
+}
+
+.article-related {
+	margin-top: 23px;
+	padding: 20px;
+	border: 1px solid var(--mc-border);
+	border-radius: 10px;
+	background: var(--mc-surface);
+}
+
+.article-related h3 {
+	display: flex;
+	align-items: center;
+	gap: 7px;
+	margin-bottom: 19px;
+	font-size: 11px;
+	line-height: 2;
+}
+
+.article-related > a {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	min-width: 0;
+	margin-top: 15px;
+}
+
+.article-related > a > img {
+	width: 43px;
+	height: 64px;
+	border-radius: 4px;
+	object-fit: cover;
+}
+
+.article-related > a > span {
+	flex: 1;
+	min-width: 0;
+}
+
+.article-related strong {
+	display: block;
+	overflow: hidden;
+	font-size: 10px;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.article-related small {
+	display: block;
+	overflow: hidden;
+	margin-top: 6px;
+	color: var(--mc-text-muted);
+	font-size: 8px;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.article-related > a > i {
+	color: var(--mc-text-muted);
+	font-style: normal;
+}
+
+.article-related > .text-link {
+	margin-top: 17px;
+}
+
+/* ---------- پله‌های واکنش‌گرا (عیناً از مرجع: ۱۱۰۰ / ۹۸۰ / ۷۶۸ / ۴۸۰) ---------- */
+@media (max-width: 1100px) {
+	.article-layout {
+		grid-template-columns: minmax(0, 1fr) 240px;
+		gap: 28px;
+	}
+
+	.article-page-header h1 {
+		font-size: 32px;
+	}
+}
+
+@media (max-width: 980px) {
+	.article-layout {
+		grid-template-columns: minmax(0, 1fr) 210px;
+		gap: 25px;
+	}
+
+	.article-sidebar .toc-card {
+		padding: 17px;
+	}
+
+	#article-chapters .article-chapter p {
+		font-size: 12px;
+	}
+
+	.toc-card h3 {
+		font-size: 14px;
+	}
+
+	.toc-card nav > a {
+		gap: 7px;
+		padding: 10px 4px;
+		font-size: 9px;
+	}
+
+	.article-body p.article-lead {
+		font-size: 14px;
+	}
+
+	.article-body blockquote {
+		padding: 20px;
+		font-size: 17px;
+	}
+}
+
+@media (max-width: 768px) {
+	.article-page {
+		padding-top: 25px;
+		padding-bottom: 40px;
+	}
+
+	.article-page-header h1 {
+		font-size: 29px;
+		line-height: 1.95;
+	}
+
+	.article-page-header > p {
+		font-size: 11px;
+		line-height: 2.5;
+	}
+
+	/* در موبایل، ستون کنار پنهان می‌شود (مثل مرجع). */
+	.article-layout {
+		display: block;
+	}
+
+	.article-sidebar {
+		display: none;
+	}
+
+	.article-body p.article-lead {
+		line-height: 2.6;
+	}
+
+	#article-chapters .article-chapter h2 {
+		font-size: 22px;
+	}
+
+	#article-chapters .article-chapter p {
+		text-align: start;
+	}
+
+	.article-body blockquote {
+		padding: 22px;
+	}
+}
+
+@media (max-width: 480px) {
+	.article-page-header h1 {
+		font-size: 26px;
+	}
+
+	.article-body blockquote {
+		padding: 20px;
+		font-size: 16px;
+	}
+
+	.article-author small {
+		font-size: 8px;
+	}
+
+	#article-chapters .article-chapter h2 {
+		font-size: 20px;
+	}
+
+	.article-author .comment-avatar {
+		width: 29px;
+		height: 29px;
+		font-size: 12px;
+	}
+}
+
+/* =========================================================================
+ * ۲۲) برگه‌های «راهنما» و «قوانین و حریم خصوصی» — پاریتی با مرجع
+ *
+ * نگاشت‌ها (نوشته‌ی مرجع → سازه‌ی وردپرس):
+ *   `.info-page`     → گروه `main` با کلاس `info-page` در قالب (پدینگ ۳۰/۶۰ و
+ *                      پله‌ی ≤۹۸۰: ۲۵/۴۰).
+ *   `.info-intro`    → خودِ بلوک `manacore/page-intro` با `layout:"centered"`
+ *                      (قاعده‌هایش در بخش ۱۸.۱ همین فایل است).
+ *   `.info-faq` +
+ *   `.faq-list`      → گروهی با همین دو کلاس؛ پرسش‌ها بلوک‌های `core/details`
+ *                      با کلاس `faq-item` هستند که **از متن خودِ برگه**
+ *                      می‌آیند (`core/post-content`) و در ویرایشگر برگه
+ *                      ویرایش می‌شوند.
+ *   `.legal-content` → گروهی با همین کلاس + `core/post-content`؛ هر بند یک
+ *                      بلوک `core/group` با `tagName:"section"`.
+ *
+ * دو تصمیم آگاهانه (مستند در بخش ۱۱ گزارش):
+ *   ۱. پاسخ‌های بسته در مرجع **پنهان نمی‌شوند** (قاعده‌ی پنهان‌سازی در CSS
+ *      مرجع نیست)؛ این‌جا از `details` بومی استفاده می‌شود، پس پرسش بسته
+ *      پنهان است — همان قصد طراحی مرجع (دکمه + `aria-expanded` + آکاردئون)
+ *      که در مرجع نیمه‌کاره مانده است.
+ *   ۲. شِوران مرجع یک `<span>⌄</span>` است ولی قاعده‌ی خودش `>svg` را هدف
+ *      گرفته (قاعده‌ی مرده)؛ ما شِوران svg می‌گذاریم تا قاعده‌ی طراحی مرجع
+ *      (مuted و چرخش ۱۸۰ درجه در حالت باز) زنده شود.
+ * ====================================================================== */
+
+/*
+ * شِوران بسته/باز پرسش‌ها (مسیر مرجع: `m6 9 6 6 6-6` با خط ۲px) — مثل
+ * آیکون‌های ماسک‌دار پوسته، به‌صورت متغیر تا در دو جای قاعده بازاستفاده شود.
+ */
+/*
+ * آیکون داخل جعبه‌ی سرصفحه: مرجع در `.pricing-crown` یک svg ۳۴×۳۴ می‌گذارد
+ * (چیدمان میانی `page-intro` هم از همین جعبه استفاده می‌کند).
+ */
+.page-intro .pricing-crown > svg {
+	width: 34px;
+	height: 34px;
+}
+
+.koohe-main.info-page {
+	--mc-faq-chevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+}
+
+/* سربرگ برگه‌های اطلاعاتی: مرجع `.info-page{padding-top:30px;padding-bottom:60px}`. */
+.koohe-main.info-page {
+	padding-top: 30px;
+	padding-bottom: 60px;
+}
+
+/*
+ * ریزتنظیم سربرگ اطلاعاتی برای هم‌سانی با مرجع:
+ *   - `pricing-crown` در مرجع `margin-bottom:19px` دارد؛ قاعده‌ی عمومی
+ *     `page-intro` آن را صفر کرده بود (چون در چیدمان split فاصله‌اش را
+ *     `gap` می‌دهد).
+ *   - `eyebrow` در مرجع بازنشانی `line-height:normal` را می‌گیرد (۱.۵ برابر
+ *     اندازه‌ی قلم)، ولی شیوه‌نامه‌ی فارسی ما ۱.۸۵ می‌گذارد.
+ *   - `h1` در مرجع حاشیه‌ی پایین ندارد (بازنشانی)، ما ۲۳px داریم.
+ */
+.koohe-main.info-page .info-intro .pricing-crown {
+	margin: 0 auto 19px;
+}
+
+.koohe-main.info-page .info-intro > .eyebrow {
+	line-height: 1.5;
+}
+
+.koohe-main.info-page .info-intro h1 {
+	margin-bottom: 0;
+}
+
+/*
+ * فاصله‌ی سربرگ تا بخش بعدی، در مرجع **فقط** از حاشیه‌ی بالای آن بخش می‌آید
+ * (`.about-values{margin-top:46px}` و `.info-faq{margin:43px auto 0}`). این‌جا
+ * سربرگ (`manacore/page-intro`) حاشیه‌ی پایین ۲۰px دارد و در برگه‌های
+ * راهنما/قوانین به‌خاطر «جمع‌شدن حاشیه‌ها» بی‌اثر بود؛ ولی در برگه‌ی «درباره ما»
+ * یک قاب میانی (`.about-content`) بین آن دو نشسته و جمع‌شدن را می‌شکند، پس
+ * ۴۶+۲۰=۶۶px دیده می‌شد. صفرکردن حاشیه، رفتار را در هر سه برگه یکسان و
+ * برابر مرجع می‌کند.
+ */
+/*
+ * نکته‌ی مهم ساختاری: حاشیه‌ی ۲۰px روی **قاب خودِ بلوک** است، نه روی فرزند
+ * `.info-intro` — بلوک سرصفحه با کلاس‌های `manacore-block`/`page-intro` رندر
+ * می‌شود و قاعده‌ی عمومی `.manacore-block{margin-block: var(--mc-gap)}` آن را
+ * می‌دهد (همان ۲۰px که پیش‌تر گمان می‌رفت از `.info-intro` می‌آید).
+ */
+.koohe-main.info-page .page-intro {
+	margin-bottom: 0;
+}
+
+/*
+ * و ۱۲px دوم از **فرار حاشیه‌ی آخرین بند سربرگ** می‌آمد: بند آخر
+ * `margin-bottom: 12px` دارد و چون قاب سربرگ پدینگ/قاب ندارد، این حاشیه از
+ * قاب بیرون می‌زند و به فاصله‌ی دو بخش اضافه می‌شود (۱۳۶→۴۴۰ و سپس ۱۲px
+ * خالی تا ۴۵۲). در برگه‌های راهنما/قوانین این حاشیه با حاشیه‌ی بخش بعد
+ * جمع می‌شد و بی‌اثر بود، ولی در «درباره ما» قاب میانی `.about-content`
+ * جمع‌شدن را می‌شکند. صفرکردنش، مرجع را در همه‌ی پله‌ها برمی‌گرداند.
+ */
+.koohe-main.info-page .page-intro > .info-intro > p:last-child {
+	margin-bottom: 0;
+}
+
+/* فهرست پرسش‌ها: مرجع `.info-faq{max-width:850px;margin:43px auto 0}`. */
+.faq-list.info-faq {
+	max-width: 850px;
+	margin: 43px auto 0;
+}
+
+/* قاب بیرونی فهرست: مرجع `.faq-list`. */
+.faq-list {
+	border: 1px solid var(--mc-border);
+	border-radius: 11px;
+	overflow: hidden;
+}
+
+/*
+ * متن برگه با `core/post-content` رندر می‌شود و آن بلوک، فرزندان را به
+ * `contentSize` قالب و پدینگ سراسری می‌بندد؛ در این دو برگه، فرزندان باید
+ * کل عرض همین قاب را بگیرند.
+ */
+.faq-list > .wp-block-post-content,
+.legal-content > .wp-block-post-content {
+	--wp--style--global--content-size: 100%;
+	--wp--style--global--wide-size: 100%;
+	padding: 0;
+}
+
+/*
+ * هر پرسش: مرجع `.faq-item{background:var(--panel)}` و `.faq-item:last-child`.
+ * `--panel` مرجع همان `surface-2` قالب است (#۱۶۱c۲۴)، نه `surface` تیره‌تر.
+ */
+.faq-list .faq-item {
+	border-bottom: 1px solid var(--mc-border);
+	background: var(--mc-surface-2);
+}
+
+.faq-list .faq-item:last-child {
+	border-bottom: 0;
+}
+
+/* سرِ پرسش (هم‌ارز `button` مرجع). */
+.faq-list .faq-item > summary {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 20px;
+	width: 100%;
+	padding: 20px 24px;
+	color: var(--mc-text);
+	font-size: 12px;
+	line-height: 2;
+	text-align: right;
+	cursor: pointer;
+	list-style: none;
+}
+
+.faq-list .faq-item > summary::-webkit-details-marker {
+	display: none;
+}
+
+.faq-list .faq-item > summary::marker {
+	content: "";
+}
+
+/* حالت باز: مرجع `.faq-item.open>button{color:var(--accent)}`. */
+.faq-list .faq-item[open] > summary {
+	color: var(--mc-accent);
+}
+
+/* شِوران: مرجع `>button>svg{color:var(--muted);transition:transform .2s}`. */
+.faq-list .faq-item > summary::after {
+	content: "";
+	flex: 0 0 auto;
+	/*
+	 * مسیر شِوران در viewBox ۲۴ تنها نیمه‌ی پهنا و یک‌چهارم ارتفاع را پر
+	 * می‌کند؛ پس «قاب» ۹px همان «جوهر» ۵×۳px مرجع را می‌دهد — مرجع یک
+	 * نویسه‌ی متنی `⌄` با همان جوهر می‌کشد (اندازه‌گیری در 4× روی هر دو:
+	 * ۵٫۰×۳٫۰px؛ قاب‌های ۸px و ۱۰px به ۴٫۵×۲٫۵ و ۵٫۸×۳٫۵ می‌رسند).
+	 */
+	width: 9px;
+	height: 9px;
+	background-color: var(--mc-text-muted);
+	-webkit-mask: var(--mc-faq-chevron) center / contain no-repeat;
+	mask: var(--mc-faq-chevron) center / contain no-repeat;
+	transition: transform var(--mc-transition);
+}
+
+.faq-list .faq-item[open] > summary::after {
+	transform: rotate(180deg);
+	background-color: var(--mc-accent);
+}
+
+/* پاسخ: مرجع `.faq-item>p`. */
+.faq-list .faq-item > p,
+.faq-list .faq-item > *:not(summary) {
+	margin: 0;
+	padding: 0 24px 24px;
+	color: var(--mc-text-muted);
+	font-size: 11px;
+	line-height: 2.6;
+}
+
+/*
+ * بندهای حقوقی: مرجع `.legal-content` و `.legal-content>section` — این‌جا
+ * بندها فرزند `core/post-content` هستند، نه فرزند مستقیم قاب.
+ */
+/*
+ * چرا `.koohe-main` پیش از `.legal-content` آمده؟ چون وردپرس برای گروه
+ * `alignwide` هم یک قاعده می‌نویسد (`.is-layout-constrained > :where(…)`)
+ * که با یک کلاس تنها هم‌وزن است و چون دیرتر چاپ می‌شود، برنده می‌شد؛
+ * نتیجه‌اش این بود که بندها به‌جای ۹۰۰px کل عرض ۱۳۲۸px می‌گرفتند.
+ */
+.koohe-main .legal-content {
+	max-width: 900px;
+	margin: 35px auto 0;
+}
+
+.legal-content .wp-block-post-content > section {
+	padding: 27px 0;
+	border-bottom: 1px solid var(--mc-border);
+}
+
+.legal-content .wp-block-post-content > section > h2 {
+	margin-bottom: 15px;
+	font-size: 21px;
+	/* مرجع بازنشانی دارد و سرتیتر با `line-height:normal` (۳۳px روی ۲۱px) می‌نشیند. */
+	line-height: normal;
+}
+
+.legal-content .wp-block-post-content > section > p {
+	/* در مرجع فاصله‌ی سرتیتر تا بند، همان `margin-bottom:15px` سرتیتر است. */
+	margin-top: 0;
+	color: var(--mc-text-muted);
+	font-size: 13px;
+	line-height: 2.8;
+}
+
+/* -------------------------------------------------------------------------
+ * ۲۲.۲) برگه‌ی «درباره ما» — هم‌ارز `.about-values` / `.about-story` مرجع
+ *
+ * نگاشت (نوشته‌ی مرجع → سازه‌ی وردپرس):
+ *   `.about-values`  → گروهی با همین کلاس در متن خودِ برگه؛ سه کارت، هر کارت
+ *                      یک بلوک `core/group` با `tagName:"section"` و یک `h2`
+ *                      + پاراگراف. چون کادرها **متن برگه**‌اند، مدیر می‌تواند
+ *                      تعداد و متنشان را از ویرایشگر برگه عوض کند و شبکه با
+ *                      هر تعداد کارت کار می‌کند.
+ *   `.about-story`   → گروه دیگری با همین کلاس؛ `h2` + دو پاراگراف + دکمه‌ی
+ *                      `manacore/cta-link` (همان بلوک دکمه‌ی پوسته).
+ *   `.about-content` → قاب گروهِ `alignwide` که `core/post-content` را نگه
+ *                      می‌دارد و اجازه می‌دهد کارت‌ها کل عرض برگه را بگیرند
+ *                      (نه ستون ۸۲۰px پیش‌فرض محتوا).
+ *
+ * یک نکته‌ی مرجع که عمداً کپی نشد: مرجع برای آیکون کارت‌ها قاعده دارد
+ * (`.about-values svg{color:var(--accent)}` و `h2{margin-top:21px}`) ولی در
+ * مارک‌آپ خودش هیچ آیکونی نمی‌گذارد؛ ما همان مارک‌آپ را نگه داشتیم تا فاصله‌ی
+ * ۲۱px بالای سرتیتر عیناً مثل مرجع بماند (اندازه‌گیری‌شده در `about-parity`).
+ * ---------------------------------------------------------------------- */
+
+.about-content > .wp-block-post-content {
+	--wp--style--global--content-size: 100%;
+	--wp--style--global--wide-size: 100%;
+	padding: 0;
+}
+
+/*
+ * فاصله‌ی سربرگ تا شبکه روی **خودِ شبکه** می‌نشیند (مرجع:
+ * `.about-values{margin-top:46px}`)، ولی هسته روی فرزند دومِ هر ظرف
+ * `is-layout-constrained` یک `margin-block-start: var(--wp--style--block-gap)`
+ * (اینجا ۱٫۳۷۵rem = ۲۲px) می‌گذارد — همان ۲۲px روی قاب `.about-content` و
+ * نتیجه‌اش ۴۶+۲۲=۶۸px دیده‌شده در برابر ۴۶px مرجع. قاعده‌ی زیر آن حاشیه را
+ * صفر می‌کند: قاعده‌ی هسته دو کلاس/دواِلم است (`.is-layout-constrained > * + *`)
+ * و این‌جا با دو کلاس روی همان قاب برنده می‌شویم.
+ */
+.koohe-main .about-content {
+	margin-top: 0;
+}
+
+/* شبکه‌ی ارزش‌ها: مرجع `.about-values`. */
+.koohe-main .about-values {
+	display: grid;
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+	gap: 23px;
+	margin-top: 46px;
+}
+
+/*
+ * کارت: مرجع `.about-values>section` (پنل = `surface-2` قالب).
+ * `margin-top:0` همان حاشیه‌ی هسته را از کارت‌ها برمی‌دارد؛ در حالت یک‌ستونی
+ * این حاشیه به `gap` شبکه اضافه می‌شد (۱۸+۲۲=۴۰ در برابر ۱۸ مرجع).
+ */
+.koohe-main .about-values > section {
+	margin-top: 0;
+	padding: 31px;
+	border: 1px solid var(--mc-border);
+	border-radius: 10px;
+	background: var(--mc-surface-2);
+}
+
+/*
+ * سرتیتر کارت: مرجع `.about-values h2` (۲۰px/۱٫۹).
+ *
+ * چرا گزینشگر طولانی است؟ پوسته روی `h2.wp-block-heading` داخل `.koohe-main`
+ * یک اندازه‌ی شناور می‌گذارد (`clamp(1.1rem, .95rem + 1.1vw, 1.6rem)`) و چون
+ * `theme.css` **بعد از** `front.css` بارگذاری می‌شود، با هم‌وزنیِ (۰،۲،۱)
+ * برنده می‌شد: ۲۵٫۶px در ۱۴۴۰ و ۱۹٫۴۹px در ۳۹۰ در برابر ۲۰px مرجع. دو کلاس
+ * دیگر در گزینشگر، ترتیب بارگذاری را بی‌اثر می‌کند.
+ */
+.koohe-main .about-values > section > h2.wp-block-heading {
+	margin-top: 21px;
+	font-size: 20px;
+	line-height: 1.9;
+}
+
+/* بند کارت: مرجع `.about-values p`. */
+.koohe-main .about-values p {
+	margin-top: 12px;
+	font-size: 11px;
+	line-height: 2.6;
+	color: var(--mc-text-muted);
+}
+
+/* روایت پایانی: مرجع `.about-story`. */
+.koohe-main .about-story {
+	max-width: 850px;
+	margin: 52px auto 0;
+	text-align: center;
+}
+
+/* مرجع `.about-story h2` (۲۵px/۱٫۹) — همان دلیل هم‌وزنیِ بالا. */
+.koohe-main .about-story > h2.wp-block-heading {
+	font-size: 25px;
+	line-height: 1.9;
+}
+
+.koohe-main .about-story p {
+	margin-top: 22px;
+	font-size: 13px;
+	line-height: 2.8;
+	color: var(--mc-text-muted);
+}
+
+/*
+ * دکمه‌ی پایانی: مرجع `.about-story>.button{margin-top:28px}` — این‌جا دکمه بلوک
+ * `manacore/cta-link` است و یک قاب `div.manacore-cta` دور لینک دارد، پس فاصله
+ * روی همان قاب می‌نشیند (قاب خودش حاشیه‌ی عمودی ندارد).
+ */
+.koohe-main .about-story > .manacore-cta {
+	margin-top: 28px;
+}
+
+.koohe-main .about-story > .manacore-cta > .button {
+	margin: 0;
+}
+
+/* -------------------------------------------------------------------------
+ * ۲۲.۱) پله‌های واکنش‌گرا — عیناً از مرجع (۹۸۰ / ۷۶۸ / ۴۸۰)
+ * ---------------------------------------------------------------------- */
+
+/*
+ * پله‌ی ۹۸۰: مرجع فقط کارت‌های ارزش‌ها را جمع‌تر می‌کند
+ * (`.about-values>section{padding:24px}` و `h2{17px}`)؛ سربرگ دست‌نخورده است.
+ */
+@media (max-width: 980px) {
+	.koohe-main .about-values > section {
+		padding: 24px;
+	}
+
+	.koohe-main .about-values > section > h2.wp-block-heading {
+		font-size: 17px;
+	}
+}
+
+@media (max-width: 768px) {
+	/* مرجع: `.info-page{padding-top:25px;padding-bottom:40px}` در پله‌ی ۷۶۸. */
+	.koohe-main.info-page {
+		padding-top: 25px;
+		padding-bottom: 40px;
+	}
+
+	.faq-list .faq-item > summary {
+		padding: 18px 19px;
+		font-size: 11px;
+	}
+
+	.faq-list .faq-item > p,
+	.faq-list .faq-item > *:not(summary) {
+		padding: 0 19px 21px;
+		font-size: 10px;
+		line-height: 2.5;
+	}
+
+	.legal-content .wp-block-post-content > section > h2 {
+		font-size: 19px;
+	}
+
+	.legal-content .wp-block-post-content > section > p {
+		font-size: 12px;
+		line-height: 2.7;
+	}
+
+	/* مرجع: کارت‌ها یک‌ستونی می‌شوند و روایت جمع‌تر می‌شود. */
+	.koohe-main .about-values {
+		grid-template-columns: 1fr;
+		margin-top: 34px;
+		gap: 18px;
+	}
+
+	.koohe-main .about-values > section {
+		padding: 28px;
+	}
+
+	.koohe-main .about-values > section > h2.wp-block-heading {
+		font-size: 21px;
+	}
+
+	.koohe-main .about-values p {
+		font-size: 12px;
+	}
+
+	.koohe-main .about-story {
+		margin-top: 37px;
+	}
+
+	.koohe-main .about-story > h2.wp-block-heading {
+		font-size: 23px;
+	}
+
+	.koohe-main .about-story p {
+		font-size: 12px;
+		line-height: 2.8;
+	}
+}
+
+@media (max-width: 480px) {
+	.faq-list .faq-item > summary {
+		font-size: 10px;
+	}
+
+	.legal-content .wp-block-post-content > section > p {
+		font-size: 11px;
 	}
 }

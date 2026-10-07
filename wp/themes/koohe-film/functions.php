@@ -24,6 +24,8 @@ foreach (
 		'block-styles',
 		'template-tags',
 		'blocks',
+		'mobile-drawer',
+		'plans',
 		'compat',
 		'customize',
 	) as $koohe_part

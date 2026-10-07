@@ -289,10 +289,15 @@ assert( '' !== activeBody, 'تابع manacore_active_filters() تعریف شده
 /*
  * sanitize_text_field هشت‌گانه‌های %d9%81… را نابود می‌کند و نامک فارسی را
  * به «-» فرو می‌کاهد؛ باید sanitize_title به‌کار رود.
+ *
+ * نگهبان پیشین «نبودِ» این تابع در کل بدنه‌ی تابع را می‌سنجید و با افزوده
+ * شدنِ جستجوی برگه‌ی کشف (`manacore_q` — یک عبارت جستجوی آزاد، نه نامک)
+ * درست‌نما ولی نادرست شکست می‌خورد. حالا خودِ مسیر نامک سنجیده می‌شود:
+ * هیچ‌کدام از `$raw`/`$slugs` نباید از sanitize_text_field بگذرد.
  */
 assert(
-	activeBody.indexOf( 'sanitize_text_field' ) === -1,
-	'از sanitize_text_field روی نامک استفاده نمی‌شود (نامک فارسی را خراب می‌کند)'
+	!/sanitize_text_field\s*\(\s*(?:wp_unslash\s*\(\s*)?\$(?:raw|slugs|slug)\b/.test( activeBody ),
+	'مسیر نامک (raw/slugs) از sanitize_text_field نمی‌گذرد (نامک فارسی را خراب می‌کند)'
 );
 
 assert(
@@ -333,9 +338,23 @@ assert(
 	'کمک‌تابع filter_chip_labels برای ساخت برچسب خوانا وجود دارد'
 );
 
+/*
+ * برچسب حذف فیلتر از کمکیِ `manacore_chip_removal_args()` استفاده می‌کند.
+ *
+ * نگهبان پیشین الگوی درون‌خطیِ `array_diff_key( $active, array( $param => '' ) )`
+ * را می‌سنجید. با آمدن بازه‌ی سال (دو پارامتر، یک کنترل) آن الگو کافی
+ * نبود: برداشتن برچسبِ بازه باید هر دو پارامتر را بردارد، وگرنه نیمی از
+ * فیلتر در نشانی می‌ماند. پس قرارداد به این کمکی منتقل شد.
+ */
 assert(
-	/array_diff_key\(\s*\$active,\s*array\(\s*\$param\s*=>\s*''\s*\)\s*\)/.test( blocksCode ),
-	'هر برچسب پیوندی است که فقط همان فیلتر را حذف می‌کند'
+	/manacore_chip_removal_args\(\s*\$active,\s*\$param\s*\)/.test( blocksCode ),
+	'هر برچسب از کمکیِ حذف فیلتر استفاده می‌کند'
+);
+
+assert(
+	/function\s+manacore_chip_removal_args/.test( functionsCode ) &&
+	/\$remove\s*=\s*array\(\s*'mc_year_min',\s*'mc_year_max'\s*\)/.test( functionsCode ),
+	'کمکیِ حذف فیلتر، بازه‌ی سال را به‌صورت یک فیلتر برمی‌دارد'
 );
 
 assert(

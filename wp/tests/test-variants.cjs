@@ -101,6 +101,7 @@ var blocksPhp    = read( path.join( PLUGIN, 'includes', 'class-blocks.php' ) );
 var templatesPhp = read( path.join( PLUGIN, 'includes', 'class-templates.php' ) );
 var frontCss     = read( path.join( PLUGIN, 'assets', 'css', 'front.css' ) );
 var blocksJs     = read( path.join( PLUGIN, 'assets', 'js', 'blocks.js' ) );
+var frontJs      = read( path.join( PLUGIN, 'assets', 'js', 'front.js' ) );
 var stylesPhp    = read( path.join( THEME, 'inc', 'block-styles.php' ) );
 var themeCss     = read( path.join( THEME, 'assets', 'css', 'theme.css' ) );
 
@@ -110,6 +111,7 @@ var blocksCode    = stripComments( blocksPhp );
 var templatesCode = stripComments( templatesPhp );
 var jsCode        = stripComments( blocksJs );
 var stylesCode    = stripComments( stylesPhp );
+var frontJsCode   = stripComments( frontJs );
 var frontBare     = stripCss( frontCss );
 var themeBare     = stripCss( themeCss );
 
@@ -127,11 +129,15 @@ console.log( '----------------------------------------------------------' );
 
 var SETS = [
 	[ 'layouts', 'manacore_block_layouts', 8 ],
-	[ 'card_styles', 'manacore_card_styles', 9 ],
+	[ 'card_styles', 'manacore_card_styles', 8 ],
 	[ 'slider_styles', 'manacore_slider_styles', 5 ],
 	[ 'slider_effects', 'manacore_slider_effects', 4 ],
 	[ 'slider_alignments', 'manacore_slider_alignments', 3 ],
-	[ 'download_styles', 'manacore_download_styles', 5 ],
+	/*
+	 * دو سبک مانده است: `cards` (پیش‌فرض، همان کنش‌های سطر) و `table`
+	 * (جدول خالی بدون کادر جدول). سبک‌های جعبه‌ای قدیمی حذف شدند.
+	 */
+	[ 'download_styles', 'manacore_download_styles', 2 ],
 ];
 
 var keysOf = {};
@@ -335,13 +341,20 @@ assert(
 		( alignMissing.length ? ' — کم: ' + alignMissing.join( ', ' ) : '' )
 );
 
-// سبک‌های جعبه‌ی دانلود.
+/*
+ * سبک‌های بخش دانلود.
+ *
+ * قرارداد پیشین (`.manacore-links.is-box-*` با پنج سبک جعبه و آکاردئون
+ * بومی) به درخواست کارفرما کنار گذاشته شد: بخش دانلود باید دقیقاً مثل
+ * مرجع `cinora` یک جدول `download-section` باشد. این آزمون اکنون همان
+ * قرارداد تازه را قفل می‌کند تا سبک‌های قدیمی برنگردند.
+ */
 var boxMissing = keysOf.download_styles.filter( function ( key ) {
-	return 'cards' !== key && frontBare.indexOf( '.manacore-links.is-box-' + key ) < 0;
+	return 'cards' !== key && frontBare.indexOf( '.download-section.is-' + key ) < 0;
 } );
 assert(
 	0 === boxMissing.length,
-	'هر ' + keysOf.download_styles.length + ' سبک جعبه‌ی دانلود CSS دارد' +
+	'هر ' + keysOf.download_styles.length + ' سبک بخش دانلود CSS دارد' +
 		( boxMissing.length ? ' — کم: ' + boxMissing.join( ', ' ) : '' )
 );
 
@@ -365,9 +378,22 @@ assert(
 	'هر گزینه‌ی ارتفاع قاعده‌ی CSS دارد' +
 		( heightMissing.length ? ' — کم: ' + heightMissing.join( ', ' ) : '' )
 );
+/*
+ * ارتفاع سربرگ تصویری با متغیر `--mc-hero-h` تعیین می‌شود و حالت
+ * «تمام‌صفحه» مقدار ۱۰۰vh می‌گیرد؛ پس هیچ سقف ثابتی آن را خنثی نمی‌کند.
+ */
 assert(
-	/--mc-hero-max/.test( frontBare ),
-	'سقف بیشینه‌ی ارتفاع متغیر است تا حالت تمام‌صفحه با سقف ثابت خنثی نشود'
+	/--mc-hero-h/.test( frontBare ),
+	'ارتفاع سربرگ تصویری با متغیر --mc-hero-h تعیین می‌شود'
+);
+assert(
+	/\.manacore-hero\.is-height-full[\s\S]{0,40}?100vh/.test( frontBare ),
+	'حالت تمام‌صفحه ارتفاع ۱۰۰vh می‌گیرد و سقف ثابتی ندارد'
+);
+assert(
+	/\.manacore-hero-bg[\s\S]{0,240}?object-fit:\s*cover/.test( frontBare )
+		&& /\.manacore-hero-bg[\s\S]{0,240}?height:\s*100%/.test( frontBare ),
+	'تصویر زمینه‌ی سربرگ خودش کشیده می‌شود (width/height/object-fit روی همان عنصر)'
 );
 
 /* ------------------------------------------------------------------
@@ -421,42 +447,90 @@ assert(
 );
 
 /* ------------------------------------------------------------------
- * ج) نشانه‌گذاری آکاردئون
+ * ج) قرارداد بخش دانلود و صفحه‌ی پخش (هم‌شکل مرجع سینورا)
  * --------------------------------------------------------------- */
 
 console.log( '' );
-console.log( 'ج) آکاردئون بومی جعبه‌ی دانلود' );
+console.log( 'ج) بخش دانلود و صفحه‌ی پخش' );
 console.log( '----------------------------------------------------------' );
 
-var groupBody = phpBody( templatesCode, 'function link_group(' );
-assert( '' !== groupBody, 'بدنه‌ی link_group() یافت شد' );
+/*
+ * چرا این بخش بازنویسی شد؟ درخواست کارفرما این بود که بخش دانلود
+ * *عیناً* `class="download-section"` باشد (نه جعبه‌های اختصاصی)، و
+ * کلیک «پخش» به صفحه‌ای مثل «NOW PLAYING · DEMO» مرجع برود که خودش یک
+ * قالب در ویرایشگر سایت است. آزمون‌های قدیمی همین قرارداد را می‌سنجند
+ * تا کسی بدون دلیل به عقب برنگرداند.
+ */
+var linksBody = phpBody( templatesCode, 'function links(' );
+assert( '' !== linksBody, 'بدنه‌ی links() یافت شد' );
+
 assert(
-	/\$wrap_tag\s*=\s*\$accordion\s*\?\s*'details'\s*:\s*'div'/.test( groupBody ),
-	'در سبک آکاردئونی ظرف به <details> تبدیل می‌شود'
+	/<section class="download-section/.test( linksBody ),
+	'بخش دانلود با <section class="download-section"> ساخته می‌شود'
 );
 assert(
-	/\$head_tag\s*=\s*\$accordion\s*\?\s*'summary'\s*:\s*'div'/.test( groupBody ),
-	'سرِ گروه در آکاردئون <summary> می‌شود'
+	/data-manacore-downloads/.test( linksBody ),
+	'بخش دانلود شناسه‌ی اثر را برای تب فصل‌ها نگه می‌دارد'
+);
+var rowBody = phpBody( templatesCode, 'function link_row(' );
+assert(
+	/class="download-table"/.test( linksBody ) && /download-table-header/.test( linksBody ),
+	'ساختار جدول دانلود (سرستون و ستون‌ها) ساخته می‌شود'
 );
 assert(
-	/<\/<\?php echo esc_html\(\s*\$wrap_tag\s*\); \?>>/.test( groupBody ),
-	'تگ پایانی ظرف با همان متغیر بسته می‌شود (نشانه‌گذاری نامتوازن نمی‌ماند)'
+	/class="download-row"/.test( rowBody ) && /class="download-actions"/.test( rowBody ) &&
+		/quality-name/.test( rowBody ) && /format-tag/.test( rowBody ),
+	'ردیف‌ها کیفیت، فرمت و کنش‌ها را دارند'
 );
 assert(
-	/<\/<\?php echo esc_html\(\s*\$head_tag\s*\); \?>>/.test( groupBody ),
-	'تگ پایانی سرِ گروه با همان متغیر بسته می‌شود'
+	'' !== phpBody( templatesCode, 'function link_row(' ),
+	'ردیف دانلود در تابع مستقل link_row() ساخته می‌شود'
 );
 assert(
-	/is-box-<\?php echo esc_attr\(\s*\$box_style\s*\); \?>/.test( templatesCode ),
-	'کلاس سبک جعبه با esc_attr روی <section> نوشته می‌شود'
+	! /manacore-links(?!-block)|is-box-/.test( templatesCode ),
+	'هیچ نشانه‌ای از جعبه‌های قدیمی دانلود در PHP نمانده است'
 );
 assert(
-	/details-marker/.test( frontBare ),
-	'نشانگر پیش‌فرض <details> در وبکیت پنهان می‌شود'
+	! /manacore-links(?!-block)|is-box-|link_icon/.test( blocksCode + jsCode ),
+	'هیچ نشانه‌ای از جعبه‌های قدیمی دانلود در بلوک و ویرایشگر نمانده است (جز پوشش بلوک)'
 );
 assert(
-	/\.manacore-links\.is-box-accordion \.manacore-link-group-head:focus-visible/.test( frontBare ),
-	'سرِ آکاردئون حلقه‌ی تمرکز دیدنی دارد'
+	-1 === frontBare.indexOf( '.manacore-links' ),
+	'CSS سبک‌های جعبه‌ی دانلود پاک شده است'
+);
+assert(
+	/\.download-section \.download-actions/.test( frontBare ),
+	'CSS بخش دانلود کنش‌ها را می‌چیند'
+);
+
+// صفحه‌ی پخش: بلوک، قالب ویرایشگر و CSS.
+assert(
+	/'manacore\/player-page'/.test( blocksCode ),
+	'بلوک manacore/player-page در PHP ثبت شده است'
+);
+assert(
+	function () { return /function render_player_page\(/.test( blocksCode ); }(),
+	'متد render_player_page() خروجی صفحه‌ی پخش را می‌سازد'
+);
+var watchTemplate = read( path.join( THEME, 'templates', 'page-watch.html' ) );
+assert(
+	/wp:manacore\/player-page/.test( watchTemplate ),
+	'قالب 「پخش آنلاین」 در ویرایشگر سایت بلوک پخش را نشان می‌دهد'
+);
+assert(
+	/wp:manacore\/download-links/.test( read( path.join( THEME, 'templates', 'single-movie.html' ) ) ) === false ||
+		/wp:manacore\/player-page/.test( watchTemplate ),
+	'صفحه‌ی پخش مستقل از قالب جزئیات است'
+);
+assert(
+	/\.player-page/.test( frontBare ) && /\.video-frame/.test( frontBare ) &&
+		/\.player-controls/.test( frontBare ) && /\.player-badges/.test( frontBare ),
+	'CSS صفحه‌ی پخش (قاب ویدئو، نوار کنترل و نشان‌ها) نوشته شده است'
+);
+assert(
+	/data-player-quality/.test( frontJsCode ) && /data-player-cinema/.test( frontJsCode ) &&
+		/data-player-fullscreen/.test( frontJsCode ),
+	'کنترل‌های پخش (کیفیت، سینما، تمام‌صفحه) در front.js پیاده شده‌اند'
 );
 
 /* ------------------------------------------------------------------
@@ -566,11 +640,17 @@ assert(
 	'شدت پوشش به بازه‌ی ۰ تا ۱۰۰ محدود می‌شود'
 );
 
-var groupRaw = ( groupBody.match( /<\?php echo \$[a-z_]+/gi ) || [] );
+/*
+ * ردیف‌های دانلود هم مثل اسلایدر باید کامل فرار داده شوند؛ آزمون قبلی
+ * این را روی تابع آکاردئون (link_group) می‌سنجید که حذف شده است.
+ */
+var safeTernary = linksBody + rowBody;
+safeTernary = safeTernary.replace( /<\?php echo \$\w+ \? [^>]*?\?>/g, '' );
+var rowRaw = ( safeTernary.match( /<\?php echo \$[a-z_]+/gi ) || [] );
 assert(
-	0 === groupRaw.length,
-	'هیچ خروجی خام بدون esc_* در گروه لینک نیست' +
-		( groupRaw.length ? ' (' + groupRaw.join( ', ' ) + ')' : '' )
+	0 === rowRaw.length,
+	'هیچ خروجی خام بدون esc_* در بخش دانلود نیست' +
+		( rowRaw.length ? ' (' + rowRaw.join( ', ' ) + ')' : '' )
 );
 
 [
@@ -581,6 +661,317 @@ assert(
 	var closes = ( pair[ 1 ].match( /\}/g ) || [] ).length;
 	assert( opens === closes, 'آکولادهای ' + pair[ 0 ] + ' متوازن‌اند (' + opens + ' / ' + closes + ')' );
 } );
+
+/* ------------------------------------------------------------------
+ * ط) کشف داستان‌ها: صفحه‌بندی، «بیشتر»، حالت خالی، مرتب‌سازی
+ *
+ * هر بند این بخش یک رفتار واقعیِ موج یازدهم را می‌سنجد؛ دو تای آخرین
+ * نگهبانِ دو اشکالی هستند که همین‌جا کشف و رفع شدند:
+ *   • پیمایش روی مجموعه‌ی زنده‌ی `children` هنگام افزودن کارت تازه —
+ *     هر کارت دوم از قلم می‌افتاد (صفحه‌ی دوم با ۲ کارت، ۱ کارت اضافه
+ *     می‌کرد).
+ *   • `CAST(... AS SIGNED)` در مرتب‌سازی عددی امتیاز — اعشار ۹.۴ و ۹.۲
+ *     هر دو ۹ می‌شدند و ترتیب تابع تاریخ (تصادفی) بود.
+ * --------------------------------------------------------------- */
+
+console.log( '' );
+console.log( 'ط) کشف داستان‌ها: صفحه‌بندی، بارگذاری بیشتر و حالت خالی' );
+console.log( '----------------------------------------------------------' );
+
+var paginationBody = phpBody( supportCode, 'function pagination_attributes(' );
+assert( '' !== paginationBody, 'تابع pagination_attributes() یافت شد' );
+assert( /'showFilterSummary'/.test( paginationBody ), 'ویژگی showFilterSummary در ویژگی‌های صفحه‌بندی هست' );
+assert( /'loadMore'/.test( paginationBody ), 'ویژگی loadMore در ویژگی‌های صفحه‌بندی هست' );
+assert( /'loadText'/.test( paginationBody ), 'ویژگی loadText در ویژگی‌های صفحه‌بندی هست' );
+
+/* «شمار آثار» و «بیشتر» به max_num_pages/found_posts نیاز دارند. */
+var queryArgsBody = phpBody( supportCode, 'function query_args(' );
+assert(
+	/showFilterSummary/.test( queryArgsBody ) && /loadMore/.test( queryArgsBody ) &&
+	/\$args\['no_found_rows'\]\s*=\s*false/.test( queryArgsBody ),
+	'query_args() برای خلاصه‌ی نتیجه و «بیشتر» شمارش کل را روشن می‌کند'
+);
+
+var loadMoreBody = phpBody( blocksCode, 'function render_load_more(' );
+assert( '' !== loadMoreBody, 'تابع render_load_more() یافت شد' );
+assert( /data-manacore-load-more/.test( loadMoreBody ), 'دکمه‌ی «بیشتر» نشانه‌ی data-manacore-load-more دارد' );
+assert( /add_query_arg\(\s*'paged'/.test( loadMoreBody ), 'نشانی دکمه با add_query_arg( \'paged\', … ) ساخته می‌شود' );
+assert(
+	/داستان\u200c?های بیشتر/.test( loadMoreBody ),
+	'برچسب پیش‌فرض دکمه «داستان‌های بیشتر» است'
+);
+
+var emptyBody = phpBody( blocksCode, 'function render_discovery_empty(' );
+assert( '' !== emptyBody, 'تابع render_discovery_empty() یافت شد' );
+assert(
+	/با این فیلترها داستانی پیدا نشد\./.test( emptyBody ) && /این صفحه دیگر داستانی ندارد\./.test( emptyBody ),
+	'هر دو سرصفحه‌ی حالت خالی (فیلترشده و صفحه‌ی بی‌سرانجام) موجود است'
+);
+assert(
+	/نمایش همه\u200c?ی آثار/.test( emptyBody ) && /manacore_archive_base_url\(/.test( emptyBody ),
+	'حالت خالی دکمه‌ی «نمایش همه‌ی آثار» با نشانی پایه‌ی آرشیو دارد'
+);
+
+var summaryBody = phpBody( blocksCode, 'function render_filter_summary(' );
+assert( '' !== summaryBody, 'تابع render_filter_summary() یافت شد' );
+assert(
+	/results-count-number/.test( summaryBody ) && /results-clear-all/.test( summaryBody ),
+	'خلاصه‌ی نتیجه شمارنده و دکمه‌ی پاک‌سازی دارد'
+);
+assert( /active-filter-chips/.test( summaryBody ), 'تراشه‌های فیلتر فعال در خلاصه‌ی نتیجه رندر می‌شوند' );
+
+assert(
+	/Array\.prototype\.slice\.call\(\s*page\.children\s*\)/.test( frontJsCode ),
+	'initLoadMore() پیش از افزودن، از children رونوشت می‌گیرد (هر کارت دوم حذف نشود)'
+);
+
+var queryPhp      = stripComments( read( path.join( PLUGIN, 'includes', 'class-query.php' ) ) );
+var blockQueryPhp = stripComments( read( path.join( PLUGIN, 'includes', 'class-block-query.php' ) ) );
+var functionsPhp  = stripComments( read( path.join( PLUGIN, 'includes', 'functions.php' ) ) );
+
+assert(
+	/'rating'\s*=>\s*'manacore_imdb_rating'/.test( functionsPhp ),
+	'نگاشت مرتب‌سازی امتیاز در manacore_sort_query_args() تعریف شده است'
+);
+assert(
+	/DECIMAL\(10,2\)/.test( queryPhp ) && /DECIMAL\(10,2\)/.test( blockQueryPhp ),
+	'مرتب‌سازی عددی با DECIMAL(10,2) انجام می‌شود، نه SIGNED (اعشار امتیاز بریده نشود)'
+);
+/* مقصد «مشاهده همه»: تنها منبع حقیقت و ترجیح برگه‌ی کشف. */
+var resolveBody = phpBody( supportCode, 'function resolve_more_url(' );
+assert( '' !== resolveBody, 'تابع مشترک resolve_more_url() یافت شد' );
+assert(
+	/manacore_discovery_url\(/.test( resolveBody ),
+	'resolve_more_url() برگه‌ی کشف را بر آرشیو مقدم می‌دارد (مثل a.text-link مرجع)'
+);
+assert(
+	/Block_Support::resolve_more_url\(\s*\$attrs,\s*\$context_type\s*\)/.test( blocksCode ),
+	'render_titles_grid() هم از همان تابع مشترک استفاده می‌کند (دو پیاده‌سازی جدا نماند)'
+);
+assert(
+	/class="text-link manacore-more-link"/.test( supportCode ),
+	'پیوند «مشاهده همه» کلاس مرجع (text-link) را هم دارد'
+);
+
+/* ------------------------------------------------------------------
+ * ی) سایدبار «فیلتر پیشرفته» — همان گروه‌های `.filter-sidebar` مرجع
+ *
+ * سه چیز سنجیده می‌شود: (۱) ویژگی‌های تازه در تعریف بلوک و پنل ویرایشگر
+ * (وگرنه چیزی که دیده می‌شود ویرایش‌پذیر نیست)، (۲) رندر و CSS هر جزء
+ * (وگرنه کلاس بی‌قاعده می‌ماند)، و (۳) مسیر کوئری هر فیلتر در **هر دو**
+ * حلقه (آرشیو و بلوک) — چون فیلتری که فقط در یکی اثر کند، فیلتر بی‌اثر
+ * است.
+ * --------------------------------------------------------------- */
+
+console.log( '' );
+console.log( 'ی) سایدبار «فیلتر پیشرفته»' );
+console.log( '----------------------------------------------------------' );
+
+var metasPhp = stripComments( read( path.join( PLUGIN, 'includes', 'class-meta.php' ) ) );
+var filterAttrs = phpBody( blocksCode, "function render_filter_bar(" );
+var groupsBody  = phpBody( blocksCode, "function render_sidebar_groups(" );
+var footerBody  = phpBody( blocksCode, "function render_sidebar_footer(" );
+
+assert( '' !== groupsBody, 'متد render_sidebar_groups() وجود دارد' );
+assert( '' !== footerBody, 'متد render_sidebar_footer() وجود دارد' );
+
+[
+	'sidebarTitle',
+	'checkTaxonomy',
+	'showGenreChecks',
+	'showYearRange',
+	'showRating',
+	'ratingMax',
+	'showDubbed',
+	'dubbedLabel',
+	'showHint',
+	'hintUrl',
+	'resetLabel',
+].forEach( function ( attr ) {
+	assert(
+		blocksCode.indexOf( "'" + attr + "'" ) !== -1,
+		'ویژگی «' + attr + '» در تعریف بلوک هست'
+	);
+	assert(
+		jsCode.indexOf( "'" + attr + "'" ) !== -1,
+		'ویژگی «' + attr + '» در پنل ویرایشگر هم هست'
+	);
+} );
+
+assert(
+	/'sidebar'\s*===\s*a\.formLayout|\( ?'sidebar' ?\?/.test( jsCode ) && /value: 'sidebar'/.test( jsCode ),
+	'گزینه‌ی چیدمان «سایدبار پیشرفته» در گزینشگر ویرایشگر هست'
+);
+
+[
+	[ 'genre-checks', 'فهرست تیک‌زنی ژانر' ],
+	[ 'custom-check', 'مربع تیک سفارشی' ],
+	[ 'year-range', 'بازه‌ی سال' ],
+	[ 'rating-range', 'لغزنده‌ی امتیاز' ],
+	[ 'range-labels', 'برچسب‌های بازه' ],
+	[ 'toggle-label', 'کلید دوبله' ],
+	[ 'toggle-switch', 'کلید کشویی' ],
+	[ 'reset-filters', 'دکمه‌ی پاک‌سازی' ],
+	[ 'filter-hint', 'پنل راهنما' ],
+].forEach( function ( pair ) {
+	assert(
+		groupsBody.indexOf( pair[ 0 ] ) !== -1 || footerBody.indexOf( pair[ 0 ] ) !== -1,
+		'جزء «' + pair[ 1 ] + '» در رندر سایدبار آمده است'
+	);
+	assert(
+		themeBare.indexOf( '.' + pair[ 0 ] ) !== -1,
+		'قاعده‌ی CSS برای «' + pair[ 1 ] + '» نوشته شده است'
+	);
+} );
+
+/* شمار آثار کنار ژانر و بازه‌ی سال: هر دو از داده می‌آیند، نه ثابت. */
+assert( /manacore_term_counts\(/.test( functionsPhp ), 'شمار آثار هر ترم از داده محاسبه می‌شود' );
+assert( /manacore_year_bounds\(/.test( functionsPhp ), 'بازه‌ی سال از داده خوانده می‌شود' );
+assert(
+	/get_transient\(|set_transient\(/.test( functionsPhp ) && /MINUTE_IN_SECONDS/.test( functionsPhp ),
+	'شمارها کش می‌شوند (هر بارگذاری، کوئری گران تکرار نمی‌شود)'
+);
+assert( /function\s+manacore_meta_filter_params/.test( functionsPhp ), 'فهرست پارامترهای فراداده‌ای تعریف شده است' );
+
+/* مسیر کوئری: هر دو حلقه باید بندهای فراداده‌ای را بگیرند. */
+assert(
+	/manacore_merge_meta_query\(\s*\(array\)\s*\$query->get\(\s*'meta_query'\s*\),\s*manacore_meta_filter_clauses\(\)/.test( queryPhp ),
+	'کوئری اصلی (آرشیوها) فیلترهای فراداده‌ای سایدبار را اعمال می‌کند'
+);
+assert(
+	/manacore_merge_meta_query\(/.test( blockQueryPhp ) && /manacore_meta_filter_clauses\(/.test( blockQueryPhp ),
+	'حلقه‌ی بلوک هم همان فیلترهای فراداده‌ای را اعمال می‌کند'
+);
+assert(
+	/function\s+manacore_chip_removal_args/.test( functionsPhp ),
+	'برداشتن برچسب فیلتر، بازه‌ی سال را به‌صورت یک فیلتر برمی‌دارد'
+);
+
+/* کلید دوبله روی فراداده‌ی واقعی و ویرایش‌پذیر اثر. */
+assert( /'manacore_dubbed'\s*=>\s*array\(/.test( metasPhp ), 'فیلد «دوبله فارسی» در متاباکس اثرها تعریف شده است' );
+assert( /function\s+manacore_dubbed_meta_key/.test( functionsPhp ), 'کلید فراداده‌ای دوبله با فیلتر قابل تغییر است' );
+
+/* رفتار جاوااسکریپت: نام‌دار بودن به‌روزرسانی برچسب امتیاز و ارسال خودکار. */
+assert( /#rating-label|rating-label/.test( frontJsCode ), 'برچسب امتیاز در جاوااسکریپت به‌روز می‌شود' );
+assert( /input\[type="checkbox"\], input\[type="radio"\]/.test( frontJsCode ), 'تیک‌باکس‌ها فرم را خودکار ارسال می‌کنند' );
+
+/* ------------------------------------------------------------------
+ * ک) برگه‌ی «برنامه پخش» — هم‌ارز `schedule.html` مرجع
+ *
+ * مرجع یک صفحه‌ی کامل دارد: سرصفحه با نشان تقویم، پنل هفتگی با تب‌های
+ * روز، ستون کنار (کارت یادداشت + کارت ترویجی) و بخش پیشنهادها. این‌جا
+ * سه چیز قفل می‌شود تا موج بعدی بدون آزمون پس‌رفت نکند:
+ *   ۱) ساختار رندرشده (کلاس‌ها و نقش‌های دسترس‌پذیری) همان مرجع است.
+ *   ۲) هر گزینه‌ی پنل ویرایشگر، هم در PHP و هم در JS هست.
+ *   ۳) الگوی برگه و رفتار سمت کاربر از داده‌ی واقعی می‌آید (نه دست‌نویس).
+ * --------------------------------------------------------------- */
+
+console.log( '' );
+console.log( 'ک) برگه‌ی «برنامه پخش»' );
+console.log( '----------------------------------------------------------' );
+
+/*
+ * رندر این بلوک بین چند متد تقسیم شده است (رندر پنل، سرتیتر، روز خالی،
+ * ردیف آثار). پس به‌جای بدنه‌ی یک متد، اجتماع بدنه‌ی همه‌ی متدهای همین
+ * بلوک سنجیده می‌شود — وگرنه کلاسی که در متد کمکی تولید می‌شود از چشم
+ * آزمون می‌افتد.
+ */
+var scheduleBody = [
+	'function render_schedule(',
+	'function render_schedule_title(',
+	'function render_schedule_empty(',
+	'function render_schedule_series_item(',
+	'function render_schedule_episode_item(',
+	'function schedule_episodes_by_day(',
+	'function schedule_series_by_day(',
+	'function week_days(',
+	'function day_key(',
+	'function episode_day(',
+].map( function ( signature ) {
+	return phpBody( blocksCode, signature );
+} ).join( '\n' );
+
+var schedulePage = read( path.join( THEME, 'templates', 'page-schedule.html' ) );
+
+assert( '' !== scheduleBody, 'متد render_schedule() وجود دارد' );
+assert( '' !== schedulePage, 'الگوی برگه‌ی «برنامه پخش» در پوسته هست' );
+assert( /manacore\/schedule/.test( schedulePage ), 'الگو بلوک «برنامه پخش» را می‌سازد' );
+assert( /"layout":"panel"|layout.*panel/.test( schedulePage ), 'چیدمان بلوک در الگو «پنل کامل» است' );
+assert( /manacore\/info-card/.test( schedulePage ), 'ستون کنار از بلوک «کارت اطلاعاتی» ساخته می‌شود (ویرایش‌پذیر، نه مارک‌آپ دست‌نویس)' );
+assert( /account:watchlist/.test( schedulePage ), 'مقصد کارت ترویجی با نشانه‌ی حساب کاربری تعیین شده است' );
+
+/* ساختار رندرشده: کلاس‌ها باید عیناً مثل مرجع باشد. */
+[
+	[ 'schedule-panel', 'پنل هفتگی' ],
+	[ 'full-schedule', 'چیدمان تمام‌قد پنل' ],
+	[ 'week-tabs', 'ردیف تب‌های روز' ],
+	[ 'schedule-items', 'ظرف ردیف‌های روز' ],
+	[ 'schedule-item', 'ردیف اثر' ],
+	[ 'schedule-time', 'ساعت پخش' ],
+	[ 'schedule-play', 'نشانه‌ی پخش' ],
+	[ 'schedule-empty', 'حالت روز خالی' ],
+	[ 'schedule-footnote', 'یادداشت پایین پنل' ],
+	[ 'today-dot', 'نقطه‌ی روز جاری' ],
+	[ 'schedule-title', 'سرتیتر پنل' ],
+	[ 'timezone', 'نشانگر زمان' ],
+].forEach( function ( pair ) {
+	assert( scheduleBody.indexOf( pair[ 0 ] ) !== -1, 'رندر پنل «' + pair[ 1 ] + '» را می‌سازد' );
+	assert( frontBare.indexOf( '.' + pair[ 0 ] ) !== -1, 'قاعده‌ی CSS برای «' + pair[ 1 ] + '» نوشته شده است' );
+} );
+
+/* تب‌های روز: نقش‌های ARIA و کلیدهای داده. */
+assert( /role="tab"/.test( scheduleBody ), 'تب‌های روز نقش tab دارند' );
+assert( /role="tablist"/.test( scheduleBody ), 'ردیف تب‌ها نقش tablist دارد' );
+assert( /role="tabpanel"/.test( scheduleBody ), 'هر روز یک tabpanel دارد' );
+assert( /aria-selected/.test( scheduleBody ), 'تب فعال با aria-selected نشانه‌گذاری می‌شود' );
+assert( /hidden/.test( scheduleBody ), 'روزهای غیرفعال با hidden پنهان می‌شوند' );
+assert( /data-day/.test( scheduleBody ), 'هر تب روز، کلید داده‌ی خود را دارد' );
+
+/* گزینه‌های ویرایشگر: همان ویژگی باید هم در PHP و هم در JS باشد. */
+[
+	[ 'layout', null, 'چیدمان' ],
+	[ 'mode', null, 'منبع داده' ],
+	[ 'panelTitle', null, 'عنوان پنل' ],
+	[ 'panelSubtitle', null, 'زیرنویس پنل' ],
+	[ 'panelIcon', null, 'نشانه‌ی پنل' ],
+	[ 'showTimezone', null, 'نمایش نشانگر زمان' ],
+	[ 'timezoneLabel', null, 'متن نشانگر زمان' ],
+	[ 'showSeasonMeta', null, 'نمایش فصل/قسمت' ],
+	[ 'showOriginalTitle', null, 'نمایش نام اصلی' ],
+	[ 'showPlay', null, 'نمایش دکمه‌ی پخش' ],
+	[ 'emptyMessage', null, 'پیام روز خالی' ],
+	[ 'emptyLinkLabel', null, 'برچسب پیوند روز خالی' ],
+	[ 'emptyLinkUrl', null, 'مقصد پیوند روز خالی' ],
+	[ 'postTypes', null, 'نوع محتوا' ],
+	[ 'perDay', null, 'قسمت در هر روز' ],
+	[ 'activeDay', null, 'روز فعال در آغاز' ],
+].forEach( function ( row ) {
+	var needle = "'" + row[ 0 ] + "'";
+	assert( blocksCode.indexOf( needle ) !== -1, 'ویژگی «' + row[ 2 ] + '» در تعریف بلوک هست' );
+	assert( jsCode.indexOf( needle ) !== -1, 'ویژگی «' + row[ 2 ] + '» در پنل ویرایشگر هم هست' );
+} );
+
+/* گزینه‌های گزینشگر: چیدمان پنل و منبع «آثار زمان‌بندی‌شده». */
+assert( jsCode.indexOf( 'panel' ) !== -1 && jsCode.indexOf( 'series' ) !== -1, 'گزینشگرهای چیدمان/منبع در ویرایشگر هستند' );
+assert( /schedule-panel/.test( frontBare ) && /full-schedule/.test( frontBare ), 'قاعده‌های چیدمان پنل در CSS افزونه هست' );
+assert( /function render_info_card\(/.test( blocksCode ) && /schedule-note-card/.test( blocksCode ) && /sidebar-promo/.test( blocksCode ), 'بلوک کارت اطلاعاتی کلاس‌های مرجع ستون کنار را می‌سازد' );
+
+/* پنل‌های بازرس ویرایشگر برای چیدمان پنل. */
+[ 'تنظیمات برنامه', 'چیدمان و منبع', 'سرصفحه‌ی پنل', 'حالت خالی روز' ].forEach( function ( title ) {
+	assert( jsCode.indexOf( title ) !== -1, 'پنل بازرس «' + title + '» در ویرایشگر هست' );
+} );
+
+/* رفتار سمت کاربر: تب‌های روز و حالت خالی. */
+assert( /role=.tab|manacore-day-tab|week-tabs/.test( frontJsCode ), 'جاوااسکریپت تب‌های روز را پیدا می‌کند' );
+assert( /schedule-panel/.test( frontJsCode ), 'جاوااسکریپت چیدمان پنل را هم می‌شناسد (نه فقط بلوک صفحه‌ی نخست)' );
+
+/* فراداده‌ی روز/ساعت پخش باید ویرایش‌پذیر باشد (متا‌باکس، نه مقدار ثابت). */
+assert( /air_day/.test( metasPhp ), 'روز پخش روی متاباکس ویرایش می‌شود' );
+assert( /air_time/.test( metasPhp ), 'ساعت پخش روی متاباکس ویرایش می‌شود' );
+assert(
+	/get_post_meta\([^;]*'manacore_air_day'/.test( blocksCode ) && /get_post_meta\([^;]*'manacore_air_time'/.test( blocksCode ),
+	'رندر، روز و ساعت پخش را از فراداده‌ی واقعی اثر می‌خواند (نه جدول ثابت)'
+);
 
 console.log( '' );
 console.log( '==========================================================' );

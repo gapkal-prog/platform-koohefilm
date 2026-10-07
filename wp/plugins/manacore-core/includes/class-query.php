@@ -111,31 +111,30 @@ class Query {
 			$query->set( 'tax_query', $tax_query );
 		}
 
+		/*
+		 * فیلترهای فراداده‌ای سایدبار (بازه‌ی سال ساخت، حداقل امتیاز IMDb،
+		 * دوبله). بندهای آماده از `manacore_meta_filter_clauses()` می‌آید
+		 * تا مسیر آرشیو و مسیر حلقه‌ی بلوکی یک رفتار داشته باشند.
+		 */
+		$query->set(
+			'meta_query', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
+			manacore_merge_meta_query( (array) $query->get( 'meta_query' ), manacore_meta_filter_clauses() )
+		);
+
 		$orderby = isset( $_GET['mc_sort'] ) ? sanitize_key( wp_unslash( $_GET['mc_sort'] ) ) : '';
 		// phpcs:enable
 
-		switch ( $orderby ) {
-			case 'rating':
-				$this->order_by_meta_num( $query, 'manacore_imdb_rating' );
-				break;
-			case 'views':
-				$this->order_by_meta_num( $query, 'manacore_views' );
-				break;
-			case 'year':
-				$this->order_by_meta_num( $query, 'manacore_year' );
-				break;
-			case 'title':
-				$query->set( 'orderby', 'title' );
-				$query->set( 'order', 'ASC' );
-				break;
-			case 'oldest':
-				$query->set( 'orderby', 'date' );
-				$query->set( 'order', 'ASC' );
-				break;
-			case 'newest':
-				$query->set( 'orderby', 'date' );
-				$query->set( 'order', 'DESC' );
-				break;
+		/*
+		 * نگاشت مقدار به آرگومان‌ها در `manacore_sort_query_args()` است تا
+		 * حلقه‌های بلوکیِ صفحه‌ی «کشف» هم دقیقاً همین رفتار را داشته باشند.
+		 */
+		$sorted = manacore_sort_query_args( $orderby );
+
+		if ( isset( $sorted['meta'] ) ) {
+			$this->order_by_meta_num( $query, $sorted['meta'] );
+		} elseif ( isset( $sorted['orderby'] ) ) {
+			$query->set( 'orderby', $sorted['orderby'] );
+			$query->set( 'order', $sorted['order'] );
 		}
 	}
 
@@ -153,10 +152,18 @@ class Query {
 	protected function order_by_meta_num( $query, $key ) {
 		$meta_query = (array) $query->get( 'meta_query' );
 
+		/*
+		 * نوع ستون باید اعشاری باشد، نه `NUMERIC`:
+		 * `NUMERIC` در وردپرس به `CAST(... AS SIGNED)` نگاشته می‌شود و
+		 * اعشار را می‌بُرد، پس «۹.۴» و «۹.۲» هر دو ۹ می‌شدند و ترتیب
+		 * میان‌شان با تاریخ — یعنی تصادفی — تعیین می‌شد. روی همین داده
+		 * سنجیده شد: با `NUMERIC` ترتیب «۶، ۱۸، ۷، ۸، ۹» و با
+		 * `DECIMAL(10,2)` ترتیب درست «۱۸، ۶، ۷، ۸، ۹» به دست می‌آید.
+		 */
 		$meta_query['manacore_sort'] = array(
 			'key'     => $key,
 			'compare' => 'EXISTS',
-			'type'    => 'NUMERIC',
+			'type'    => 'DECIMAL(10,2)',
 		);
 		$meta_query['manacore_sort_missing'] = array(
 			'key'     => $key,
@@ -184,7 +191,20 @@ class Query {
 	public function search_meta( $search, $query ) {
 		global $wpdb;
 
-		if ( is_admin() || ! $query->is_search() || ! $query->is_main_query() || empty( $search ) ) {
+		if ( is_admin() || empty( $search ) ) {
+			return $search;
+		}
+
+		/*
+		 * مسیر همیشگی: کوئری اصلی برگه‌ی جستجو. مسیر دوم: حلقه‌ی بلوکی که
+		 * با ویژگی `inheritFilters` جستجوی نوار فیلتر را ارث برده است
+		 * (صفحه‌ی «کشف داستان‌ها») — آنجا هم باید نام اصلی/نام‌های دیگر
+		 * جست‌وجو شوند، وگرنه جستجوی «Shogun» روی اثری با عنوان فارسی
+		 * «شوگان» چیزی پیدا نمی‌کند در حالی که در آرشیوها پیدا می‌کند.
+		 */
+		$block_search = (bool) $query->get( 'manacore_search_meta' );
+
+		if ( ! $block_search && ( ! $query->is_search() || ! $query->is_main_query() ) ) {
 			return $search;
 		}
 
@@ -205,8 +225,63 @@ class Query {
 			$like
 		);
 
-		// افزودن شرط متا داخل پرانتز جستجوی موجود.
-		return preg_replace( '/\)\s*$/', $meta_sql . ')', $search, 1 );
+		return $this->search_with_meta( $search, $meta_sql );
+	}
+
+	/**
+	 * افزودن «نام اصلی/نام‌های دیگر» به‌عنوان گزینه‌ی جایگزینِ عبارت جستجو.
+	 *
+	 * شکلِ واقعیِ رشته‌ای که وردپرس به این فیلتر می‌دهد (بررسی‌شده روی
+	 * `wp-includes/class-wp-query.php::parse_search()` در همین نصب) چنین است:
+	 *
+	 *   " AND ( (((عنوان LIKE …) OR (خلاصه LIKE …) OR (متن LIKE …))) )  AND (post_password = '') "
+	 *
+	 * یعنی سه نکته: (۱) رشته با `AND` شروع می‌شود، (۲) خودِ عبارت در یک
+	 * پرانتز بسته شده، و (۳) سدِّ رمز `post_password` **بیرون** و بعد از
+	 * گروهِ عبارت چسبیده است. پس هر پیاده‌سازی که شرط متا را «به آخر
+	 * رشته» یا «به آخرین پرانتز» اضافه کند، آن را به سدِّ رمز می‌چسباند و
+	 * شرط بی‌اثر می‌شود — همان چیزی که پیش‌تر روی همین نصب رخ داده بود.
+	 *
+	 * اینجا هر سه نکته رعایت می‌شود: سدِّ رمز جدا و دست‌نخورده پس
+	 * برگردانده می‌شود، و شرط متا کنارِ خودِ عبارت (نه کنارِ سدِّ رمز)
+	 * می‌نشیند:
+	 *
+	 *   " AND ( (((عنوان LIKE …) OR …) OR EXISTS (متا LIKE …)) )  AND (post_password = '') "
+	 *
+	 * @param string $search   خروجی وردپرس برای `posts_search`.
+	 * @param string $meta_sql شرط آماده‌ی متا (با «OR» ابتدایی).
+	 * @return string
+	 */
+	protected function search_with_meta( $search, $meta_sql ) {
+		$search = trim( (string) $search );
+		$meta   = trim( (string) $meta_sql );
+
+		if ( '' === $search || '' === $meta ) {
+			return $search;
+		}
+
+		global $wpdb;
+
+		// (۳) جدا کردن سدِّ رمز و بازگرداندن دست‌نخورده‌ی آن در پایان.
+		$password = '';
+		$preg     = '/\sAND\s+\(\s*' . preg_quote( $wpdb->posts, '/' ) . '\.post_password\s*=\s*\'\'\s*\)\s*$/';
+
+		if ( preg_match( $preg, $search, $match ) ) {
+			$password = ' ' . trim( $match[0] ) . ' ';
+			$search   = rtrim( substr( $search, 0, -strlen( $match[0] ) ) );
+		}
+
+		// (۱) حذف `AND` سرصفحه تا دوباره اضافه شود.
+		$search = trim( preg_replace( '/^AND\s+/', '', $search, 1 ) );
+
+		if ( '' === $search ) {
+			return $search;
+		}
+
+		// (۲) گروهِ عبارت، به‌تنهایی، داخل یک پرانتز تازه می‌نشیند.
+		$wrapped = ' AND ( ' . $search . ' ' . $meta . ' ) ';
+
+		return $wrapped . $password;
 	}
 
 	/**
@@ -295,6 +370,35 @@ class Query {
 			case 'collection':
 				$args = self::collection_args( $args );
 				break;
+			case 'watchlist':
+				/*
+				 * «لیست تماشای من» — شناسه‌ها از متای کاربر می‌آید نه از یک
+				 * کوئری عمومی؛ پس ترتیب هم همان ترتیب افزودن کاربر است.
+				 * فهرست خالی با `post__in => array(0)` به «هیچ» می‌رسد تا
+				 * بلوک، حالت خالی مرجع را رندر کند (نه آخرین آثار سایت).
+				 */
+				$ids              = Account::watchlist();
+				$args['post__in'] = $ids ? $ids : array( 0 );
+				$args['orderby']  = 'post__in';
+				break;
+			case 'recommended':
+				/*
+				 * «برای تو» — پیشنهاد بر پایه‌ی ژانرهای لیست تماشا و تاریخچه.
+				 * اگر کاربر هیچ سلیقه‌ای ثبت نکرده باشد، فهرست خالی برمی‌گردد
+				 * و بلوک به کوئری پیش‌فرض برمی‌گردد (همان رفتار مرجع که
+				 * «آثار دیده‌نشده» را پیشنهاد می‌کند).
+				 */
+				$ids = Account::recommended_ids( (int) $args['posts_per_page'] );
+				if ( $ids ) {
+					$args['post__in'] = $ids;
+					$args['orderby']  = 'post__in';
+				} else {
+					$seen = array_merge( Account::watchlist(), Account::watched() );
+					if ( $seen ) {
+						$args['post__not_in'] = $seen;
+					}
+				}
+				break;
 		}
 
 		// ادغام شرط‌های متای فراخوان با شرط‌های منبع.
@@ -381,20 +485,91 @@ class Query {
 	}
 
 	/**
-	 * پارامترهای «آثار مرتبط» بر پایه‌ی اثر جاری.
+	 * شناسه‌ی آثاری که یک چهره در آن‌ها آمده است.
 	 *
-	 * معیار ارتباط به ترتیب اولویت:
-	 *   ۱. اشتراک در ژانر (اصلی‌ترین معیار)
-	 *   ۲. در نبود ژانر: هم‌کشور یا هم‌سال
-	 *   ۳. در نبود هر دو: تازه‌ترین آثار همان نوع محتوا
+	 * فیلد بازیگران (`manacore_cast`) یک ریپیتر JSON است، پس جست‌وجوی متنی
+	 * روی نام چهره انجام می‌شود؛ نتیجه در ترنزینت کش می‌شود تا هم حلقه‌ی
+	 * «آثار این عامل» و هم شمار «N اثر» کارت‌های چهره از **یک** محاسبه
+	 * بخورند (بدون SQL تکراری).
 	 *
-	 * @param array $args پارامترهای پایه.
-	 * @return array
+	 * @param int $person_id شناسه‌ی چهره.
+	 * @return array<int,int> شناسه‌ی آثار.
 	 */
+	public static function person_work_ids( $person_id ) {
+		$person_id = absint( $person_id );
+
+		if ( ! $person_id || 'person' !== get_post_type( $person_id ) ) {
+			return array();
+		}
+
+		$cached = get_transient( 'manacore_person_works_' . $person_id );
+
+		if ( ! is_array( $cached ) ) {
+			global $wpdb;
+
+			$name = get_the_title( $person_id );
+			$like = '%' . $wpdb->esc_like( $name ) . '%';
+
+			/*
+			 * manacore_cast یک فیلد JSON است (repeater)؛ جست‌وجوی متنی روی
+			 * نام + بازیگر + کارگردان/نویسنده‌ی متنی، هر دو مسیر را پوشش می‌دهد.
+			 */
+			$found = array_map(
+				'absint',
+				(array) $wpdb->get_col(
+					$wpdb->prepare(
+						"SELECT DISTINCT post_id FROM {$wpdb->postmeta}
+						 WHERE meta_key IN ('manacore_cast','manacore_director','manacore_writer')
+						 AND meta_value LIKE %s
+						 LIMIT 200",
+						$like
+					)
+				)
+			);
+
+			/*
+			 * فقط آثار **منتشرشده‌ی** انواع عنوان (و قسمت) می‌مانند تا شمار
+			 * «N اثر» با شبکه‌ی فیلموگرافی، که همان `publish` را کوئری
+			 * می‌کند، دقیقاً یک مجموعه باشد؛ وگرنه پیش‌نویس/زباله‌دان شمار را
+			 * بیشتر نشان می‌داد.
+			 */
+			$cached = $found
+				? array_map(
+					'absint',
+					(array) get_posts(
+						array(
+							'post_type'      => array_merge( manacore_title_post_types(), array( 'episode' ) ),
+							'post_status'    => 'publish',
+							'post__in'       => $found,
+							'posts_per_page' => 200,
+							'orderby'        => 'post__in',
+							'fields'         => 'ids',
+							'no_found_rows'  => true,
+						)
+					)
+				)
+				: array();
+
+			set_transient( 'manacore_person_works_' . $person_id, $cached, HOUR_IN_SECONDS );
+		}
+
+		return array_values( array_diff( array_map( 'absint', (array) $cached ), array( $person_id ) ) );
+	}
+
+	/**
+	 * شمار واقعی آثار یک چهره («N اثر در کوهه»).
+	 *
+	 * @param int $person_id شناسه‌ی چهره.
+	 * @return int
+	 */
+	public static function person_work_count( $person_id ) {
+		return count( self::person_work_ids( $person_id ) );
+	}
+
 	/**
 	 * منبع «آثار این عامل»: در صفحه‌ی عامل (person)، آثاری که این شخص در
-	 * فیلد بازیگران (manacore_cast) یا کارگردان/نویسنده‌ی متنی‌شان آمده
-	 * باشد. روی نصب‌های بزرگ سنگین است، پس در ترنزینت cache می‌شود.
+	 * فیلد بازیگران (`manacore_cast`) یا کارگردان/نویسنده‌ی متنی‌شان آمده
+	 * باشد.
 	 *
 	 * @param array $args آرگومان‌های کوئری.
 	 * @return array
@@ -406,33 +581,7 @@ class Query {
 			return $args;
 		}
 
-		$cached = get_transient( 'manacore_person_works_' . $post_id );
-
-		if ( ! is_array( $cached ) ) {
-			global $wpdb;
-
-			$name = get_the_title( $post_id );
-			$like = '%' . $wpdb->esc_like( $name ) . '%';
-
-			/*
-			 * manacore_cast یک فیلد JSON است (repeater)؛ جستجوی متنی روی
-			 * نام + بازیگر + کارگردان/نویسنده‌ی متنی، هر دو مسیر را پوشش می‌دهد.
-			 */
-			$ids = (array) $wpdb->get_col(
-				$wpdb->prepare(
-					"SELECT DISTINCT post_id FROM {$wpdb->postmeta}
-					 WHERE meta_key IN ('manacore_cast','manacore_director','manacore_writer')
-					 AND meta_value LIKE %s
-					 LIMIT 200",
-					$like
-				)
-			);
-
-			$ids = array_map( 'absint', $ids );
-			set_transient( 'manacore_person_works_' . $post_id, $ids, HOUR_IN_SECONDS );
-		}
-
-		$ids = array_values( array_diff( array_map( 'absint', (array) $cached ), array( $post_id ) ) );
+		$ids = self::person_work_ids( $post_id );
 
 		if ( empty( $ids ) ) {
 			$args['post__in'] = array( 0 );
@@ -450,6 +599,17 @@ class Query {
 		return $args;
 	}
 
+	/**
+	 * پارامترهای «آثار مرتبط» بر پایه‌ی اثر جاری.
+	 *
+	 * معیار ارتباط به ترتیب اولویت:
+	 *   ۱. اشتراک در ژانر (اصلی‌ترین معیار)
+	 *   ۲. در نبود ژانر: هم‌کشور یا هم‌سال
+	 *   ۳. در نبود هر دو: تازه‌ترین آثار همان نوع محتوا
+	 *
+	 * @param array $args پارامترهای پایه.
+	 * @return array
+	 */
 	private static function related_args( $args ) {
 		$post_id = get_the_ID();
 

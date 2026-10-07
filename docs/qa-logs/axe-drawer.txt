@@ -1,0 +1,11 @@
+{
+ "closed": [],
+ "opened": {
+  "whole": [],
+  "drawer": [],
+  "hidden": false
+ },
+ "focusInDrawer": true,
+ "focusBack": true,
+ "errors": []
+}

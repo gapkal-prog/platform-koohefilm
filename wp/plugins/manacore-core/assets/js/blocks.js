@@ -10,7 +10,7 @@
  *   ۶) چیدمان
  *   ۷) نمایش کارت
  *   ۸) نمایش شرطی
- *   ۹) پیشرفته
+ *   ۹) رفتار بلوک
  *
  * بدون JSX نوشته شده تا نیازی به مرحله‌ی بیلد نباشد.
  */
@@ -27,6 +27,7 @@
 
 	var InspectorControls = wp.blockEditor.InspectorControls;
 	var useBlockProps = wp.blockEditor.useBlockProps;
+	var InnerBlocks = wp.blockEditor.InnerBlocks;
 
 	var C = wp.components;
 	var PanelBody = C.PanelBody;
@@ -39,8 +40,14 @@
 	var Button = C.Button;
 	var FormTokenField = C.FormTokenField;
 	var Notice = C.Notice;
+	var Spinner = C.Spinner;
 
 	var ServerSideRender = wp.serverSideRender;
+	var apiFetch = wp.apiFetch;
+	var ComboboxControl = C.ComboboxControl;
+	var useState = wp.element.useState;
+	var useEffect = wp.element.useEffect;
+	var useMemo = wp.element.useMemo;
 	var data = window.manaCoreBlocks || {};
 
 	/* -----------------------------------------------------------------
@@ -671,6 +678,12 @@
 		heart: __( 'قلب', 'manacore' ),
 		crown: __( 'تاج', 'manacore' ),
 		compass: __( 'قطب‌نما', 'manacore' ),
+		tv: __( 'تلویزیون', 'manacore' ),
+		calendar: __( 'تقویم', 'manacore' ),
+		person: __( 'چهره', 'manacore' ),
+		sparkle: __( 'درخشش', 'manacore' ),
+		newspaper: __( 'روزنامه', 'manacore' ),
+		info: __( 'اطلاعات', 'manacore' ),
 	};
 
 	var TARGET_OPTIONS = [
@@ -812,6 +825,15 @@
 						{ className: 'manacore-panel-note' },
 						__( 'با فعال بودن ارث‌بری، منبع و بیشتر فیلترها نادیده گرفته می‌شوند.', 'manacore' )
 				  )
+				: null,
+			has( props, 'inheritFilters' )
+				? el( ToggleControl, {
+						label: __( 'ارث‌بری فیلترهای نشانی', 'manacore' ),
+						help: __( 'ژانر، سال، کشور، کیفیت، زبان، مرتب‌سازی و جستجوی نوار فیلتر روی همین حلقه اعمال می‌شوند — مناسب صفحه‌ی «کشف داستان‌ها».', 'manacore' ),
+						checked: !! a.inheritFilters,
+						onChange: setter( props, 'inheritFilters' ),
+						__nextHasNoMarginBottom: true,
+				  } )
 				: null,
 			el( SelectControl, {
 				label: __( 'منبع داده', 'manacore' ),
@@ -1272,6 +1294,17 @@
 			el( SelectControl, {
 				key: 'ratio',
 				label: __( 'نسبت تصویر', 'manacore' ),
+				/*
+				 * نسبت انتخابی، نسبت پیش‌فرض سبک کارت را بازنویسی می‌کند
+				 * (مثلاً «افقی ۱۶:۹» با انتخاب «پوستر ۲:۳» پوستری می‌شود).
+				 * این راهنما همان چیزی است که دو کنترل را از «تداخل» به
+				 * «تقدم روشن» تبدیل می‌کند. در سبک «فقط متن» تصویری وجود
+				 * ندارد، پس کنترل غیرفعال می‌شود.
+				 */
+				help: 'text' === a.cardStyle
+					? __( 'سبک «فقط متن» تصویر ندارد، پس نسبت تصویر اثری ندارد.', 'manacore' )
+					: __( 'اگر مقداری انتخاب کنید، نسبت پیش‌فرض سبک کارت را بازنویسی می‌کند.', 'manacore' ),
+				disabled: 'text' === a.cardStyle,
 				value: a.imageRatio,
 				options: toOptions( data.imageRatios ),
 				onChange: setter( props, 'imageRatio' ),
@@ -1280,6 +1313,7 @@
 			el( SelectControl, {
 				key: 'titleTag',
 				label: __( 'تگ عنوان کارت', 'manacore' ),
+				help: __( 'سطح سرتیتر معنایی کارت را تعیین می‌کند؛ ظاهر کارت را عوض نمی‌کند (برای صفحه‌خوان‌ها و ساختار سرفصل‌ها مهم است).', 'manacore' ),
 				value: a.titleTag,
 				options: toOptions( data.headingLevels ),
 				onChange: setter( props, 'titleTag' ),
@@ -1305,6 +1339,24 @@
 					label: __( 'شماره‌ی رتبه (کارت رتبه‌دار)', 'manacore' ),
 					checked: !! a.ranked,
 					onChange: setter( props, 'ranked' ),
+					__nextHasNoMarginBottom: true,
+				} )
+			);
+		}
+
+		/*
+		 * تب‌های نوع سرصفحه (`.section-tabs` مرجع): همان ردیف «همه / فیلم‌ها /
+		 * سریال‌ها» که مرجع در بخش «این روزها، روی بورس» دارد. تنها وقتی
+		 * رندر می‌شود که فهرست بیش از یک نوع محتوا داشته باشد.
+		 */
+		if ( has( props, 'showTypeTabs' ) ) {
+			children.push(
+				el( ToggleControl, {
+					key: 'showTypeTabs',
+					label: __( 'تب‌های نوع در سرصفحه (همه / فیلم‌ها / سریال‌ها)', 'manacore' ),
+					help: __( 'شبکه را سمت کاربر بر اساس نوع محتوا پالایش می‌کند؛ فقط وقتی فهرست بیش از یک نوع دارد نمایش داده می‌شود.', 'manacore' ),
+					checked: !! a.showTypeTabs,
+					onChange: setter( props, 'showTypeTabs' ),
 					__nextHasNoMarginBottom: true,
 				} )
 			);
@@ -1350,7 +1402,8 @@
 			} ),
 			el( TextControl, {
 				key: 'cardClass',
-				label: __( 'کلاس CSS افزوده‌ی کارت', 'manacore' ),
+				label: __( 'کلاس CSS هر کارت', 'manacore' ),
+				help: __( 'روی تگ <article> هر کارت اعمال می‌شود (برای استایل‌دهی اختصاصی).', 'manacore' ),
 				value: a.cardClass,
 				onChange: setter( props, 'cardClass' ),
 				__nextHasNoMarginBottom: true,
@@ -1381,22 +1434,23 @@
 
 		var a = props.attributes;
 
+		/*
+		 * اینجا دو کنترل «کلاس CSS افزوده» و «شناسه‌ی HTML (لنگر)» حذف شدند:
+		 *    ۱) وردپرس خودش پنل «پیشرفته» را با «لنگر HTML» و «کلاس(های)
+		 *       اضافی CSS» می‌سازد (چون بلوک `supports.anchor` دارد) و هر دو
+		 *       به همان صفت‌های `anchor`/`className` می‌نویسند؛ نتیجه، دو پنل
+		 *       هم‌نام و دو فیلد تکراری بود.
+		 *    ۲) `className` توسط `get_block_wrapper_attributes()` خودبه‌خود
+		 *       روی پوشش بلوک می‌نشیند، پس نیازی به کنترل جداگانه نیست.
+		 *
+		 * صفت کهنه‌ی `extraClass` برای سازگاری محتوای ذخیره‌شده در
+		 * `Block_Support::wrapper()` باقی مانده، اما دیگر کنترل ویرایشگری
+		 * ندارد؛ نام این پنل هم به «رفتار بلوک» تغییر کرد تا با پنل
+		 * استاندارد «پیشرفته» اشتباه گرفته نشود.
+		 */
 		return el(
 			PanelBody,
-			{ key: 'advanced', title: __( 'پیشرفته', 'manacore' ), initialOpen: false },
-			el( TextControl, {
-				label: __( 'کلاس CSS افزوده', 'manacore' ),
-				value: a.extraClass,
-				onChange: setter( props, 'extraClass' ),
-				__nextHasNoMarginBottom: true,
-			} ),
-			el( TextControl, {
-				label: __( 'شناسه‌ی HTML (لنگر)', 'manacore' ),
-				help: __( 'برای پیوند دادن به این بخش، مثال: latest-movies', 'manacore' ),
-				value: a.anchor,
-				onChange: setter( props, 'anchor' ),
-				__nextHasNoMarginBottom: true,
-			} ),
+			{ key: 'advanced', title: __( 'رفتار بلوک', 'manacore' ), initialOpen: false },
 			el( TextControl, {
 				label: __( 'متن حالت خالی', 'manacore' ),
 				value: a.emptyText,
@@ -1426,15 +1480,241 @@
 	 * پنل‌های ویژه‌ی هر بلوک
 	 * -------------------------------------------------------------- */
 
+	/* -----------------------------------------------------------------
+	 * گزینش‌گر «اثر» (جست‌وجو در نوع‌های محتوا)
+	 * -------------------------------------------------------------- */
+
+	/** نام نوع‌های محتوایی که می‌شود انتخاب کرد و REST آن‌ها هست. */
+	function pickableTypes( only ) {
+		var all = data.pickableTypes || {};
+		var out = [];
+
+		( only && only.length ? only : Object.keys( all ) ).forEach( function ( slug ) {
+			if ( all[ slug ] && all[ slug ].restBase ) {
+				out.push( { slug: slug, label: all[ slug ].label, restBase: all[ slug ].restBase } );
+			}
+		} );
+
+		return out;
+	}
+
 	/**
-	 * ورودی «شناسه‌ی اثر» برای بلوک‌های تک‌اثری.
+	 * جست‌وجوی آثار در REST وردپرس.
+	 *
+	 * @param {Array}  types  نوع‌های محتوا.
+	 * @param {string} search عبارت جست‌وجو (خالی = تازه‌ترین‌ها).
+	 * @return {Promise} آرایه‌ی { value, label, slug }.
+	 */
+	function searchTitles( types, search ) {
+		if ( ! apiFetch ) {
+			return Promise.resolve( [] );
+		}
+
+		var requests = types.map( function ( type ) {
+			var path = '/wp/v2/' + type.restBase + '?per_page=20&orderby=' +
+				( search ? 'relevance' : 'date' ) +
+				( search ? '&search=' + encodeURIComponent( search ) : '' ) +
+				'&_fields=id,title';
+
+			return apiFetch( { path: path } )
+				.then( function ( list ) {
+					return ( list || [] ).map( function ( item ) {
+						var title = item.title && item.title.rendered ? item.title.rendered : '#' + item.id;
+						return {
+							value: String( item.id ),
+							label: stripTags( title ) + ' — ' + type.label,
+							slug: type.slug,
+						};
+					} );
+				} )
+				.catch( function () {
+					return [];
+				} );
+		} );
+
+		return Promise.all( requests ).then( function ( groups ) {
+			var out = [];
+			groups.forEach( function ( group ) {
+				group.forEach( function ( item ) {
+					if ( ! out.some( function ( seen ) { return seen.value === item.value; } ) ) {
+						out.push( item );
+					}
+				} );
+			} );
+			return out;
+		} );
+	}
+
+	/** حذف تگ‌های HTML از عنوان REST. */
+	function stripTags( html ) {
+		return String( html ).replace( /<[^>]*>/g, '' ).replace( /&hellip;/g, '…' ).trim();
+	}
+
+	/**
+	 * کنترل انتخاب اثر — با جست‌وجو، به‌جای وارد‌کردن دستی شناسه.
+	 *
+	 * ریشه‌ی مشکلی که این کنترل حل می‌کند: پیش‌تر تنها راه انتخاب یک اثر
+	 * مشخص (مثلاً سریال میزبانِ قسمت‌ها)، نوشتن «شناسه‌ی عددی» در یک
+	 * فیلد متنی بود. مدیر غیر‌کدنویس نه شناسه را می‌دانست و نه راهی برای
+	 * یافتنش داشت، پس بلوک «قسمت‌ها» عملاً خالی می‌ماند.
 	 *
 	 * @param {Object} props props بلوک.
+	 * @param {Object} opts  { types, label, help }.
+	 * @return {Object} کنترل.
+	 */
+	function PostPickerControl( props, opts ) {
+		opts = opts || {};
+
+		var types    = pickableTypes( opts.types );
+		var attr     = opts.attr || 'postId';
+		var selected = parseInt( props.attributes[ attr ], 10 ) || 0;
+		var setAttr  = props.setAttributes;
+
+		var state = useState( [] );
+		var list  = state[ 0 ];
+		var setList = state[ 1 ];
+
+		var busy = useState( false );
+		var loading = busy[ 0 ];
+		var setLoading = busy[ 1 ];
+
+		var query = useState( '' );
+		var search = query[ 0 ];
+		var setSearch = query[ 1 ];
+
+		var current = useState( null );
+		var chosen = current[ 0 ];
+		var setChosen = current[ 1 ];
+
+		// فهرست اولیه: تازه‌ترین آثار.
+		useEffect( function () {
+			var alive = true;
+			setLoading( true );
+
+			searchTitles( types, '' ).then( function ( items ) {
+				if ( alive ) {
+					setList( items );
+					setLoading( false );
+				}
+			} );
+
+			return function () { alive = false; };
+		}, [ types.map( function ( t ) { return t.slug; } ).join( ',' ) ] );
+
+		// جست‌وجوی تأخیری هنگام تایپ.
+		useEffect( function () {
+			var term = ( search || '' ).trim();
+			if ( term.length < 2 ) {
+				return undefined;
+			}
+
+			var alive = true;
+			var timer = setTimeout( function () {
+				setLoading( true );
+				searchTitles( types, term ).then( function ( items ) {
+					if ( alive ) {
+						setList( items );
+						setLoading( false );
+					}
+				} );
+			}, 350 );
+
+			return function () {
+				alive = false;
+				clearTimeout( timer );
+			};
+		}, [ search ] );
+
+		// عنوان اثرِ انتخاب‌شده (تا وقتی در فهرست نتایج نیست هم دیده شود).
+		useEffect( function () {
+			if ( ! selected ) {
+				setChosen( null );
+				return undefined;
+			}
+
+			var known = list.filter( function ( item ) {
+				return parseInt( item.value, 10 ) === selected;
+			} )[ 0 ];
+
+			if ( known ) {
+				setChosen( known );
+				return undefined;
+			}
+
+			if ( ! apiFetch ) {
+				return undefined;
+			}
+
+			var alive = true;
+			types.forEach( function ( type ) {
+				apiFetch( { path: '/wp/v2/' + type.restBase + '/' + selected + '?_fields=id,title' } )
+					.then( function ( item ) {
+						if ( alive && item && item.id ) {
+							setChosen( {
+								value: String( item.id ),
+								label: stripTags( item.title && item.title.rendered ? item.title.rendered : '' ) + ' — ' + type.label,
+								slug: type.slug,
+							} );
+						}
+					} )
+					.catch( function () {} );
+			} );
+
+			return function () { alive = false; };
+		}, [ selected ] );
+
+		var options = useMemo( function () {
+			var out = [ { value: '', label: __( 'اثر جاری صفحه (پیش‌فرض)', 'manacore' ) } ];
+
+			if ( chosen && ! list.some( function ( item ) { return item.value === chosen.value; } ) ) {
+				out.push( chosen );
+			}
+
+			list.forEach( function ( item ) {
+				out.push( item );
+			} );
+
+			return out;
+		}, [ list, chosen ] );
+
+		return el(
+			ComboboxControl,
+			{
+				key: attr + '-picker',
+				label: opts.label || __( 'اثر', 'manacore' ),
+				help: opts.help || __( 'نام اثر را بنویسید و از فهرست انتخاب کنید. «اثر جاری صفحه» یعنی بلوک همان محتوای صفحه را نشان دهد.', 'manacore' ),
+				value: String( selected || '' ),
+				options: options,
+				onChange: function ( next ) {
+					setAttr( ( function () {
+						var patch = {};
+						patch[ attr ] = parseInt( next, 10 ) || 0;
+						return patch;
+					} )() );
+				},
+				onFilterValueChange: setSearch,
+				__nextHasNoMarginBottom: true,
+			}
+		);
+	}
+
+	/**
+	 * ورودی «اثرِ هدف» برای بلوک‌های تک‌اثری.
+	 *
+	 * اگر اجزای لازم (apiFetch/ComboboxControl) نبودند، به همان فیلد عددی
+	 * قبلی برمی‌گردیم تا ویرایشگر هرگز بی‌کنترل نشود.
+	 *
+	 * @param {Object} props props بلوک.
+	 * @param {Object} opts  { types, label, help }.
 	 * @return {Object|null} کنترل.
 	 */
-	function postIdControl( props ) {
+	function postIdControl( props, opts ) {
 		if ( ! has( props, 'postId' ) ) {
 			return null;
+		}
+
+		if ( apiFetch && ComboboxControl ) {
+			return PostPickerControl( props, opts );
 		}
 
 		return el( TextControl, {
@@ -1504,6 +1784,16 @@
 						} )
 					)
 				);
+			} else if ( 'post' === item.type ) {
+				children.push(
+					postIdControl( props, {
+						key: base.key,
+						types: item.types,
+						label: item.label,
+						help: item.help,
+						attr: item.attr,
+					} )
+				);
 			} else if ( 'multi' === item.type ) {
 				children.push(
 					MultiSelect( {
@@ -1514,6 +1804,18 @@
 						options: item.options,
 						onChange: setter( props, item.attr ),
 					} )
+				);
+			} else if ( 'textarea' === item.type ) {
+				children.push(
+					el(
+						TextareaControl,
+						Object.assign( base, {
+							rows: item.rows || 3,
+							value: value,
+							onChange: setter( props, item.attr ),
+							__nextHasNoMarginBottom: true,
+						} )
+					)
 				);
 			} else {
 				children.push(
@@ -1675,7 +1977,7 @@
 							max: 260,
 							step: 10,
 						},
-						{ attr: 'postId', type: 'number', label: __( 'شناسه‌ی اثر', 'manacore' ), help: __( '۰ = اثر جاری.', 'manacore' ) },
+						{ attr: 'postId', type: 'post', label: __( 'اثر', 'manacore' ), help: __( 'نام اثر را بنویسید و انتخاب کنید؛ خالی یعنی همین صفحه.', 'manacore' ) },
 					] ),
 				];
 
@@ -1685,12 +1987,18 @@
 						{
 							attr: 'boxStyle',
 							type: 'select',
-							label: __( 'سبک ظاهری جعبه', 'manacore' ),
+							label: __( 'سبک ظاهری جدول', 'manacore' ),
+							help: __( '«کارتی» همان قاب مرجع است؛ «بدون قاب» فقط خط‌های جداکننده دارد.', 'manacore' ),
 							options: toOptions( data.downloadStyles ),
 						},
+						{
+							attr: 'subtitle',
+							type: 'text',
+							label: __( 'زیرعنوان', 'manacore' ),
+							help: __( 'یک سطر کوتاه زیر سرتیتر، مثل «پخش آنلاین یا دانلود؛ انتخاب با توست.»', 'manacore' ),
+						},
 						{ attr: 'showTabs', type: 'toggle', label: __( 'تب‌بندی فصل‌ها', 'manacore' ) },
-						{ attr: 'openFirst', type: 'toggle', label: __( 'باز بودن اولین گروه', 'manacore' ) },
-						{ attr: 'showIcon', type: 'toggle', label: __( 'نمایش آیکون نوع', 'manacore' ) },
+						{ attr: 'showIcon', type: 'toggle', label: __( 'نمایش آیکون بخش', 'manacore' ) },
 						{ attr: 'showCount', type: 'toggle', label: __( 'نمایش تعداد لینک', 'manacore' ) },
 						{ attr: 'showNotice', type: 'toggle', label: __( 'نمایش هشدار اشتراک', 'manacore' ) },
 						{
@@ -1713,7 +2021,7 @@
 							label: __( 'فقط این فصل', 'manacore' ),
 							help: __( '۰ = همه‌ی فصل‌ها.', 'manacore' ),
 						},
-						{ attr: 'postId', type: 'number', label: __( 'شناسه‌ی اثر', 'manacore' ), help: __( '۰ = اثر جاری.', 'manacore' ) },
+						{ attr: 'postId', type: 'post', label: __( 'اثر', 'manacore' ), help: __( 'نام اثر را بنویسید و انتخاب کنید؛ خالی یعنی همین صفحه.', 'manacore' ) },
 					] ),
 				];
 
@@ -1734,7 +2042,7 @@
 						{ attr: 'showUserRating', type: 'toggle', label: __( 'امتیازدهی کاربران', 'manacore' ) },
 						{ attr: 'showSummary', type: 'toggle', label: __( 'نمایش خلاصه‌ی امتیاز', 'manacore' ) },
 						{ attr: 'userLabel', label: __( 'برچسب امتیاز کاربران', 'manacore' ) },
-						{ attr: 'postId', type: 'number', label: __( 'شناسه‌ی اثر', 'manacore' ), help: __( '۰ = اثر جاری.', 'manacore' ) },
+						{ attr: 'postId', type: 'post', label: __( 'اثر', 'manacore' ), help: __( 'نام اثر را بنویسید و انتخاب کنید؛ خالی یعنی همین صفحه.', 'manacore' ) },
 					] ),
 				];
 
@@ -1763,7 +2071,7 @@
 							label: __( 'نسبت تصویر', 'manacore' ),
 							options: toOptions( data.imageRatios ),
 						},
-						{ attr: 'postId', type: 'number', label: __( 'شناسه‌ی اثر', 'manacore' ), help: __( '۰ = اثر جاری.', 'manacore' ) },
+						{ attr: 'postId', type: 'post', label: __( 'اثر', 'manacore' ), help: __( 'نام اثر را بنویسید و انتخاب کنید؛ خالی یعنی همین صفحه.', 'manacore' ) },
 					] ),
 				];
 
@@ -1781,13 +2089,255 @@
 								{ label: '1:1', value: '1-1' },
 							],
 						},
+						{ attr: 'showPlayer', type: 'toggle', label: __( 'نمایش پخش‌کننده', 'manacore' ), help: __( 'خاموش = فقط دکمه‌ی «پخش تریلر» (مناسب سرصفحه‌ی تک‌قسمت).', 'manacore' ) },
 						{ attr: 'showPoster', type: 'toggle', label: __( 'نمایش پوستر پیش از پخش', 'manacore' ) },
 						{
 							attr: 'metaKey',
 							label: __( 'کلید فیلد آدرس ویدیو', 'manacore' ),
 							help: __( 'پیش‌فرض: manacore_trailer_url', 'manacore' ),
 						},
-						{ attr: 'postId', type: 'number', label: __( 'شناسه‌ی اثر', 'manacore' ), help: __( '۰ = اثر جاری.', 'manacore' ) },
+						{ attr: 'postId', type: 'post', label: __( 'اثر', 'manacore' ), help: __( 'نام اثر را بنویسید و انتخاب کنید؛ خالی یعنی همین صفحه.', 'manacore' ) },
+						{
+							attr: 'ctaLabel',
+							label: __( 'برچسب دکمه‌ی پخش تریلر', 'manacore' ),
+							help: __( 'خالی = «پخش تریلر». دکمه به صفحه‌ی پخش (/watch/) می‌رود و اگر آن صفحه نباشد، پخش‌کننده را در همین صفحه باز می‌کند.', 'manacore' ),
+						},
+					] ),
+				];
+
+			case 'manacore/schedule':
+				return [
+					optionsPanel( props, __( 'تنظیمات برنامه', 'manacore' ), [
+						{ attr: 'perDay', type: 'range', label: __( 'قسمت در هر روز', 'manacore' ), min: 1, max: 12 },
+						{
+							attr: 'activeDay',
+							type: 'select',
+							label: __( 'روز فعال در آغاز', 'manacore' ),
+							options: [
+								{ label: __( 'امروز', 'manacore' ), value: 'today' },
+								{ label: __( 'شنبه', 'manacore' ), value: 'saturday' },
+								{ label: __( 'یکشنبه', 'manacore' ), value: 'sunday' },
+								{ label: __( 'دوشنبه', 'manacore' ), value: 'monday' },
+								{ label: __( 'سه‌شنبه', 'manacore' ), value: 'tuesday' },
+								{ label: __( 'چهارشنبه', 'manacore' ), value: 'wednesday' },
+								{ label: __( 'پنجشنبه', 'manacore' ), value: 'thursday' },
+								{ label: __( 'جمعه', 'manacore' ), value: 'friday' },
+							],
+						},
+						{ attr: 'showTime', type: 'toggle', label: __( 'نمایش ساعت پخش', 'manacore' ) },
+						{ attr: 'showThumb', type: 'toggle', label: __( 'نمایش تصویر بندانگشتی', 'manacore' ) },
+						{ attr: 'showEpisode', type: 'toggle', label: __( 'نمایش فصل/قسمت/زمان', 'manacore' ) },
+						{ attr: 'footnote', label: __( 'یادداشت پایین (خالی = پیش‌فرض)', 'manacore' ) },
+					] ),
+
+					/*
+					 * چیدمان «پنل کامل» (برگه‌ی «برنامه پخش» مرجع) و منبع داده.
+					 * گزینه‌های وابسته فقط وقتی نشان داده می‌شوند که معنی داشته
+					 * باشند تا پنل صفحه‌ی نخست کوتاه بماند.
+					 */
+					optionsPanel( props, __( 'چیدمان و منبع', 'manacore' ), [
+						{
+							attr: 'layout',
+							type: 'select',
+							label: __( 'چیدمان', 'manacore' ),
+							options: [
+								{ label: __( 'بلوک (صفحه‌ی نخست)', 'manacore' ), value: 'block' },
+								{ label: __( 'پنل کامل (برگه‌ی برنامه پخش)', 'manacore' ), value: 'panel' },
+							],
+						},
+						{
+							attr: 'mode',
+							type: 'select',
+							label: __( 'منبع داده', 'manacore' ),
+							help: __( '«قسمت‌ها» از تاریخ پخش قسمت‌ها می‌سازد؛ «آثار زمان‌بندی‌شده» هر اثری را که «روز پخش» دارد فهرست می‌کند.', 'manacore' ),
+							options: [
+								{ label: __( 'قسمت‌ها', 'manacore' ), value: 'episode' },
+								{ label: __( 'آثار زمان‌بندی‌شده', 'manacore' ), value: 'series' },
+							],
+						},
+						'series' === a.mode
+							? {
+								attr: 'postTypes',
+								type: 'multi',
+								label: __( 'نوع محتوا', 'manacore' ),
+								options: toOptions( data.postTypes ),
+							}
+							: null,
+						'series' === a.mode
+							? { attr: 'showSeasonMeta', type: 'toggle', label: __( 'نمایش «فصل n · m قسمت»', 'manacore' ) }
+							: null,
+						'series' === a.mode
+							? { attr: 'showOriginalTitle', type: 'toggle', label: __( 'نمایش نام اصلی', 'manacore' ) }
+							: null,
+						'series' === a.mode
+							? { attr: 'showPlay', type: 'toggle', label: __( 'نمایش دکمه‌ی پخش', 'manacore' ) }
+							: null,
+					] ),
+
+					a.layout === 'panel'
+						? optionsPanel( props, __( 'سرصفحه‌ی پنل', 'manacore' ), [
+							{ attr: 'panelTitle', label: __( 'عنوان پنل', 'manacore' ), help: __( 'خالی = «قرارهای این هفته».', 'manacore' ) },
+							{ attr: 'panelSubtitle', label: __( 'زیرنویس پنل', 'manacore' ), help: __( 'خالی = «برنامه‌ی هفتگی آثار».', 'manacore' ) },
+							{ attr: 'panelIcon', label: __( 'نشانه‌ی پنل (نویسه)', 'manacore' ) },
+							{ attr: 'showTimezone', type: 'toggle', label: __( 'نمایش نشانگر زمان', 'manacore' ) },
+							a.showTimezone
+								? { attr: 'timezoneLabel', label: __( 'متن نشانگر زمان', 'manacore' ), help: __( 'خالی = «به وقت محلی».', 'manacore' ) }
+								: null,
+							{ attr: 'showFootnote', type: 'toggle', label: __( 'نمایش یادداشت پایین', 'manacore' ) },
+						] )
+						: null,
+
+					'series' === a.mode
+						? optionsPanel( props, __( 'حالت خالی روز', 'manacore' ), [
+							{ attr: 'emptyMessage', label: __( 'پیام روز خالی', 'manacore' ) },
+							{ attr: 'emptyLinkLabel', label: __( 'برچسب پیوند', 'manacore' ) },
+							{
+								attr: 'emptyLinkUrl',
+								label: __( 'مقصد پیوند', 'manacore' ),
+								help: __( 'خالی = برگه‌ی کشف با مرتب‌سازی «امتیاز».', 'manacore' ),
+							},
+						] )
+						: null,
+				];
+
+			/*
+			 * کارت اطلاعاتی ستون کنار (`.schedule-note-card` و `.sidebar-promo`).
+			 * «یادداشت» کارت ساده‌ی متنی است و «ترویجی» یک پیوند ترویجی.
+			 */
+			case 'manacore/info-card':
+				return [
+					optionsPanel( props, __( 'کارت', 'manacore' ), [
+						{
+							attr: 'variant',
+							type: 'select',
+							label: __( 'گونه', 'manacore' ),
+							options: [
+								{ label: __( 'یادداشت (کارت اطلاعاتی)', 'manacore' ), value: 'note' },
+								{ label: __( 'ترویجی (پیوند)', 'manacore' ), value: 'promo' },
+							],
+						},
+						{ attr: 'iconText', label: __( 'نشانه (نویسه)', 'manacore' ), help: __( 'یک نویسه یا ایموجی؛ فقط در گونه‌ی یادداشت نمایش داده می‌شود.', 'manacore' ) },
+						{ attr: 'title', label: __( 'عنوان', 'manacore' ) },
+						{ attr: 'text', type: 'textarea', rows: 3, label: __( 'متن', 'manacore' ) },
+						'note' === a.variant
+							? { attr: 'metaText', label: __( 'خط پایین', 'manacore' ), help: __( 'مثلاً «تمام ساعت‌ها به وقت تهران». خالی = بدون خط پایین.', 'manacore' ) }
+							: null,
+						'note' === a.variant
+							? { attr: 'showMetaDot', type: 'toggle', label: __( 'نقطه‌ی زنده کنار خط پایین', 'manacore' ) }
+							: null,
+						'a.promo' === a.variant
+							? { attr: 'linkLabel', label: __( 'برچسب پیوند', 'manacore' ), help: __( 'خالی = کارت بدون پیوند.', 'manacore' ) }
+							: null,
+						'a.promo' === a.variant && a.linkLabel
+							? {
+								attr: 'linkUrl',
+								label: __( 'مقصد پیوند', 'manacore' ),
+								help: __( 'نشانی معمولی، یا نشانه: `account` / `account:watchlist` (حساب کاربری)، `discovery` (برگه‌ی کشف)، `subscribe` (اشتراک).', 'manacore' ),
+							}
+							: null,
+					] ),
+				];
+
+			case 'manacore/taste-banner':
+				return [
+					optionsPanel( props, __( 'تنظیمات بنر', 'manacore' ), [
+						{ attr: 'eyebrow', label: __( 'برچسب بالای تیتر', 'manacore' ) },
+						{ attr: 'heading', label: __( 'تیتر', 'manacore' ) },
+						{ attr: 'text', label: __( 'توضیح', 'manacore' ) },
+						{ attr: 'linkLabel', label: __( 'متن پیوند', 'manacore' ) },
+						{ attr: 'linkUrl', label: __( 'نشانی پیوند', 'manacore' ), help: __( 'خالی بگذارید تا پیوندی نمایش داده نشود.', 'manacore' ) },
+						{ attr: 'badge', label: __( 'برچسب انگلیسی گوشه', 'manacore' ) },
+						{ attr: 'showArt', type: 'toggle', label: __( 'نمایش آیکون‌های تزئینی', 'manacore' ) },
+					] ),
+				];
+
+			case 'manacore/collection-row':
+				return [
+					optionsPanel( props, __( 'تنظیمات کالکشن‌ها', 'manacore' ), [
+						{ attr: 'count', type: 'range', label: __( 'تعداد', 'manacore' ), min: 1, max: 24 },
+						{ attr: 'label', label: __( 'برچسب کوچک کارت', 'manacore' ) },
+						{ attr: 'showNumber', type: 'toggle', label: __( 'نمایش شماره‌ی ترتیب', 'manacore' ) },
+						{ attr: 'showDescription', type: 'toggle', label: __( 'نمایش توضیح کوتاه', 'manacore' ) },
+					] ),
+				];
+
+			case 'manacore/magazine-row':
+				return [
+					optionsPanel( props, __( 'تنظیمات مجله', 'manacore' ), [
+						{ attr: 'count', type: 'range', label: __( 'تعداد مقاله', 'manacore' ), min: 1, max: 12 },
+						{ attr: 'category', label: __( 'نامک دسته (اختیاری)', 'manacore' ), help: __( 'مثلاً reviews — خالی یعنی همه‌ی مقاله‌ها.', 'manacore' ) },
+						{ attr: 'badge', label: __( 'برچسب روی تصویر', 'manacore' ) },
+						{ attr: 'showCategoryBadge', type: 'toggle', label: __( 'برچسب = دسته‌ی واقعی مقاله', 'manacore' ) },
+						{ attr: 'linkLabel', label: __( 'متن پیوند پایانی', 'manacore' ) },
+						{ attr: 'showReadTime', type: 'toggle', label: __( 'نمایش زمان مطالعه', 'manacore' ) },
+						{ attr: 'showDate', type: 'toggle', label: __( 'نمایش تاریخ', 'manacore' ) },
+						{ attr: 'showExcerpt', type: 'toggle', label: __( 'نمایش خلاصه', 'manacore' ) },
+						{ attr: 'excerptWords', type: 'range', label: __( 'شمار واژه‌های خلاصه', 'manacore' ), min: 6, max: 40 },
+						{ attr: 'showCategoryTabs', type: 'toggle', label: __( 'تب‌های دسته در سرصفحه', 'manacore' ), help: __( 'دسته‌ها از تاکسونومی واقعیِ همان مقاله‌ها ساخته می‌شوند.', 'manacore' ) },
+						{ attr: 'excludeCurrent', type: 'toggle', label: __( 'نوشته‌ی جاری تکرار نشود', 'manacore' ), help: __( 'روی برگه‌ی مقاله، خودِ نوشته در ردیف نیاید.', 'manacore' ) },
+						{ attr: 'categoryTabAllLabel', label: __( 'برچسب تب «همه»', 'manacore' ) },
+					] ),
+				];
+
+			case 'manacore/magazine-hero':
+				return [
+					optionsPanel( props, __( 'تنظیمات سرصفحه‌ی مجله', 'manacore' ), [
+						{ attr: 'count', type: 'range', label: __( 'شمار مقاله‌ها (۱ ویژه + بقیه کوچک)', 'manacore' ), min: 2, max: 8 },
+						{ attr: 'category', label: __( 'نامک دسته (اختیاری)', 'manacore' ), help: __( 'خالی یعنی همه‌ی مقاله‌ها.', 'manacore' ) },
+						{ attr: 'readLabel', label: __( 'متن زمان مطالعه', 'manacore' ), help: __( '`{count}` با شمار دقیقه‌ها پر می‌شود.', 'manacore' ) },
+						{ attr: 'linkLabel', type: 'toggle', label: __( 'نشانه‌ی فلش پایان کارت ویژه', 'manacore' ) },
+						{ attr: 'sideIcon', type: 'toggle', label: __( 'ردیف زمان مطالعه در کارت‌های کوچک', 'manacore' ) },
+						{ attr: 'showExcerpt', type: 'toggle', label: __( 'نمایش خلاصه‌ی کارت ویژه', 'manacore' ) },
+						{ attr: 'excerptWords', type: 'range', label: __( 'شمار واژه‌های خلاصه', 'manacore' ), min: 6, max: 40 },
+					] ),
+				];
+
+			case 'manacore/article-header':
+				return [
+					optionsPanel( props, __( 'تنظیمات سرصفحه‌ی مقاله', 'manacore' ), [
+						{ attr: 'showCategoryBadge', type: 'toggle', label: __( 'نشان دسته (`.exclusive-tag`)', 'manacore' ) },
+						{ attr: 'showDescription', type: 'toggle', label: __( 'نمایش توضیح (چکیده)', 'manacore' ) },
+						{ attr: 'showMeta', type: 'toggle', label: __( 'سطر تاریخ و زمان مطالعه', 'manacore' ) },
+						{ attr: 'metaFormat', label: __( 'قالب فراداده‌ی نویسنده', 'manacore' ), help: __( '`{date}` و `{minutes}` با تاریخ و شمار دقیقه‌ها پر می‌شوند.', 'manacore' ) },
+						{ attr: 'authorFallback', label: __( 'نام نویسنده (وقتی نوشته نویسنده ندارد)', 'manacore' ) },
+						{ attr: 'showCopyLink', type: 'toggle', label: __( 'دکمه‌ی کپی لینک', 'manacore' ) },
+						{ attr: 'copyLabel', label: __( 'نشان دکمه‌ی کپی', 'manacore' ) },
+					] ),
+				];
+
+			case 'manacore/article-toc':
+				return [
+					optionsPanel( props, __( 'تنظیمات فهرست مقاله', 'manacore' ), [
+						{ attr: 'eyebrow', label: __( 'ریزسطر بالای کارت', 'manacore' ) },
+						{ attr: 'heading', label: __( 'تیتر کارت', 'manacore' ) },
+						{ attr: 'showNumbers', type: 'toggle', label: __( 'شماره‌ی فصل‌ها', 'manacore' ) },
+						{ attr: 'showProgress', type: 'toggle', label: __( 'نوار پیشرفت مطالعه', 'manacore' ) },
+						{ attr: 'percentLabel', label: __( 'متن درصد مطالعه', 'manacore' ), help: __( '`{percent}` با عدد درصد پر می‌شود.', 'manacore' ) },
+					] ),
+				];
+
+			case 'manacore/related-titles':
+				return [
+					optionsPanel( props, __( 'تنظیمات آثار مرتبط', 'manacore' ), [
+						{ attr: 'heading', label: __( 'تیتر بخش', 'manacore' ) },
+						{ attr: 'count', type: 'range', label: __( 'شمار آثار', 'manacore' ), min: 1, max: 8 },
+						{
+							attr: 'postTypes',
+							type: 'multi',
+							label: __( 'نوع محتوا', 'manacore' ),
+							options: toOptions( data.postTypes ),
+						},
+						{
+							attr: 'postId',
+							type: 'post',
+							types: [ 'movie', 'series' ],
+							label: __( 'اثر پین‌شده (اختیاری)', 'manacore' ),
+							help: __( 'نخستین ردیف همین اثر می‌شود؛ بقیه از هم‌برچسب‌ها و سپس تازه‌ترین آثار پر می‌شود.', 'manacore' ),
+						},
+						{ attr: 'showOriginalTitle', type: 'toggle', label: __( 'نمایش نام اصلی', 'manacore' ) },
+						{ attr: 'showMore', type: 'toggle', label: __( 'پیوند پایانی', 'manacore' ) },
+						{ attr: 'moreLabel', label: __( 'متن پیوند پایانی', 'manacore' ) },
+						{ attr: 'moreUrl', label: __( 'نشانی پیوند پایانی', 'manacore' ) },
 					] ),
 				];
 
@@ -1809,8 +2359,63 @@
 								{ label: __( 'درون‌خطی', 'manacore' ), value: 'inline' },
 								{ label: __( 'شبکه‌ای', 'manacore' ), value: 'grid' },
 								{ label: __( 'ستونی', 'manacore' ), value: 'stack' },
+								{ label: __( 'سایدبار پیشرفته (مرجع)', 'manacore' ), value: 'sidebar' },
 							],
+							help: __( '«سایدبار پیشرفته» همان `.filter-sidebar` مرجع را می‌سازد: سرصفحه، ژانرهای تیک‌زنی، بازه‌ی سال، لغزنده‌ی امتیاز، کلید دوبله، دکمه‌ی پاک‌سازی و پنل راهنما.', 'manacore' ),
 						},
+						'sidebar' === a.formLayout
+							? { attr: 'sidebarTitle', label: __( 'عنوان سایدبار', 'manacore' ), help: __( 'خالی = «فیلتر پیشرفته».', 'manacore' ) }
+							: null,
+						'sidebar' === a.formLayout
+							? {
+								attr: 'checkTaxonomy',
+								type: 'select',
+								label: __( 'تاکسونومی گروه تیک‌زنی', 'manacore' ),
+								options: taxonomyOptions(),
+							}
+							: null,
+						'sidebar' === a.formLayout
+							? { attr: 'showGenreChecks', type: 'toggle', label: __( 'ژانرهای تیک‌زنی با شمار آثار', 'manacore' ) }
+							: null,
+						'sidebar' === a.formLayout
+							? { attr: 'showYearRange', type: 'toggle', label: __( 'بازه‌ی «سال ساخت»', 'manacore' ) }
+							: null,
+						'sidebar' === a.formLayout && a.showYearRange
+							? { attr: 'yearLabel', label: __( 'عنوان «سال ساخت»', 'manacore' ) }
+							: null,
+						'sidebar' === a.formLayout
+							? { attr: 'showRating', type: 'toggle', label: __( 'لغزنده‌ی «امتیاز IMDb»', 'manacore' ) }
+							: null,
+						'sidebar' === a.formLayout && a.showRating
+							? { attr: 'ratingLabel', label: __( 'عنوان «امتیاز IMDb»', 'manacore' ) }
+							: null,
+						'sidebar' === a.formLayout && a.showRating
+							? { attr: 'ratingMax', type: 'range', label: __( 'بیشینه‌ی لغزنده', 'manacore' ), min: 5, max: 10 }
+							: null,
+						'sidebar' === a.formLayout
+							? { attr: 'showDubbed', type: 'toggle', label: __( 'کلید «فقط دوبله فارسی»', 'manacore' ), help: __( 'روی فراداده‌ی «دوبله فارسی دارد» هر اثر کار می‌کند.', 'manacore' ) }
+							: null,
+						'sidebar' === a.formLayout && a.showDubbed
+							? { attr: 'dubbedLabel', label: __( 'برچسب کلید دوبله', 'manacore' ) }
+							: null,
+						'sidebar' === a.formLayout && a.showReset
+							? { attr: 'resetLabel', label: __( 'برچسب دکمه‌ی پاک‌سازی', 'manacore' ) }
+							: null,
+						'sidebar' === a.formLayout
+							? { attr: 'showHint', type: 'toggle', label: __( 'پنل «انتخاب سخت شده؟»', 'manacore' ) }
+							: null,
+						'sidebar' === a.formLayout && a.showHint
+							? { attr: 'hintTitle', label: __( 'عنوان پنل راهنما', 'manacore' ) }
+							: null,
+						'sidebar' === a.formLayout && a.showHint
+							? { attr: 'hintText', label: __( 'متن پنل راهنما', 'manacore' ) }
+							: null,
+						'sidebar' === a.formLayout && a.showHint
+							? { attr: 'hintLabel', label: __( 'برچسب پیوند پنل راهنما', 'manacore' ) }
+							: null,
+						'sidebar' === a.formLayout && a.showHint
+							? { attr: 'hintUrl', label: __( 'مقصد پیوند راهنما', 'manacore' ), help: __( 'خالی = «مرتب‌سازی بر امتیاز + امتیاز ۸ به بالا» روی همین آرشیو.', 'manacore' ) }
+							: null,
 						{ attr: 'showSearch', type: 'toggle', label: __( 'کادر جستجو', 'manacore' ) },
 						{ attr: 'showSort', type: 'toggle', label: __( 'گزینه‌ی مرتب‌سازی', 'manacore' ) },
 						{ attr: 'showSubmit', type: 'toggle', label: __( 'دکمه‌ی اعمال', 'manacore' ) },
@@ -1833,6 +2438,37 @@
 							max: 300,
 							step: 10,
 						},
+					] ),
+				];
+
+			case 'manacore/browse-toolbar':
+				return [
+					optionsPanel( props, __( 'کنترل‌های نوار مرور', 'manacore' ), [
+						{ attr: 'showSearch', type: 'toggle', label: __( 'کادر جستجو', 'manacore' ) },
+						a.showSearch
+							? { attr: 'searchPlaceholder', label: __( 'متن راهنمای جستجو', 'manacore' ) }
+							: null,
+						{
+							attr: 'showTypes',
+							type: 'toggle',
+							label: __( 'دکمه‌های نوع (همه/فیلم/سریال…)', 'manacore' ),
+							help: __( 'مقدار انتخاب‌شده در نشانی می‌رود (`?type=`) و همان حلقه‌ی کشف را صال می‌کند.', 'manacore' ),
+						},
+						{ attr: 'showSort', type: 'toggle', label: __( 'گزینشگر مرتب‌سازی', 'manacore' ) },
+						{ attr: 'showViewMode', type: 'toggle', label: __( 'دکمه‌های حالت نمایش', 'manacore' ) },
+						{
+							attr: 'showMobileFilter',
+							type: 'toggle',
+							label: __( 'دکمه‌ی فیلترها برای موبایل', 'manacore' ),
+							help: __( 'سایدبار فیلترها را زیر ۷۶۸ پیکسل باز و بسته می‌کند.', 'manacore' ),
+						},
+						a.showMobileFilter
+							? {
+								attr: 'filterId',
+								label: __( 'شناسه‌ی سایدبار فیلتر', 'manacore' ),
+								help: __( 'باید با شناسه‌ی (لنگر) گروهی که بلوک «نوار فیلتر» را در بر گرفته یکی باشد.', 'manacore' ),
+							  }
+							: null,
 					] ),
 				];
 
@@ -1872,6 +2508,399 @@
 							help: __( 'خالی = همه‌ی آثار.', 'manacore' ),
 							options: toOptions( data.postTypes ),
 						},
+					] ),
+				];
+
+			/*
+			 * بلوک‌های برگه‌های تازه (پخش زنده و سرصفحه‌ی مشترک).
+			 * هر متن، هر نشانه و هر رفتار از همین‌جا قابل ویرایش است؛
+			 * هیچ رشته‌ای در قالب سخت‌کد نشده است.
+			 */
+			case 'manacore/cta-link':
+				return [
+					optionsPanel( props, __( 'دکمه‌ی پیوند', 'manacore' ), [
+						{ attr: 'label', type: 'text', label: __( 'برچسب دکمه', 'manacore' ) },
+						{ attr: 'url', type: 'text', label: __( 'نشانی', 'manacore' ), help: __( 'نشانی کامل یا نشانک ماناکور (مثل `subscribe`، `discovery`، `account`)؛ `#filmography` هم کار می‌کند.', 'manacore' ) },
+						{
+							attr: 'variant',
+							type: 'select',
+							label: __( 'گونه', 'manacore' ),
+							options: [
+								{ label: __( 'اصلی', 'manacore' ), value: 'primary' },
+								{ label: __( 'دوم', 'manacore' ), value: 'secondary' },
+								{ label: __( 'شیشه‌ای', 'manacore' ), value: 'glass' },
+								{ label: __( 'بی‌قاب (متن)', 'manacore' ), value: 'plain' },
+							],
+						},
+						{ attr: 'small', type: 'toggle', label: __( 'اندازه‌ی کوچک', 'manacore' ) },
+						{ attr: 'showChevron', type: 'toggle', label: __( 'نشانه‌ی فلش کنار برچسب', 'manacore' ) },
+						{ attr: 'target', type: 'text', label: __( 'هدف پیوند (target)', 'manacore' ) },
+						{ attr: 'rel', type: 'text', label: __( 'رابطه‌ی پیوند (rel)', 'manacore' ) },
+					] ),
+				];
+
+			case 'manacore/person-meta':
+				return [
+					optionsPanel( props, __( 'شناسنامه‌ی چهره', 'manacore' ), [
+						{
+							attr: 'postId',
+							type: 'post',
+							label: __( 'چهره', 'manacore' ),
+							help: __( 'خالی بگذارید تا چهره‌ی همین برگه استفاده شود.', 'manacore' ),
+							types: [ 'person' ],
+						},
+						{
+							attr: 'variant',
+							type: 'select',
+							label: __( 'گونه', 'manacore' ),
+							help: __( '«شناسنامه» برای زیر نام و «نشان نقش» برای گوشه‌ی تصویر قاب چهره.', 'manacore' ),
+							options: [
+								{ label: __( 'شناسنامه (نام لاتین + دانستنی‌ها)', 'manacore' ), value: 'identity' },
+								{ label: __( 'نشان نقش (گوشه‌ی تصویر)', 'manacore' ), value: 'role' },
+							],
+						},
+						{ attr: 'showEnglish', type: 'toggle', label: __( 'نمایش نام لاتین', 'manacore' ) },
+						{ attr: 'showBorn', type: 'toggle', label: __( 'نمایش زادروز', 'manacore' ) },
+						{ attr: 'showCountry', type: 'toggle', label: __( 'نمایش کشور', 'manacore' ) },
+						{ attr: 'showWorks', type: 'toggle', label: __( 'نمایش شمار آثار', 'manacore' ) },
+						a.showWorks ? { attr: 'worksLabel', type: 'text', label: __( 'برچسب شمار آثار', 'manacore' ), help: __( '{count} با شمار واقعی آثار همین چهره پر می‌شود.', 'manacore' ) } : null,
+						{ attr: 'emptyText', type: 'text', label: __( 'متن حالت خالی', 'manacore' ), help: __( 'وقتی نه نام لاتین و نه دانستنی‌ای ثبت نشده باشد.', 'manacore' ) },
+					] ),
+				];
+
+			case 'manacore/breadcrumb':
+				return [
+					optionsPanel( props, __( 'مسیر صفحه', 'manacore' ), [
+						{ attr: 'homeLabel', type: 'text', label: __( 'برچسب خانه', 'manacore' ), help: __( 'خالی = نام سایت.', 'manacore' ) },
+						{ attr: 'parentLabel', type: 'text', label: __( 'برچسب پله‌ی میانی', 'manacore' ) },
+						{ attr: 'parentUrl', type: 'text', label: __( 'نشانی پله‌ی میانی', 'manacore' ), help: __( 'می‌توانید از نشانک‌های ماناکور استفاده کنید؛ مثل `discovery`.', 'manacore' ) },
+						{ attr: 'currentLabel', type: 'text', label: __( 'برچسب صفحه‌ی جاری', 'manacore' ), help: __( 'خالی = عنوان خودِ صفحه. `{name}` هم پشتیبانی می‌شود.', 'manacore' ) },
+						{
+							attr: 'separator',
+							type: 'select',
+							label: __( 'جدامایه', 'manacore' ),
+							options: [
+								{ label: __( 'نشانه‌ی فلش (مرجع)', 'manacore' ), value: 'chevron' },
+								{ label: __( 'گیومه‌ی فارسی ‹', 'manacore' ), value: 'text' },
+							],
+						},
+					] ),
+				];
+
+			case 'manacore/people-grid':
+				return [
+					optionsPanel( props, __( 'شبکه‌ی چهره‌ها', 'manacore' ), [
+						{
+							attr: 'variant',
+							type: 'select',
+							label: __( 'حالت', 'manacore' ),
+							help: __( '«کارت بلند» همان `.people-grid` برگه‌ی بازیگران و «کارت کوچک» همان `.cast-grid` بخش «چهره‌های دیگر» است.', 'manacore' ),
+							options: [
+								{ label: __( 'کارت بلند (۳:۴ با نشان نقش)', 'manacore' ), value: 'cards' },
+								{ label: __( 'کارت کوچک (بخش چهره‌های دیگر)', 'manacore' ), value: 'related' },
+							],
+						},
+						{ attr: 'count', type: 'range', min: 1, max: 60, label: __( 'شمار کارت‌ها', 'manacore' ) },
+						'cards' === a.variant ? { attr: 'columns', type: 'range', min: 1, max: 6, label: __( 'ستون‌ها (دسکتاپ)', 'manacore' ) } : null,
+						{
+							attr: 'roles',
+							type: 'multi',
+							label: __( 'پالایش نقش', 'manacore' ),
+							help: __( 'خالی = همه‌ی نقش‌ها. نقش‌ها از تاکسونومی «نقش‌های چهره» می‌آیند و از پیشخوان قابل افزودن‌اند.', 'manacore' ),
+							options: toOptions( data.personRoles ),
+						},
+						{
+							attr: 'orderby',
+							type: 'select',
+							label: __( 'ترتیب', 'manacore' ),
+							options: [
+								{ label: __( 'دستی (ترتیب صفحه‌ی فهرست)', 'manacore' ), value: 'menu_order' },
+								{ label: __( 'الفبا', 'manacore' ), value: 'title' },
+								{ label: __( 'تاریخ', 'manacore' ), value: 'date' },
+								{ label: __( 'تصادفی', 'manacore' ), value: 'random' },
+							],
+						},
+						{ attr: 'excludeCurrent', type: 'toggle', label: __( 'حذف چهره‌ی جاری', 'manacore' ), help: __( 'در برگه‌ی چهره، خودش تکرار نشود.', 'manacore' ) },
+						{ attr: 'showWorks', type: 'toggle', label: __( 'نمایش شمار آثار', 'manacore' ) },
+						{ attr: 'worksLabel', type: 'text', label: __( 'برچسب شمار آثار', 'manacore' ), help: __( '{count} با شمار واقعی آثار همان چهره پر می‌شود.', 'manacore' ) },
+						{ attr: 'emptyHeading', type: 'text', label: __( 'تیتر حالت خالی', 'manacore' ) },
+						{ attr: 'emptyText', type: 'text', label: __( 'متن حالت خالی', 'manacore' ) },
+						{ attr: 'countLabel', type: 'text', label: __( 'الگوی شمار نتایج', 'manacore' ), help: __( 'برای صفحه‌خوان‌ها؛ {count} با شمار نتایج پر می‌شود.', 'manacore' ) },
+					] ),
+				];
+
+			case 'manacore/page-intro':
+				return [
+					optionsPanel( props, __( 'سرصفحه', 'manacore' ), [
+						{
+							attr: 'layout',
+							type: 'select',
+							label: __( 'چیدمان', 'manacore' ),
+							help: __( '«دوستونی» همان `.page-title-row` مرجع است (پخش زنده، بازیگران)، «میانی» همان `.info-intro` (راهنما، حریم خصوصی) و «مجله» همان `.magazine-intro`.', 'manacore' ),
+							options: [
+								{ label: __( 'دوستونی (عنوان + ساعت/آیکون)', 'manacore' ), value: 'split' },
+								{ label: __( 'میانی (آیکون بالای عنوان)', 'manacore' ), value: 'centered' },
+								{ label: __( 'مجله‌ای (عنوان بزرگ)', 'manacore' ), value: 'magazine' },
+							],
+						},
+						{ attr: 'eyebrow', type: 'text', label: __( 'ریزسطر بالای عنوان', 'manacore' ) },
+						{ attr: 'title', type: 'text', label: __( 'عنوان', 'manacore' ) },
+						{
+							attr: 'accent',
+							type: 'text',
+							label: __( 'واژه‌ی تأکیدی عنوان', 'manacore' ),
+							help: __( 'با رنگ تأکیدی و در ادامه‌ی عنوان نمایش داده می‌شود.', 'manacore' ),
+						},
+						{ attr: 'text', type: 'textarea', label: __( 'توضیح کوتاه', 'manacore' ) },
+						{
+							attr: 'headingTag',
+							type: 'select',
+							label: __( 'سطح عنوان', 'manacore' ),
+							help: __( 'برای دسترس‌پذیری برگه در هر صفحه فقط یک `h1` بگذارید.', 'manacore' ),
+							options: [
+								{ label: __( 'h1 (سرصفحه‌ی برگه)', 'manacore' ), value: 'h1' },
+								{ label: __( 'h2 (بخش صفحه)', 'manacore' ), value: 'h2' },
+							],
+						},
+						{
+							attr: 'icon',
+							type: 'select',
+							label: __( 'نشانه', 'manacore' ),
+							options: toOptions( data.headingIcons ),
+						},
+						{ attr: 'iconBox', type: 'toggle', label: __( 'نشانه در جعبه‌ی تاج‌مانند', 'manacore' ) },
+						{ attr: 'showBreadcrumb', type: 'toggle', label: __( 'نمایش مسیر راهنما', 'manacore' ) },
+						a.showBreadcrumb ? { attr: 'breadcrumbHome', type: 'text', label: __( 'برچسب خانه', 'manacore' ), help: __( 'خالی = نام سایت.', 'manacore' ) } : null,
+						a.showBreadcrumb ? { attr: 'breadcrumbLabel', type: 'text', label: __( 'برچسب برگه‌ی جاری', 'manacore' ), help: __( 'خالی = خودِ عنوان.', 'manacore' ) } : null,
+						{ attr: 'showClock', type: 'toggle', label: __( 'ساعت زنده', 'manacore' ) },
+						a.showClock ? { attr: 'clockLabel', type: 'text', label: __( 'برچسب ساعت', 'manacore' ) } : null,
+						a.showClock ? {
+							attr: 'clockTimezone',
+							type: 'text',
+							label: __( 'منطقه‌ی زمانی', 'manacore' ),
+							help: __( 'مثل `Asia/Tehran`؛ ساعت با ارقام فارسی و بدون بازخوانی صفحه به‌روز می‌شود.', 'manacore' ),
+						} : null,
+					] ),
+				];
+
+			case 'manacore/live-player':
+				return [
+					optionsPanel( props, __( 'پخش زنده', 'manacore' ), [
+						{
+							attr: 'channelId',
+							type: 'post',
+							label: __( 'کانال پیش‌فرض', 'manacore' ),
+							help: __( '۰ = کانال نخست یا کانالی که در نشانی آمده (`?channel=`).', 'manacore' ),
+							postType: 'channel',
+						},
+						{ attr: 'titleOverride', type: 'text', label: __( 'عنوان دلخواه (اختیاری)', 'manacore' ), help: __( 'خالی = زیرعنوان کانال.', 'manacore' ) },
+						{ attr: 'onAirLabel', type: 'text', label: __( 'برچسب نشان «در حال پخش»', 'manacore' ) },
+						{ attr: 'nowLabel', type: 'text', label: __( 'برچسب «همین حالا»', 'manacore' ) },
+						{ attr: 'autoplay', type: 'toggle', label: __( 'پخش خودکار (بی‌صدا)', 'manacore' ) },
+						{ attr: 'showNotice', type: 'toggle', label: __( 'نمایش یادداشت زیر پخش‌کننده', 'manacore' ) },
+						a.showNotice ? { attr: 'noticeText', type: 'textarea', label: __( 'متن یادداشت', 'manacore' ) } : null,
+						{ attr: 'errorText', type: 'text', label: __( 'پیام خطای ویدئو', 'manacore' ) },
+						{ attr: 'retryLabel', type: 'text', label: __( 'برچسب دکمه‌ی تلاش دوباره', 'manacore' ) },
+					] ),
+					optionsPanel( props, __( 'قاب‌های امروز', 'manacore' ), [
+						{ attr: 'heading', type: 'text', label: __( 'عنوان بخش', 'manacore' ) },
+						{ attr: 'showProgram', type: 'toggle', label: __( 'نمایش شبکه‌ی قاب‌ها', 'manacore' ) },
+						a.showProgram ? {
+							attr: 'programCount',
+							type: 'range',
+							label: __( 'شمار قاب‌ها', 'manacore' ),
+							min: 1,
+							max: 12,
+						} : null,
+						a.showProgram ? {
+							attr: 'programTypes',
+							type: 'multi',
+							label: __( 'نوع‌های محتوا',
+							'manacore' ),
+							options: toOptions( data.postTypes ),
+						} : null,
+						a.showProgram ? {
+							attr: 'programFallback',
+							type: 'toggle',
+							label: __( 'اگر امروز برنامه‌ای نبود، نزدیک‌ترین روز', 'manacore' ),
+							help: __( 'داده از فراداده‌ی «روز پخش» و «ساعت پخش» خودِ آثار می‌آید.', 'manacore' ),
+						} : null,
+						a.showProgram ? { attr: 'scheduleLabel', type: 'text', label: __( 'برچسب قاب‌های زمان‌بندی‌شده', 'manacore' ) } : null,
+						a.showProgram ? { attr: 'fallbackLabel', type: 'text', label: __( 'برچسب قاب‌های روز نزدیک', 'manacore' ) } : null,
+						a.showProgram ? { attr: 'clockGlyph', type: 'text', label: __( 'نشانه‌ی ساعت', 'manacore' ) } : null,
+					] ),
+				];
+
+			case 'manacore/live-channels':
+				return [
+					optionsPanel( props, __( 'فهرست کانال‌ها', 'manacore' ), [
+						{ attr: 'heading', type: 'text', label: __( 'عنوان ستون', 'manacore' ) },
+						{
+							attr: 'headingIcon',
+							type: 'select',
+							label: __( 'نشانه‌ی عنوان', 'manacore' ),
+							options: toOptions( data.headingIcons ),
+						},
+						{
+							attr: 'countLabel',
+							type: 'text',
+							label: __( 'برچسب شمار',
+							'manacore' ),
+							help: __( '`{count}` با شمار واقعی کانال‌ها جایگزین می‌شود.', 'manacore' ),
+						},
+						{ attr: 'onlineLabel', type: 'text', label: __( 'برچسب کانال در حال پخش', 'manacore' ) },
+						{ attr: 'qualitySuffix', type: 'text', label: __( 'پسوند زیر نام کانال', 'manacore' ) },
+						{
+							attr: 'limit',
+							type: 'number',
+							label: __( 'بیشترین شمار کانال', 'manacore' ),
+							help: __( '۰ = همه‌ی کانال‌ها.', 'manacore' ),
+						},
+					] ),
+					optionsPanel( props, __( 'کارت یادداشت', 'manacore' ), [
+						{ attr: 'showNote', type: 'toggle', label: __( 'نمایش کارت یادداشت', 'manacore' ) },
+						a.showNote ? {
+							attr: 'noteIcon',
+							type: 'select',
+							label: __( 'نشانه‌ی یادداشت', 'manacore' ),
+							help: __( 'مرجع این کارت را بی‌نشانه می‌سازد؛ فقط اگر خواستید نشانه بگذارید.', 'manacore' ),
+							options: [ { label: __( '— بدون نشانه —', 'manacore' ), value: '' } ].concat(
+								toOptions( data.headingIcons )
+							),
+						} : null,
+						a.showNote ? { attr: 'noteTitle', type: 'text', label: __( 'عنوان یادداشت', 'manacore' ) } : null,
+						a.showNote ? { attr: 'noteText', type: 'textarea', label: __( 'متن یادداشت', 'manacore' ) } : null,
+						a.showNote ? { attr: 'noteLinkLabel', type: 'text', label: __( 'برچسب پیوند', 'manacore' ) } : null,
+						a.showNote ? {
+							attr: 'noteLinkUrl',
+							type: 'text',
+							label: __( 'نشانی پیوند', 'manacore' ),
+							help: __( 'می‌توانید از نشانه‌های کوتاه مثل `discovery` هم استفاده کنید.', 'manacore' ),
+						} : null,
+					] ),
+				];
+
+			/*
+			 * بلوک‌های برگه‌ی «حساب کاربری» — هم‌ارز `account.html` مرجع.
+			 * هر متن و هر نشانه‌ی این بلوک‌ها از همین‌جا قابل ویرایش است.
+			 */
+			case 'manacore/account-greeting':
+				return [
+					optionsPanel( props, __( 'تنظیمات سرصفحه', 'manacore' ), [
+						{
+							attr: 'eyebrow',
+							type: 'text',
+							label: __( 'ریزسطر بالای عنوان', 'manacore' ),
+						},
+						{
+							attr: 'guestHeading',
+							type: 'text',
+							label: __( 'عنوان برای مهمان', 'manacore' ),
+						},
+						{
+							attr: 'userHeading',
+							type: 'text',
+							label: __( 'عنوان برای کاربر وارد‌شده', 'manacore' ),
+							help: __( '«{name}» با نام نمایشی کاربر جایگزین می‌شود.', 'manacore' ),
+						},
+						{
+							attr: 'text',
+							type: 'textarea',
+							label: __( 'توضیح کوتاه', 'manacore' ),
+						},
+						{
+							attr: 'guestButtonLabel',
+							type: 'text',
+							label: __( 'برچسب دکمه برای مهمان', 'manacore' ),
+						},
+						{
+							attr: 'userButtonLabel',
+							type: 'text',
+							label: __( 'برچسب دکمه برای کاربر وارد‌شده', 'manacore' ),
+						},
+						{
+							attr: 'loginButtonLabel',
+							type: 'text',
+							label: __( 'برچسب دکمه وقتی ثبت‌نام بسته است', 'manacore' ),
+						},
+						{
+							attr: 'buttonUrl',
+							type: 'text',
+							label: __( 'نشانی دکمه', 'manacore' ),
+							help: __( 'خالی بگذارید تا مقصد هوشمند انتخاب شود: مهمان → ساخت حساب، کاربر → تب مقصد.', 'manacore' ),
+						},
+						{
+							attr: 'buttonTab',
+							type: 'select',
+							label: __( 'تب مقصد دکمه', 'manacore' ),
+							options: toOptions( data.accountTabs ),
+						},
+						{
+							attr: 'showButton',
+							type: 'toggle',
+							label: __( 'نمایش دکمه', 'manacore' ),
+						},
+					] ),
+				];
+
+			case 'manacore/account-nav':
+				return [
+					optionsPanel( props, __( 'تنظیمات ستون کنار', 'manacore' ), [
+						{
+							attr: 'navLabel',
+							type: 'text',
+							label: __( 'برچسب ناوبری (برای صفحه‌خوان)', 'manacore' ),
+						},
+						{
+							attr: 'showProfile',
+							type: 'toggle',
+							label: __( 'نمایش کارت پروفایل', 'manacore' ),
+						},
+						{
+							attr: 'showLogout',
+							type: 'toggle',
+							label: __( 'نمایش «خروج از حساب»', 'manacore' ),
+						},
+						{
+							attr: 'showUpgrade',
+							type: 'toggle',
+							label: __( 'نمایش کارت ارتقا', 'manacore' ),
+						},
+						{
+							attr: 'upgradeHeading',
+							type: 'text',
+							label: __( 'عنوان کارت ارتقا', 'manacore' ),
+						},
+						{
+							attr: 'upgradeLabel',
+							type: 'text',
+							label: __( 'برچسب پیوند کارت ارتقا', 'manacore' ),
+						},
+						{
+							attr: 'upgradeUrl',
+							type: 'text',
+							label: __( 'نشانی کارت ارتقا', 'manacore' ),
+							help: __( 'خالی بگذارید تا برگه‌ی اشتراک خودِ افزونه استفاده شود.', 'manacore' ),
+						},
+					] ),
+				];
+
+			case 'manacore/account-stats':
+				return [
+					optionsPanel( props, __( 'شمارنده‌ها', 'manacore' ), [
+						{ attr: 'showWatchlist', type: 'toggle', label: __( 'کارت «لیست تماشا»', 'manacore' ) },
+						{ attr: 'showWatched', type: 'toggle', label: __( 'کارت «دیده‌شده»', 'manacore' ) },
+						{ attr: 'showMinutes', type: 'toggle', label: __( 'کارت «دقیقه تماشا»', 'manacore' ) },
+						{ attr: 'showGenre', type: 'toggle', label: __( 'کارت «ژانر موردعلاقه»', 'manacore' ) },
+						{ attr: 'genreEmptyText', type: 'text', label: __( 'متن ژانر پیش از کشف', 'manacore' ) },
+						{ attr: 'watchlistLabel', type: 'text', label: __( 'برچسب کارت لیست تماشا', 'manacore' ) },
+						{ attr: 'watchedLabel', type: 'text', label: __( 'برچسب کارت دیده‌شده', 'manacore' ) },
+						{ attr: 'minutesLabel', type: 'text', label: __( 'برچسب کارت دقیقه', 'manacore' ) },
+						{ attr: 'genreLabel', type: 'text', label: __( 'برچسب کارت ژانر', 'manacore' ) },
+						{ attr: 'watchlistIcon', type: 'text', label: __( 'نشانه‌ی کارت لیست تماشا', 'manacore' ) },
+						{ attr: 'watchedIcon', type: 'text', label: __( 'نشانه‌ی کارت دیده‌شده', 'manacore' ) },
+						{ attr: 'minutesIcon', type: 'text', label: __( 'نشانه‌ی کارت دقیقه', 'manacore' ) },
+						{ attr: 'genreIcon', type: 'text', label: __( 'نشانه‌ی کارت ژانر', 'manacore' ) },
 					] ),
 				];
 
@@ -1919,12 +2948,12 @@
 						{ attr: 'showAirDate', type: 'toggle', label: __( 'نمایش تاریخ پخش', 'manacore' ) },
 						{ attr: 'showCount', type: 'toggle', label: __( 'نمایش تعداد قسمت‌ها', 'manacore' ) },
 						{ attr: 'showThumb', type: 'toggle', label: __( 'نمایش بندانگشتی', 'manacore' ) },
-						{ attr: 'postId', type: 'number', label: __( 'شناسه‌ی اثر', 'manacore' ), help: __( '۰ = اثر جاری.', 'manacore' ) },
+						{ attr: 'postId', type: 'post', types: [ 'series', 'anime' ], label: __( 'سریال / انیمه', 'manacore' ), help: __( 'سریالی را انتخاب کنید تا قسمت‌های همان سریال نمایش داده شود. «اثر جاری صفحه» یعنی قسمت‌های سریالِ همین صفحه.', 'manacore' ) },
 					] ),
 				];
 		}
 
-		return [ postIdControl( props ) ? optionsPanel( props, __( 'تنظیمات', 'manacore' ), [ { attr: 'postId', type: 'number', label: __( 'شناسه‌ی اثر', 'manacore' ) } ] ) : null ];
+		return [ postIdControl( props ) ? optionsPanel( props, __( 'تنظیمات', 'manacore' ), [ { attr: 'postId', type: 'post', label: __( 'اثر', 'manacore' ) } ] ) : null ];
 	}
 
 	/* -----------------------------------------------------------------
@@ -1973,6 +3002,11 @@
 	Object.keys( registry ).forEach( function ( name ) {
 		var config = registry[ name ] || {};
 
+		// «تب حساب کاربری» ویرایشگر دستی دارد (InnerBlocks) و در حلقه ثبت نمی‌شود.
+		if ( 'manacore/account-panel' === name ) {
+			return;
+		}
+
 		// اگر هسته پیش‌تر نسخه‌ی سمت سرور را در فهرست ویرایشگر ثبت کرده باشد،
 		// ابتدا آن را برمی‌داریم تا ثبت مجدد خطای «قبلاً ثبت شده» ندهد.
 		if ( wp.blocks.getBlockType( name ) ) {
@@ -1995,6 +3029,78 @@
 			},
 		} );
 	} );
+
+
+	/*
+	 * «تب حساب کاربری» تنها بلوک برگه‌ی حساب است که محتوای درونی می‌پذیرد و
+	 * ویرایشگر دستی دارد: پیش‌نمایش سمت سرور (`ServerSideRender`) با
+	 * `InnerBlocks` سازگار نیست. بچه‌ها در بوم ویرایش می‌شوند و سمت سرور
+	 * درست همان مارک‌آپ مرجع رندر می‌شود: `section[data-panel]`.
+	 */
+	( function () {
+		var name   = 'manacore/account-panel';
+		var config = registry[ name ];
+
+		if ( ! config || ! InnerBlocks ) {
+			return;
+		}
+
+		if ( wp.blocks.getBlockType( name ) ) {
+			wp.blocks.unregisterBlockType( name );
+		}
+
+		wp.blocks.registerBlockType( name, {
+			apiVersion: 3,
+			title: config.title,
+			description: config.description,
+			category: config.category || 'manacore',
+			icon: config.icon || 'index-card',
+			keywords: [],
+			supports: { html: false, anchor: true },
+			attributes: config.attributes,
+			edit: function ( props ) {
+				var blockProps = useBlockProps( { className: 'manacore-account-panel' } );
+				var tab        = props.attributes.tab;
+
+				return el(
+					Fragment,
+					null,
+					el(
+						InspectorControls,
+						null,
+						el(
+							PanelBody,
+							{ title: __( 'تب', 'manacore' ), initialOpen: true },
+							el( SelectControl, {
+								key: 'tab',
+								label: __( 'این ظرف کدام تب است؟', 'manacore' ),
+								value: tab,
+								options: toOptions( data.accountTabs ),
+								onChange: setter( props, 'tab' ),
+								__nextHasNoMarginBottom: true,
+							} ),
+							el( TextControl, {
+								key: 'label',
+								label: __( 'برچسب اختیاری', 'manacore' ),
+								value: props.attributes.label,
+								onChange: setter( props, 'label' ),
+								help: __( 'فقط در فهرست بلوک‌ها دیده می‌شود؛ روی نمایش اثر ندارد.', 'manacore' ),
+								__nextHasNoMarginBottom: true,
+							} )
+						)
+					),
+					el(
+						'section',
+						Object.assign( {}, blockProps, { 'data-panel': tab } ),
+						el( InnerBlocks, { template: [], templateLock: false } )
+					)
+				);
+			},
+			save: function () {
+				return el( InnerBlocks.Content );
+			},
+		} );
+	} )();
 
 	window.manaCoreBlockUtils = {
 		toOptions: toOptions,

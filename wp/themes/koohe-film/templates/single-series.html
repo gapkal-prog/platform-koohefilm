@@ -4,13 +4,13 @@
 <main id="koohe-main" class="wp-block-group koohe-main koohe-single"><!-- wp:pattern {"slug":"koohe-film/title-hero"} /-->
 
 <!-- wp:html -->
-<div class="koohe-tab-bar" data-koohe-tab-bar><div class="koohe-container"><div class="koohe-tabs"><button class="is-active" data-koohe-tab="overview">درباره سریال</button><button data-koohe-tab="episodes">فصل‌ها و قسمت‌ها</button><button data-koohe-tab="download">پخش و دانلود</button><button data-koohe-tab="cast">بازیگران و عوامل</button><button data-koohe-tab="comments">دیدگاه‌ها</button></div></div></div>
+<div class="koohe-tab-bar alignfull" data-koohe-tab-bar><div class="koohe-container"><div class="koohe-tabs"><button class="is-active" data-koohe-tab="overview"><span aria-hidden="true">▣</span> درباره داستان</button><button data-koohe-tab="episodes" data-koohe-target=".download-section"><span aria-hidden="true">⇩</span> فصل‌ها و قسمت‌ها</button><button data-koohe-tab="cast"><span aria-hidden="true">♙</span> بازیگران و عوامل</button><button data-koohe-tab="comments"><span aria-hidden="true">▢</span> دیدگاه‌ها</button></div></div></div>
 <!-- /wp:html -->
 
 <!-- wp:group {"align":"wide","className":"koohe-single-body","style":{"spacing":{"blockGap":"var:preset|spacing|40"}},"layout":{"type":"default"}} -->
-<div class="wp-block-group alignwide koohe-single-body"><!-- wp:columns {"style":{"spacing":{"blockGap":{"top":"var:preset|spacing|40","left":"var:preset|spacing|40"}}}} -->
-<div class="wp-block-columns"><!-- wp:column {"width":"68%"} -->
-<div class="wp-block-column" style="flex-basis:68%"><!-- wp:group {"className":"koohe-content-block","style":{"spacing":{"blockGap":"var:preset|spacing|30"}},"layout":{"type":"default"}} -->
+<div class="wp-block-group alignwide koohe-single-body"><!-- wp:columns {"className":"koohe-detail-layout","style":{"spacing":{"blockGap":{"top":"var:preset|spacing|40","left":"var:preset|spacing|40"}}}} -->
+<div class="wp-block-columns koohe-detail-layout"><!-- wp:column {"width":"76%"} -->
+<div class="wp-block-column" style="flex-basis:76%"><!-- wp:group {"className":"koohe-content-block","style":{"spacing":{"blockGap":"var:preset|spacing|30"}},"layout":{"type":"default"}} -->
 <div class="wp-block-group koohe-content-block"><!-- wp:heading {"level":2,"className":"is-style-koohe-section","fontSize":"x-large"} -->
 <h2 class="wp-block-heading is-style-koohe-section has-x-large-font-size">درباره‌ی سریال</h2>
 <!-- /wp:heading -->
@@ -19,32 +19,28 @@
 
 <!-- wp:manacore/trailer {"heading":"تریلر رسمی"} /-->
 
-<!-- wp:manacore/episodes-list {"heading":"فصل‌ها و قسمت‌ها"} /-->
-
-<!-- wp:manacore/download-links /-->
+<!-- wp:manacore/episodes-list {"heading":"هر فصل، یک داستان تازه"} /-->
 
 <!-- wp:manacore/cast-list {"heading":"بازیگران و عوامل","count":16} /-->
 
 <!-- wp:manacore/titles-grid {"heading":"سریال‌های مشابه","source":"related","count":6,"columns":6,"showMore":false,"layout":"grid"} /-->
 
-<!-- wp:comments {"className":"koohe-comments"} -->
-<div class="wp-block-comments koohe-comments"><!-- wp:comments-title {"level":2,"fontSize":"x-large"} /-->
+<!-- wp:comments {"className":"comments-section"} -->
+<div class="wp-block-comments comments-section"><!-- wp:comments-title {"level":2} /-->
 
 <!-- wp:comment-template -->
-<!-- wp:group {"className":"koohe-comment","style":{"spacing":{"blockGap":"8px","padding":{"top":"14px","bottom":"14px"}}},"layout":{"type":"default"}} -->
-<div class="wp-block-group koohe-comment" style="padding-top:14px;padding-bottom:14px"><!-- wp:group {"layout":{"type":"flex","flexWrap":"nowrap","verticalAlignment":"center"},"style":{"spacing":{"blockGap":"10px"}}} -->
+<!-- wp:group {"className":"comment-item","style":{"spacing":{"blockGap":"6px"}},"layout":{"type":"default"}} -->
+<div class="wp-block-group comment-item"><!-- wp:group {"layout":{"type":"flex","flexWrap":"nowrap","verticalAlignment":"center"},"style":{"spacing":{"blockGap":"10px"}}} -->
 <div class="wp-block-group"><!-- wp:avatar {"size":40,"style":{"border":{"radius":"999px"}}} /-->
 
-<!-- wp:group {"style":{"spacing":{"blockGap":"2px"}},"layout":{"type":"default"}} -->
-<div class="wp-block-group"><!-- wp:comment-author-name {"fontSize":"small"} /-->
+<!-- wp:comment-author-name /-->
 
-<!-- wp:comment-date {"fontSize":"x-small","style":{"color":{"text":"var:preset|color|muted"}}} /--></div>
-<!-- /wp:group --></div>
+<!-- wp:comment-date {"style":{"color":{"text":"var:preset|color|muted"}}} /--></div>
 <!-- /wp:group -->
 
-<!-- wp:comment-content {"fontSize":"small"} /-->
+<!-- wp:comment-content /-->
 
-<!-- wp:comment-reply-link {"fontSize":"x-small"} /--></div>
+<!-- wp:comment-reply-link {"label":"↵ پاسخ"} /--></div>
 <!-- /wp:group -->
 <!-- /wp:comment-template -->
 

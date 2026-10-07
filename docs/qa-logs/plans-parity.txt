@@ -1,0 +1,91 @@
+
+── عرض 1440px ───────────────────────────────
+  ✓ کارت طرح: 351×602 (مرجع 351×602)
+  ✓ پدینگ کارت 30px
+  ✓ شعاع کارت 13px
+  ✓ title: 21px/33px fw700 pad 0px (مرجع 21px/33px fw700 pad 0px)
+  ✓ tag: 10px/15px fw400 pad 0px (مرجع 10px/15px fw400 pad 0px)
+  ✓ priceStrong: 39px/61px fw650 pad 0px (مرجع 39px/61px fw650 pad 0px)
+  ✓ priceSmall: 11px/17px fw400 pad 0px (مرجع 11px/17px fw400 pad 0px)
+  ✓ priceP: 10px/15px fw400 pad 0px (مرجع 10px/15px fw400 pad 0px)
+  ✓ del: 11px/17px fw400 pad 0px (مرجع 11px/17px fw400 pad 0px)
+  ✓ discount: 8px/20px fw400 pad 4px 7px (مرجع 8px/20px fw400 pad 4px 7px)
+  ✓ ul: 14px/216px fw400 pad 16px 0px 24px (مرجع 14px/216px fw400 pad 16px 0px 24px)
+  ✓ li: 10px/35px fw400 pad 10px 0px (مرجع 10px/35px fw400 pad 10px 0px)
+  ✓ cta: 12px/43px fw600 pad 11px 19px (مرجع 12px/43px fw600 pad 11px 19px)
+  ✓ ribbon: 9px/26px fw400 pad 6px 13px (مرجع 9px/26px fw400 pad 6px 13px)
+  ✓ جهت شبکه: rtl
+  ✓ کارت نمونه در هر دو سمت پیدا شد (1)
+  ✓ عنوان کارت 1: اشتراک سه‌ماهه
+  ✓ تگ‌لاین کارت 1: انتخاب محبوب سینورایی‌ها
+  ✓ قیمت پیشین کارت 1: ۳۵۷٬۰۰۰
+  ✓ تخفیف کارت 1: ۳۶٪ تخفیف
+  ✓ قیمت کارت 1: ۲۲۹٬۰۰۰تومان
+  ✓ معادل ماهانه کارت 1: فقط ۷۶٬۳۳۳ تومان در ماه
+  ✓ ویژگی اول کارت 1
+  ✓ ویژگی پنجم کارت 1: اعتبار ۳ ماهه آزمایشی
+  ✓ برچسب محبوب کارت 1: «✦ انتخاب محبوب»
+  ✓ جای کارت 1 در شبکه: x544 (مرجع x544)
+  ✓ اطلاعیه‌ی قیمت: 1328×20 fs10px gap8px (مرجع 1328×20 fs10px gap8px)
+
+── عرض 980px ───────────────────────────────
+  ✓ کارت طرح: 297×554 (مرجع 297×554)
+  ✓ پدینگ کارت 23px
+  ✓ شعاع کارت 13px
+  ✓ title: 19px/29px fw700 pad 0px (مرجع 19px/29px fw700 pad 0px)
+  ✓ tag: 10px/15px fw400 pad 0px (مرجع 10px/15px fw400 pad 0px)
+  ✓ priceStrong: 29px/46px fw650 pad 0px (مرجع 29px/46px fw650 pad 0px)
+  ✓ priceSmall: 11px/17px fw400 pad 0px (مرجع 11px/17px fw400 pad 0px)
+  ✓ priceP: 10px/15px fw400 pad 0px (مرجع 10px/15px fw400 pad 0px)
+  ✓ del: 11px/17px fw400 pad 0px (مرجع 11px/17px fw400 pad 0px)
+  ✓ discount: 8px/20px fw400 pad 4px 7px (مرجع 8px/20px fw400 pad 4px 7px)
+  ✓ ul: 14px/201px fw400 pad 16px 0px 24px (مرجع 14px/201px fw400 pad 16px 0px 24px)
+  ✓ li: 8px/32px fw400 pad 10px 0px (مرجع 8px/32px fw400 pad 10px 0px)
+  ✓ cta: 12px/43px fw600 pad 11px 19px (مرجع 12px/43px fw600 pad 11px 19px)
+  ✓ ribbon: 9px/26px fw400 pad 6px 13px (مرجع 9px/26px fw400 pad 6px 13px)
+  ✓ جهت شبکه: rtl
+  ✓ کارت نمونه در هر دو سمت پیدا شد (1)
+  ✓ عنوان کارت 1: اشتراک سه‌ماهه
+  ✓ تگ‌لاین کارت 1: انتخاب محبوب سینورایی‌ها
+  ✓ قیمت پیشین کارت 1: ۳۵۷٬۰۰۰
+  ✓ تخفیف کارت 1: ۳۶٪ تخفیف
+  ✓ قیمت کارت 1: ۲۲۹٬۰۰۰تومان
+  ✓ معادل ماهانه کارت 1: فقط ۷۶٬۳۳۳ تومان در ماه
+  ✓ ویژگی اول کارت 1
+  ✓ ویژگی پنجم کارت 1: اعتبار ۳ ماهه آزمایشی
+  ✓ برچسب محبوب کارت 1: «✦ انتخاب محبوب»
+  ✓ جای کارت 1 در شبکه: x342 (مرجع x342)
+  ✓ اطلاعیه‌ی قیمت: 924×20 fs10px gap8px (مرجع 924×20 fs10px gap8px)
+
+── عرض 480px ───────────────────────────────
+  ✓ کارت طرح: 440×612 (مرجع 440×612)
+  ✓ پدینگ کارت 28px
+  ✓ شعاع کارت 13px
+  ✓ title: 23px/36px fw700 pad 0px (مرجع 23px/36px fw700 pad 0px)
+  ✓ tag: 10px/15px fw400 pad 0px (مرجع 10px/15px fw400 pad 0px)
+  ✓ priceStrong: 40px/62px fw650 pad 0px (مرجع 40px/62px fw650 pad 0px)
+  ✓ priceSmall: 11px/17px fw400 pad 0px (مرجع 11px/17px fw400 pad 0px)
+  ✓ priceP: 10px/15px fw400 pad 0px (مرجع 10px/15px fw400 pad 0px)
+  ✓ del: 11px/17px fw400 pad 0px (مرجع 11px/17px fw400 pad 0px)
+  ✓ discount: 8px/20px fw400 pad 4px 7px (مرجع 8px/20px fw400 pad 4px 7px)
+  ✓ ul: 14px/226px fw400 pad 16px 0px 24px (مرجع 14px/226px fw400 pad 16px 0px 24px)
+  ✓ li: 11px/37px fw400 pad 10px 0px (مرجع 11px/37px fw400 pad 10px 0px)
+  ✓ cta: 12px/43px fw600 pad 11px 19px (مرجع 12px/43px fw600 pad 11px 19px)
+  ✓ ribbon: 9px/26px fw400 pad 6px 13px (مرجع 9px/26px fw400 pad 6px 13px)
+  ✓ جهت شبکه: rtl
+  ✓ کارت نمونه در هر دو سمت پیدا شد (1)
+  ✓ عنوان کارت 1: اشتراک سه‌ماهه
+  ✓ تگ‌لاین کارت 1: انتخاب محبوب سینورایی‌ها
+  ✓ قیمت پیشین کارت 1: ۳۵۷٬۰۰۰
+  ✓ تخفیف کارت 1: ۳۶٪ تخفیف
+  ✓ قیمت کارت 1: ۲۲۹٬۰۰۰تومان
+  ✓ معادل ماهانه کارت 1: فقط ۷۶٬۳۳۳ تومان در ماه
+  ✓ ویژگی اول کارت 1
+  ✓ ویژگی پنجم کارت 1: اعتبار ۳ ماهه آزمایشی
+  ✓ برچسب محبوب کارت 1: «✦ انتخاب محبوب»
+  ✓ جای کارت 1 در شبکه: x20 (مرجع x20)
+  ✓ اطلاعیه‌ی قیمت: 448×21 fs9px gap7px (مرجع 448×21 fs9px gap7px)
+
+==========================================================
+موفق: 81   ناموفق: 0   (مرجع: http://localhost:8098/subscription.html)
+==========================================================

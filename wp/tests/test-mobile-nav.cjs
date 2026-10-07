@@ -52,6 +52,7 @@ function assert( ok, label ) {
 }
 
 var themeCss = fs.readFileSync( CSS, 'utf8' );
+var blocksPhpText = fs.readFileSync( path.join( THEME, 'inc', 'blocks.php' ), 'utf8' );
 var bare     = themeCss.replace( /\/\*[\s\S]*?\*\//g, '' );
 
 /* ---------------------------------------------------------------------
@@ -397,6 +398,177 @@ assert(
 		'توکن ' + token + ' در بخش overlay استفاده شده است'
 	);
 } );
+
+console.log( '' );
+console.log( 'ح) کشوی منوی موبایل — هم‌سانی با مرجع (P7)' );
+console.log( '----------------------------------------------------------' );
+
+/*
+ * از این پس مسیر پیش‌فرض منوی موبایل، «کشوی کنار» مرجع است:
+ * بلوک ناوبری سربرگ با `overlayMenu: never` رندر می‌شود تا هسته پوشش
+ * تمام‌صفحه نسازد، همبرگری و کشو را خود قالب می‌سازد. بخش «الف–ت» بالا
+ * همچنان قرارداد مسیر جانشین (پوشش هسته) را نگه می‌دارد؛ این بخش قرارداد
+ * مسیر اصلی را می‌سنجد.
+ */
+
+var headerHtml  = fs.readFileSync( path.join( THEME, 'parts', 'header.html' ), 'utf8' );
+var drawerPhp   = fs.readFileSync( path.join( THEME, 'inc', 'mobile-drawer.php' ), 'utf8' );
+var themeJs     = fs.readFileSync( path.join( THEME, 'assets', 'js', 'theme.js' ), 'utf8' );
+
+assert(
+	/"overlayMenu":"never"/.test( headerHtml ),
+	'بلوک ناوبری سربرگ با overlayMenu: never رندر می‌شود (هسته پوشش تمام‌صفحه نمی‌سازد)'
+);
+assert(
+	/data-mobile-open/.test( headerHtml ) && /mobile-menu-button/.test( headerHtml ),
+	'دکمه‌ی همبرگری [data-mobile-open] در قطعه‌ی سربرگ هست'
+);
+assert(
+	/aria-label="[^"]+"/.test( headerHtml.match( /<button[^>]*data-mobile-open[^>]*>/ )[ 0 ] ),
+	'همبرگری نام قابل‌دسترس دارد'
+);
+assert(
+	/wp:koohe\/mobile-drawer/.test( headerHtml ),
+	'بلوک کشو در سربرگ درج شده است'
+);
+
+/* ساختار دقیق کشو در سمت سرور. */
+[
+	[ /class="drawer-backdrop"\s+data-mobile-drawer\s+hidden/, 'پس‌زمینه با data-mobile-drawer و hidden' ],
+	[ /<div class="mobile-drawer"[^>]*role="dialog"/, 'کشو با role="dialog"' ],
+	[ /aria-modal="true"/, 'aria-modal="true"' ],
+	[ /class="drawer-top"/, 'نوار بالای کشو (.drawer-top)' ],
+	[ /data-mobile-close/, 'دکمه‌ی بستن [data-mobile-close]' ],
+	[ /class="header-search"\s+data-koohe-search-open/, 'ردیف جستجو (.header-search) که پوسته‌ی جستجو را باز می‌کند' ],
+	[ /<nav aria-label=/, 'فهرست ردیف‌ها' ],
+	[ /koohe_mobile_drawer_items\(\)/, 'ردیف‌ها از فهرست راهبری سربرگ ساخته می‌شوند' ],
+	[ /class="button primary full"/, 'دکمه‌ی اشتراک (button primary full)' ],
+	[ /<p class="muted">/, 'سطر پایانی (.muted)' ],
+].forEach( function ( pair ) {
+	assert( pair[0].test( drawerPhp ), 'سمت سرور: ' + pair[1] );
+} );
+
+assert(
+	/function koohe_render_mobile_drawer_block/.test( drawerPhp ) &&
+	/koohe_render_mobile_drawer_block/.test( blocksPhpText ),
+	'render_callback کشو در blocks.php ثبت شده است'
+);
+
+/* قاعده‌های CSS — همان اعداد سنجیده‌شده‌ی مرجع. */
+function decls( selector ) {
+	var m = bare.match( new RegExp( selector.replace( /[.*+?^${}()|[\]\\]/g, '\\$&' ) + '\\s*\\{([^}]*)\\}' ) );
+	return m ? m[ 1 ].replace( /\s+/g, ' ' ) : '';
+}
+
+var checks = [
+	[ '.drawer-backdrop', [ 'position: fixed', 'inset: 0', 'z-index: 100', 'backdrop-filter: blur(5px)', 'margin: 0' ] ],
+	[ '.mobile-drawer', [ 'position: absolute', 'inset-block: 0', 'inset-inline-start: 0', 'width: min(345px, 88vw)', 'padding: 24px', 'overflow-y: auto', 'animation: drawerIn .25s ease' ] ],
+	[ '.drawer-top', [ 'justify-content: space-between', 'margin-bottom: 30px' ] ],
+	[ '.mobile-drawer .header-search', [ 'width: 100%', 'height: 42px', 'font-size: 12px', 'justify-content: center' ] ],
+	[ '.mobile-drawer nav', [ 'flex-direction: column', 'margin: 25px 0' ] ],
+	[ '.mobile-drawer nav a', [ 'padding: 16px 5px', 'border-bottom: 1px solid var(--koohe-border)', 'font-size: 13px', 'justify-content: space-between' ] ],
+	[ '.mobile-drawer > .muted', [ 'font-size: 11px', 'text-align: center', 'color: var(--koohe-muted)' ] ],
+	[ 'body.drawer-open', [ 'overflow: hidden' ] ],
+];
+
+checks.forEach( function ( pair ) {
+	var body = decls( pair[ 0 ] );
+	assert( '' !== body, 'قاعده‌ی ' + pair[ 0 ] + ' در theme.css هست' );
+	pair[ 1 ].forEach( function ( needle ) {
+		assert(
+			body.indexOf( needle ) !== -1,
+			'  · ' + pair[ 0 ] + ' → ' + needle
+		);
+	} );
+} );
+
+assert(
+	/@keyframes drawerIn\s*\{[^}]*from\s*\{\s*transform:\s*translateX\(100%\)/.test( bare ),
+	'کی‌فریم drawerIn از translateX(100%) آغاز می‌شود (ورود از لبه)'
+);
+
+/**
+ * استخراج بدنه‌ی یک at-rule با تطبیق آکولادها.
+ *
+ * تطبیق ساده‌ی regex روی `{…}` این‌جا کار نمی‌کند چون بدنه خودش آکولاد
+ * تو‌در‌تو دارد.
+ *
+ * @param {string} source   متن CSS بدون کامنت.
+ * @param {string} atRule   آغاز at-rule.
+ * @return {string} بدنه‌ی at-rule (بدون آکولاد بیرونی) یا ''.
+ */
+function atRuleBody( source, atRule ) {
+	var start = source.indexOf( atRule );
+
+	if ( start === -1 ) {
+		return '';
+	}
+
+	var open = source.indexOf( '{', start );
+
+	if ( open === -1 ) {
+		return '';
+	}
+
+	var depth = 0;
+
+	for ( var i = open; i < source.length; i++ ) {
+		if ( '{' === source[ i ] ) {
+			depth++;
+		} else if ( '}' === source[ i ] ) {
+			depth--;
+
+			if ( 0 === depth ) {
+				return source.slice( open + 1, i );
+			}
+		}
+	}
+
+	return '';
+}
+
+var mobileBlock = atRuleBody( bare, '@media (max-width: 980px)' );
+var headerMobileBlock = '';
+
+/* میان بلوک‌های ≤۹۸۰px، همانی که قرارداد سربرگ را دارد. */
+var searchFrom = 0;
+while ( -1 !== ( searchFrom = bare.indexOf( '@media (max-width: 980px)', searchFrom ) ) ) {
+	var body980 = atRuleBody( bare.slice( searchFrom ), '@media (max-width: 980px)' );
+
+	if ( body980.indexOf( '--koohe-header-h' ) !== -1 ) {
+		headerMobileBlock = body980;
+		break;
+	}
+
+	searchFrom += 10;
+}
+
+assert( '' !== mobileBlock, 'بلوک @media (max-width: 980px) برای سربرگ موبایل هست' );
+assert( '' !== headerMobileBlock, 'بلوک ≤۹۸۰px حاوی قرارداد سربرگ پیدا شد' );
+
+[
+	[ '--koohe-header-h: 76px', 'ارتفاع سربرگ ۷۶px (مرجع)' ],
+	[ '.koohe-nav.wp-block-navigation', 'ناوبری دسکتاپ پنهان می‌شود (با ویژهگی کافی)' ],
+	[ '.mobile-menu-button', 'همبرگری دیده می‌شود' ],
+].forEach( function ( pair ) {
+	assert( headerMobileBlock.indexOf( pair[ 0 ] ) !== -1, '≤۹۸۰px: ' + pair[ 1 ] );
+} );
+
+assert(
+	/base\.mobile-drawer/.test( bare ) === false && /body\.drawer-open/.test( bare ),
+	'قفل پیمایش با کلاس روی body انجام می‌شود (مثل مرجع)'
+);
+assert(
+	/@media \(prefers-reduced-motion: reduce\)\s*\{\s*\.mobile-drawer\s*\{\s*animation: none/.test( bare ),
+	'انیمیشن کشو با prefers-reduced-motion خاموش می‌شود'
+);
+
+/* منطق JS. */
+assert( /function initMobileDrawer\(/.test( themeJs ), 'تابع initMobileDrawer در theme.js هست' );
+assert( /initSearchOverlay\(\);\s*\n\s*initMobileDrawer\(\);/.test( themeJs ), 'initMobileDrawer در boot() صدا زده می‌شود' );
+assert( /data-mobile-drawer/.test( themeJs ) && /data-mobile-close/.test( themeJs ), 'بستن با پس‌زمینه و دکمه‌ی × در JS هست' );
+assert( /'Escape' === event\.key/.test( themeJs ), 'بستن با Escape در JS هست (افزوده‌ی دسترس‌پذیری)' );
+assert( /innerWidth > 980/.test( themeJs ), 'با رسیدن پنجره به عرض دسکتاپ کشو بسته می‌شود' );
 
 console.log( '' );
 console.log( 'چ) صحت نحوی CSS' );

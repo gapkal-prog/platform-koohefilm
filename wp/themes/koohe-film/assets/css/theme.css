@@ -30,11 +30,21 @@
 
 	--koohe-transition: var(--wp--custom--transition, .2s cubic-bezier(.2, .7, .3, 1));
 	--koohe-header-h: var(--wp--custom--header--height, 68px);
+	--koohe-mega-feature: var(--wp--custom--header--mega-feature, 300px);
 
 	--koohe-shadow: var(--wp--preset--shadow--soft, 0 6px 24px rgba(0, 0, 0, .08));
 	--koohe-shadow-lg: var(--wp--preset--shadow--raised, 0 18px 48px rgba(0, 0, 0, .14));
 
 	--koohe-overlay: rgba(0, 0, 0, .55);
+
+	/* شِوران رو‌به‌چپ مرجع، به‌صورت ماسک تا با currentColor رنگ بگیرد. */
+	--koohe-chevron-left: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m15 18-6-6 6-6'/%3E%3C/svg%3E");
+	/* آیکون‌های ردیف‌های مرجع (۱۹px، خط ۲px) — همان مسیرهای SVG مرجع. */
+	--koohe-icon-sparkle: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m12 3-1.5 5.5L5 10l5.5 1.5L12 17l1.5-5.5L19 10l-5.5-1.5L12 3z'/%3E%3C/svg%3E");
+	--koohe-icon-film: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m4 4 16 0M3 8h18M5 4l2 4M10 4l2 4M15 4l2 4M4 8v12h16V8'/%3E%3C/svg%3E");
+	--koohe-icon-flag: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect width='20' height='15' x='2' y='4' rx='2'/%3E%3Cpath d='m8 2 4 2 4-2M8 19h8'/%3E%3C/svg%3E");
+	--koohe-icon-chevron-down: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m19 12-7 7-7-7' transform='rotate(90 12 12)'/%3E%3C/svg%3E");
+	--koohe-icon-person: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 21a8 8 0 0 0-16 0'/%3E%3Ccircle cx='12' cy='7' r='4'/%3E%3C/svg%3E");
 	--koohe-glass: rgba(255, 255, 255, .72);
 
 	/* نسبت پوستر؛ در صورت تغییر در سفارشی‌ساز به‌صورت درون‌خطی بازنویسی می‌شود. */
@@ -44,7 +54,41 @@
 	--koohe-rating: var(--wp--preset--color--rating, #efd18a);
 	--koohe-danger: var(--wp--preset--color--danger, #ed9c92);
 	--koohe-container: 1440px;
-	--koohe-container-pad: clamp(16px, 4vw, 56px);
+	/*
+	 * پدینگ افقی ظرف — همان پله‌های مرجع (سنجیده‌شده روی `.page-container`
+	 * و `.header-inner` مرجع): ۵۶ پیش‌فرض، ۳۵ تا ۱۳۰۰px، ۲۸ تا ۹۸۰px،
+	 * ۲۰ تا ۷۶۸px، ۱۶ تا ۴۸۰px و ۱۴ تا ۳۶۰px.
+	 * پیش‌تر `clamp(16px, 4vw, 56px)` بود؛ در ۱۲۸۰px عدد ۵۱ به‌دست
+	 * می‌آمد در حالی که مرجع ۳۵ است — یعنی محتوای همه‌ی بخش‌ها در بازه‌ی
+	 * ۷۶۹–۱۴۳۹px از مرجع فاصله می‌گرفت.
+	 */
+	--koohe-container-pad: 56px;
+	/*
+	 * رنگ اسپویل — همان پالت گرم مرجعی که برای «اسپویل» جدا کرده
+	 * (مرجع: `.inline-spoiler{color:#d3ae86;border-color:#e3b89555}` و
+	 * `.whole-spoiler{color:#d6b58c}`). سبز تاییدی مرجع برای این کار
+	 * استفاده نمی‌شود، پس اینجا هم نمی‌شود.
+	 */
+	--koohe-spoiler: #e3b895;
+	--koohe-spoiler-soft: #d6b58c;
+	/* آیکن بلیت دکمه‌ی اشتراک (همان مسیر svg مرجع). */
+	--koohe-header-cta-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m2 4 3 12h14l3-12-6 5-4-7-4 7-6-5zM5 20h14'/%3E%3C/svg%3E");
+}
+
+/*
+ * ریست اندازه‌ی جعبه.
+ *
+ * بدون این قاعده، `box-sizing` روی مقدار پیش‌فرض مرورگر (content-box) می‌ماند
+ * و هر ظرفی که با `width: 100%` به‌همراه `padding-inline` نوشته شده باشد
+ * از والد خود پهن‌تر می‌شود. پیامد واقعیِ سنجیده‌شده: `.koohe-container`
+ * در ۸۳۴px پهنای والد ۸۲۰px داشت ولی ۸۸۷px رندر می‌شد و صفحه ۶۰px
+ * سرریز افقی می‌گرفت (در ۳۹۰px هم ۳۲px). ریست، همان قراردادی است که
+ * همه‌ی قواعد `width: 100%` در این فایل بر آن نوشته شده‌اند.
+ */
+*,
+*::before,
+*::after {
+	box-sizing: border-box;
 }
 
 /* -------------------------------------------------------------------------
@@ -263,10 +307,29 @@ table {
 	display: flex;
 	align-items: center;
 	background: color-mix(in srgb, var(--koohe-surface) 92%, transparent);
-	backdrop-filter: blur(18px) saturate(160%);
-	-webkit-backdrop-filter: blur(18px) saturate(160%);
 	border-bottom: 1px solid var(--koohe-border);
 	transition: background var(--koohe-transition), box-shadow var(--koohe-transition);
+}
+
+/*
+ * لایه‌ی بلور سربرگ.
+ *
+ * `backdrop-filter` روی خودِ سربرگ یک «بلوکِ دربرگیرنده» برای فرزندانِ
+ * `position: fixed` می‌سازد. پوششِ منوی موبایلِ بلوک ناوبری وردپرس
+ * (`position: fixed; inset: 0`) داخل همین سربرگ رندر می‌شود، پس بلورِ
+ * سربرگ آن را در ارتفاع سربرگ زندانی می‌کرد: پوشش به ۸۳px جمع می‌شد و
+ * گفت‌وگوی منو در y=-37px بیرون از دید می‌افتاد.
+ * اکنون بلور روی یک لایه‌ی پس‌زمینه‌ی مستقل (::before) نشسته است؛
+ * ظاهر شیشه‌ای حفظ می‌شود ولی سربرگ دیگر بلوکِ دربرگیرنده نمی‌سازد.
+ */
+.koohe-header::before {
+	content: "";
+	position: absolute;
+	inset: 0;
+	z-index: -1;
+	backdrop-filter: blur(18px) saturate(160%);
+	-webkit-backdrop-filter: blur(18px) saturate(160%);
+	pointer-events: none;
 }
 
 /*
@@ -380,7 +443,23 @@ table {
 	}
 }
 
-.koohe-header-inner {
+/*
+ * ابعاد سربرگ مطابق مرجع (`.site-header` + `.header-inner` سینورا):
+ * نوار سربرگ تمام‌عرض با کادر و بلور، و محتوای درونی ۱۴۴۰ با پدینگ ۵۶
+ * که به محتوای ۱۳۲۸ می‌رسد — همان عددِ ظرف صفحه.
+ *
+ * اندازه‌گیری پیش از این اصلاح در ۱۴۴۰px: خودِ `<header>` پدینگ
+ * سراسری ریشه (`has-global-padding`) را داشت و پوشش `alignfull`
+ * درونش هم بعد از گریز، دوباره ۵۶px پدینگ می‌گرفت؛ نتیجه محتوای
+ * ۱۲۱۶px در x=۱۱۲ بود (۱۱۲px باریک‌تر و جابه‌جا نسبت به مرجع).
+ * اکنون سربرگ پدینگ افقی ندارد و تنها پوشش درونی، پدینگ و سقف عرض
+ * را تعیین می‌کند؛ نتیجه‌ی سنجیده‌شده: ۱۴۴۰/۵۶ با محتوای ۱۳۲۸ در x=۵۶.
+ */
+.koohe-header {
+	padding-inline: 0;
+}
+
+.koohe-header > .koohe-header-inner {
 	width: 100%;
 	max-width: var(--koohe-container);
 	margin-inline: auto;
@@ -388,7 +467,27 @@ table {
 	display: flex;
 	align-items: center;
 	height: 100%;
-	gap: clamp(14px, 2.5vw, 35px);
+	/* همان پله‌های فاصله‌ی سربرگ مرجع: ۳۵ پیش‌فرض، ۲۶ تا ۱۳۰۰px،
+	   ۲۳ تا ۱۱۰۰px و ۴۲ از ۱۶۰۰px به بالا (پله‌های تنگ‌تر موبایل در ۳.۶). */
+	gap: 35px;
+}
+
+@media (max-width: 1300px) {
+	.koohe-header > .koohe-header-inner {
+		gap: 26px;
+	}
+}
+
+@media (max-width: 1100px) {
+	.koohe-header > .koohe-header-inner {
+		gap: 23px;
+	}
+}
+
+@media (min-width: 1600px) {
+	.koohe-header > .koohe-header-inner {
+		gap: 42px;
+	}
 }
 
 .koohe-brand {
@@ -429,6 +528,13 @@ table {
 .koohe-header-start {
 	gap: clamp(14px, 2.5vw, 35px);
 	flex: 1;
+	/*
+	 * `min-width: 0` لازم است تا این گروه بتواند کوچک شود؛ بدون آن
+	 * محتوای ناوبری از والد سرریز می‌کرد و دکمه‌ی مگامنو زیر کادر
+	 * جستجوی سربرگ می‌افتاد و با ماوس قابل کلیک نبود (سنجیده‌شده در
+	 * ۱۴۴۰px: دکمه در x=837 زیر INPUT.manacore-search-input).
+	 */
+	min-width: 0;
 }
 
 .koohe-header-end {
@@ -437,8 +543,189 @@ table {
 	gap: 11px;
 }
 
+/*
+ * دکمه‌ی جستجوی سربرگ — همان الگوی مرجع `.header-search`.
+ *
+ * در دسکتاپ پیل ۱۷۳×۳۵ (آیکن + متن راهنما + میان‌بر ⌘K) و در ۷۶۸px و
+ * کمتر فقط آیکن ۳۶×۳۶. کلیک آن پوسته‌ی تمام‌صفحه‌ی جستجو را باز می‌کند
+ * (همان پوسته‌ای که ⌘K/Ctrl+K هم باز می‌کند).
+ */
+.koohe-search-trigger {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	flex: 0 0 auto;
+	width: 173px;
+	height: 35px;
+	padding: 0 10px;
+	border: 1px solid var(--koohe-border, rgba(255, 255, 255, .14));
+	border-radius: 6px;
+	background: var(--koohe-surface-2, rgba(255, 255, 255, .04));
+	color: var(--koohe-muted);
+	font-family: inherit;
+	font-size: var(--wp--preset--font-size--x-small, .8125rem);
+	line-height: 1;
+	white-space: nowrap;
+	cursor: pointer;
+	transition: border-color var(--koohe-transition), color var(--koohe-transition);
+}
+
+.koohe-search-trigger:hover,
+.koohe-search-trigger:focus-visible {
+	border-color: color-mix(in srgb, var(--koohe-accent) 60%, transparent);
+	color: var(--koohe-text);
+}
+
+.koohe-search-trigger__label {
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.koohe-search-trigger__kbd {
+	margin-inline-start: auto;
+	padding: 3px 4px;
+	border: 1px solid var(--koohe-border, rgba(255, 255, 255, .14));
+	border-radius: 3px;
+	font-family: Arial, sans-serif;
+	font-size: 8px;
+	direction: ltr;
+	color: var(--koohe-muted);
+}
+
+/* در تبلت و موبایل فقط آیکن می‌ماند (مرجع: ۳۰×۳۲). */
+@media (max-width: 768px) {
+	.koohe-search-trigger {
+		width: 36px;
+		height: 36px;
+		padding: 0;
+		border-color: transparent;
+		background: none;
+		justify-content: center;
+	}
+
+	.koohe-search-trigger__label,
+	.koohe-search-trigger__kbd {
+		/*
+		 * پیش‌تر `display:none` بود؛ متن از درخت دسترس‌پذیری هم حذف
+		 * می‌شد و دکمه‌ی آیکن‌دار در موبایل «بدون نام» می‌ماند
+		 * (axe: button-name, critical). حالا فقط دیداری پنهان می‌شود.
+		 */
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		padding: 0;
+		margin: -1px;
+		overflow: hidden;
+		clip-path: inset(50%);
+		white-space: nowrap;
+		border: 0;
+	}
+}
+
 /* ناوبری دسکتاپ */
 .koohe-nav {
+	/*
+	 * پیش‌تر `flex-shrink: 0` بود؛ ناوبری کوچک نمی‌شد، از گروه سربرگ
+	 * سرریز می‌کرد و دکمه‌ی مگامنو را زیر کادر جستجو می‌بُرد. اکنون
+	 * ناوبری می‌تواند کوچک شود و در صورت نیاز افقی اسکرول شود، ولی
+	 * دکمه‌ی مگامنو همیشه جای خود را نگه می‌دارد.
+	 */
+	flex-shrink: 1;
+	/*
+	 * ناوبری باید بتواند کوچک شود و در صورت تنگی جا، فهرستش افقی اسکرول شود.
+	 *
+	 * پیش‌تر `min-width: min-content` بود و همین باعث می‌شد ناوبری هرگز
+	 * کوچک‌تر از پهنای محتوایش (۴۹۵px) نشود. در نتیجه گروه سربرگ سرریز
+	 * می‌کرد و دکمه‌ی مگامنو — که آخرین فرزند همان گروه است — زیر کادر
+	 * جستجوی سربرگ می‌افتاد و با ماوس قابل کلیک نبود. سنجیده‌شده در
+	 * ۱۲۸۰/۱۴۴۰/۱۶۰۰px: عرض گروه ۴۳۳/۵۷۱/۶۸۳ بود ولی محتوایش ۷۷۲–۷۷۸px.
+	 * اکنون `min-width: 0` اجازه‌ی کوچک‌شدن می‌دهد و فهرست درون‌اش
+	 * با `overflow-x: auto` قابل اسکرول می‌ماند.
+	 */
+	min-width: 0;
+}
+
+/*
+ * اولویت کوچک‌شدن در دسکتاپ.
+ *
+ * کادر جستجوی سربرگ با مقدار اولیه‌ی ۳۵۲px عملاً کوچک نمی‌شد (min-width
+ * خودکارِ input)، پس همه‌ی فشار flexbox روی ناوبری می‌افتاد و فهرست
+ * ناوبری در ۱۲۸۰–۱۶۰۰px تا ۱۵۷–۴۰۰px فشرده و برای دیدن بقیه‌ی گزینه‌ها
+ * نیازمند اسکرول افقی می‌شد. اینجا کادر جستجو اول کوچک می‌شود و ناوبری
+ * یک کمینه‌ی معقول نگه می‌دارد؛ اگر باز هم جا کم بود، ناوبری اسکرول
+ * افقی می‌شود (رفتار درست موبایل دست‌نخورده است).
+ */
+@media (min-width: 782px) {
+	/*
+	 * گروه پایانی سربرگ `flex-shrink: 0` داشت؛ یعنی می‌توانست هر اندازه
+	 * جا بخواهد و فشار کوچک‌شدن یک‌طرفه روی گروه ابتدایی بیفتد. نتیجه:
+	 * ناوبری فشرده و دکمه‌ی مگامنو بیرون‌زده و زیر کادر جستجو. اکنون هر
+	 * دو گروه می‌توانند کوچک شوند و کوچک‌شدن از کادر جستجو شروع می‌شود.
+	 */
+	.koohe-header-end {
+		flex-shrink: 1;
+		min-width: 0;
+	}
+
+	.koohe-nav {
+		flex: 1 1 auto;
+		min-width: 0;
+	}
+
+	/*
+	 * کادر فهرست هرگز نباید از جعبه‌ی ناوبری بیرون بزند.
+	 *
+	 * ساختار واقعی ناوبری این است: [دکمه‌ی همبرگری] + [کادر فهرست].
+	 * کمینه‌ی پیشینِ ناوبری (۲۰۰px) برای همین دو کافی نبود، پس کادر فهرست
+	 * ۶۳px از جعبه‌ی ناوبری بیرون می‌زد؛ چون خودش `position: relative`
+	 * است، روی دکمه‌ی مگامنو (که `static` است) نقاشی می‌شد و کلیک ماوس را
+	 * می‌بلعید. سنجیده‌شده در ۱۱۵۲px: کادر [۲۷۱..۴۷۱] و مگامنو [۴۳۷..۵۱۶].
+	 * با `max-width: 100%` کادر در جای خودش می‌ماند و سرریز را با
+	 * `overflow-x: auto` اسکرول می‌کند.
+	 */
+	/*
+	 * درصد‌گیری پهنای پوسته‌ی ناوبری هسته.
+	 *
+	 * `.wp-block-navigation__responsive-container` در هسته `width:100%`
+	 * دارد؛ یعنی پهنای کل ناوبری را می‌گیرد و چون بعد از دکمه‌ی منو
+	 * می‌آید، به اندازه‌ی خودِ دکمه‌ی منو (۴۰px + ۲۳px فاصله) از جعبه‌ی
+	 * ناوبری بیرون می‌زند. سنجیده‌شده در ۱۴۴۰px: ناوبری [۲۲۵..۵۱۳] ولی
+	 * پوسته [۲۸۸..۵۷۶]. با پایه‌ی صفر، پوسته فقط «فضای باقی‌مانده پس از
+	 * دکمه‌ی منو» را می‌گیرد و سرریز فهرست با `overflow-x:auto` خودِ
+	 * کادر فهرست مدیریت می‌شود. حالت باز (`is-menu-open`) دست‌نخورده
+	 * می‌ماند تا پوسته‌ی تمام‌صفحه آسیب نبیند.
+	 */
+	.koohe-nav .wp-block-navigation__responsive-container:not(.is-menu-open) {
+		flex: 1 1 0;
+		width: auto;
+		min-width: 0;
+		max-width: 100%;
+	}
+
+	.koohe-nav .wp-block-navigation__container {
+		flex: 1 1 0;
+		max-width: 100%;
+	}
+
+}
+
+.koohe-nav .wp-block-navigation__container {
+	min-width: 0;
+	overflow-x: auto;
+	scrollbar-width: none;
+}
+
+.koohe-nav .wp-block-navigation__container::-webkit-scrollbar {
+	display: none;
+}
+
+/* آیکن حساب فقط در موبایل دیده می‌شود. */
+.koohe-account-login__icon {
+	display: none;
+}
+
+/* ناحیه‌ی لمسی دکمه‌ی منو هرگز نباید فشرده شود. */
+.koohe-nav .wp-block-navigation__responsive-container-open {
 	flex-shrink: 0;
 }
 
@@ -460,6 +747,32 @@ table {
 	color: var(--koohe-accent);
 }
 
+/*
+ * نقطه‌ی کنار «برنامه پخش» — عیناً هندسه‌ی مرجع:
+ *
+ *   `.desktop-nav>a{gap:5px}` و
+ *   `.nav-dot{width:4px;height:4px;background:var(--accent);
+ *             border-radius:50%;margin-right:3px}`
+ *
+ * چون خودِ برچسب آیتم در هسته متن خالی است، نقطه با فیلتر
+ * `koohe_nav_item_dot` داخل لنگر تزریق می‌شود؛ این‌جا فقط چیدمان و رنگ
+ * آن می‌آید. `margin-inline-start` در RTL همان `margin-right` مرجع است.
+ */
+.koohe-nav .wp-block-navigation-item.koohe-nav-dot > .wp-block-navigation-item__content {
+	display: inline-flex;
+	align-items: center;
+	gap: 5px;
+}
+
+.koohe-nav .nav-dot {
+	width: 4px;
+	height: 4px;
+	border-radius: 50%;
+	background: var(--koohe-accent);
+	margin-inline-start: 3px;
+	flex-shrink: 0;
+}
+
 /* نقطه‌ی زیر آیتم فعال */
 .koohe-nav .current-menu-item > .wp-block-navigation-item__content::after {
 	content: "";
@@ -473,11 +786,45 @@ table {
 	background: var(--koohe-accent);
 }
 
-/* دکمه‌ی اشتراک در سربرگ */
+/*
+ * دکمه‌ی اشتراک در سربرگ — اعداد دقیق مرجع
+ * (`.subscribe-button{min-height:35px;padding:8px 13px;font-size:10px;gap:6px}`).
+ *
+ * اندازه‌ی قلم روی پوشش `.wp-block-button` هم گذاشته می‌شود: چون دکمه
+ * `has-custom-font-size has-small-font-size` دارد، هسته روی پوشش ۱۲px
+ * می‌گذارد و روی لینک `font-size:inherit` با ویژگی (0,4,0) اعمال می‌کند؛
+ * پس هر اندازه‌ای که فقط روی لینک بگذاریم بی‌اثر می‌شد و دکمه در ۳۹۰px
+ * با ۱۲px رندر می‌شد (سنجیده‌شده) — مرجع ۸px است.
+ */
+.koohe-header-cta .wp-block-button,
 .koohe-header-cta .wp-block-button__link {
+	font-size: 11px;
+}
+
+/*
+ * آیکن بلیت دکمه‌ی اشتراک — همان شکل مرجع
+ * (`<svg><path d="m2 4 3 12h14l3-12-6 5-4-7-4 7-6-5zM5 20h14"/></svg>`, ۱۶px).
+ *
+ * با ماسک CSS اضافه می‌شود نه با درج svg در مارک‌آپ بلوک `core/button`:
+ * محتوای آن بلوک RichText است و ذخیره‌ی دوباره در ویرایشگر می‌توانست svg
+ * را حذف کند. با ماسک، رنگ آیکن هم خودکار `currentColor` می‌ماند.
+ */
+.koohe-header-cta .wp-block-button__link::before {
+	content: "";
+	flex-shrink: 0;
+	width: 16px;
+	height: 16px;
+	background-color: currentColor;
+	-webkit-mask: var(--koohe-header-cta-icon) center / contain no-repeat;
+	mask: var(--koohe-header-cta-icon) center / contain no-repeat;
+}
+
+.koohe-header-cta .wp-block-button__link {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
 	min-height: 35px;
 	padding: 8px 13px;
-	font-size: var(--wp--preset--font-size--small, .6875rem);
 	gap: 6px;
 	border-radius: 7px;
 	font-weight: 600;
@@ -488,6 +835,532 @@ table {
 .koohe-header-cta .wp-block-button__link:hover {
 	transform: translateY(-2px);
 	box-shadow: 0 4px 22px color-mix(in srgb, var(--koohe-accent) 20%, transparent);
+}
+
+/*
+ * مگامنوی استاندارد (مرجع: `.mega-menu` در cinora/assets/css/style.css)
+ * ---------------------------------------------------------------------
+ * آیتم «دسته‌بندی‌ها» یک `wp:navigation-submenu` واقعی با کلاس `koohe-mega`
+ * است؛ پس زیرمنو همان زیرمنوی هسته است و مدیر می‌تواند همه‌ی آیتم‌ها را در
+ * پیشخوان → نمایش → ویرایشگر → فهرست راهبری اضافه/حذف کند.
+ *
+ * ساختار، یک‌به‌یک ساختار مرجع است:
+ *
+ *   ستون ۱ (.mega-genres)  → «یک دنیا انتخاب» + «حال‌وهوای امشبت چیه؟»
+ *                            + گروه `koohe-mega-genres` با شبکه‌ی سه‌ستونه
+ *   ستون ۲ (.mega-quick)   → گروه `koohe-mega-quick`؛ برچسب گروه همان
+ *                            eyebrow ستون است و ردیف‌ها ۱۹px آیکون accent
+ *   ستون ۳ (.mega-feature) → کارت ویژه‌ی تمام‌قد با پوستر و گرادیان
+ *
+ * هندسه‌ی مرجع: پنل به «پوشش سربرگ» لنگر می‌اندازد، `top` دقیقاً زیر
+ * سربرگ (۸۳px)، لبه‌ها ۵۶px از دو طرف با سقف ۱۳۲۸px (و ۳۵px زیر ۱۳۰۰px)،
+ * پدینگ ۳۰px، شبکه‌ی `1.65fr 1fr 1.1fr` با فاصله‌ی ۳۰px، گوشه‌های پایینی
+ * ۱۵px و سایه‌ی ۰ ۳۰px ۷۰px.
+ */
+
+/* لنگر پنل = ردیف محتوای سربرگ (۱۴۴۰ / پدینگ ۵۶px). */
+.koohe-header-inner:has(.koohe-mega) {
+	position: relative;
+}
+
+/*
+ * پنل باید از ردیف سربرگ تا لبه‌های ستون محتوا کشیده شود؛ پس لایه‌های
+ * میانی ناوبری در دسکتاپ نباید بستر موقعیت‌یابی بسازند. روی موبایل
+ * عمداً دست نمی‌زنیم چون همان لایه‌ها میزبان کشوی سراسری‌اند.
+ */
+@media (min-width: 981px) {
+	.koohe-header-inner:has(.koohe-mega) .koohe-nav,
+	.koohe-header-inner:has(.koohe-mega) .koohe-nav .wp-block-navigation__responsive-container,
+	.koohe-header-inner:has(.koohe-mega) .koohe-nav .wp-block-navigation__responsive-dialog,
+	.koohe-header-inner:has(.koohe-mega) .koohe-nav .wp-block-navigation__responsive-container-content,
+	.koohe-header-inner:has(.koohe-mega) .koohe-nav .wp-block-navigation__container {
+		position: static;
+	}
+}
+
+.koohe-nav .wp-block-navigation-item.koohe-mega {
+	position: static;
+}
+
+.koohe-nav .wp-block-navigation-item.koohe-mega > .wp-block-navigation__submenu-container {
+	inset-inline: 56px;
+	top: 100%;
+	width: auto;
+	max-width: 1328px;
+	margin-inline: auto;
+	display: grid;
+	/* نسبت ستون‌ها، عیناً `.mega-menu` مرجع. */
+	grid-template-columns: 1.65fr 1fr 1.1fr;
+	column-gap: 30px;
+	/*
+	 * فاصله‌ی ردیف‌ها صفر است چون فاصله‌ی سرستون و تیتر با margin همان
+	 * مقدارهای مرجع (`h3{margin:10px 0 15px}`) تنظیم می‌شود.
+	 */
+	row-gap: 0;
+	align-items: stretch;
+	padding: 30px;
+	/* `.mega-menu` مرجع روی `--panel` می‌نشیند؛ در پالت قالب `surface-2`. */
+	background: var(--koohe-surface-2);
+	border: 1px solid var(--koohe-border);
+	border-radius: 0 0 15px 15px;
+	box-shadow: 0 30px 70px rgba(0, 0, 0, .4);
+	min-width: 0;
+	overflow: visible;
+	z-index: 30;
+}
+
+.koohe-nav .wp-block-navigation-item.koohe-mega > .wp-block-navigation__submenu-container > .wp-block-navigation-item {
+	margin: 0;
+}
+
+/*
+ * جای هر گروه در شبکه — مثل سه ستون مرجع. سرستون و تیتر در ستون اول
+ * پشت‌سرهم می‌آیند و دو گروه بعدی از بالای پنل شروع می‌شوند.
+ */
+.koohe-nav .wp-block-navigation-item.koohe-mega > .wp-block-navigation__submenu-container > .koohe-mega-eyebrow {
+	grid-area: 1 / 1 / 2 / 2;
+	margin-bottom: 10px;
+}
+
+.koohe-nav .wp-block-navigation-item.koohe-mega > .wp-block-navigation__submenu-container > .koohe-mega-title {
+	grid-area: 2 / 1 / 3 / 2;
+	margin-bottom: 15px;
+}
+
+.koohe-nav .wp-block-navigation-item.koohe-mega > .wp-block-navigation__submenu-container > .koohe-mega-group.koohe-mega-genres {
+	grid-area: 3 / 1 / 4 / 2;
+}
+
+.koohe-nav .wp-block-navigation-item.koohe-mega > .wp-block-navigation__submenu-container > .koohe-mega-group.koohe-mega-quick {
+	grid-area: 1 / 2 / 4 / 3;
+}
+
+.koohe-nav .wp-block-navigation-item.koohe-mega > .wp-block-navigation__submenu-container > .koohe-mega-feature {
+	grid-area: 1 / 3 / 4 / 4;
+	display: flex;
+	align-self: stretch;
+}
+
+/* چیپ‌های ژانر، هم‌اندازه‌ی `.mega-genres a` در مرجع. */
+.koohe-nav .wp-block-navigation-item.koohe-mega > .wp-block-navigation__submenu-container .wp-block-navigation-item__content {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 8px;
+	font-size: .6875rem;
+	line-height: 1.55;
+	padding: 9px;
+	border-radius: 5px;
+	color: var(--koohe-muted);
+	transition: background var(--koohe-transition), color var(--koohe-transition);
+}
+
+/* شِوران رو‌به‌چپ مرجع، با ماسک تا رنگ جاری (accent در هاور) را بگیرد. */
+.koohe-nav .wp-block-navigation-item.koohe-mega > .wp-block-navigation__submenu-container .wp-block-navigation-item__content::after {
+	content: "";
+	flex: 0 0 auto;
+	width: 14px;
+	height: 14px;
+	background-color: currentColor;
+	-webkit-mask: var(--koohe-chevron-left) center / contain no-repeat;
+	mask: var(--koohe-chevron-left) center / contain no-repeat;
+	opacity: .7;
+}
+
+.koohe-nav .wp-block-navigation-item.koohe-mega > .wp-block-navigation__submenu-container .wp-block-navigation-item__content:hover,
+.koohe-nav .wp-block-navigation-item.koohe-mega > .wp-block-navigation__submenu-container .wp-block-navigation-item__content:focus-visible {
+	background: var(--koohe-surface-3);
+	color: var(--koohe-accent);
+}
+
+/* -------------------------------------------------------------------------
+ * سرستون پنل: «یک دنیا انتخاب» (۱۰px accent) و تیتر (۱۹px/۷۰۰).
+ * هر دو آیتمِ واقعی فهرست راهبری‌اند، پس فقط ظاهر «متن» می‌گیرند.
+ * ---------------------------------------------------------------------- */
+
+.koohe-nav .wp-block-navigation-item.koohe-mega > .wp-block-navigation__submenu-container > .koohe-mega-eyebrow > .wp-block-navigation-item__content,
+.koohe-nav .wp-block-navigation-item.koohe-mega > .wp-block-navigation__submenu-container > .koohe-mega-title > .wp-block-navigation-item__content {
+	justify-content: flex-start;
+	padding: 0;
+	background: none;
+	color: var(--koohe-accent);
+	font-size: .625rem;
+	font-weight: 500;
+	line-height: 1.5;
+	letter-spacing: 1.2px;
+}
+
+.koohe-nav .wp-block-navigation-item.koohe-mega > .wp-block-navigation__submenu-container > .koohe-mega-title > .wp-block-navigation-item__content {
+	color: var(--koohe-text);
+	font-size: 1.1875rem;
+	font-weight: 700;
+	line-height: 1.5;
+	letter-spacing: 0;
+}
+
+.koohe-nav .wp-block-navigation-item.koohe-mega > .wp-block-navigation__submenu-container > .koohe-mega-eyebrow > .wp-block-navigation-item__content::after,
+.koohe-nav .wp-block-navigation-item.koohe-mega > .wp-block-navigation__submenu-container > .koohe-mega-title > .wp-block-navigation-item__content::after {
+	display: none;
+}
+
+.koohe-nav .wp-block-navigation-item.koohe-mega > .wp-block-navigation__submenu-container > .koohe-mega-title > .wp-block-navigation-item__content:hover,
+.koohe-nav .wp-block-navigation-item.koohe-mega > .wp-block-navigation__submenu-container > .koohe-mega-title > .wp-block-navigation-item__content:focus-visible {
+	background: none;
+	color: var(--koohe-accent);
+}
+
+/* -------------------------------------------------------------------------
+ * گروه ژانرها — `.mega-genres` مرجع: شبکه‌ی سه‌ستونه با فاصله‌ی ۷px.
+ * برچسب گروه («ژانرها») در پنل دیده نمی‌شود؛ مرجع هم سرستونی ندارد.
+ * ---------------------------------------------------------------------- */
+
+.koohe-nav .wp-block-navigation-item.koohe-mega-group.koohe-mega-genres {
+	display: block;
+	align-self: stretch;
+}
+
+.koohe-nav .wp-block-navigation-item.koohe-mega-group.koohe-mega-genres > .wp-block-navigation-item__content,
+.koohe-nav .wp-block-navigation-item.koohe-mega-group.koohe-mega-genres > .wp-block-navigation-submenu__toggle {
+	display: none;
+}
+
+/*
+ * هسته زیرمنوی بسته را با `visibility:hidden; width:0; height:0` پنهان
+ * می‌کند (`.wp-block-navigation .has-child .wp-block-navigation__submenu-container`).
+ * گروه‌های پنل «منو» نیستند؛ محتوای همیشه‌بازند، پس همان قاعده با
+ * ویژگی بالاتر خنثی می‌شود.
+ */
+.koohe-nav .wp-block-navigation-item.koohe-mega > .wp-block-navigation__submenu-container ul.koohe-mega-group.koohe-mega-genres {
+	position: static;
+	display: grid;
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+	gap: 7px;
+	width: auto;
+	height: auto;
+	min-width: 0;
+	margin: 0;
+	padding: 0;
+	background: none;
+	border: 0;
+	border-radius: 0;
+	box-shadow: none;
+	overflow: visible;
+	visibility: visible;
+	opacity: 1;
+}
+
+/*
+ * سرستون پنل نباید با کشیده‌شدن ردیف‌های شبکه جابه‌جا شود؛ با
+ * `align-self:start` متن دقیقاً از بالای ردیف خودش شروع می‌شود
+ * (مرجع: eyebrow در y=114 و تیتر در y=139).
+ */
+.koohe-nav .wp-block-navigation-item.koohe-mega > .wp-block-navigation__submenu-container > .koohe-mega-eyebrow,
+.koohe-nav .wp-block-navigation-item.koohe-mega > .wp-block-navigation__submenu-container > .koohe-mega-title {
+	align-self: start;
+}
+
+/* -------------------------------------------------------------------------
+ * گروه «به انتخاب سینورا» — ستون میانی مرجع (`.mega-quick`):
+ * خط جداکننده‌ی سمت راست، پدینگ ۲۵px، ردیف‌های ۱۹px با آیکون accent.
+ * ---------------------------------------------------------------------- */
+
+.koohe-nav .wp-block-navigation-item.koohe-mega-group.koohe-mega-quick {
+	display: block;
+	align-self: stretch;
+	/*
+	 * ستون میانی مرجع (`padding-right:25px` + خط جداکننده‌ی سمت راست).
+	 * در چیدمان راست‌به‌چپ، «سمت راست» همان `inline-start` است؛ یعنی
+	 * همان سویی که رو به ستون ژانرها است.
+	 */
+	border-inline-start: 1px solid var(--koohe-border);
+	padding-inline-start: 25px;
+}
+
+.koohe-nav .wp-block-navigation-item.koohe-mega-group.koohe-mega-quick > .wp-block-navigation-submenu__toggle {
+	display: none;
+}
+
+/*
+ * برچسب گروه، همان `eyebrow` ستون در مرجع است. هسته به محتوای زیرمنو
+ * `flex-grow:1` می‌دهد؛ اینجا صفر می‌شود تا سطر سرستون قدِ خودش را
+ * داشته باشد و ۱۷px فاصله (فاصله‌ی ردیف‌های `.mega-quick` مرجع) با
+ * نخستین ردیف بگیرد.
+ */
+.koohe-nav .wp-block-navigation-item.koohe-mega-group.koohe-mega-quick > .wp-block-navigation-item__content {
+	display: flex;
+	flex-grow: 0;
+	justify-content: flex-start;
+	margin-bottom: 17px;
+	padding: 0;
+	background: none;
+	color: var(--koohe-accent);
+	font-size: .625rem;
+	font-weight: 500;
+	line-height: 1.5;
+	letter-spacing: 1.2px;
+}
+
+.koohe-nav .wp-block-navigation-item.koohe-mega-group.koohe-mega-quick > .wp-block-navigation-item__content::after {
+	display: none;
+}
+
+.koohe-nav .wp-block-navigation-item.koohe-mega > .wp-block-navigation__submenu-container ul.koohe-mega-group.koohe-mega-quick {
+	position: static;
+	display: flex;
+	flex-direction: column;
+	gap: 17px;
+	width: auto;
+	height: auto;
+	min-width: 0;
+	margin: 0;
+	padding: 0;
+	background: none;
+	border: 0;
+	border-radius: 0;
+	box-shadow: none;
+	overflow: visible;
+	visibility: visible;
+	opacity: 1;
+}
+
+/*
+ * ردیف‌ها ۱۹px‌اند و بدون پدینگ — دقیقاً `.mega-quick>a` مرجع. زنجیره‌ی
+ * کامل نوشته می‌شود تا قاعده‌ی عمومی چیپ‌ها (۹px پدینگ) بازنده بماند.
+ */
+.koohe-nav .wp-block-navigation-item.koohe-mega > .wp-block-navigation__submenu-container ul.koohe-mega-group.koohe-mega-quick > li > .wp-block-navigation-item__content {
+	justify-content: flex-start;
+	gap: 10px;
+	padding: 0;
+	background: none;
+	border-radius: 0;
+	color: var(--koohe-text);
+	font-size: .6875rem;
+	line-height: 1.7;
+}
+
+.koohe-nav .wp-block-navigation-item.koohe-mega > .wp-block-navigation__submenu-container ul.koohe-mega-group.koohe-mega-quick > li > .wp-block-navigation-item__content::after {
+	display: none;
+}
+
+.koohe-nav .wp-block-navigation-item.koohe-mega > .wp-block-navigation__submenu-container ul.koohe-mega-group.koohe-mega-quick > li > .wp-block-navigation-item__content::before {
+	content: "";
+	flex: 0 0 auto;
+	width: 19px;
+	height: 19px;
+	background-color: var(--koohe-accent);
+	-webkit-mask: var(--koohe-mega-icon, var(--koohe-icon-sparkle)) center / contain no-repeat;
+	mask: var(--koohe-mega-icon, var(--koohe-icon-sparkle)) center / contain no-repeat;
+}
+
+/* آیکون هر ردیف، همان آیکون مرجع (ستاره، فیلم، پرچم، عوامل). */
+/* آیکون هر ردیف، همان آیکون مرجع (ستاره، فیلم، پرچم، عوامل). */
+.koohe-nav .wp-block-navigation-item.koohe-mega > .wp-block-navigation__submenu-container ul.koohe-mega-group.koohe-mega-quick > .koohe-mega-quick--rating > .wp-block-navigation-item__content {
+	--koohe-mega-icon: var(--koohe-icon-sparkle);
+}
+
+.koohe-nav .wp-block-navigation-item.koohe-mega > .wp-block-navigation__submenu-container ul.koohe-mega-group.koohe-mega-quick > .koohe-mega-quick--newest > .wp-block-navigation-item__content {
+	--koohe-mega-icon: var(--koohe-icon-film);
+}
+
+.koohe-nav .wp-block-navigation-item.koohe-mega > .wp-block-navigation__submenu-container ul.koohe-mega-group.koohe-mega-quick > .koohe-mega-quick--korean > .wp-block-navigation-item__content {
+	--koohe-mega-icon: var(--koohe-icon-flag);
+}
+
+.koohe-nav .wp-block-navigation-item.koohe-mega > .wp-block-navigation__submenu-container ul.koohe-mega-group.koohe-mega-quick > .koohe-mega-quick--cast > .wp-block-navigation-item__content {
+	--koohe-mega-icon: var(--koohe-icon-person);
+}
+
+.koohe-nav .wp-block-navigation-item.koohe-mega > .wp-block-navigation__submenu-container ul.koohe-mega-group.koohe-mega-quick > li > .wp-block-navigation-item__content:hover,
+.koohe-nav .wp-block-navigation-item.koohe-mega > .wp-block-navigation__submenu-container ul.koohe-mega-group.koohe-mega-quick > li > .wp-block-navigation-item__content:focus-visible {
+	background: none;
+	color: var(--koohe-accent);
+}
+
+/* -------------------------------------------------------------------------
+ * کارت ویژه — `.mega-feature` مرجع: پوستر تمام‌قد، گرادیان تیره، متن پایین.
+ * پوستر از سرور به‌صورت متغیر CSS تزریق می‌شود (بدون تصویر، همان گرادیان
+ * پالت قالب می‌ماند).
+ * ---------------------------------------------------------------------- */
+
+.koohe-nav .wp-block-navigation-item.koohe-mega > .wp-block-navigation__submenu-container > .koohe-mega-feature > .wp-block-navigation-item__content {
+	position: relative;
+	display: flex;
+	overflow: hidden;
+	border-radius: 10px;
+	min-height: 200px;
+	width: 100%;
+	height: 100%;
+	flex-direction: column;
+	justify-content: flex-end;
+	align-items: flex-start;
+	gap: 10px;
+	padding: 0 20px 21px;
+	text-align: start;
+	border: 0;
+	/* بدون پوستر، همان گرادیان پالت قالب جاگزین می‌شود. */
+	background-color: var(--koohe-surface-3);
+	background-image: linear-gradient(150deg, color-mix(in srgb, var(--koohe-accent) 26%, transparent), transparent 65%);
+	color: #fff;
+}
+
+/*
+ * پوستر کارت — معادل `.mega-feature>img` مرجع (عنصر واقعی تصویر، نه
+ * پس‌زمینه) تا ساختار هم عیناً یکی باشد. تصویر از فیلتر PHP تزریق
+ * می‌شود؛ نبودش کارت را بی‌پوستر می‌گذارد، نه خراب.
+ */
+.koohe-nav .wp-block-navigation-item.koohe-mega > .wp-block-navigation__submenu-container > .koohe-mega-feature .koohe-mega-feature__img {
+	position: absolute;
+	inset: 0;
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	margin: 0;
+	border-radius: 0;
+}
+
+/* گرادیان مرجع: `.mega-feature:after`. */
+.koohe-nav .wp-block-navigation-item.koohe-mega > .wp-block-navigation__submenu-container > .koohe-mega-feature > .wp-block-navigation-item__content::before {
+	content: "";
+	position: absolute;
+	inset: 0;
+	background: linear-gradient(0deg, #0d1218 5%, rgba(13, 18, 24, 0) 100%);
+}
+
+.koohe-nav .wp-block-navigation-item.koohe-mega > .wp-block-navigation__submenu-container > .koohe-mega-feature > .wp-block-navigation-item__content > * {
+	position: relative;
+	z-index: 1;
+}
+
+.koohe-nav .wp-block-navigation-item.koohe-mega > .wp-block-navigation__submenu-container > .koohe-mega-feature > .wp-block-navigation-item__content::after {
+	display: none;
+}
+
+/*
+ * سه سطر کارت، عیناً مرجع (`.mega-feature>span`):
+ *   small  → «انتخاب ویژه این هفته»  (از `description` آیتم راهبری)
+ *   strong → نام اثر                  (برچسب آیتم راهبری)
+ *   span   → «تماشای …» + شِوران     (از فیلتر PHP تزریق می‌شود)
+ * هسته متن `description` را با `display:none` پنهان می‌کند؛ قالب
+ * آگاهانه نمایشش می‌دهد — همان کاری که مرجع با `small` می‌کند.
+ */
+.koohe-nav .wp-block-navigation-item.koohe-mega > .wp-block-navigation__submenu-container > .koohe-mega-feature .wp-block-navigation-item__description {
+	display: block;
+	order: -2;
+	color: var(--wp--preset--color--accent, #c6ed7b);
+	font-size: .5625rem;
+	font-weight: 400;
+	line-height: 1.6;
+}
+
+.koohe-nav .wp-block-navigation-item.koohe-mega > .wp-block-navigation__submenu-container > .koohe-mega-feature > .wp-block-navigation-item__content .wp-block-navigation-item__label {
+	order: -1;
+	color: #fff;
+	font-size: 1.25rem;
+	font-weight: 700;
+	line-height: 1.6;
+}
+
+.koohe-nav .wp-block-navigation-item.koohe-mega > .wp-block-navigation__submenu-container > .koohe-mega-feature .koohe-mega-feature__cta {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	color: var(--wp--preset--color--accent, #c6ed7b);
+	font-size: .625rem;
+	font-weight: 400;
+	line-height: 1.6;
+}
+
+/* شِوران رو‌به‌پایین مرجع (`transform="rotate(90 12 12)"`). */
+.koohe-nav .wp-block-navigation-item.koohe-mega > .wp-block-navigation__submenu-container > .koohe-mega-feature .koohe-mega-feature__cta::after {
+	content: "";
+	flex: 0 0 auto;
+	width: 16px;
+	height: 16px;
+	background-color: currentColor;
+	-webkit-mask: var(--koohe-icon-chevron-down) center / contain no-repeat;
+	mask: var(--koohe-icon-chevron-down) center / contain no-repeat;
+}
+
+.koohe-nav .wp-block-navigation-item.koohe-mega > .wp-block-navigation__submenu-container > .koohe-mega-feature > .wp-block-navigation-item__content:hover,
+.koohe-nav .wp-block-navigation-item.koohe-mega > .wp-block-navigation__submenu-container > .koohe-mega-feature > .wp-block-navigation-item__content:focus-visible {
+	background-color: var(--koohe-surface-3);
+	color: #fff;
+}
+
+/* مرجع در ۱۳۰۰px فاصله‌ی لبه‌ها را به ۳۵px می‌رساند. */
+@media (min-width: 981px) and (max-width: 1300px) {
+	.koohe-nav .wp-block-navigation-item.koohe-mega > .wp-block-navigation__submenu-container {
+		inset-inline: 35px;
+	}
+}
+
+/*
+ * روی موبایل پنل تمام‌عرض جایی ندارد؛ همان فهرست تودرتوی کشویی می‌ماند.
+ * `min-width: 0` لازم است چون قاعده‌ی عمومی زیرمنو `min-width: 200px`
+ * دارد و در کشو ظرف را باریک نگه می‌داشت (سنجیده‌شده: ۲۰۰px).
+ */
+@media (max-width: 980px) {
+	.koohe-nav .wp-block-navigation-item.koohe-mega > .wp-block-navigation__submenu-container {
+		position: static;
+		display: block;
+		width: auto;
+		max-width: none;
+		padding: 0 0 6px;
+		padding-inline-start: 14px;
+		background: transparent;
+		border: 0;
+		border-radius: 0;
+		box-shadow: none;
+	}
+
+	.koohe-nav .wp-block-navigation-item.koohe-mega > .wp-block-navigation__submenu-container > .koohe-mega-feature,
+	.koohe-nav .wp-block-navigation-item.koohe-mega > .wp-block-navigation__submenu-container > .koohe-mega-group.koohe-mega-quick {
+		position: static;
+		width: auto;
+		padding-inline-start: 0;
+		border-inline-start: 0;
+	}
+
+	/* در کشو کارت ویژه یک ردیف معمولی می‌شود، نه کارتِ مطلق. */
+	.koohe-nav .wp-block-navigation-item.koohe-mega > .wp-block-navigation__submenu-container > .koohe-mega-feature > .wp-block-navigation-item__content {
+		min-height: 0;
+		padding: 10px;
+		border-radius: 6px;
+		background-image: none;
+	}
+
+	.koohe-nav .wp-block-navigation-item.koohe-mega > .wp-block-navigation__submenu-container > .koohe-mega-feature > .wp-block-navigation-item__content::before,
+	.koohe-nav .wp-block-navigation-item.koohe-mega > .wp-block-navigation__submenu-container > .koohe-mega-feature .koohe-mega-feature__img,
+	.koohe-nav .wp-block-navigation-item.koohe-mega > .wp-block-navigation__submenu-container > .koohe-mega-feature .koohe-mega-feature__cta {
+		display: none;
+	}
+
+	.koohe-nav .wp-block-navigation-item.koohe-mega > .wp-block-navigation__submenu-container > .koohe-mega-feature .wp-block-navigation-item__label {
+		color: var(--koohe-text);
+		font-size: .8125rem;
+	}
+
+	.koohe-nav .wp-block-navigation-item.koohe-mega > .wp-block-navigation__submenu-container > .koohe-mega-feature .wp-block-navigation-item__description {
+		color: var(--koohe-accent);
+		font-size: .6875rem;
+	}
+
+	.koohe-nav .wp-block-navigation-item.koohe-mega-group.koohe-mega-genres > .wp-block-navigation-item__content {
+		display: flex;
+	}
+
+	.koohe-nav ul.koohe-mega-group.koohe-mega-quick > li > .wp-block-navigation-item__content {
+		margin-inline-start: 0;
+	}
+}
+
+/*
+ * جانشین سازگاری برای فهرست‌های راهبری‌ای که مدیر خودش ساخته است (بدون
+ * گروه‌های `koohe-mega-group`): چیپ‌ها در یک ستون می‌نشینند تا پنل به‌هم
+ * نریزد. فهرست ساخته‌ی خود قالب همیشه گروه‌ها را دارد.
+ */
+.koohe-nav .wp-block-navigation-item.koohe-mega > .wp-block-navigation__submenu-container:not(:has(> .koohe-mega-group)) > .koohe-mega-genre {
+	grid-column: 1;
 }
 
 /* زیرمنوی ناوبری */
@@ -563,6 +1436,17 @@ table {
 	padding-top: 56px;
 	gap: 4px;
 	width: 100%;
+}
+
+/*
+ * در کشو، ظرف فهرست فقط به اندازه‌ی محتوای خودش عرض می‌گرفت (سنجیده‌شده:
+ * ۱۵۲px در برابر ۳۵۸px ناحیه‌ی محتوا) و آیتم‌ها به لبه‌ی راست می‌چسبیدند،
+ * در حالی که مرجع ردیف‌های تمام‌عرض دارد (`.mobile-drawer nav a` با
+ * `justify-content: space-between`). این قاعده همان کشیدگی را برمی‌گرداند.
+ */
+.koohe-nav .wp-block-navigation__responsive-container.is-menu-open .wp-block-navigation__responsive-container-content .wp-block-navigation__container {
+	width: 100%;
+	align-items: stretch;
 }
 
 /* دکمه‌ی بستن (×) — هم‌شکل با دیگر دکمه‌های آیکونی قالب. */
@@ -683,6 +1567,29 @@ table {
 	border-bottom: 0;
 }
 
+/*
+ * در overlay هسته قاعده‌ای با ویژگی (۰٫۵٫۰) روی زیرمنوها `min-width: 200px`
+ * می‌گذارد و زیرمنوی مگامنو را در کشو باریک نگه می‌داشت (سنجیده‌شده: ۲۰۰px
+ * در برابر ستون ۳۵۸px کشو). این قاعده با (۰٫۶٫۰) آن را خنثی می‌کند و
+ * ظاهر را هم‌اندازه‌ی زیرمنوهای معمول کشو می‌کند.
+ */
+.koohe-nav .wp-block-navigation__responsive-container.is-menu-open .wp-block-navigation__responsive-container-content .koohe-mega > .wp-block-navigation__submenu-container {
+	min-width: 0;
+	/*
+	 * در کشو پنل را تمام‌عرض می‌خواهیم؛ پس جای `margin-inline-start` از
+	 * تورفتگی پدینگ استفاده می‌کنیم تا ۶px سرریز نکند.
+	 */
+	width: 100%;
+	margin-inline-start: 0;
+	padding: 0 0 6px;
+	padding-inline-start: 14px;
+	border: 0;
+	border-inline-start: 1px solid var(--koohe-border);
+	border-radius: 0;
+	box-shadow: none;
+	background: transparent;
+}
+
 .koohe-nav .wp-block-navigation__responsive-container.is-menu-open .wp-block-navigation__submenu-container .wp-block-navigation-item__content.wp-block-navigation-item__content {
 	min-height: 40px;
 	font-size: var(--wp--preset--font-size--small, .9375rem);
@@ -723,6 +1630,570 @@ table {
 /* احترام به کاهش حرکت: انیمیشن محو شدن هسته را خاموش می‌کنیم. */
 @media (prefers-reduced-motion: reduce) {
 	.koohe-nav .wp-block-navigation__responsive-container.is-menu-open {
+		animation: none;
+	}
+}
+
+/*
+ * آستانه‌ی جمع‌شدن ناوبری درون‌خطی.
+ *
+ * طرح مرجع در `max-width:980px` کلاس `.desktop-nav` را پنهان می‌کند و
+ * فقط دکمه‌ی منو می‌ماند. هسته‌ی وردپرس اما فقط زیر ۶۰۰px ظرف فهرست را
+ * پنهان می‌کند؛ بنابراین در بازه‌ی ۶۰۰–۹۸۰px فهرست درون‌خطی نمایش داده
+ * می‌شد که نه با مرجع می‌خواند و نه جا می‌شد (سنجیده‌شده در ۷۰۰px: جعبه‌ی
+ * فهرست از جعبه‌ی ناوبری بیرون می‌زد و روی دکمه‌ی مگامنو می‌افتاد).
+ * اکنون در همان آستانه، فهرست درون‌خطی جمع می‌شود و پوسته‌ی تمام‌صفحه‌ی
+ * همین دکمه‌ی منو (که از پیش پیاده شده) جایش را می‌گیرد. ظرف باز
+ * (`is-menu-open`) دست‌نخورده می‌ماند تا خود پوسته کار کند.
+ */
+@media (max-width: 1023px) {
+	.koohe-nav .wp-block-navigation__responsive-container:not(.is-menu-open) {
+		display: none;
+	}
+}
+
+/*
+ * سربرگ تبلت (۶۰۰–۷۶۸px): کنترل‌ها به اندازه‌ی تبلت مرجع.
+ *
+ * در این بازه سه گروه (نام سایت + دکمه‌ی منو + دسته‌بندی‌ها در یک سو، و
+ * آیکن جستجو + نشانگر حالت + حساب + خرید اشتراک در سوی دیگر) در ۵۵۲px
+ * جا نمی‌شدند؛ گروه ابتدایی به ۲۰۸px فشرده می‌شد و دکمه‌ی منو ۲۵px زیر
+ * دکمه‌ی دسته‌بندی‌ها می‌افتاد (سنجیده‌شده در ۶۰۰px: ham=[۱۷۳..۲۱۳] و
+ * mega=[۱۸۸..۲۶۷] → overlap_ham_vs_mega=true). مرجع در ۷۶۸px و کمتر همین
+ * کنترل‌ها را کوچک می‌کند (`.login-button>span{display:none}`،
+ * `.theme-toggle{width:28px}`، `.subscribe-button{font-size:9px}`)، پس
+ * همان راه اینجا هم می‌رود و ۶۰۰–۷۶۸px را بدون حذف هیچ قابلیتی جا می‌کند.
+ */
+@media (min-width: 600px) and (max-width: 980px) {
+	.koohe-header-start {
+		gap: 8px;
+	}
+
+	.koohe-header-end {
+		gap: 6px;
+	}
+
+	.koohe-brand {
+		min-width: 90px;
+		flex-shrink: 1;
+	}
+
+	.koohe-logo-text {
+		min-width: 0;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+}
+
+@media (min-width: 600px) and (max-width: 768px) {
+	/*
+	 * حساب فقط آیکن (متن، همان‌طور که مرجع در تبلت پنهان می‌کند).
+	 * پنهان‌سازی «دیداری» است تا نام پیوند برای صفحه‌خوان بماند
+	 * (axe: link-name, serious).
+	 */
+	.koohe-account-login .koohe-account-login__text {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		padding: 0;
+		margin: -1px;
+		overflow: hidden;
+		clip-path: inset(50%);
+		white-space: nowrap;
+		border: 0;
+	}
+
+	.koohe-account-login {
+		padding: 6px;
+	}
+
+	.koohe-account-login__icon {
+		display: block;
+	}
+}
+
+@media (min-width: 1024px) {
+	/*
+	 * در دسکتاپ دکمه‌ی منو لازم نیست.
+	 *
+	 * مرجع در `min-width:981px` فقط `.desktop-nav` را دارد و دکمه‌ی منو
+	 * مخصوص ۹۸۰px و کمتر است. دکمه در دسکتاپ هم ۶۳px از عرض سربرگ
+	 * (۴۰px دکمه + ۲۳px فاصله) را می‌گرفت و همان اندازه فهرست هشت‌آیتمی
+	 * را به اسکرول افقی می‌انداخت (سنجیده‌شده در ۱۴۴۰px: ۴۰۴px از ۴۳۲px).
+	 */
+	.koohe-nav .wp-block-navigation__responsive-container-open {
+		display: none;
+	}
+
+	/* فاصله‌ی فهرست همان ۱۷px مرجع در پهن‌های زیر ۱۳۰۰px. */
+	.koohe-nav .wp-block-navigation__container {
+		gap: 23px;
+	}
+}
+
+/*
+ * یک‌خطی‌کردن برچسب‌های ناوبری آزموده و رد شد.
+ *
+ * مرجع روی آیتم‌ها `white-space: nowrap` دارد، اما برچسب‌های آن کوتاه
+ * است؛ با فهرست واقعی این سایت (۸ آیتم شامل برچسب‌های چندکلمه‌ای) مجموع
+ * یک‌خطی به ۵۸۸–۶۳۰px می‌رسد و در ۱۴۴۰px فقط ۵ آیتم از ۸ دیده می‌شد
+ * (سنجیده‌شده: itemsFullyVisible=5/8). شکستن خط اگرچه کمی ناهمگون‌تر است،
+ * همه‌ی آیتم‌ها را بدون نیاز به اسکرول افقیِ نامرئی نشان می‌دهد؛
+ * بنابراین همان رفتار پیشین حفظ شد.
+ */
+
+/*
+ * بازه‌ی ۱۰۲۴–۱۴۰۰px: متریک‌های فشرده‌تر مرجع (همان روح `max-width:1300px`).
+ *
+ * سنجیده‌شده در ۱۱۰۰px: بدون این فشرده‌سازی، کادر فهرست ۱۹۱px جا می‌گرفت
+ * در حالی که ردیف آیتم‌ها به ۵۸۸px نیاز داشت؛ برچسب‌ها هم در دو–سه خط
+ * می‌شکستند. با فاصله‌های ۱۶/۸px، جستجوی ۱۵۰px و برچسب‌های یک‌خطی،
+ * ردیف جمع‌وجور می‌ماند و سرریز (اگر منو بلند باشد) با اسکرول افقی
+ * درون همان کادر مدیریت می‌شود.
+ */
+@media (min-width: 1024px) and (max-width: 1400px) {
+	.koohe-header-start {
+		gap: 16px;
+	}
+
+	.koohe-header-end {
+		gap: 8px;
+	}
+
+	.koohe-nav .wp-block-navigation__container {
+		gap: 17px;
+	}
+
+	.koohe-nav .wp-block-navigation-item__content {
+		white-space: nowrap;
+		line-height: 1.2;
+	}
+
+	/*
+	 * نشانه‌ی اسکرول: در این بازه اگر منو بلندتر از جا باشد، ردیف افقی
+	 * اسکرول می‌شود؛ نوار باریک، وجود آیتم‌های بیشتر را نشان می‌دهد
+	 * (به‌جای پنهان‌کردن کامل نوار).
+	 */
+	.koohe-nav .wp-block-navigation__container {
+		scrollbar-width: thin;
+	}
+}
+
+/*
+ * پله‌های پدینگ ظرف — همان مرجع.
+ *
+ * جدا نوشته شده‌اند تا ترتیب/روشن بودن پله‌ها صریح باشد و با پله‌های
+ * سربرگ در بخش ۳.۶ قاطی نشود.
+ */
+@media (max-width: 1300px) {
+	:root {
+		--koohe-container-pad: 35px;
+	}
+}
+
+@media (max-width: 980px) {
+	:root {
+		--koohe-container-pad: 28px;
+	}
+}
+
+@media (max-width: 768px) {
+	:root {
+		--koohe-container-pad: 20px;
+	}
+}
+
+@media (max-width: 480px) {
+	:root {
+		--koohe-container-pad: 16px;
+	}
+}
+
+@media (max-width: 360px) {
+	:root {
+		--koohe-container-pad: 14px;
+	}
+}
+
+/* =========================================================================
+ * 3.6 کشوی منوی موبایل (drawer)
+ *
+ * چه چیزی این‌جاست و چرا؟
+ * در ≤۹۸۰px مرجع، منوی دسکتاپ پنهان می‌شود و یک «کشوی کنار» از سمت راست
+ * باز می‌شود؛ نه پوشش تمام‌صفحه. بلوک ناوبری هسته در این حالت پوششِ
+ * تمام‌صفحه می‌سازد که با مرجع یکی نیست، پس بلوک سربرگ با
+ * `overlayMenu: never` رندر می‌شود و پوسته‌ی موبایل را بلوک
+ * `koohe/mobile-drawer` می‌سازد (inc/mobile-drawer.php).
+ *
+ * قاعده‌های زیر ترجمه‌ی یک‌به‌یک همان قاعده‌های مرجع‌اند — فقط رنگ‌ها از
+ * توکن‌های قالب می‌آیند تا حالت روشن/تیره و سفارشی‌ساز هم کار کند.
+ * اعداد سنجیده‌شده‌ی مرجع (۳۹۰px / ۷۶۸px):
+ *   کشو        x47/w343 و x423/w345، پدینگ ۲۴، پس‌زمینه‌ی --bg
+ *   پس‌زمینه   تمام‌صفحه، rgba(0,0,0,.6)، blur(5px)، z-index:100
+ *   ردیف‌ها    ۵۳px، font 13، padding 16px 5px، مرز 1px --border
+ *   جستجو      ۲۹۵×۴۲، font 12، بدون مرز و بدون پس‌زمینه
+ *   CTA        ۲۹۵×۴۳، accent، متن accent-contrast، r7
+ *   سطر پایانی font 11، muted، margin-top 20، تراز وسط
+ * ====================================================================== */
+
+/*
+ * دکمه‌ی آیکنی (مرجع: `.icon-button`) — هم دکمه‌ی بستن کشو و هم
+ * همبرگری از همین کلاس استفاده می‌کنند.
+ */
+.icon-button {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	flex-shrink: 0;
+	width: 36px;
+	height: 36px;
+	border: 0;
+	border-radius: 7px;
+	background: none;
+	color: var(--koohe-muted);
+	cursor: pointer;
+	transition: color var(--koohe-transition), background var(--koohe-transition);
+}
+
+.icon-button:hover,
+.icon-button:focus-visible {
+	background: var(--koohe-surface-2);
+	color: var(--koohe-accent);
+}
+
+/*
+ * دکمه‌ی همبرگری: فقط در ≤۹۸۰px.
+ *
+ * ترتیب مهم است — این قاعده باید پس از `.icon-button` بیاید، وگرنه
+ * `display: inline-flex` همان کلاس، این `display: none` را می‌بُرد
+ * (سنجیده‌شده: همبرگری در ۱۰۲۴px هم دیده می‌شد).
+ */
+.mobile-menu-button {
+	display: none;
+}
+
+/*
+ * پس‌زمینه‌ی کشو.
+ *
+ * بدون قاعده‌ی `display` نوشته شده است؛ همین باعث می‌شود ویژگی
+ * `hidden` (که در حالت بسته در مارک‌آپ هست) کار کند و کشو در بارگذاری
+ * اول دیده نشود.
+ */
+.drawer-backdrop {
+	position: fixed;
+	inset: 0;
+	/*
+	 * `margin: 0` لازم است: پوسته‌ی بلوک‌های هسته برای فرزندهای پس از
+	 * فرزند اولِ هر گروه، `margin-block-start` فاصله‌ی بلوک می‌گذارد
+	 * (سنجیده‌شده: ۲۲px). با آن، پوششِ `inset: 0` از بالا ۲۲px پایین
+	 * می‌افتاد و ارتفاعش ۸۲۲px می‌شد.
+	 */
+	margin: 0;
+	background: rgb(0 0 0 / 60%);
+	-webkit-backdrop-filter: blur(5px);
+	backdrop-filter: blur(5px);
+	z-index: 100;
+}
+
+.mobile-drawer {
+	position: absolute;
+	inset-block: 0;
+	/*
+	 * `inset-inline-start` — در RTL همان لبه‌ی راستِ مرجع (`right: 0`) و
+	 * در LTR لبه‌ی چپ؛ پس در هر دو جهت از «لبه‌ی شروع» باز می‌شود.
+	 */
+	inset-inline-start: 0;
+	width: min(345px, 88vw);
+	padding: 24px;
+	background: var(--koohe-surface);
+	/*
+	 * ارتفاع ردیف‌ها در مرجع از همین نسبت می‌آید: ۱۳px × ۱٫۵۴ = ۲۰px
+	 * محتوا + ۳۲px پدینگ + ۱px مرز = ۵۳px (سنجیده‌شده در مرجع).
+	 * بدون آن، line-height پیش‌فرض قالب ردیف را ۵۷px می‌کرد.
+	 */
+	line-height: 1.54;
+	overflow-y: auto;
+	overscroll-behavior: contain;
+	animation: drawerIn .25s ease;
+}
+
+/*
+ * در RTL، `translateX(100%)` کشو را از لبه‌ی راست بیرون می‌برد (همان
+ * مرجع). در چیدمان چپ‌به‌راست جهت فرق می‌کند، پس نسخه‌ی آینه‌ای هم
+ * تعریف شده است تا قالب در هر دو جهت درست بماند.
+ */
+@keyframes drawerIn {
+	from {
+		transform: translateX(100%);
+	}
+
+	to {
+		transform: translateX(0);
+	}
+}
+
+html[dir="ltr"] .mobile-drawer {
+	animation-name: drawerInLtr;
+}
+
+@keyframes drawerInLtr {
+	from {
+		transform: translateX(-100%);
+	}
+
+	to {
+		transform: translateX(0);
+	}
+}
+
+/* قفل پیمایش پس‌زمینه هنگام باز بودن کشو (مرجع: body.drawer-open). */
+body.drawer-open {
+	overflow: hidden;
+}
+
+.drawer-top {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	margin-bottom: 30px;
+}
+
+/* ردیف جستجو: پیل تمام‌عرض، بدون مرز و بدون پس‌زمینه (همان مرجع). */
+.mobile-drawer .header-search {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 8px;
+	width: 100%;
+	height: 42px;
+	padding: 0 10px;
+	border: 0;
+	border-radius: 6px;
+	background: none;
+	color: var(--koohe-muted);
+	font-family: inherit;
+	font-size: 12px;
+	line-height: 1;
+	cursor: pointer;
+	transition: color var(--koohe-transition);
+}
+
+.mobile-drawer .header-search:hover,
+.mobile-drawer .header-search:focus-visible {
+	color: var(--koohe-text);
+}
+
+.mobile-drawer nav {
+	display: flex;
+	flex-direction: column;
+	margin: 25px 0;
+}
+
+.mobile-drawer nav a {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 10px;
+	/* هدف لمسی ۵۳px — بالاتر از کمینه‌ی ۴۴px. */
+	padding: 16px 5px;
+	border-bottom: 1px solid var(--koohe-border);
+	color: var(--koohe-text);
+	font-size: 13px;
+	text-decoration: none;
+	transition: color var(--koohe-transition);
+}
+
+.mobile-drawer nav a:hover,
+.mobile-drawer nav a:focus-visible,
+.mobile-drawer nav a.is-current {
+	color: var(--koohe-accent);
+}
+
+.mobile-drawer nav a .drawer-chevron {
+	flex-shrink: 0;
+	color: var(--koohe-muted);
+}
+
+.mobile-drawer nav a:hover .drawer-chevron,
+.mobile-drawer nav a:focus-visible .drawer-chevron,
+.mobile-drawer nav a.is-current .drawer-chevron {
+	color: var(--koohe-accent);
+}
+
+/* دکمه‌ی اشتراک (مرجع: `a.button.primary.full`). */
+.mobile-drawer > .button {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 9px;
+	min-height: 43px;
+	padding: 11px 19px;
+	border: 1px solid transparent;
+	border-radius: 7px;
+	font-size: 12px;
+	font-weight: 600;
+	text-decoration: none;
+}
+
+.mobile-drawer > .button.full {
+	width: 100%;
+}
+
+.mobile-drawer > .button.primary {
+	background: var(--koohe-accent);
+	border-color: var(--koohe-accent);
+	color: var(--koohe-accent-contrast);
+}
+
+/* سطر پایانی. */
+.mobile-drawer > .muted {
+	margin: 20px 0 0;
+	color: var(--koohe-muted);
+	font-size: 11px;
+	line-height: 2;
+	text-align: center;
+}
+
+/*
+ * شکست عرض مرجع: تا ۹۸۰px همبرگری و کشو، از ۹۸۱px ناوبری دسکتاپ.
+ * اندازه‌های سربرگ هم همین‌جا با مرجع هم‌تراز می‌شوند:
+ *   ≤۹۸۰ → ارتفاع ۷۶ (مرجع `--header-height:76px`)، پدینگ ۲۸، gap ۱۶
+ *   ≤۷۶۸ → پدینگ ۲۰، gap ۱۳ | ≤۴۸۰ → ۱۶/۱۰ | ≤۳۶۰ → ۱۴/۸
+ */
+@media (max-width: 980px) {
+	:root {
+		--koohe-header-h: 76px;
+	}
+
+	/*
+	 * فاصله‌ی درونی گروه آغاز = فاصله‌ی فرزندهای سربرگ در مرجع
+	 * (همبرگری ↔ برند)، تا اندازه‌ی سنجیده‌شده‌ی مرجع به‌دست بیاید:
+	 * ۳۹۰px → همبرگری ۲۸×۳۲ در x=۳۴۶ و برند تا ۳۳۶.
+	 */
+	.koohe-header-start {
+		gap: 16px;
+	}
+
+	/*
+	 * ویژهگی لازم است: هسته برای پشتیبانی چیدمان، `body .is-layout-flex`
+	 * را با ویژهگی (0,1,1) چاپ می‌کند و از `.koohe-nav` (0,1,0) برنده
+	 * می‌شد؛ نتیجه این بود که ناوبری دسکتاپ در ۳۹۰px هم دیده می‌شد.
+	 */
+	.koohe-nav.wp-block-navigation {
+		display: none;
+	}
+
+	.mobile-menu-button {
+		display: inline-flex;
+	}
+
+	.koohe-header > .koohe-header-inner {
+		padding-inline: 28px;
+		gap: 16px;
+	}
+
+	/*
+	 * دکمه‌ی اشتراک — اعداد سنجیده‌شده‌ی مرجع در ۴۸۱–۹۸۰px:
+	 * قلم ۹px، پدینگ `8px 10px` (مرجع در ۵۹۹px و ۷۶۸px همین است).
+	 */
+	.koohe-header-cta .wp-block-button,
+	.koohe-header-cta .wp-block-button__link {
+		font-size: 9px;
+	}
+
+	.koohe-header-cta .wp-block-button__link {
+		padding: 8px 10px;
+	}
+}
+
+@media (max-width: 768px) {
+	.koohe-header > .koohe-header-inner {
+		padding-inline: 20px;
+		gap: 13px;
+	}
+
+	.koohe-header-start {
+		gap: 13px;
+	}
+}
+
+@media (max-width: 480px) {
+	.koohe-header > .koohe-header-inner {
+		padding-inline: 16px;
+		gap: 10px;
+	}
+
+	.koohe-header-start {
+		gap: 10px;
+	}
+
+	/* مرجع: `.header-actions{gap:7px}` در ≤۴۸۰px. */
+	.koohe-header-end {
+		gap: 7px;
+	}
+
+	.mobile-menu-button {
+		width: 28px;
+		height: 32px;
+		padding: 0;
+	}
+
+	/*
+	 * اندازه‌ی کنترل‌های سربرگ در ≤۴۸۰px، همان مرجع:
+	 *   `.header-search{width:27px}` · `.login-button{width:23px}` ·
+	 *   `.subscribe-button{font-size:8px;padding:8px 9px}`
+	 * با این سه، جمع پهنای سربرگ در ۳۹۰px حدود ۳۵px آزاد می‌کند و —
+	 * مثل مرجع — دیگر نیازی به فشرده‌کردن فاصله‌ها نیست.
+	 */
+	.koohe-header-end .koohe-search-trigger {
+		width: 27px;
+		height: 32px;
+	}
+
+	.koohe-header-end .koohe-account-login {
+		width: 23px;
+		justify-content: center;
+	}
+
+	/* مرجع در ≤۴۸۰px: `.subscribe-button{font-size:8px;padding:8px 9px;gap:5px}`
+	   و `.subscribe-button>svg{width:13px}`. */
+	.koohe-header-cta .wp-block-button,
+	.koohe-header-cta .wp-block-button__link {
+		font-size: 8px;
+	}
+
+	.koohe-header-cta .wp-block-button__link {
+		padding: 8px 9px;
+		gap: 5px;
+	}
+
+	.koohe-header-cta .wp-block-button__link::before {
+		width: 13px;
+		height: 13px;
+	}
+}
+
+@media (max-width: 360px) {
+	/* مرجع در ۳۲۰–۳۶۰px آیکن دکمه‌ی اشتراک را پنهان می‌کند
+	   (پهنای svg صفر می‌شود) تا دکمه در سربرگ جا شود. */
+	.koohe-header-cta .wp-block-button__link::before {
+		display: none;
+	}
+
+	.koohe-header > .koohe-header-inner {
+		padding-inline: 14px;
+		gap: 8px;
+	}
+
+	.koohe-header-start {
+		gap: 8px;
+	}
+}
+
+/* حرکت کمتر: انیمیشن ورود کشو خاموش می‌شود. */
+@media (prefers-reduced-motion: reduce) {
+	.mobile-drawer {
 		animation: none;
 	}
 }
@@ -1270,48 +2741,46 @@ html:not([dir="rtl"]) .koohe-toggle[aria-pressed="true"] .koohe-toggle-thumb {
 	}
 }
 
-/* =========================================================================
- * صفحه‌ی عامل (بازآفرینی person-hero سینورا)
- * ====================================================================== */
-
-.koohe-person-hero {
-	position: relative;
-	overflow: hidden;
-	padding: 37px;
-	border: 1px solid var(--koohe-border);
-	border-radius: 14px;
-	background: linear-gradient(135deg, var(--koohe-surface-2), var(--koohe-surface));
-}
-
-.koohe-person-portrait img {
-	width: 100%;
-	display: block;
-	object-fit: cover;
-	object-position: 50% 12%;
-	filter: saturate(.75);
-	transition: filter var(--koohe-transition), transform .4s;
-}
-
-.koohe-person-hero:hover .koohe-person-portrait img {
-	filter: saturate(1);
-}
-
-.koohe-person-english {
-	margin: 0;
+/*
+ * اطلاعیه‌ی زیر جدول طرح‌ها — همان `.pricing-disclaimer` مرجع:
+ *   `{display:flex;justify-content:center;align-items:center;gap:8px;
+ *     font-size:10px;color:var(--muted);margin-top:27px;line-height:2;
+ *     text-align:center}` و پله‌ی ≤۷۶۸ (۹px، gap ۷، line-height 2.3،
+ *   `align-items:flex-start`). نشان، رنگ تاکید دارد.
+ */
+.koohe-pricing-disclaimer {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 8px;
+	margin: 27px 0 0;
 	color: var(--koohe-muted);
-	font-size: .8125rem;
-	letter-spacing: .4px;
+	font-size: 10px;
+	line-height: 2;
+	text-align: center;
 }
 
-@media (max-width: 781px) {
-	.koohe-person-hero {
-		padding: 22px;
-	}
+.koohe-pricing-disclaimer svg {
+	flex: none;
+	color: var(--koohe-accent);
+}
 
-	.koohe-person-portrait {
-		max-width: 200px;
+@media (max-width: 768px) {
+	.koohe-pricing-disclaimer {
+		align-items: flex-start;
+		gap: 7px;
+		font-size: 9px;
+		line-height: 2.3;
 	}
 }
+
+/*
+ * برگه‌ی «چهره» دیگر از کلاس‌های `koohe-person-*` استفاده نمی‌کند؛
+ * چیدمانش مثل مرجع سینورا با `.person-hero` / `.person-portrait` /
+ * `.person-english` و در `front.css` بخش ۱۹.۲ آمد. قواعد قدیمی
+ * حذف شد تا گزینشگر یتیم نماند (آزمون `test-responsive.cjs`).
+ */
+
 
 /* =========================================================================
  * چیدمان browse سینورا: سایدبار فیلتر + نتایج ۴ستونه
@@ -1428,16 +2897,31 @@ html:not([dir="rtl"]) .koohe-toggle[aria-pressed="true"] .koohe-toggle-thumb {
 	z-index: 1;
 }
 
+/*
+ * هندسه‌ی هیرو — اعداد سنجیده‌شده‌ی مرجع:
+ *   `.detail-main-info{display:flex;align-items:center;gap:35px;padding-top:4px}`
+ *   `.detail-poster{width:208px;aspect-ratio:2/3;border-radius:10px}` (≤۱۱۰۰: ۱۹۰px،
+ *   ≤۹۸۰: ۱۷۰px و `gap:25px`، ≤۷۶۸: `gap:0;padding-top:0` و پوستر پنهان)
+ *   `.detail-copy{max-width:695px}`
+ * پیش‌تر ۲۶۰px با فاصله‌ی ۳۴ و پدینگ ۱۸ بود و «کادر پوستر» بدون تصویر
+ * به ۲px جمع می‌شد (چون `aspect-ratio` فقط روی `img` بود).
+ */
 .koohe-detail-hero__main {
 	display: grid;
-	grid-template-columns: 260px minmax(0, 1fr);
-	gap: 34px;
+	grid-template-columns: 208px minmax(0, 1fr);
+	gap: 35px;
 	align-items: start;
-	padding-top: 18px;
+	padding-top: 4px;
+}
+
+.koohe-detail-hero__copy {
+	max-width: 695px;
 }
 
 .koohe-detail-hero__poster {
 	position: relative;
+	/* کادر پوستر همیشه ۲:۳ می‌ماند، حتی وقتی اثر تصویر شاخص ندارد. */
+	aspect-ratio: 2 / 3;
 	border-radius: 14px;
 	overflow: hidden;
 	border: 1px solid var(--koohe-border);
@@ -1467,8 +2951,10 @@ html:not([dir="rtl"]) .koohe-toggle[aria-pressed="true"] .koohe-toggle-thumb {
 .koohe-detail-hero__tags {
 	display: flex;
 	align-items: center;
-	gap: 8px;
+	/* مرجع: `.detail-top-tags{gap:13px;font-size:9px}`. */
+	gap: 13px;
 	flex-wrap: wrap;
+	font-size: .5625rem;
 }
 
 .koohe-detail-hero__tags span {
@@ -1478,7 +2964,7 @@ html:not([dir="rtl"]) .koohe-toggle[aria-pressed="true"] .koohe-toggle-thumb {
 	border-radius: 5px;
 	background: color-mix(in srgb, var(--koohe-surface) 70%, transparent);
 	color: var(--koohe-muted);
-	font-size: .6875rem;
+	font-size: inherit;
 	font-weight: 600;
 	line-height: 1.6;
 }
@@ -1488,10 +2974,11 @@ html:not([dir="rtl"]) .koohe-toggle[aria-pressed="true"] .koohe-toggle-thumb {
 	border-color: color-mix(in srgb, var(--koohe-accent) 40%, var(--koohe-border));
 }
 
+/* مرجع: `.detail-copy h1{font-size:37px;line-height:1.9;margin-top:8px}`. */
 .koohe-detail-hero__copy h1 {
 	margin: 0;
-	font-size: clamp(1.6rem, 3.2vw, 2.5rem);
-	line-height: 1.8;
+	font-size: 2.3125rem;
+	line-height: 1.9;
 	letter-spacing: -1px;
 }
 
@@ -1505,10 +2992,11 @@ html:not([dir="rtl"]) .koohe-toggle[aria-pressed="true"] .koohe-toggle-thumb {
 .koohe-detail-hero__meta {
 	display: flex;
 	align-items: center;
-	gap: 12px;
+	/* مرجع: `.detail-meta{gap:15px;font-size:10px;margin-top:19px}`. */
+	gap: 15px;
 	flex-wrap: wrap;
 	color: var(--koohe-muted);
-	font-size: .8125rem;
+	font-size: .625rem;
 }
 
 .koohe-detail-hero__meta i {
@@ -1561,18 +3049,20 @@ html:not([dir="rtl"]) .koohe-toggle[aria-pressed="true"] .koohe-toggle-thumb {
 	color: var(--koohe-accent);
 }
 
+/* مرجع: `.detail-summary{max-width:650px;font-size:13px;line-height:2.3}`. */
 .koohe-detail-hero__summary {
-	max-width: 640px;
+	max-width: 650px;
 	margin: 0;
 	color: var(--koohe-muted);
-	font-size: .875rem;
-	line-height: 2.1;
+	font-size: .8125rem;
+	line-height: 2.3;
 }
 
+/* مرجع: `.detail-actions{gap:10px}` (و ۸px در ≤۴۸۰px). */
 .koohe-detail-hero__actions {
 	display: flex;
 	align-items: center;
-	gap: 8px;
+	gap: 10px;
 	flex-wrap: wrap;
 }
 
@@ -1585,20 +3075,57 @@ html:not([dir="rtl"]) .koohe-toggle[aria-pressed="true"] .koohe-toggle-thumb {
 	font-size: .6875rem;
 }
 
-@media (max-width: 1024px) {
+/* پله‌های هیرو — عیناً از مرجع (۱۱۰۰ / ۹۸۰ / ۷۶۸). */
+@media (max-width: 1100px) {
 	.koohe-detail-hero__main {
-		grid-template-columns: 210px minmax(0, 1fr);
-		gap: 24px;
+		grid-template-columns: 190px minmax(0, 1fr);
 	}
 }
 
-@media (max-width: 781px) {
+@media (max-width: 980px) {
 	.koohe-detail-hero__main {
-		grid-template-columns: 1fr;
+		grid-template-columns: 170px minmax(0, 1fr);
+		gap: 25px;
+	}
+
+	.koohe-detail-hero__copy h1 {
+		font-size: 1.8125rem;
+	}
+
+	.koohe-detail-hero__meta {
+		gap: 10px;
+	}
+
+	.koohe-detail-hero__summary {
+		font-size: .6875rem;
+	}
+}
+
+@media (max-width: 768px) {
+	.koohe-detail-hero__main {
+		grid-template-columns: minmax(0, 1fr);
+		gap: 0;
+		padding-top: 0;
 	}
 
 	.koohe-detail-hero__poster {
-		max-width: 220px;
+		display: none;
+	}
+
+	.koohe-detail-hero__copy h1 {
+		font-size: 1.75rem;
+	}
+
+	.koohe-detail-hero__meta {
+		font-size: .5625rem;
+	}
+
+	.koohe-detail-hero__summary {
+		font-size: .75rem;
+	}
+
+	.koohe-detail-hero__actions {
+		gap: 8px;
 	}
 }
 
@@ -1660,6 +3187,15 @@ html:not([dir="rtl"]) .koohe-toggle[aria-pressed="true"] .koohe-toggle-thumb {
 
 .koohe-content-block > * + * {
 	margin-block-start: var(--wp--preset--spacing--30, 1.5rem);
+}
+
+/*
+ * بخش «فصل‌ها و قسمت‌ها» فاصله‌ی خودش را دارد: مرجع این بخش را ۳۳px زیر
+ * بخش پیشین می‌نشاند (`.download-section{margin-top:33px}`)، نه با ریتم
+ * عمومی بخش‌ها (۲۲px).
+ */
+.koohe-content-block > * + .download-section {
+	margin-block-start: 33px;
 }
 
 .koohe-single-body {
@@ -1936,80 +3472,837 @@ html:not([dir="rtl"]) .koohe-toggle[aria-pressed="true"] .koohe-toggle-thumb {
 }
 
 /* =========================================================================
- * 11. دیدگاه‌ها
+ * 10.5 چیدمان دو‌ستونه‌ی برگه‌ی جزئیات — نسبت مرجع
  * ====================================================================== */
 
-.koohe-comments {
-	margin-top: var(--wp--preset--spacing--50, 3rem);
-	padding-top: var(--wp--preset--spacing--30, 1.5rem);
-	border-top: 1px solid var(--koohe-border);
+/*
+ * مرجع `.detail-layout` را با `1010px 282px` و فاصله‌ی ۳۶px می‌چیند
+ * (جمعاً ۱۳۲۸ = عرض قاب). ستون کناری در قالب ما ۳۲٪ بود و ۴۱۳px می‌شد؛
+ * یعنی متن‌های اصلی باریک‌تر و نوار کناری پهن‌تر از مرجع دیده می‌شدند.
+ * اینجا ستون کناری به اندازه‌ی مرجع قفل و ستون اصلی کشسان می‌شود؛ زیر
+ * ۹۸۱px همان رفتار پیشین (روی‌هم‌افتادن) حفظ می‌شود.
+ */
+@media (min-width: 1101px) {
+	.koohe-detail-layout {
+		flex-wrap: nowrap;
+		gap: 36px;
+	}
+
+	.koohe-detail-layout > .wp-block-column:first-child {
+		flex: 1 1 auto;
+		min-width: 0;
+	}
+
+	.koohe-detail-layout > .wp-block-column:nth-child(2) {
+		flex: 0 0 282px;
+		max-width: 282px;
+	}
+
+	.koohe-detail-layout > .wp-block-column:nth-child(2):last-child {
+		flex-basis: 282px;
+	}
 }
 
-.koohe-comment {
+/*
+ * پله‌های واکنش‌گرای مرجع برای همین چیدمان:
+ *   ≤۱۱۰۰ → ستون کناری ۲۴۸px و فاصله‌ی ۲۵px
+ *   ≤۹۸۰  → ستون کناری ۲۳۰px و فاصله‌ی ۲۱px
+ *   ≤۷۶۸  → ستون‌ها روی هم و نوار کناری پنهان
+ */
+@media (max-width: 1100px) and (min-width: 981px) {
+	.koohe-detail-layout {
+		flex-wrap: nowrap;
+		gap: 25px;
+	}
+
+	.koohe-detail-layout > .wp-block-column:first-child {
+		flex: 1 1 auto;
+		min-width: 0;
+	}
+
+	.koohe-detail-layout > .wp-block-column:nth-child(2) {
+		flex: 0 0 248px;
+		max-width: 248px;
+	}
+}
+
+@media (max-width: 980px) and (min-width: 769px) {
+	.koohe-detail-layout {
+		flex-wrap: nowrap;
+		gap: 21px;
+	}
+
+	.koohe-detail-layout > .wp-block-column:first-child {
+		flex: 1 1 auto;
+		min-width: 0;
+	}
+
+	.koohe-detail-layout > .wp-block-column:nth-child(2) {
+		flex: 0 0 230px;
+		max-width: 230px;
+	}
+}
+
+@media (max-width: 768px) {
+	.koohe-detail-layout {
+		display: block;
+	}
+
+	.koohe-detail-layout > .wp-block-column {
+		flex-basis: auto;
+		max-width: none;
+	}
+
+	/* مرجع در این عرض نوار کناری را پنهان می‌کند. */
+	.koohe-detail-layout .koohe-sidebar {
+		display: none;
+	}
+}
+
+/* =========================================================================
+ * 11. دیدگاه‌ها — هم‌شکل `.comments-section` مرجع
+ * ====================================================================== */
+
+/*
+ * نگاشت ساختار:
+ *   `.comments-section`      → پوشش بلوک `core/comments` (کلاس طراحی ما)
+ *   `.section-heading` + h2  → `core/comments-title` (با فیلتر قالب)
+ *   `.comment-item`          → گروه هر دیدگاه در `comment-template`
+ *   `.comment-compose`       → `#respond` (فرم `post-comments-form`)
+ *   `.comment-list`          → `.wp-block-comment-template`
+ * هسته‌ی وردپرس کلاس‌های درونی خودش را می‌سازد؛ همین گزینشگرها آن‌ها را
+ * به ظاهر مرجع نگاشت می‌کنند.
+ */
+
+.comments-section {
+	margin-top: 40px;
+}
+
+/* سرصفحه‌ی دیدگاه‌ها، مثل `.section-heading .heading-title` مرجع. */
+.comments-section .section-heading {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 22px;
+	margin-bottom: 23px;
+	min-height: 37px;
+}
+
+.comments-section .heading-title {
+	display: flex;
+	align-items: center;
+	/* مرجع: `.comments-section .heading-title{gap:9px}`. */
+	gap: 9px;
+}
+
+.comments-section .section-icon {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	color: var(--koohe-accent);
+}
+
+.comments-section h2 {
+	margin: 0;
+	font-size: 1.125rem;
+	font-weight: 700;
+	line-height: 1.6;
+}
+
+.comments-section .count-badge {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	margin-inline-start: 8px;
+	padding: 2px 7px;
+	border-radius: 5px;
+	background: var(--koohe-surface-2);
+	color: var(--koohe-muted);
+	font-size: .5625rem;
+	font-weight: 400;
+	vertical-align: middle;
+}
+
+/* فهرست دیدگاه‌ها. */
+.comments-section .wp-block-comment-template {
+	margin-top: 12px;
+	padding: 0;
+	list-style: none;
+}
+
+.comments-section .comment-item {
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+	padding: 24px 0;
 	border-bottom: 1px solid var(--koohe-border);
 }
 
-.koohe-comment:last-child {
+.comments-section .comment-item:last-child {
 	border-bottom: 0;
 }
 
-.koohe-comment .wp-block-avatar img {
+.comments-section .wp-block-avatar img {
+	width: 33px;
+	height: 33px;
 	border-radius: 50%;
+	border: 1px solid color-mix(in srgb, var(--koohe-accent) 18%, transparent);
+	background: color-mix(in srgb, var(--koohe-accent) 10%, var(--koohe-surface));
 }
 
-.koohe-comment .wp-block-comment-author-name {
+/* نام و تاریخ دیدگاه، مثل `.comment-top` مرجع. */
+/*
+ * سطر بالا = `.comment-top` مرجع: آواتار، نام و تاریخ در **یک ردیف**
+ * با فاصله‌ی ۱۵px (در ≤۹۸۰px می‌شکند و فاصله ۱۰px می‌شود).
+ *
+ * قالب‌ها نام و تاریخ را در یک گروه تودرتو می‌گذارند؛ آن گروه در
+ * پیش‌فرض «بلوکی» است و نام و تاریخ زیر هم می‌افتادند، در حالی که
+ * مرجع کنار هم نشان می‌دهد.
+ */
+.comments-section .comment-item > .wp-block-group:first-child {
+	flex-wrap: wrap;
+	gap: 15px;
+}
+
+.comments-section .comment-item > .wp-block-group:first-child > .wp-block-group {
+	display: flex;
+	align-items: center;
+	flex-wrap: wrap;
+	gap: 15px;
+	margin: 0;
+}
+
+.comments-section .comment-item > .wp-block-group:first-child > .wp-block-group > * {
+	margin-block-start: 0;
+}
+
+.comments-section .comment-item .wp-block-group {
+	flex-wrap: wrap;
+}
+
+.comments-section .wp-block-comment-author-name {
+	margin: 0;
+	font-size: .6875rem;
 	font-weight: 700;
+}
+
+.comments-section .wp-block-comment-date {
 	margin: 0;
+	font-size: .5rem;
+	color: var(--koohe-muted);
 }
 
-.koohe-comment .wp-block-comment-date {
-	margin: 0;
+/*
+ * متن دیدگاه حالا با `<span class="comment-text">` از سمت افزونه
+ * پیچیده می‌شود (برای اسپویل‌ها)؛ استایل روی همان کلاس می‌نشیند تا
+ * چه دیدگاه عادی باشد چه اسپویل‌دار.
+ */
+.comments-section .comment-text {
+	display: block;
+	font-size: .75rem;
+	line-height: 2.3;
+	color: var(--koohe-muted);
+	white-space: pre-wrap;
 }
 
-.koohe-comment .wp-block-comment-reply-link a {
-	color: var(--koohe-accent);
-	font-weight: 600;
+/* اسپویل درون‌متنی: دکمه‌ی کوچک، مثل `.inline-spoiler` مرجع. */
+.comments-section .inline-spoiler {
+	display: inline-flex;
+	vertical-align: middle;
+	margin: 2px;
 }
 
-.koohe-comments .comment-form input[type="text"],
-.koohe-comments .comment-form input[type="email"],
-.koohe-comments .comment-form input[type="url"],
-.koohe-comments .comment-form textarea {
-	width: 100%;
-	padding: 10px 14px;
-	border: 1px solid var(--koohe-border);
-	border-radius: var(--koohe-radius-sm);
+/* مرجع: `.inline-spoiler{font-size:10px;padding:3px 8px;margin:2px;` +
+   `border:1px dashed #e3b89555;background:#e3b8950b;color:#d3ae86;border-radius:4px}`. */
+.comments-section .inline-spoiler__btn {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	margin: 2px;
+	padding: 3px 8px;
+	border: 1px dashed color-mix(in srgb, var(--koohe-spoiler) 33%, transparent);
+	border-radius: 4px;
+	background: color-mix(in srgb, var(--koohe-spoiler) 4%, transparent);
+	color: var(--koohe-spoiler-soft);
+	font: inherit;
+	font-size: .625rem;
+	cursor: pointer;
+}
+
+.comments-section .inline-spoiler.is-revealed .inline-spoiler__btn {
+	border-style: dotted;
 	background: var(--koohe-surface-2);
 	color: var(--koohe-text);
+	font-size: .75rem;
+}
+
+.comments-section .inline-spoiler__text {
+	display: inline;
+	color: var(--koohe-text);
+}
+
+/* اسپویل کل دیدگاه. */
+.comments-section .whole-spoiler {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	width: 100%;
+	padding: 14px;
+	border: 1px dashed color-mix(in srgb, var(--koohe-spoiler-soft) 27%, transparent);
+	border-radius: 7px;
+	background: color-mix(in srgb, var(--koohe-spoiler-soft) 2%, transparent);
+	color: var(--koohe-muted);
 	font: inherit;
-	font-size: .875rem;
+	font-size: .625rem;
+	line-height: 2;
+	text-align: start;
+	cursor: pointer;
+}
+
+.comments-section .whole-spoiler > b {
+	/* مرجع: `.whole-spoiler>b{font-size:9px;color:#d6b58c}`. */
+	margin-inline-start: auto;
+	color: var(--koohe-spoiler-soft);
+	font-size: .5625rem;
+	white-space: nowrap;
+}
+
+.comments-section .whole-spoiler__text {
+	display: block;
+	font-size: .75rem;
+	line-height: 2.3;
+	color: var(--koohe-muted);
+	white-space: pre-wrap;
+}
+
+.comments-section .spoiler-flag {
+	/* مرجع: `.comment-top>small{font-size:8px;color:#e3b895}`. */
+	color: var(--koohe-spoiler);
+	font-size: .5rem;
+	/* مرجع: `.comment-top>small{margin-inline-start:auto}`. */
+	margin-inline-start: auto;
+}
+
+/*
+ * گزینشگر مرتب‌سازی: مرجع `select` را `border:1px solid var(--border)`
+ * با `radius 7px`، پدینگ `9px 11px` و پس‌زمینه‌ی `--bg` می‌کند و در
+ * سرصفحه‌ی دیدگاه‌ها `font-size:9px;max-width:145px` می‌گذارد.
+ */
+.comments-section .comment-sort {
+	min-width: 0;
+	max-width: 145px;
+	padding: 9px 11px;
+	border: 1px solid var(--koohe-border);
+	border-radius: 7px;
+	background: var(--koohe-surface);
+	color: var(--koohe-text);
+	font: inherit;
+	font-size: .5625rem;
+	cursor: pointer;
 	transition: border-color var(--koohe-transition);
 }
 
-.koohe-comments .comment-form :is(input, textarea):focus {
+.comments-section .comment-sort:hover,
+.comments-section .comment-sort:focus {
 	border-color: var(--koohe-accent);
 	outline: none;
 }
 
-.koohe-comments .comment-form .submit {
-	padding: .6rem 1.4rem;
+.comments-section .reply-button,
+.comments-section .wp-block-comment-reply-link a {
+	display: flex;
+	align-items: center;
+	gap: 5px;
+	margin-top: 13px;
+	padding: 0;
 	border: 0;
-	border-radius: var(--koohe-radius-pill);
-	background: var(--koohe-accent);
-	color: var(--koohe-accent-contrast);
-	font-weight: 700;
-	font-size: .875rem;
+	background: transparent;
+	color: var(--koohe-muted);
+	font: inherit;
+	font-size: .5625rem;
 	cursor: pointer;
-	transition: opacity var(--koohe-transition);
 }
 
-.koohe-comments .comment-form .submit:hover {
-	opacity: .88;
+.comments-section .reply-button:hover {
+	color: var(--koohe-accent);
+}
+
+.comments-section .wp-block-comment-reply-link a {
+	color: var(--koohe-accent);
+	font-size: .625rem;
+	font-weight: 600;
+}
+
+.comments-section .wp-block-comment-edit-link a {
+	font-size: .625rem;
+}
+
+/* پرسمان: `.comment-compose` مرجع. */
+.comments-section .comment-respond {
+	margin-top: 12px;
+	padding: 21px;
+	border: 1px solid var(--koohe-border);
+	border-radius: 10px;
+	background: var(--koohe-surface-2);
+}
+
+/*
+ * عنوان فرم (`#reply-title`) در مرجع وجود ندارد؛ هسته آن را همیشه
+ * چاپ می‌کند. تا وقتی «لغو پاسخ» نمایان نشده (یعنی کاربر دارد به یک
+ * دیدگاه پاسخ می‌دهد) پنهان می‌ماند.
+ */
+.comments-section .comment-reply-title {
+	display: none;
+	margin: 0 0 15px;
+	font-size: .6875rem;
+	font-weight: 600;
+}
+
+.comments-section .comment-reply-title:has( #cancel-comment-reply-link:not([style*="display:none"]) ) {
+	display: block;
+}
+
+.comments-section .comment-reply-title small {
+	font-size: .5625rem;
+	color: var(--koohe-muted);
+}
+
+/* سرصفحه‌ی «دیدگاهت بخشی از داستان ماست.» */
+.comments-section .compose-header {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	margin-bottom: 15px;
+}
+
+.comments-section .compose-header > p {
+	margin: 0;
+	color: var(--koohe-muted);
+	font-size: .6875rem;
+}
+
+.comments-section .comment-avatar {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	flex-shrink: 0;
+	width: 33px;
+	height: 33px;
+	border: 1px solid color-mix(in srgb, var(--koohe-accent) 18%, transparent);
+	border-radius: 50%;
+	background: color-mix(in srgb, var(--koohe-accent) 10%, var(--koohe-surface-2));
+	color: var(--koohe-accent);
+	font-size: .875rem;
+}
+
+.comments-section .comment-form {
+	display: grid;
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+	gap: 11px;
+}
+
+/*
+ * مرجع میدان‌های هویتی ندارد (کاربر وارد شده است). نام، ایمیل و وب‌سایت
+ * در یک ردیف سه‌ستونی می‌نشینند تا فرم مهمان به بلندی مرجع نزدیک بماند؛
+ * متن دیدگاه، سرصفحه و سطر ابزارها تمام‌عرض می‌مانند.
+ */
+.comments-section .comment-form > .compose-header,
+.comments-section .comment-form > .comment-form-comment,
+.comments-section .comment-form > .compose-actions,
+.comments-section .comment-form > .form-submit,
+.comments-section .comment-form > .comment-form-cookies-consent,
+.comments-section .comment-form > .logged-in-as,
+.comments-section .comment-form > .comment-notes {
+	grid-column: 1 / -1;
+}
+
+@media (max-width: 599px) {
+	.comments-section .comment-form {
+		grid-template-columns: minmax(0, 1fr);
+	}
+}
+
+/* سطر ابزارها: اسپویل، چک‌باکس، شمارنده و دکمه‌ی ارسال. */
+.comments-section .compose-actions {
+	display: flex;
+	align-items: center;
+	flex-wrap: wrap;
+	gap: 13px;
+	margin-top: 13px;
+}
+
+.comments-section .compose-actions > label {
+	display: flex;
+	align-items: center;
+	gap: 5px;
+	color: var(--koohe-muted);
+	font-size: .5rem;
+}
+
+.comments-section .compose-actions > label input {
+	width: 12px;
+	height: 12px;
+	margin: 0;
+}
+
+/* دکمه‌ی ارسال: مرجع در این سطر دکمه را ۳۲px با فونت ۹px می‌کند. */
+.comments-section .compose-actions .manacore-btn,
+.comments-section .compose-actions .form-submit .manacore-btn {
+	min-height: 32px;
+	padding: 9px 12px;
+	gap: 6px;
+	font-size: .5625rem;
+}
+
+.comments-section .compose-actions > .comment-length {
+	margin-inline-start: auto;
+	color: var(--koohe-muted);
+	font-size: .5rem;
+}
+
+.comments-section .spoiler-tool {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	padding: 7px 9px;
+	border: 1px solid var(--koohe-border);
+	border-radius: 5px;
+	background: transparent;
+	color: var(--koohe-muted);
+	font: inherit;
+	font-size: .5625rem;
+	cursor: pointer;
+	transition: color var(--koohe-transition), border-color var(--koohe-transition);
+}
+
+.comments-section .spoiler-tool:hover,
+.comments-section .spoiler-tool:focus-visible {
+	border-color: var(--koohe-accent);
+	color: var(--koohe-accent);
+}
+
+.comments-section .compose-note {
+	margin: 12px 0 0;
+	color: var(--koohe-muted);
+	font-size: .5rem;
+	line-height: 2;
+}
+
+/*
+ * هسته هر میدان را در یک `<p>` می‌گذارد و پوسته‌ی ما به پاراگراف‌ها
+ * فاصله‌ی پیش‌فرض می‌دهد؛ نتیجه، فرمی بسیار بلندتر از `.comment-compose`
+ * مرجع بود (۷۹۰px در برابر ۲۸۸px). فاصله از خود `gap` می‌آید.
+ */
+.comments-section .comment-form > p {
+	margin: 0;
+	min-width: 0;
+}
+
+.comments-section .comment-form label {
+	display: block;
+	margin-bottom: 4px;
+	color: var(--koohe-muted);
+	font-size: .5rem;
+}
+
+/*
+ * مرجع: همان اندازه‌ی متن پایه (۱۴px) با خط‌ارتفاع ۲ و کادر دوسطری
+ * (ارتفاع ۸۰px). `min-height: 107px` جای دیگری در مرجع
+ * (`.comment-compose`) است، نه این فرم.
+ */
+/*
+ * گزینشگر با یک کلاس بیشتر از قاعده‌ی دسته‌جمعی فیلدها
+ * (`.comments-section .comment-form :is(…)`) نوشته می‌شود تا اندازه‌ی
+ * ۱۴px مرجع را نگه دارد؛ آن قاعده برای فیلدهای هویتی ۱۱px می‌ماند.
+ */
+.comments-section .comment-form .comment-form-comment textarea {
+	min-height: 80px;
+	font-size: .875rem;
+	line-height: 2;
+	resize: vertical;
+}
+
+.comments-section .comment-form input[type="text"],
+.comments-section .comment-form input[type="email"],
+.comments-section .comment-form input[type="url"],
+.comments-section .comment-form textarea {
+	width: 100%;
+	padding: 11px 13px;
+	border: 1px solid var(--koohe-border);
+	border-radius: 7px;
+	background: var(--koohe-surface);
+	color: var(--koohe-text);
+	font: inherit;
+	font-size: .6875rem;
+	transition: border-color var(--koohe-transition);
+}
+
+.comments-section .comment-form :is(input, textarea):focus {
+	border-color: var(--koohe-accent);
+	outline: none;
+}
+
+.comments-section .comment-form .comment-notes,
+.comments-section .comment-form .logged-in-as {
+	margin: 0;
+	font-size: .5rem;
+	line-height: 2;
+	color: var(--koohe-muted);
+}
+
+/* کنش‌ها: `.compose-actions` مرجع (چک‌باکس + دکمه). */
+.comments-section .comment-form .comment-form-cookies-consent {
+	display: flex;
+	align-items: center;
+	gap: 5px;
+	margin: 0;
+	font-size: .5rem;
+	color: var(--koohe-muted);
+}
+
+.comments-section .comment-form .comment-form-cookies-consent input {
+	width: 12px;
+	height: 12px;
+	margin: 0;
+}
+
+.comments-section .comment-form .form-submit {
+	margin: 0;
+	padding: 0;
+}
+
+.comments-section .comment-form .submit {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 9px;
+	min-height: 43px;
+	padding: 11px 19px;
+	border: 1px solid var(--koohe-accent);
+	border-radius: 7px;
+	background: var(--koohe-accent);
+	color: var(--koohe-accent-contrast);
+	font: inherit;
+	font-size: .75rem;
+	font-weight: 600;
+	cursor: pointer;
+	transition: opacity var(--koohe-transition), transform var(--koohe-transition);
+}
+
+.comments-section .comment-form .submit:hover {
+	transform: translateY(-2px);
+	opacity: .92;
+}
+
+/* دیدگاه خالی. */
+.comments-section .comment-empty,
+.comments-section .comment-template-empty {
+	padding: 35px;
+	color: var(--koohe-muted);
+	font-size: .6875rem;
+	text-align: center;
+}
+
+.comments-section .wp-block-comments-pagination {
+	justify-content: center;
+	margin-top: 17px;
+}
+
+/*
+ * پله‌های تبلت و موبایل بخش دیدگاه‌ها.
+ *
+ * مرجع این بخش را جداگانه پله‌بندی می‌کند. اعداد زیر با سنجش زنده‌ی
+ * همان مرجع در ۹۸۱/۹۸۰/۷۶۹/۷۶۸/۴۸۱/۴۸۰px درآمده‌اند (نه از روی حدس):
+ *   ≤۹۸۰ → فقط `h2` به ۱۶px می‌رسد (پدینگ و فاصله‌ها دست‌نخورده)
+ *   ≤۷۶۸ → `.comment-compose` پدینگ ۱۶، سطر ابزارها فاصله‌ی ۱۱،
+ *           گزینشگر ۸px/۱۲۹، متن ۱۱px
+ *   ≤۴۸۰ → پدینگ ۱۵، فاصله‌ی ۹، ابزار اسپویل ۸px با `6px 8px`،
+ *           آواتار ۲۹×۲۹ و متن ۱۳px
+ */
+@media (max-width: 980px) {
+	.comments-section h2 {
+		font-size: 1rem;
+	}
+}
+
+@media (max-width: 768px) {
+	.comments-section h2 {
+		/* مرجع در این پله ۱۷px دارد (نه ۱۶ و نه ۱۸). */
+		font-size: 1.0625rem;
+	}
+
+	.comments-section .section-heading {
+		gap: 10px;
+	}
+
+	.comments-section .comment-sort {
+		max-width: 129px;
+		font-size: .5rem;
+	}
+
+	.comments-section .comment-respond {
+		padding: 16px;
+	}
+
+	.comments-section .compose-header > p {
+		font-size: .625rem;
+	}
+
+	.comments-section .compose-actions {
+		gap: 11px;
+	}
+
+	.comments-section .compose-actions > label {
+		font-size: .5rem;
+	}
+
+	.comments-section .compose-actions .manacore-btn {
+		font-size: .5625rem;
+	}
+
+	.comments-section .comment-item > .wp-block-group:first-child,
+	.comments-section .comment-item > .wp-block-group:first-child > .wp-block-group {
+		gap: 10px;
+	}
+
+	.comments-section .wp-block-comment-date,
+	.comments-section .comment-item .spoiler-flag {
+		font-size: .4375rem;
+	}
+
+	.comments-section .comment-text,
+	.comments-section .whole-spoiler__text {
+		font-size: .6875rem;
+	}
+
+	.comments-section .whole-spoiler {
+		gap: 8px;
+		font-size: .5625rem;
+		flex-wrap: wrap;
+	}
+
+	.comments-section .whole-spoiler > b {
+		font-size: .5rem;
+	}
+
+	.comments-section .inline-spoiler__btn {
+		font-size: .5625rem;
+	}
+
+	.comments-section .comment-empty h3,
+	.comments-section .comment-template-empty h3 {
+		font-size: 1rem;
+	}
+
+	.comments-section .comment-empty p,
+	.comments-section .comment-template-empty p {
+		font-size: .625rem;
+	}
+}
+
+@media (max-width: 480px) {
+	.comments-section h2 {
+		font-size: 1rem;
+	}
+
+	.comments-section .comment-sort {
+		max-width: 126px;
+		font-size: .5rem;
+	}
+
+	.comments-section .count-badge {
+		font-size: .5rem;
+	}
+
+	.comments-section .comment-respond {
+		padding: 15px;
+	}
+
+	.comments-section .compose-header > p {
+		font-size: .5625rem;
+	}
+
+	.comments-section .compose-header > .text-link {
+		font-size: .5rem;
+	}
+
+	.comments-section .compose-actions {
+		gap: 9px;
+	}
+
+	.comments-section .compose-actions > label {
+		gap: 4px;
+		font-size: .4375rem;
+	}
+
+	.comments-section .compose-actions > .comment-length {
+		font-size: .4375rem;
+	}
+
+	/* مرجع در ≤۴۸۰px دکمه‌ی ارسال را با `margin-inline-start:auto`
+	   به انتهای سطر می‌راند (شمارنده جای خود را به دکمه می‌دهد). */
+	.comments-section .compose-actions .comment-length {
+		margin-inline-start: 0;
+	}
+
+	.comments-section .compose-actions .manacore-btn {
+		margin-inline-start: auto;
+	}
+
+	.comments-section .spoiler-tool {
+		gap: 5px;
+		padding: 6px 8px;
+		font-size: .5rem;
+	}
+
+	.comments-section .comment-avatar,
+	.comments-section .wp-block-avatar img {
+		width: 29px;
+		height: 29px;
+		font-size: .75rem;
+	}
+
+	.comments-section .comment-text,
+	.comments-section .whole-spoiler__text {
+		font-size: .8125rem;
+	}
+
+	.comments-section .inline-spoiler__btn {
+		font-size: .5625rem;
+	}
 }
 
 /* =========================================================================
  * 12. پابرگ
  * ====================================================================== */
+
+/*
+ * هندسه‌ی پابرگ مطابق مرجع:
+ *   `.footer-main` → عرض ۱۴۴۰، پدینگ `43px 56px 36px` (محتوای ۱۳۲۸)
+ *   `.footer-bottom` → عرض ۱۳۲۸، پدینگ `18px 0` با خط بالایی
+ * پیش از این، خودِ نوار پابرگ پدینگ `56px 56px 22px` داشت و نوار پایانی
+ * ۲۶px ارتفاع با پدینگ صفر بود؛ یعنی هم‌ترازی ستون‌ها و نوار پایانی با
+ * مرجع نمی‌خواند.
+ */
+.koohe-footer {
+	max-width: none;
+	width: 100%;
+	padding-inline: 0;
+}
+
+.koohe-footer .koohe-footer-cols {
+	width: 100%;
+	max-width: var(--koohe-container);
+	margin-inline: auto;
+	padding: 43px var(--koohe-container-pad) 36px;
+}
+
+.koohe-footer .koohe-footer-bottom {
+	width: 100%;
+	max-width: calc(var(--koohe-container) - 2 * var(--koohe-container-pad));
+	margin-inline: auto;
+	padding-block: 18px;
+}
 
 .koohe-footer .wp-block-site-title a {
 	font-size: 1.05rem;
@@ -2048,10 +4341,6 @@ html:not([dir="rtl"]) .koohe-toggle[aria-pressed="true"] .koohe-toggle-thumb {
 .koohe-404-code {
 	margin: 0;
 	opacity: .9;
-}
-
-.koohe-cta {
-	text-align: center;
 }
 
 .koohe-subscribe-page .koohe-faq .wp-block-details {
@@ -2137,17 +4426,15 @@ html:not([dir="rtl"]) .koohe-toggle[aria-pressed="true"] .koohe-toggle-thumb {
  * 16. واکنش‌گرایی
  * ====================================================================== */
 
-@media (max-width: 1024px) {
-	/*
-	 * بلوک جستجو ظرفش را با کلاس .manacore-search می‌سازد نه
-	 * .manacore-search-box؛ گزینشگر پیشین منطبق نمی‌شد و جستجو در
-	 * تبلت همچنان جای سربرگ را می‌گرفت.
-	 */
-	.koohe-header-end .manacore-search {
-		display: none;
-	}
-}
-
+/*
+ * آستانه‌ی ۹۸۰px (هم‌تراز با مرجع) — نه ۱۰۲۴px.
+ *
+ * بلوک جستجو ظرفش را با کلاس .manacore-search می‌سازد نه
+ * .manacore-search-box؛ گزینشگر پیشین منطبق نمی‌شد و جستجو در تبلت
+ * همچنان جای سربرگ را می‌گرفت. در ۹۸۱–۱۰۲۴px مرجع هنوز کادر جستجوی
+ * جمع‌وجور (۱۵۰px) را نشان می‌دهد، پس ما هم همان را نگه می‌داریم و از
+ * ۹۸۰px به پایین آیکنِ جستجو جانشین می‌شود.
+ */
 @media (max-width: 781px) {
 	.koohe-header-inner {
 		gap: 10px;
@@ -2379,9 +4666,18 @@ html:not([dir="rtl"]) .koohe-toggle[aria-pressed="true"] .koohe-toggle-thumb {
 /*
  * روی گوشی‌های دارای بریدگی (notch)، محتوا زیر ناحیه‌ی امن می‌رفت.
  * env() در مرورگرهای بی‌پشتیبانی به مقدار دوم برمی‌گردد، پس بی‌خطر است.
+ *
+ * نکته‌ی مهم: شکل پیشینِ این قاعده `padding-inline: max(0px, env(safe-area-inset-left))`
+ * بود. چون `.koohe-main` در آبشار پس از `.has-global-padding` می‌آید و هم‌وزن
+ * آن است، فاصله‌ی جانبیِ سراسری را صفر می‌کرد و در پی آن محتوای `alignwide`
+ * (که wideSize آن ۱۴۴۰px است) در نمایشگر ۱۴۴۰px کاملاً به لبه‌ها می‌چسبید.
+ * دو اشکال دیگر هم داشت: `padding-inline` هر دو سو را برابر می‌گذاشت و
+ * `safe-area-inset-left` در چیدمان راست‌به‌چپ سمت اشتباه است.
+ * اکنون فاصله‌ی سراسری حفظ می‌شود و ناحیه‌ی امن هر سو جداگانه افزوده می‌شود.
  */
 .koohe-main {
-	padding-inline: max(0px, env(safe-area-inset-left));
+	padding-left: max(var(--wp--style--root--padding-left, 0px), env(safe-area-inset-left));
+	padding-right: max(var(--wp--style--root--padding-right, 0px), env(safe-area-inset-right));
 }
 
 /* عنوان یا نشانی بلند نباید کل صفحه را جانبی‌پیمایش کند. */
@@ -2573,8 +4869,8 @@ html:not([dir="rtl"]) .koohe-toggle[aria-pressed="true"] .koohe-toggle-thumb {
 	.koohe-footer,
 	.koohe-sidebar,
 	.koohe-to-top,
-	.koohe-comments,
-	.manacore-links,
+	.comments-section,
+	.download-section,
 	.manacore-player {
 		display: none !important;
 	}
@@ -2665,6 +4961,21 @@ html:not([dir="rtl"]) .koohe-toggle[aria-pressed="true"] .koohe-toggle-thumb {
 	-webkit-backdrop-filter: blur(12px);
 }
 
+/*
+ * حالت «در لیست تماشا» برای دکمه‌ی هیرو.
+ *
+ * دکمه‌ی کارت در افزونه وقتی اثر در لیست است رنگ تأکید می‌گیرد
+ * (`.manacore-card-fav.is-active`)، اما دکمه‌ی هیرو هیچ نشانه‌ی بصری
+ * نداشت؛ پس کاربر فقط با متن دکمه (که تغییر نمی‌کند) نمی‌فهمید وضعیت
+ * ثبت شده است یا نه.
+ */
+.koohe-detail-hero__watchlist.is-active,
+.koohe-detail-hero__watchlist[aria-pressed="true"] {
+	border-color: color-mix(in srgb, var(--koohe-accent) 55%, transparent);
+	color: var(--koohe-accent);
+	background: color-mix(in srgb, var(--koohe-accent) 14%, transparent);
+}
+
 .koohe-btn--glass:hover:not(:disabled) {
 	background: rgba(255, 255, 255, .12);
 }
@@ -2730,6 +5041,31 @@ html:not([dir="rtl"]) .koohe-toggle[aria-pressed="true"] .koohe-toggle-thumb {
 	color: var(--koohe-accent);
 	border-color: color-mix(in srgb, var(--koohe-accent) 25%, transparent);
 	background: color-mix(in srgb, var(--koohe-accent) 8%, transparent);
+}
+
+/* نشانِ ملایم: برای متادیتای خنثی (نوع محتوا در حالت غیرتأکیدی). */
+.koohe-badge--soft {
+	color: var(--koohe-muted);
+	border-color: color-mix(in srgb, var(--koohe-border) 80%, transparent);
+	background: color-mix(in srgb, var(--koohe-surface) 70%, transparent);
+}
+
+/* ردیف نشان‌های سربرگ جزئیات (نوع، کیفیت، سن). */
+.koohe-title-badges {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 8px;
+}
+
+.koohe-title-badges a {
+	color: inherit;
+	text-decoration: none;
+}
+
+.koohe-title-badges a:hover,
+.koohe-title-badges a:focus-visible {
+	color: var(--koohe-accent);
 }
 
 /* نقطه‌ی «زنده». */
@@ -3090,176 +5426,6 @@ body.koohe-search-open {
 	overflow: hidden;
 }
 
-/* 18.10 مگامنوی دسته‌بندی‌ها ------------------------------------------------- */
-
-/*
- * پنل مگامنو با شورت‌کد [manacore_mega_menu] در قطعه‌ی سربرگ رندر می‌شود
- * (data-mega-menu) و دکمه‌ی بازکن آن data-koohe-mega-open دارد؛ همان
- * ساختار سه‌ستونه‌ی مرجع سینورا: شبکه‌ی ژانرها + دسترسی سریع + اثر ویژه.
- */
-.koohe-nav-mega-toggle {
-	display: inline-flex;
-	align-items: center;
-	gap: 5px;
-	color: var(--koohe-muted);
-	font-size: var(--wp--preset--font-size--small, .8125rem);
-	font-weight: 600;
-	line-height: var(--koohe-header-h, 84px);
-	white-space: nowrap;
-	cursor: pointer;
-	transition: color var(--koohe-transition);
-}
-
-.koohe-nav-mega-toggle:hover,
-.koohe-nav-mega-toggle:focus-visible,
-.koohe-nav-mega-toggle.is-open {
-	color: var(--koohe-text);
-}
-
-.koohe-nav-mega-toggle.is-open svg {
-	transform: rotate(180deg);
-}
-
-.koohe-nav-mega-toggle svg {
-	transition: transform var(--koohe-transition);
-}
-
-.manacore-mega[hidden] {
-	display: none;
-}
-
-.manacore-mega {
-	position: absolute;
-	inset-inline: 0;
-	inset-block-start: var(--koohe-header-h, 84px);
-	z-index: 55;
-	max-width: var(--koohe-container, 1440px);
-	margin: 0 auto;
-	padding: 30px;
-	border: 1px solid var(--koohe-border);
-	border-top: 0;
-	border-radius: 0 0 15px 15px;
-	background: var(--koohe-surface-2);
-	box-shadow: 0 30px 70px rgba(0, 0, 0, .4);
-	display: grid;
-	grid-template-columns: 1.65fr 1fr 1.1fr;
-	gap: 30px;
-}
-
-.manacore-mega__heading {
-	margin: 10px 0 15px;
-	font-size: 1.1875rem;
-}
-
-.manacore-mega__genres {
-	display: grid;
-	grid-template-columns: repeat(var(--mc-mega-columns, 3), 1fr);
-	gap: 7px;
-}
-
-.manacore-mega__genres a {
-	display: flex;
-	align-items: center;
-	justify-content: space-between;
-	padding: 9px;
-	border-radius: 5px;
-	color: var(--koohe-muted);
-	font-size: .6875rem;
-	line-height: 1.6;
-	text-decoration: none;
-	transition: background var(--koohe-transition), color var(--koohe-transition);
-}
-
-.manacore-mega__genres a:hover,
-.manacore-mega__genres a:focus-visible {
-	background: var(--koohe-surface-3);
-	color: var(--koohe-accent);
-}
-
-.manacore-mega__quick {
-	display: flex;
-	flex-direction: column;
-	gap: 17px;
-	border-inline-start: 1px solid var(--koohe-border);
-	padding-inline-start: 25px;
-}
-
-.manacore-mega__quick a {
-	display: flex;
-	align-items: center;
-	gap: 10px;
-	color: var(--koohe-text);
-	font-size: .6875rem;
-	line-height: 1.6;
-	text-decoration: none;
-	transition: color var(--koohe-transition);
-}
-
-.manacore-mega__quick a svg {
-	color: var(--koohe-accent);
-	flex: none;
-}
-
-.manacore-mega__quick a:hover,
-.manacore-mega__quick a:focus-visible {
-	color: var(--koohe-accent);
-}
-
-.manacore-mega__feature {
-	position: relative;
-	min-height: 200px;
-	border-radius: 10px;
-	overflow: hidden;
-	text-decoration: none;
-}
-
-.manacore-mega__feature img {
-	position: absolute;
-	inset: 0;
-	width: 100%;
-	height: 100%;
-	object-fit: cover;
-}
-
-.manacore-mega__feature::after {
-	content: "";
-	position: absolute;
-	inset: 0;
-	background: linear-gradient(0deg, var(--koohe-surface) 5%, transparent 100%);
-}
-
-.manacore-mega__feature > span {
-	position: absolute;
-	z-index: 1;
-	bottom: 21px;
-	inset-inline-start: 20px;
-	display: flex;
-	flex-direction: column;
-	gap: 10px;
-	color: #fff;
-}
-
-.manacore-mega__feature small {
-	font-size: .5625rem;
-	color: var(--koohe-accent);
-}
-
-.manacore-mega__feature strong {
-	font-size: 1.25rem;
-}
-
-.manacore-mega__feature span > span {
-	display: flex;
-	align-items: center;
-	gap: 10px;
-	font-size: .625rem;
-	color: var(--koohe-accent);
-}
-
-.manacore-mega__feature:hover strong {
-	color: var(--koohe-accent);
-}
-
 /* 18.10 بارگذاری بیشتر -------------------------------------------------------- */
 
 /*
@@ -3376,26 +5542,6 @@ body.koohe-search-open {
 	}
 }
 
-/* مگامنو: زیر ۱۳۰۰ پیکسل ستون اثر ویژه جا نمی‌شود (مطابق مرجع). */
-@media (max-width: 1300px) {
-	.manacore-mega {
-		grid-template-columns: 1fr 1fr;
-	}
-
-	.manacore-mega__feature {
-		display: none;
-	}
-}
-
-/* پنل بیرون‌زده از سربرگ موبایل پنهان می‌ماند؛ کشوی ناوبری هسته (از ۶۰۰
-   پیکسل به پایین) خودش زیرمنوهای قابل بازشدن دارد. */
-@media (max-width: 599px) {
-	.koohe-nav-mega-toggle,
-	.manacore-mega {
-		display: none;
-	}
-}
-
 /* 18.12 میان‌برهای کشف ------------------------------------------------------- */
 
 /*
@@ -3477,7 +5623,7 @@ body.koohe-search-open {
 	transform: translateX(3px);
 }
 
-@media (max-width: 1024px) {
+@media (max-width: 1023px) {
 	.koohe-shortcuts {
 		grid-template-columns: repeat(2, 1fr);
 		row-gap: 18px;
@@ -3497,5 +5643,1196 @@ body.koohe-search-open {
 	.koohe-shortcuts a {
 		padding: 0;
 		border-inline-start: 0;
+	}
+}
+
+/*
+ * سازگاری سربرگ با موبایل.
+ *
+ * پیش‌تر سربرگ روی موبایل فقط «کوچک‌شده‌ی دسکتاپ» بود و کادر جستجوی
+ * سربرگ هم زیر ۶۰۰px نمایش داده می‌شد. نتیجه‌ی سنجیده‌شده در ۳۹۰px:
+ * کادر جستجو کل عرض را می‌گرفت، دکمه‌ی منوی (همبرگری) به عرض ۲px له
+ * می‌شد و ناحیه‌ی لمسی‌اش زیر نشانگر حالت رنگ می‌افتاد — یعنی منوی
+ * موبایل عملاً غیرقابل لمس بود (elementFromPoint = SPAN.koohe-toggle-thumb).
+ *
+ * طرح مرجع هم در موبایل کادر جستجوی درون‌سربرگ را ندارد؛ به‌جایش
+ * آیکنِ جستجو پوشش تمام‌صفحه را باز می‌کند که همین حالا در همین قالب
+ * پیاده شده است. پس در موبایل فرم جستجوی سربرگ کنار می‌رود و آیکن
+ * جستجو (data-koohe-search-open) می‌ماند.
+ */
+@media (max-width: 599px) {
+	/*
+	 * فشرده‌سازی واقعی سربرگ موبایل.
+	 *
+	 * جمع پهنای طبیعی سربرگ در ۳۹۰px حدود ۵۴۷px بود (نام سایت ~۱۵۷،
+	 * دکمه‌ی منو ۴۰، جستجو+نشانگر حالت+حساب+دکمه‌ی اشتراک ۲۸۰ و
+	 * فاصله‌ها) در حالی که فقط ۳۵۸px جا هست. flexbox همه را می‌فشرد و
+	 * نتیجه سرریز و هم‌پوشانی بود. اینجا مانند طرح مرجع، فاصله‌ها
+	 * کم و نام سایت کوتاه می‌شود.
+	 */
+	/*
+	 * فاصله‌های سربرگ این‌جا فشرده نمی‌شوند؛ با اندازه‌های مرجعی که در
+	 * بخش ۳.۶ (≤۴۸۰px) اعمال شده، جا کافی است و فاصله‌ها همان اعداد
+	 * مرجع (۱۶/۱۰/۷) می‌مانند.
+	 */
+
+	/*
+	 * نام سایت تنها بخشی است که می‌تواند بی‌خطر کوتاه شود، پس همان
+	 * کوچک می‌شود و در صورت نیاز با «…» بریده می‌شود. پیش‌تر بریده
+	 * نمی‌شد و به‌جای آن دکمه‌ی منو له می‌شد.
+	 */
+	.koohe-brand {
+		/*
+		 * کفِ پهنای نام سایت. بدون آن flexbox نام را تا ۱۱px می‌فشرد و
+		 * عملاً ناپدید می‌شد (سنجیده‌شده پیش از این اصلاح). با این کف،
+		 * دکمه‌ی منو سالم می‌ماند و نام سایت هم خوانا می‌ماند.
+		 */
+		min-width: 66px;
+		flex-shrink: 1;
+	}
+
+	.koohe-logo-text {
+		min-width: 0;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+
+	/*
+	 * دکمه‌ی اشتراک این‌جا فشرده نمی‌شود.
+	 *
+	 * پیش‌تر این‌جا و در بلوک ≤۴۰۰px اندازه‌ی قلم و پدینگ دکمه دستکاری
+	 * می‌شد؛ چون این بلوک‌ها در پایان پرونده‌اند، اندازه‌های مرجعی که در
+	 * بخش ۳.۶ (≤۴۸۰px) گذاشته شده بود را بی‌اثر می‌کردند و دکمه در ۳۹۰px
+	 * با ۱۲px قلم و پدینگ ۶px ۷px رندر می‌شد، در حالی که مرجع در همین
+	 * پهنا ۸px و ۸px ۹px دارد. اکنون فقط اندازه‌ی مرجع اعمال می‌شود.
+	 */
+
+	/* کنترل حساب به آیکن تبدیل می‌شود (متن دسکتاپ فقط دیداری پنهان). */
+	.koohe-account-login .koohe-account-login__text {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		padding: 0;
+		margin: -1px;
+		overflow: hidden;
+		clip-path: inset(50%);
+		white-space: nowrap;
+		border: 0;
+	}
+
+	.koohe-account-login {
+		padding: 6px;
+	}
+
+	.koohe-account-login__icon {
+		display: block;
+	}
+}
+
+/*
+ * سربرگ در پهنای بسیار کم (≤۴۰۰px).
+ *
+ * در ۳۶۰px و پایین‌تر، جمع پهنای طبیعی سربرگ (نام سایت + دکمه‌ی منو +
+ * جستجو + حالت رنگ + حساب + دکمه‌ی اشتراک) از عرض موجود بیشتر می‌شد و
+ * flexbox دکمه‌ی منو را له می‌کرد. اینجا فاصله‌ها کم می‌شود و نام سایت
+ * — که تنها جزء قابل‌کوتاه‌شدن است — اجازه‌ی کوچک‌شدن می‌گیرد تا هیچ
+ * کنترل کاربردی‌ای فشرده یا هم‌پوشان نشود.
+ */
+@media (max-width: 400px) {
+	/*
+	 * مرجع در ≤۳۶۰px همین سه عدد را دارد؛ پیش‌تر این‌جا فاصله‌ها تا
+	 * ۶/۴/۳px فشرده می‌شد چون دکمه‌ی همبرگریِ هسته ۴۰px پهنا داشت.
+	 * اکنون همبرگری قالب ۲۸px است و کنترل‌های ≤۴۸۰px هم اندازه‌ی مرجع
+	 * شده‌اند، پس همان اعداد مرجع کافی است.
+	 */
+	.koohe-header-inner {
+		gap: 8px;
+		padding-inline: 14px;
+	}
+
+	.koohe-header-start {
+		gap: 8px;
+	}
+
+	.koohe-header-end {
+		gap: 7px;
+	}
+
+	.koohe-brand {
+		/* فضای آزاد به نام سایت می‌رسد، نه به فاصله‌ی خالی میان دو گروه. */
+		min-width: 48px;
+		flex: 1;
+	}
+
+	.koohe-toggle-track {
+		width: 38px;
+	}
+}
+
+/* =========================================================================
+ * برگه‌ی «کشف داستان‌ها» — اجزای مرجع سینورا
+ *
+ * این بخش نام‌های کلاسِ خودِ مرجع را می‌آورد (`.browse-toolbar`,
+ * `.filter-sidebar`, `.results-summary`, `.load-more-zone`, …) و مقادیر
+ * هندسی‌اش را از `cinora/assets/css/style.css` گرفته است؛ رنگ‌ها به
+ * توکن‌های همین قالب (`--koohe-*`) نگاشته شده‌اند تا حالت تیره/روشن
+ * خودکار درست بماند.
+ * ====================================================================== */
+
+/* ۱) سرصفحه‌ی برگه: مسیر راهنما، ریزتیتر، سرتیتر، توضیح، آیکون */
+.breadcrumb {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	color: var(--koohe-muted);
+	font-size: 10px;
+	margin-bottom: 28px;
+	min-height: 20px;
+	flex-wrap: wrap;
+}
+
+.breadcrumb a:hover {
+	color: var(--koohe-accent);
+}
+
+.breadcrumb > span {
+	color: var(--koohe-text);
+}
+
+.eyebrow {
+	color: var(--koohe-accent);
+	font-size: 10px;
+	font-weight: 500;
+	letter-spacing: 1.2px;
+	margin: 0;
+}
+
+.page-title-row {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	margin-bottom: 30px;
+	gap: 20px;
+}
+
+.page-title-row h1 {
+	font-size: 32px;
+	line-height: 1.7;
+	margin-top: 10px;
+}
+
+/* ستون متن، فضای باقی‌مانده را می‌گیرد تا آیکون در لبه بماند. */
+.page-title-row > .page-title-text {
+	flex: 1;
+	min-width: 0;
+}
+
+.page-title-row .muted {
+	margin-top: 7px;
+	font-size: 13px;
+	line-height: 2;
+	color: var(--koohe-muted);
+}
+
+.page-title-icon {
+	height: 78px;
+	width: 78px;
+	display: grid;
+	place-items: center;
+	border: 1px solid var(--koohe-border);
+	border-radius: 20px;
+	background: var(--koohe-surface);
+	color: var(--koohe-accent);
+}
+
+/* ۲) دکمه‌های مرجع (`.button.primary` / `.button.secondary`) */
+.button {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 9px;
+	min-height: 43px;
+	padding: 11px 19px;
+	border-radius: 7px;
+	font-size: 12px;
+	font-weight: 600;
+	white-space: nowrap;
+	transition: background .2s, border-color .2s, transform .2s;
+	position: relative;
+}
+
+.button:hover:not(:disabled) {
+	transform: translateY(-2px);
+}
+
+.button.primary {
+	background: var(--koohe-accent);
+	color: var(--koohe-accent-contrast);
+	border: 1px solid var(--koohe-accent);
+}
+
+.button.secondary {
+	background: var(--koohe-surface-2);
+	border: 1px solid var(--koohe-border);
+	color: var(--koohe-text);
+}
+
+.button.secondary:hover {
+	border-color: var(--koohe-accent);
+}
+
+/*
+ * نشان «خطر» مرجع (`.danger`) و دکمه‌ی کوچک مرجع (`.button.small`).
+ * `.danger` رنگ را با `!important` تحمیل می‌کند در حالی که کنار `.text-link`
+ * می‌نشیند، عیناً رفتار مرجع.
+ */
+.danger {
+	color: var(--koohe-danger) !important;
+}
+
+.button.small {
+	min-height: 31px;
+	font-size: 10px;
+	padding: 7px 12px;
+	gap: 6px;
+}
+
+/* ۳) نوار مرور */
+.browse-toolbar {
+	display: flex;
+	align-items: center;
+	gap: 15px;
+	padding: 15px;
+	border: 1px solid var(--koohe-border);
+	border-radius: 10px;
+	background: var(--koohe-surface);
+	min-width: 0;
+	margin-bottom: 29px;
+}
+
+.browse-search {
+	display: flex;
+	align-items: center;
+	gap: 11px;
+	background: var(--koohe-surface-3);
+	border: 1px solid var(--koohe-border);
+	border-radius: 6px;
+	min-width: 100px;
+	flex: 1;
+	height: 40px;
+	padding: 0 12px;
+	color: var(--koohe-muted);
+}
+
+.browse-search > input {
+	border: 0;
+	padding: 7px 0;
+	width: 100%;
+	height: 38px;
+	background: none;
+	font-size: 11px;
+	color: var(--koohe-text);
+}
+
+.browse-search > button {
+	padding: 0;
+	display: grid;
+	place-items: center;
+	color: var(--koohe-muted);
+}
+
+.segmented-control {
+	display: flex;
+	gap: 4px;
+	padding: 4px;
+	background: var(--koohe-surface-3);
+	border-radius: 6px;
+	flex-shrink: 0;
+}
+
+.segmented-control > button {
+	font-size: 10px;
+	padding: 7px 14px;
+	border-radius: 4px;
+	color: var(--koohe-muted);
+	background: none;
+	border: 0;
+	cursor: pointer;
+}
+
+.segmented-control > button.active {
+	background: var(--koohe-surface-2);
+	color: var(--koohe-accent);
+}
+
+.sort-select {
+	display: flex;
+	align-items: center;
+	gap: 7px;
+	font-size: 10px;
+	white-space: nowrap;
+	color: var(--koohe-muted);
+}
+
+.sort-select > select {
+	font-size: 10px;
+	padding: 9px;
+	max-width: 135px;
+}
+
+.view-buttons {
+	display: flex;
+	gap: 5px;
+}
+
+.view-buttons > button {
+	width: 31px;
+	height: 33px;
+	border: 1px solid var(--koohe-border);
+	border-radius: 5px;
+	display: grid;
+	place-items: center;
+	color: var(--koohe-muted);
+	background: none;
+	cursor: pointer;
+}
+
+.view-buttons > button.active {
+	color: var(--koohe-accent);
+	background: var(--koohe-surface-3);
+}
+
+.mobile-filter-trigger {
+	display: none;
+}
+
+/* ۴) چیدمان دوستونه: سایدبار فیلتر + نتایج */
+.browse-layout {
+	display: grid;
+	grid-template-columns: 227px minmax(0, 1fr);
+	gap: 29px;
+	margin-top: 0;
+	align-items: start;
+}
+
+/*
+ * ستون‌ها را از فاصله‌ی پیش‌فرض «چیدمان جریانی» وردپرس آزاد می‌کند.
+ * بدون این، ستون دوم ورودی ۲۲px پایین‌تر از ستون سایدبار شروع می‌شد،
+ * در حالی که مرجع هر دو ستون را از یک خط آغاز می‌کند (سنجیده‌شده:
+ * wp y=۴۲۱ برابر ref y=۴۰۵).
+ */
+.browse-layout > * {
+	margin-block-start: 0;
+}
+
+/*
+ * زمینه‌ی سایدبار: مرجع `--panel` می‌گذارد که در پالت ما `surface-2`
+ * است (سنجیده‌شده: ref rgb(22,28,36) = ‎#161c24). پیش‌تر `surface`
+ * (رنگ پس‌زمینه‌ی بدنه) بود، پس پنل روی بدنه گم می‌شد.
+ *
+ * `display:block` هم صریح است: پوشش بلوک `.manacore-block` پیش‌فرض
+ * `display:flex` با `gap` دارد و همین، فاصله‌ی میان گروه‌ها را دو برابر
+ * می‌کرد (ارتفاع سنجیده‌شده ۱۲۵۷px در برابر ۱۱۱۹px مرجع).
+ */
+.filter-sidebar {
+	display: block;
+	border: 1px solid var(--koohe-border);
+	border-radius: 10px;
+	background: var(--koohe-surface-2);
+	padding: 20px;
+}
+
+.filter-sidebar .manacore-block {
+	margin: 0;
+}
+
+/*
+ * هم‌ترازی «ارتفاع خط» با مرجع.
+ *
+ * پوسته برای متن فارسی `line-height` بزرگ‌تری روی بدنه می‌گذارد؛ مرجع
+ * در هیچ‌یک از اجزای سایدبار `line-height` نمی‌دهد، پس مرورگر مقدار
+ * `normal` (~۱٫۵) را حساب می‌کند. همین تفاضل ناچیز روی هر ردیف جمع
+ * می‌شد و پنل را بلندتر از مرجع می‌کرد (سنجیده‌شده: ردیف ژانر ۳۳px در
+ * برابر ۲۹px، دکمه‌ی پاک‌سازی ۳۹px در برابر ۳۶px و پنل راهنما ۱۸۴px در
+ * برابر ۱۷۴px). `h3` هم صریح می‌آید چون پوسته برای سرتیترها قاعده‌ی
+ * خودش را دارد و ارث‌بری را می‌بُرد. `.filter-hint > p` دست‌نخورده
+ * می‌ماند: مرجع هم برای آن `line-height: 2.3` می‌گذارد.
+ */
+.filter-sidebar,
+.filter-sidebar .filter-group > h3,
+.filter-sidebar .filter-hint > h3 {
+	line-height: normal;
+}
+
+.filter-header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding-bottom: 17px;
+	border-bottom: 1px solid var(--koohe-border);
+}
+
+.filter-header > h2 {
+	font-size: 12px;
+	display: flex;
+	gap: 8px;
+	align-items: center;
+	margin: 0;
+}
+
+.filter-header > h2 > svg {
+	color: var(--koohe-accent);
+}
+
+.filter-header > button,
+.filter-header > a {
+	color: var(--koohe-muted);
+	display: grid;
+	place-items: center;
+	background: none;
+	border: 0;
+	cursor: pointer;
+}
+
+.browse-results {
+	min-width: 0;
+}
+
+/* ۵) خلاصه‌ی نتایج، برچسب فیلترهای فعال، «داستان‌های بیشتر» */
+.results-summary {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	font-size: 11px;
+	color: var(--koohe-muted);
+	margin-bottom: 20px;
+}
+
+.results-summary b {
+	color: var(--koohe-text);
+	font-weight: 500;
+}
+
+.active-filter-chips {
+	display: flex;
+	gap: 8px;
+	flex-wrap: wrap;
+	margin-bottom: 19px;
+}
+
+.load-more-zone {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	min-height: 80px;
+	margin-top: 25px;
+}
+
+.load-more-zone > p {
+	display: flex;
+	gap: 9px;
+	align-items: center;
+	font-size: 10px;
+	color: var(--koohe-muted);
+	margin: 0;
+}
+
+.load-more-zone svg {
+	color: var(--koohe-accent);
+}
+
+/* دکمه‌ی «حذف فیلترها»؛ مرجع همان‌جای شمار نتایج می‌گذاردش. */
+.results-summary > .results-clear-all {
+	font-size: 9px;
+	display: flex;
+	align-items: center;
+	gap: 5px;
+	color: var(--koohe-accent);
+}
+
+/*
+ * برچسب فیلترهای فعال در ستون نتایج، با هندسه‌ی مرجع
+ * (`.active-filter-chips > button`): گوشه‌ی ۵px، ریز و رنگِ لهجه‌ی کم‌رنگ.
+ * برچسب‌های سایدبار دست‌نخورده می‌مانند؛ این قاعده فقط داخل همین ظرف است.
+ */
+.active-filter-chips > .manacore-filter-chip {
+	min-height: 0;
+	padding: 6px 9px;
+	border-radius: 5px;
+	font-size: 9px;
+	gap: 8px;
+	border-color: color-mix(in srgb, var(--koohe-accent) 22%, var(--koohe-border));
+	background: color-mix(in srgb, var(--koohe-accent) 5%, transparent);
+	color: var(--koohe-accent);
+}
+
+.active-filter-chips > .manacore-filter-chip .manacore-filter-chip-x {
+	color: currentColor;
+	font-size: .9rem;
+}
+
+/* ۶) حالت خالی و حالت فهرستی مرجع */
+.empty-state {
+	min-height: 250px;
+	padding: 35px 22px;
+	border: 1px dashed var(--koohe-border);
+	border-radius: 10px;
+	background: var(--koohe-surface);
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	text-align: center;
+}
+
+.empty-state > h3 {
+	font-size: 17px;
+	line-height: 1.9;
+	margin-top: 17px;
+}
+
+.empty-state > p {
+	font-size: 11px;
+	color: var(--koohe-muted);
+	line-height: 2.2;
+	max-width: 390px;
+	margin-top: 9px;
+}
+
+.empty-state > .button {
+	margin-top: 21px;
+}
+
+.manacore-grid-cards.list-layout {
+	grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+}
+
+.list-layout .manacore-card {
+	display: flex;
+	align-items: center;
+	gap: 16px;
+	padding: 13px;
+	background: var(--koohe-surface);
+	border: 1px solid var(--koohe-border);
+	border-radius: 9px;
+}
+
+.list-layout .manacore-card-link {
+	display: flex;
+	align-items: center;
+	gap: 16px;
+	width: 100%;
+}
+
+.list-layout .manacore-card-poster {
+	width: 94px;
+	flex-shrink: 0;
+}
+
+.list-layout .manacore-card-body {
+	flex: 1;
+	min-width: 0;
+}
+
+.list-layout .manacore-card-title {
+	white-space: normal;
+	margin-top: 0;
+}
+
+.list-layout .manacore-card-meta {
+	margin-top: 18px;
+	flex-wrap: wrap;
+}
+
+/* ۷) پله‌های واکنش‌گرا (همان نقطه‌های شکست مرجع: ۱۱۰۰ / ۷۶۸ / ۴۸۰) */
+@media (max-width: 1100px) {
+	.browse-layout {
+		grid-template-columns: 208px minmax(0, 1fr);
+		gap: 23px;
+	}
+}
+
+@media (max-width: 768px) {
+	.breadcrumb {
+		font-size: 9px;
+		gap: 7px;
+		margin-bottom: 23px;
+	}
+
+	.page-title-row h1 {
+		font-size: 27px;
+		line-height: 1.8;
+		margin-top: 9px;
+	}
+
+	.page-title-row .muted {
+		font-size: 11px;
+		line-height: 2.3;
+	}
+
+	.page-title-icon {
+		display: none;
+	}
+
+	.browse-toolbar {
+		flex-wrap: wrap;
+		padding: 13px;
+		gap: 11px;
+	}
+
+	.browse-search {
+		flex-basis: 100%;
+		width: 100%;
+		height: 40px;
+	}
+
+	.segmented-control {
+		flex: 1;
+		justify-content: center;
+	}
+
+	.sort-select {
+		margin-inline-start: auto;
+	}
+
+	.view-buttons {
+		margin-inline-start: auto;
+	}
+
+	.mobile-filter-trigger {
+		display: flex;
+		min-height: 33px;
+		font-size: 9px;
+		padding: 7px 12px;
+	}
+
+	.browse-layout {
+		grid-template-columns: minmax(0, 1fr);
+		gap: 20px;
+	}
+
+	.filter-sidebar {
+		display: none;
+		margin-bottom: 25px;
+	}
+
+	.filter-sidebar.open {
+		display: block;
+	}
+
+	.results-summary {
+		font-size: 10px;
+	}
+
+	.manacore-grid-cards.list-layout {
+		grid-template-columns: minmax(0, 1fr) !important;
+	}
+}
+
+@media (max-width: 480px) {
+	.page-title-row h1 {
+		font-size: 25px;
+	}
+
+	.browse-toolbar {
+		gap: 10px;
+	}
+
+	.browse-search {
+		min-width: 140px;
+	}
+
+	.segmented-control > button {
+		font-size: 9px;
+		padding: 7px 11px;
+	}
+
+	.sort-select {
+		flex: 1;
+		justify-content: flex-end;
+	}
+
+	.sort-select > select {
+		max-width: 126px;
+	}
+
+	.view-buttons {
+		margin-inline-start: 0;
+	}
+
+	.load-more-zone > p {
+		font-size: 9px;
+	}
+
+	.empty-state > h3 {
+		font-size: 16px;
+	}
+
+	.empty-state > p {
+		font-size: 10px;
+	}
+}
+
+/* =========================================================================
+ * ۷) سایدبار «فیلتر پیشرفته» — همان اجزای `.filter-sidebar` مرجع
+ *
+ * مقادیر مستقیماً از `cinora/assets/css/style.css` گرفته شده‌اند:
+ *   `.filter-group` (padding-bottom 22، margin-top 23، خط جداکننده)،
+ *   `.genre-checks` (ستون، gap 2؛ در ≤۷۶۸ دوستونه با gap 5×25)،
+ *   `.custom-check` (۱۲×۱۲، شعاع ۳)، `.year-range`، `.rating-range`،
+ *   `.range-labels`، `.toggle-label`/`.toggle-switch` (۳۴×۱۹)،
+ *   `.reset-filters` و `.filter-hint`.
+ *
+ * ترتیب آبشار عمدی است: قاعده‌های پایه اینجا و نردبان‌ها در پایان فایل
+ * (بخش ۸) می‌آیند؛ اگر نردبان پیش از قاعده‌ی پایه بنشیند بی‌اثر می‌شود —
+ * دامی که در V37 دو بار دیده شد.
+ * ====================================================================== */
+
+.filter-group {
+	padding-bottom: 22px;
+	margin-top: 23px;
+	border-bottom: 1px solid var(--koohe-border);
+}
+
+.filter-group > h3 {
+	font-size: 11px;
+	font-weight: 600;
+	display: flex;
+	justify-content: space-between;
+	margin: 0 0 14px;
+}
+
+.genre-checks {
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+}
+
+.genre-checks > label {
+	position: relative;
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding: 7px 0;
+	font-size: 10px;
+	cursor: pointer;
+	color: var(--koohe-muted);
+}
+
+.genre-checks > label input {
+	position: absolute;
+	inset: 0;
+	width: 100%;
+	height: 100%;
+	margin: 0;
+	opacity: 0;
+	cursor: pointer;
+}
+
+.genre-checks small {
+	font-size: 9px;
+	color: #616b76;
+	margin-inline-start: auto;
+}
+
+.custom-check {
+	width: 12px;
+	height: 12px;
+	display: grid;
+	place-items: center;
+	border: 1px solid #626b71;
+	border-radius: 3px;
+	background: var(--koohe-surface);
+	color: var(--koohe-accent-contrast);
+	flex-shrink: 0;
+}
+
+.custom-check > svg {
+	width: 11px;
+	height: 11px;
+	opacity: 0;
+}
+
+.genre-checks > label input:checked + .custom-check {
+	background: var(--koohe-accent);
+	border-color: var(--koohe-accent);
+}
+
+.genre-checks > label input:checked + .custom-check > svg {
+	opacity: 1;
+}
+
+.genre-checks > label input:focus-visible + .custom-check {
+	outline: 2px solid var(--koohe-accent);
+	outline-offset: 3px;
+}
+
+.genre-checks > label:has( input:checked ) {
+	color: var(--koohe-text);
+}
+
+.year-range {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	font-size: 10px;
+	color: var(--koohe-muted);
+}
+
+.year-range > select {
+	width: calc( 50% - 16px );
+	font-size: 10px;
+	padding: 9px;
+}
+
+.rating-range {
+	width: 100%;
+	height: 4px;
+	accent-color: var(--koohe-accent);
+}
+
+.range-labels {
+	display: flex;
+	justify-content: space-between;
+	direction: ltr;
+	font-size: 8px;
+	color: var(--koohe-muted);
+	margin-top: 8px;
+}
+
+.toggle-label {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12px;
+	position: relative;
+	font-size: 10px;
+	cursor: pointer;
+}
+
+.toggle-label > input {
+	position: absolute;
+	inset: 0;
+	width: 100%;
+	height: 100%;
+	opacity: 0;
+	cursor: pointer;
+	margin: 0;
+}
+
+.toggle-switch {
+	width: 34px;
+	height: 19px;
+	background: #57616a;
+	border-radius: 20px;
+	display: block;
+	position: relative;
+	flex-shrink: 0;
+	transition: background 0.2s;
+}
+
+.toggle-switch::after {
+	content: "";
+	position: absolute;
+	top: 3px;
+	right: 3px;
+	width: 13px;
+	height: 13px;
+	border-radius: 50%;
+	background: #fff;
+	transition: transform 0.2s;
+}
+
+.toggle-label > input:checked + .toggle-switch {
+	background: var(--koohe-accent);
+}
+
+.toggle-label > input:checked + .toggle-switch::after {
+	transform: translateX( -15px );
+	background: #24331c;
+}
+
+.toggle-label > input:focus-visible + .toggle-switch {
+	outline: 2px solid var(--koohe-accent);
+	outline-offset: 3px;
+}
+
+.reset-filters {
+	display: inline-flex;
+	font-size: 10px;
+	padding: 9px;
+	min-height: 36px;
+	margin-top: 20px;
+	/* مرجع: `.button.secondary` روی `--panel-2` می‌نشیند. */
+	background: var(--koohe-surface-3);
+}
+
+.filter-hint {
+	border: 1px solid color-mix( in srgb, var(--koohe-accent) 15%, transparent );
+	background: color-mix( in srgb, var(--koohe-accent) 4%, transparent );
+	padding: 18px 14px;
+	border-radius: 7px;
+	margin-top: 21px;
+}
+
+.filter-hint > svg {
+	color: var(--koohe-accent);
+}
+
+.filter-hint > h3 {
+	font-size: 12px;
+	margin-top: 10px;
+	/* مرجع حاشیه‌ی پایین ندارد؛ حاشیه‌ی پیش‌فرض پوسته پنل را ۴px بلند می‌کرد. */
+	margin-bottom: 0;
+}
+
+.filter-hint > p {
+	font-size: 9px;
+	color: var(--koohe-muted);
+	line-height: 2.3;
+	margin-top: 8px;
+}
+
+.filter-hint > a {
+	font-size: 10px;
+	color: var(--koohe-accent);
+	display: flex;
+	align-items: center;
+	gap: 5px;
+	margin-top: 13px;
+	padding: 0;
+}
+
+/* نشانگر فیلترهای فعال که سایدبار رندر می‌کند (کلاس سراسری بلوک). */
+.manacore-filter-bar .manacore-filter-field select {
+	font-size: 10px;
+}
+
+/*
+ * کنترل‌های سایدبار. مرجع یک قاعده‌ی سراسری برای `select/input` دارد
+ * (`border:1px solid var(--border); border-radius:7px; background:var(--bg);
+ * color:var(--text); padding:11px 13px`) و از آن ارث می‌برد؛ ما همان را
+ * با توکن‌های خودمان اینجا می‌گذاریم وگرنه گزینشگرهای تازه با ظاهر
+ * پیش‌فرض مرورگر (خاکستری) رندر می‌شدند — در سنجش زنده دیده شد:
+ * پس‌زمینه rgb(107,107,107) در برابر rgb(14,18,24) مرجع.
+ */
+.filter-sidebar select,
+.filter-sidebar input[type="search"],
+.filter-sidebar input[type="number"] {
+	border: 1px solid var(--koohe-border);
+	border-radius: 7px;
+	background: var(--koohe-surface);
+	color: var(--koohe-text);
+	font-family: inherit;
+}
+
+.filter-sidebar select {
+	padding: 9px;
+	cursor: pointer;
+}
+
+/*
+ * گزینشگرهای تاکسونومی (`.full`) از قاعده‌ی سراسری `select` مرجع ارث
+ * می‌برند: `font-size:12px; padding:9px 11px`. بدون این، مرورگر اندازه‌ی
+ * پیش‌فرض خودش (۱۳٫۳۳px) را می‌گذاشت و ارتفاع گزینشگر ۴۳px در برابر
+ * ۴۰px مرجع می‌شد.
+ */
+.filter-sidebar select.full {
+	width: 100%;
+	font-size: 12px;
+	padding: 9px 11px;
+}
+
+.filter-sidebar select option {
+	background: var(--koohe-surface-2);
+	color: var(--koohe-text);
+}
+
+/* لغزنده: مرجع همان پس‌زمینه‌ی `--bg` را با ارتفاع ۴px می‌دهد. */
+.filter-sidebar .rating-range {
+	background: var(--koohe-surface);
+	border: 1px solid var(--koohe-border);
+	padding: 0;
+}
+
+/* =========================================================================
+ * ۸) نردبان سایدبار — عیناً پله‌های مرجع (≤۷۶۸)
+ * ====================================================================== */
+
+@media (max-width: 768px) {
+	/*
+	 * پنهان/باز شدن سایدبار در موبایل باید **بعد** از قاعده‌ی پایه بیاید.
+	 * قاعده‌ی پیشین در بخش ۵ فایل بود و قاعده‌ی پایه‌ی تازه (بخش ۷) پس از
+	 * آن می‌آمد، پس `display:none` را بی‌اثر می‌کرد — همان دام آبشاریِ
+	 * تکراری این پروژه.
+	 */
+	.filter-sidebar {
+		display: none;
+		margin-bottom: 25px;
+	}
+
+	.filter-sidebar.open {
+		display: block;
+	}
+
+	.genre-checks {
+		display: grid;
+		grid-template-columns: repeat( 2, minmax( 0, 1fr ) );
+		gap: 5px 25px;
+	}
+
+	.filter-group > h3 {
+		font-size: 12px;
+	}
+
+	.genre-checks > label {
+		font-size: 11px;
+	}
+
+	.year-range > select {
+		font-size: 11px;
+		width: calc( 50% - 16px );
+	}
+}
+
+/* ======================================================================
+ * ۹) برگه‌ی «برنامه پخش» — هم‌ارز `schedule.html` مرجع
+ *
+ * این بخش فقط «ترکیب‌بندی برگه» است: شبکه‌ی دوستونه‌ی پنل + ستون کنار و
+ * فاصله‌های برگه. ظاهر خودِ پنل (`‎.schedule-panel‎`, `‎.full-schedule‎`,
+ * `‎.week-tabs‎`, `‎.schedule-item‎`, `‎.schedule-note-card‎`, `‎.sidebar-promo‎`)
+ * در CSS افزونه (`front.css` بخش ۱۴) است تا بلوک در هر پوسته و در بوم
+ * ویرایشگر هم شکل درست خودش را داشته باشد و این‌جا تکرار نشود.
+ *
+ * اعداد از مرجع: `.schedule-page` (padding 30/60) و
+ * `.schedule-page-layout` (grid `minmax(0,1fr) 277px`، gap 26).
+ * ====================================================================== */
+
+.schedule-page {
+	padding-top: 30px;
+	padding-bottom: 60px;
+}
+
+.schedule-page-layout {
+	display: grid;
+	grid-template-columns: minmax( 0, 1fr ) 277px;
+	gap: 26px;
+	align-items: start;
+}
+
+/* ستون کنار برگه؛ در موبایل زیر پنل می‌رود و دوستونه می‌شود. */
+.schedule-page-aside > .sidebar-promo {
+	margin-top: 23px;
+}
+
+@media (max-width: 980px) {
+	.schedule-page-layout {
+		grid-template-columns: minmax( 0, 1fr ) 228px;
+		gap: 19px;
+	}
+}
+
+@media (max-width: 768px) {
+	.schedule-page {
+		padding-top: 25px;
+		padding-bottom: 40px;
+	}
+
+	.schedule-page-layout {
+		display: block;
+	}
+
+	.schedule-page-aside {
+		display: grid;
+		grid-template-columns: repeat( 2, minmax( 0, 1fr ) );
+		gap: 17px;
+		margin-top: 23px;
+	}
+
+	.schedule-page-aside > .sidebar-promo {
+		margin-top: 0;
+	}
+}
+
+@media (max-width: 480px) {
+	.schedule-page-aside {
+		grid-template-columns: 1fr;
+	}
+}
+
+/* ======================================================================
+ * ۱۰) برگه‌ی «حساب کاربری» — هم‌ارز `account.html` مرجع
+ *
+ * این بخش فقط «ترکیب‌بندی برگه» است: شبکه‌ی دوستونه‌ی ستون کنار + محتوا
+ * و فاصله‌های برگه. ظاهر خودِ بخش‌ها (`.account-sidebar`, `.stat-card`,
+ * `.analytics-*`, `.history-item`, `.invoice-*`, `.settings-*`) در CSS افزونه
+ * (`front.css` بخش ۱۷) است تا بلوک‌ها در هر پوسته و در بوم
+ * ویرایشگر هم شکل درست خودشان را داشته باشند.
+ *
+ * اعداد از مرجع: `.account-page` (padding 30/60 و در ۷۶۸px: ۲۵/۴۰) و
+ * `.account-layout` (grid `230px minmax(0,1fr)`، gap 30؛ در ۱۱۰۰px:
+ * `207px`/gap 22؛ در ۷۶۸px یک‌ستونه و `.account-content` با margin-top 25).
+ * ====================================================================== */
+
+.account-page {
+	padding-top: 30px;
+	padding-bottom: 60px;
+}
+
+/*
+ * رست مرجع **سراسری** است: `h1,h2,h3,h4,p{margin:0}` و `body` هم خط‌ارتفاع
+ * صریحی ندارد (یعنی `normal`). در وردپرس مرورگر برای تیتر/پاراگراف حاشیه‌ی
+ * پیش‌فرض می‌گذارد و `theme.json` خط‌ارتفاع فارسی ۱٫۸۵ را به `body` می‌دهد؛
+ * نتیجه، بلندتر شدن جعبه‌های حساب بود (سنجیده‌شده روی ۱۴۴۰px: بنر خوش‌آمد
+ * ۲۰۶↔۱۸۹، ردیف تب ستون کنار ۴۲٫۵↔۳۹، پیل عضویت ۲۴٫۸↔۲۲).
+ *
+ * هر دو قاعده با specificity (۰,۱,۰) نوشته شده‌اند تا قواعد صریح بخش ۱۷
+ * افزونه (`.account-section{margin-top:34px}`, `.account-greeting h1{margin-top:7px}`)
+ * بی‌رقیب بمانند و فقط پیش‌فرض‌ها را خنثی کنند.
+ */
+.account-page {
+	line-height: normal;
+}
+
+.account-page :where(h1, h2, h3, h4, p) {
+	margin-block: 0;
+	/*
+	 * `line-height: normal` و `letter-spacing: normal` صریح لازم‌اند:
+	 * `theme.json` خط‌ارتفاع ۱٫۴ و فاصله‌ی حروف ‎-0.01em‎ را روی خود
+	 * عناصر تیتر می‌گذارد و ارث‌بری از `.account-page` کافی نیست
+	 * (سنجیده‌شده: `h3` پروفایل ۲۱px در برابر ۲۳px، و عرض `h1`
+	 * خوش‌آمد ۳۷۲٫۸ در برابر ۳۷۵ مرجع).
+	 */
+	line-height: normal;
+	letter-spacing: normal;
+}
+
+.account-layout {
+	display: grid;
+	grid-template-columns: 230px minmax( 0, 1fr );
+	gap: 30px;
+	align-items: start;
+}
+
+@media (max-width: 1100px) {
+	.account-layout {
+		grid-template-columns: 207px minmax( 0, 1fr );
+		gap: 22px;
+	}
+}
+
+@media (max-width: 768px) {
+	.account-page {
+		padding-top: 25px;
+		padding-bottom: 40px;
+	}
+
+	.account-layout {
+		display: block;
+	}
+
+	.account-content {
+		margin-top: 25px;
 	}
 }

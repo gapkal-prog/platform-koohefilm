@@ -1,10 +1,10 @@
 <?php
 /**
- * Title: فراخوان اشتراک ویژه
+ * Title: بنر اشتراک (داستان‌های بیشتر، محدودیت‌های کمتر)
  * Slug: koohe-film/subscribe-cta
  * Categories: koohe, koohe-page, call-to-action
- * Keywords: اشتراک, ویژه, subscribe, cta
- * Description: بخش فراخوان تهیه‌ی اشتراک ویژه با دکمه‌ی خرید.
+ * Keywords: اشتراک, ویژه, subscribe, cta, بنر
+ * Description: بنر اشتراک مطابق مرجع: آیکون، برچسب، تیتر، توضیح، دکمه و مدار تزئینی.
  * Viewport Width: 1400
  *
  * @package KooheFilm
@@ -12,22 +12,37 @@
 
 defined( 'ABSPATH' ) || exit;
 ?>
-<!-- wp:group {"align":"wide","className":"koohe-cta is-style-koohe-card","style":{"spacing":{"padding":{"top":"var:preset|spacing|50","bottom":"var:preset|spacing|50","left":"var:preset|spacing|40","right":"var:preset|spacing|40"}},"border":{"radius":"20px"}},"backgroundColor":"surface-2","layout":{"type":"constrained","contentSize":"760px"}} -->
-<div class="wp-block-group alignwide koohe-cta is-style-koohe-card has-surface-2-background-color has-background" style="border-radius:20px;padding-top:var(--wp--preset--spacing--50);padding-right:var(--wp--preset--spacing--40);padding-bottom:var(--wp--preset--spacing--50);padding-left:var(--wp--preset--spacing--40)"><!-- wp:heading {"textAlign":"center","level":2,"fontSize":"xx-large"} -->
-<h2 class="wp-block-heading has-text-align-center has-xx-large-font-size"><?php echo esc_html__( 'دسترسی نامحدود با اشتراک ویژه', 'koohe-film' ); ?></h2>
-<!-- /wp:heading -->
+<!-- wp:group {"align":"wide","className":"subscription-banner","layout":{"type":"default"}} -->
+<div class="wp-block-group alignwide subscription-banner"><!-- wp:html -->
+<span class="subscription-banner-icon" aria-hidden="true">
+	<svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m2 4 3 12h14l3-12-6 5-4-7-4 7-6-5zM5 20h14"/></svg>
+</span>
+<!-- /wp:html -->
 
-<!-- wp:paragraph {"align":"center","fontSize":"medium","style":{"color":{"text":"var:preset|color|muted"}}} -->
-<p class="has-text-align-center has-text-color has-medium-font-size"><?php echo esc_html__( 'همه‌ی کیفیت‌ها، بدون تبلیغات، با سرعت کامل و پشتیبانی اختصاصی.', 'koohe-film' ); ?></p>
-<!-- /wp:paragraph -->
+	<!-- wp:group {"className":"koohe-subscription-copy","layout":{"type":"default"}} -->
+	<div class="wp-block-group koohe-subscription-copy">
+		<!-- wp:paragraph {"className":"eyebrow"} -->
+		<p class="eyebrow"><?php echo esc_html__( 'کوهه پلاس', 'koohe-film' ); ?></p>
+		<!-- /wp:paragraph -->
 
-<!-- wp:buttons {"layout":{"type":"flex","justifyContent":"center"},"style":{"spacing":{"margin":{"top":"var:preset|spacing|30"}}}} -->
-<div class="wp-block-buttons" style="margin-top:var(--wp--preset--spacing--30)"><!-- wp:button -->
-<div class="wp-block-button"><a class="wp-block-button__link wp-element-button" href="/subscribe/"><?php echo esc_html__( 'تهیه‌ی اشتراک', 'koohe-film' ); ?></a></div>
-<!-- /wp:button -->
+		<!-- wp:heading {"level":2} -->
+		<h2 class="wp-block-heading"><?php echo esc_html__( 'داستان‌های بیشتر. محدودیت‌های کمتر.', 'koohe-film' ); ?></h2>
+		<!-- /wp:heading -->
 
-<!-- wp:button {"className":"is-style-koohe-ghost"} -->
-<div class="wp-block-button is-style-koohe-ghost"><a class="wp-block-button__link wp-element-button" href="/subscribe/#faq"><?php echo esc_html__( 'اطلاعات بیشتر', 'koohe-film' ); ?></a></div>
-<!-- /wp:button --></div>
-<!-- /wp:buttons --></div>
+		<!-- wp:paragraph -->
+		<p><?php echo esc_html__( 'با اشتراک کوهه، دنیای فیلم و سریال همیشه همراه توست.', 'koohe-film' ); ?></p>
+		<!-- /wp:paragraph -->
+	</div>
+	<!-- /wp:group -->
+
+	<!-- wp:buttons -->
+	<div class="wp-block-buttons"><!-- wp:button -->
+	<div class="wp-block-button"><a class="wp-block-button__link wp-element-button" href="<?php echo esc_url( home_url( '/subscribe/' ) ); ?>"><?php echo esc_html__( 'اشتراک خودت را انتخاب کن', 'koohe-film' ); ?></a></div>
+	<!-- /wp:button --></div>
+	<!-- /wp:buttons -->
+
+	<!-- wp:html -->
+	<span class="banner-orbit" aria-hidden="true"></span>
+	<!-- /wp:html -->
+</div>
 <!-- /wp:group -->

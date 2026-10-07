@@ -95,6 +95,7 @@ class Install {
 			'slug_episode'      => 'episode',
 			'slug_person'       => 'person',
 			'slug_collection'   => 'collection',
+			'slug_channel'      => 'channel',
 			'enable_ratings'    => 1,
 			'enable_watchlist'  => 1,
 			'enable_views'      => 1,

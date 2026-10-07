@@ -564,9 +564,9 @@
 		var targets = {
 			overview: document.querySelector( '.koohe-single-body' ),
 			episodes: document.querySelector( '.manacore-episodes, .manacore-episodes-block' ),
-			download: document.querySelector( '.manacore-links, .manacore-links-block' ),
+			download: document.querySelector( '.download-section, .manacore-links-block' ),
 			cast: document.querySelector( '.manacore-cast, .manacore-cast-block' ),
-			comments: document.querySelector( '.koohe-comments' )
+			comments: document.querySelector( '.comments-section' )
 		};
 
 		/**
@@ -578,12 +578,39 @@
 			return h + bar.offsetHeight + 16;
 		}
 
+		/**
+		 * تعیین تب فعال.
+		 *
+		 * توجه به دسترس‌پذیری: این نوار «تب» به معنای ARIA نیست — هیچ پنلی
+		 * پنهان/نمایان نمی‌شود، بلکه فهرستی از لنگرهای درون‌صفحه‌ای است که
+		 * با اسکرول فعال می‌شود. پیش‌تر هر دکمه `role="tab"` می‌گرفت بدون
+		 * آنکه والدش `role="tablist"` باشد؛ axe-core این را نقض بحرانی
+		 * `aria-required-parent` می‌دید (چهار نمونه در هر برگه‌ی تک‌اثر).
+		 * اکنون به‌جای نقش نادرستِ تب، همان معنای واقعی اعلام می‌شود:
+		 * `aria-current="true"` روی مورد فعال.
+		 */
 		function setActive( name ) {
 			for ( var i = 0; i < buttons.length; i++ ) {
 				var isActive = buttons[ i ].getAttribute( 'data-koohe-tab' ) === name;
 				buttons[ i ].classList.toggle( 'is-active', isActive );
-				buttons[ i ].setAttribute( 'aria-selected', isActive ? 'true' : 'false' );
+				if ( isActive ) {
+					buttons[ i ].setAttribute( 'aria-current', 'true' );
+				} else {
+					buttons[ i ].removeAttribute( 'aria-current' );
+				}
 			}
+		}
+
+		/**
+		 * هم‌گام‌سازی نشانی صفحه با بخش فعال (پیوندپذیری، مانند طرح مرجع).
+		 * Closest را با replaceState می‌نویسیم تا پرش صفحه رخ ندهد.
+		 */
+		function syncHash( name ) {
+			if ( ! name || ! window.history || ! window.history.replaceState ) {
+				return;
+			}
+			var base = window.location.href.split( '#' )[ 0 ];
+			window.history.replaceState( null, '', base + '#' + name );
 		}
 
 		var isClickScrolling = false;
@@ -596,18 +623,27 @@
 		for ( var i = 0; i < buttons.length; i++ ) {
 			( function ( btn ) {
 				var name = btn.getAttribute( 'data-koohe-tab' );
-				var el = targets[ name ];
+				/*
+				 * هر دکمه می‌تواند مقصد خودش را با `data-koohe-target`
+				 * صریح تعیین کند. لازم است چون در مرجع، «فصل‌ها و
+				 * قسمت‌ها» و «پخش و دانلود» یک بخش یکسان‌اند و
+				 * نگاشت پیش‌فرضِ نام تب کافی نیست.
+				 */
+				var explicit = btn.getAttribute( 'data-koohe-target' );
+				var el = ( explicit ? document.querySelector( explicit ) : null ) || targets[ name ];
 
 				if ( ! el ) {
 					btn.hidden = true;
 					return;
 				}
 
-				btn.setAttribute( 'role', 'tab' );
-				btn.setAttribute( 'aria-selected', btn.classList.contains( 'is-active' ) ? 'true' : 'false' );
+				if ( btn.classList.contains( 'is-active' ) ) {
+					btn.setAttribute( 'aria-current', 'true' );
+				}
 
 				btn.addEventListener( 'click', function () {
 					setActive( name );
+					syncHash( name );
 					isClickScrolling = true;
 					scrollTo( el );
 					setTimeout( function () {
@@ -642,6 +678,20 @@
 					observer.observe( targets[ key ] );
 				}
 			}
+		}
+
+		/*
+		 * ورود با لنگر (مثلاً «/movie/x/#download» که از دکمه‌ی «پخش و
+		 * دانلود» یا لینک بیرونی می‌آید): همان بخش فعال و به آن اسکرول شود.
+		 */
+		var initial = ( window.location.hash || '' ).replace( '#', '' );
+		if ( initial && targets[ initial ] ) {
+			setActive( initial );
+			isClickScrolling = true;
+			scrollTo( targets[ initial ] );
+			setTimeout( function () {
+				isClickScrolling = false;
+			}, 900 );
 		}
 	}
 
@@ -786,9 +836,23 @@
 		var lastQuery = '';
 		var searchTimer = null;
 
+		/*
+		 * دکمه‌های بازکننده‌ی پوسته (مثل دکمه‌ی جستجوی سربرگ) وضعیت
+		 * `aria-expanded` خود را هم به‌روز می‌کنند؛ بدون آن صفحه‌خوان
+		 * نمی‌فهمد پوسته باز شده است.
+		 */
+		var triggers = qsa( '[data-koohe-search-open]' );
+
+		function setExpanded( state ) {
+			triggers.forEach( function ( btn ) {
+				btn.setAttribute( 'aria-expanded', state ? 'true' : 'false' );
+			} );
+		}
+
 		function open() {
 			overlay.hidden = false;
 			document.body.classList.add( 'koohe-search-open' );
+			setExpanded( true );
 			if ( input ) {
 				input.focus();
 			}
@@ -797,6 +861,7 @@
 		function close() {
 			overlay.hidden = true;
 			document.body.classList.remove( 'koohe-search-open' );
+			setExpanded( false );
 		}
 
 		function renderResults( items ) {
@@ -903,79 +968,132 @@
 }
 
 	/* ---------------------------------------------------------------------
-	 * مگامنوی دسته‌بندی‌ها (بازآفرینی سینورا)
+	 * کشوی منوی موبایل (≤۹۸۰px)
 	 * ------------------------------------------------------------------ */
 
 	/**
-	 * پنل مگامنو: باز شدن با hover/focus/کلیک، بستن با Escape و کلیک بیرون.
+	 * کشوی کنار — همان رفتار مرجع.
 	 *
-	 * پنل با شورت‌کد [manacore_mega_menu] در قطعه‌ی سربرگ رندر می‌شود
-	 * (data-mega-menu) و دکمه‌ی بازکن آن data-koohe-mega-open دارد؛ بدون JS
-	 * دکمه به آرشیو ژانرها می‌رود و پنل hidden می‌ماند.
+	 * باز شدن با `[data-mobile-open]` (همبرگری سربرگ)، بستن با دکمه‌ی
+	 * `[data-mobile-close]`، با کلیک روی پس‌زمینه (نه داخل کشو) و با
+	 * `[data-mobile-search]` (ردیف جستجو: اول کشو بسته می‌شود، بعد پوسته‌ی
+	 * جستجو باز می‌شود). قفل پیمایش پس‌زمینه عیناً مثل مرجع با
+	 * `body.drawer-open` و `overflow: hidden` انجام می‌شود.
+	 *
+	 * دو افزوده‌ی دسترس‌پذیری که مرجع نداشت: بستن با Escape و بازگشت
+	 * فوکوس به دکمه‌ی همبرگری.
 	 */
-	function initMegaMenu() {
-		var panel  = document.querySelector( '[data-mega-menu]' );
-		var toggle = document.querySelector( '[data-koohe-mega-open]' );
+	function initMobileDrawer() {
+		var toggle  = document.querySelector( '[data-mobile-open]' );
+		var drawer  = document.querySelector( '[data-mobile-drawer]' );
+		var closeButton = document.querySelector( '[data-mobile-close]' );
 
-		if ( ! panel || ! toggle ) {
+		if ( ! toggle || ! drawer ) {
 			return;
 		}
 
-		var fallback = toggle.getAttribute( 'href' ) || '/genre/';
-		var opened   = false;
-		/* اگر پنل خالی رندر شد (بدون ترم)، دکمه باید لینک معمولی بماند. */
-		var usable   = !! panel.querySelector( '.manacore-mega__genres a' );
-
-		function setOpen( open ) {
-			opened = open;
-			panel.hidden = ! open;
-			toggle.classList.toggle( 'is-open', open );
-			toggle.setAttribute( 'aria-expanded', open ? 'true' : 'false' );
-		}
-
-		function toggleFromEvent( event ) {
-			event.preventDefault();
-
-			if ( ! usable ) {
-				window.location.href = fallback;
+		/**
+		 * بستن کشو.
+		 *
+		 * @param {boolean} restoreFocus فوکوس به دکمه‌ی همبرگری برگردد؟
+		 */
+		function close( restoreFocus ) {
+			if ( drawer.hidden ) {
 				return;
 			}
 
-			setOpen( ! opened );
-		}
+			var hadFocus = drawer.contains( document.activeElement );
 
-		toggle.addEventListener( 'click', toggleFromEvent );
+			drawer.hidden = true;
+			document.body.classList.remove( 'drawer-open' );
+			document.body.style.overflow = '';
+			toggle.setAttribute( 'aria-expanded', 'false' );
 
-		toggle.addEventListener( 'keydown', function ( event ) {
-			if ( 'Enter' === event.key || ' ' === event.key ) {
-				toggleFromEvent( event );
-			}
-		} );
-
-		panel.addEventListener( 'keydown', function ( event ) {
-			if ( 'Escape' === event.key && opened ) {
-				setOpen( false );
+			if ( restoreFocus && hadFocus ) {
 				toggle.focus();
 			}
-		} );
+		}
 
-		document.addEventListener( 'click', function ( event ) {
-			if ( opened && ! panel.contains( event.target ) && ! toggle.contains( event.target ) ) {
-				setOpen( false );
+		function open() {
+			drawer.hidden = false;
+			document.body.classList.add( 'drawer-open' );
+			document.body.style.overflow = 'hidden';
+			toggle.setAttribute( 'aria-expanded', 'true' );
+
+			if ( closeButton ) {
+				closeButton.focus();
+			}
+		}
+
+		toggle.addEventListener( 'click', open );
+
+		if ( closeButton ) {
+			closeButton.addEventListener( 'click', function () {
+				close( true );
+			} );
+		}
+
+		/* کلیک روی پس‌زمینه — نه کلیک داخل خود کشو. */
+		drawer.addEventListener( 'mousedown', function ( event ) {
+			if ( event.target === drawer ) {
+				close( true );
 			}
 		} );
 
-		toggle.addEventListener( 'mouseenter', function () {
-			if ( usable && ! opened ) {
-				setOpen( true );
+		qsa( '[data-mobile-search]', drawer ).forEach( function ( button ) {
+			button.addEventListener( 'click', function () {
+				close( false );
+			} );
+		} );
+
+		document.addEventListener( 'keydown', function ( event ) {
+			if ( 'Escape' === event.key || 'Esc' === event.key ) {
+				close( true );
 			}
 		} );
 
-		if ( ! usable ) {
-			toggle.setAttribute( 'href', fallback );
-			toggle.setAttribute( 'role', 'link' );
-			toggle.removeAttribute( 'aria-haspopup' );
-			toggle.removeAttribute( 'tabindex' );
+		/*
+		 * اگر پنجره به عرض دسکتاپ رسید، کشو نباید باز و قفل بماند؛
+		 * در آن عرض دکمه‌ی همبرگری هم پنهان است و راه بستنی نمی‌ماند.
+		 */
+		window.addEventListener( 'resize', function () {
+			if ( window.innerWidth > 980 ) {
+				close( false );
+			}
+		} );
+	}
+
+	/* ---------------------------------------------------------------------
+	 * فهرست پرسش‌های برگه‌ی «راهنما»
+	 * ------------------------------------------------------------------ */
+
+	/**
+	 * بازکردن نخستین پرسشِ فهرست.
+	 *
+	 * مرجع هم همین کار را در `help.js` می‌کند (`i===0?'open':''`)؛ این‌جا
+	 * چون پرسش‌ها بلوک‌های بومی `core/details` هستند، فقط همان یکی باز
+	 * می‌شود و بقیه با خودِ مرورگر کار می‌کنند (بدون جاوااسکریپت هم همه‌ی
+	 * پاسخ‌ها در دسترس‌اند، فقط بسته‌اند).
+	 */
+	function initFaq() {
+		var list = document.querySelector( '.faq-list' );
+
+		if ( ! list ) {
+			return;
+		}
+
+		var items = qsa( '.faq-item', list );
+
+		if ( ! items.length ) {
+			return;
+		}
+
+		var alreadyOpen = items.some( function ( item ) {
+			return item.open;
+		} );
+
+		if ( ! alreadyOpen ) {
+			items[ 0 ].open = true;
 		}
 	}
 
@@ -999,7 +1117,9 @@
 		initDetailTabs();
 		initLoadMore();
 		initSearchOverlay();
-		initMegaMenu();
+		initMobileDrawer();
+		initFaq();
+		initComments();
 	}
 
 	/**
@@ -1009,6 +1129,117 @@
 		document.addEventListener( 'koohe:toast', function ( event ) {
 			var detail = event.detail || {};
 			showToast( detail.message || '', { type: detail.type || '', duration: detail.duration } );
+		} );
+	}
+
+	/**
+	 * بخش دیدگاه‌ها: شمارنده‌ی نویسه، ابزار اسپویل و آشکارسازی.
+	 *
+	 * معادل مرجع (`cinora/assets/js/detail.js`) با سه تفاوت عمدی:
+	 *   • رقم‌ها فارسی می‌شوند (سایت فارسی است، مرجع لاتین می‌گذاشت).
+	 *   • متن اسپویل حذف نمی‌شود؛ در همان عنصر می‌ماند و آشکار می‌شود.
+	 *   • «تمام دیدگاه اسپویل دارد» وضعیت دکمه را با `aria-expanded`
+	 *     اعلام می‌کند تا برای صفحه‌خوان هم روشن باشد.
+	 */
+	function initComments() {
+		var section = document.querySelector( '.comments-section' );
+		if ( ! section ) {
+			return;
+		}
+
+		var input = section.querySelector( '#comment' );
+		var counter = section.querySelector( '[data-comment-length]' );
+
+		if ( input && counter ) {
+			var max = parseInt( input.getAttribute( 'maxlength' ), 10 ) || 1500;
+			var update = function () {
+				counter.textContent = toFa( String( input.value.length ) ) + ' / ' + toFa( String( max ) );
+			};
+			input.addEventListener( 'input', update );
+			update();
+		}
+
+		/* ابزار اسپویل: پیچیدن متن انتخاب‌شده در [spoiler]…[/spoiler]. */
+		var tool = section.querySelector( '[data-spoiler-tool]' );
+		if ( tool && input ) {
+			tool.addEventListener( 'click', function () {
+				var start = input.selectionStart;
+				var end = input.selectionEnd;
+
+				if ( start === end ) {
+					showToast( 'اول بخشی از متن دیدگاه را انتخاب کن.', { type: 'error' } );
+					input.focus();
+					return;
+				}
+
+				input.value = input.value.slice( 0, start ) + '[spoiler]' + input.value.slice( start, end ) + '[/spoiler]' + input.value.slice( end );
+				input.dispatchEvent( new Event( 'input' ) );
+				input.focus();
+				input.setSelectionRange( start + 9, end + 9 );
+			} );
+		}
+
+		reveal( section, '[data-inline-spoiler]' );
+		reveal( section, '[data-whole-spoiler]' );
+
+		/* مرتب‌سازی دیدگاه‌های سطح اول بر پایه‌ی زمان خودِ هسته. */
+		var sort = section.querySelector( '[data-comment-sort]' );
+		var list = section.querySelector( '.wp-block-comment-template' );
+		if ( sort && list ) {
+			var applySort = function () {
+				var items = Array.prototype.slice.call( list.children );
+				items.sort( function ( a, b ) {
+					var ta = time( a );
+					var tb = time( b );
+					return 'oldest' === sort.value ? ta - tb : tb - ta;
+				} );
+				items.forEach( function ( item ) {
+					list.appendChild( item );
+				} );
+			};
+
+			sort.addEventListener( 'change', applySort );
+			/*
+			 * وردپرس دیدگاه‌ها را از قدیمی به جدید می‌چیند؛ مرجع
+			 * «جدیدترین» را پیش‌فرض دارد. با اجرای همان مرتب‌سازی در
+			 * بارگذاری، ترتیبِ دیده‌شده با گزینه‌ی انتخابی یکی می‌شود.
+			 * فقط دیدگاه‌های سطح اول جابه‌جا می‌شوند تا پاسخ‌ها کنار
+			 * دیدگاه والدشان بمانند.
+			 */
+			applySort();
+		}
+	}
+
+	/** زمان دیدگاه از `time[datetime]` هسته؛ نبودش یعنی «نامعلوم». */
+	function time( item ) {
+		var node = item.querySelector( 'time[datetime]' );
+		if ( ! node ) {
+			return 0;
+		}
+		var value = Date.parse( node.getAttribute( 'datetime' ) );
+		return isNaN( value ) ? 0 : value;
+	}
+
+	/** دکمه‌های آشکارساز اسپویل (درون‌متنی و کل دیدگاه). */
+	function reveal( scope, selector ) {
+		Array.prototype.forEach.call( scope.querySelectorAll( selector ), function ( button ) {
+			button.addEventListener( 'click', function () {
+				var text = button.parentNode.querySelector( selector === '[data-inline-spoiler]' ? '.inline-spoiler__text' : '.whole-spoiler__text' );
+				if ( ! text ) {
+					return;
+				}
+				var open = 'true' !== button.getAttribute( 'aria-expanded' );
+				button.setAttribute( 'aria-expanded', open ? 'true' : 'false' );
+				text.hidden = ! open;
+				button.hidden = open;
+			} );
+		} );
+	}
+
+	/** تبدیل رقم‌های لاتین به فارسی (هم‌ارز `manacore_fa_digits`). */
+	function toFa( value ) {
+		return String( value ).replace( /[0-9]/g, function ( d ) {
+			return '۰۱۲۳۴۵۶۷۸۹'.charAt( parseInt( d, 10 ) );
 		} );
 	}
 

@@ -1,19 +1,15 @@
 <!-- wp:template-part {"slug":"header","tagName":"div","area":"header"} /-->
 
 <!-- wp:group {"tagName":"main","className":"koohe-main koohe-single koohe-single-episode","style":{"spacing":{"margin":{"top":"var:preset|spacing|40"},"blockGap":"var:preset|spacing|30"}},"layout":{"type":"constrained"}} -->
-<main id="koohe-main" class="wp-block-group koohe-main koohe-single koohe-single-episode" style="margin-top:var(--wp--preset--spacing--40)"><!-- wp:group {"align":"wide","style":{"spacing":{"blockGap":"10px"}},"layout":{"type":"default"}} -->
-<div class="wp-block-group alignwide"><!-- wp:post-title {"level":1,"fontSize":"x-large"} /-->
-
-<!-- wp:manacore/title-meta /--></div>
-<!-- /wp:group -->
+<main id="koohe-main" class="wp-block-group koohe-main koohe-single koohe-single-episode" style="margin-top:var(--wp--preset--spacing--40)"><!-- wp:template-part {"slug":"title-header","tagName":"div","align":"wide"} /-->
 
 <!-- wp:group {"align":"wide","className":"koohe-single-body","style":{"spacing":{"blockGap":"var:preset|spacing|40"}},"layout":{"type":"default"}} -->
-<div class="wp-block-group alignwide koohe-single-body"><!-- wp:columns {"style":{"spacing":{"blockGap":{"top":"var:preset|spacing|40","left":"var:preset|spacing|40"}}}} -->
-<div class="wp-block-columns"><!-- wp:column {"width":"68%"} -->
-<div class="wp-block-column" style="flex-basis:68%"><!-- wp:group {"className":"koohe-content-block","style":{"spacing":{"blockGap":"var:preset|spacing|30"}},"layout":{"type":"default"}} -->
+<div class="wp-block-group alignwide koohe-single-body"><!-- wp:columns {"className":"koohe-detail-layout","style":{"spacing":{"blockGap":{"top":"var:preset|spacing|40","left":"var:preset|spacing|40"}}}} -->
+<div class="wp-block-columns koohe-detail-layout"><!-- wp:column {"width":"76%"} -->
+<div class="wp-block-column" style="flex-basis:76%"><!-- wp:group {"className":"koohe-content-block","style":{"spacing":{"blockGap":"var:preset|spacing|30"}},"layout":{"type":"default"}} -->
 <div class="wp-block-group koohe-content-block"><!-- wp:post-content {"layout":{"type":"constrained"}} /-->
 
-<!-- wp:manacore/download-links /-->
+<!-- wp:manacore/download-links {"heading":"بهترین کیفیت را انتخاب کن.","subtitle":"پخش آنلاین یا دانلود؛ انتخاب با توست."} /-->
 
 <!-- wp:group {"className":"koohe-episode-nav","layout":{"type":"flex","flexWrap":"wrap","justifyContent":"space-between"},"style":{"spacing":{"margin":{"top":"var:preset|spacing|30"}}}} -->
 <div class="wp-block-group koohe-episode-nav" style="margin-top:var(--wp--preset--spacing--30)"><!-- wp:post-navigation-link {"type":"previous","label":"قسمت قبلی","fontSize":"small"} /-->
@@ -21,20 +17,22 @@
 <!-- wp:post-navigation-link {"label":"قسمت بعدی","fontSize":"small"} /--></div>
 <!-- /wp:group -->
 
-<!-- wp:comments {"className":"koohe-comments"} -->
-<div class="wp-block-comments koohe-comments"><!-- wp:comments-title {"level":2,"fontSize":"x-large"} /-->
+<!-- wp:comments {"className":"comments-section"} -->
+<div class="wp-block-comments comments-section"><!-- wp:comments-title {"level":2} /-->
 
 <!-- wp:comment-template -->
-<!-- wp:group {"className":"koohe-comment","style":{"spacing":{"blockGap":"8px","padding":{"top":"14px","bottom":"14px"}}},"layout":{"type":"default"}} -->
-<div class="wp-block-group koohe-comment" style="padding-top:14px;padding-bottom:14px"><!-- wp:group {"layout":{"type":"flex","flexWrap":"nowrap","verticalAlignment":"center"},"style":{"spacing":{"blockGap":"10px"}}} -->
+<!-- wp:group {"className":"comment-item","style":{"spacing":{"blockGap":"6px"}},"layout":{"type":"default"}} -->
+<div class="wp-block-group comment-item"><!-- wp:group {"layout":{"type":"flex","flexWrap":"nowrap","verticalAlignment":"center"},"style":{"spacing":{"blockGap":"10px"}}} -->
 <div class="wp-block-group"><!-- wp:avatar {"size":40,"style":{"border":{"radius":"999px"}}} /-->
 
-<!-- wp:comment-author-name {"fontSize":"small"} /--></div>
+<!-- wp:comment-author-name /-->
+
+<!-- wp:comment-date {"style":{"color":{"text":"var:preset|color|muted"}}} /--></div>
 <!-- /wp:group -->
 
-<!-- wp:comment-content {"fontSize":"small"} /-->
+<!-- wp:comment-content /-->
 
-<!-- wp:comment-reply-link {"fontSize":"x-small"} /--></div>
+<!-- wp:comment-reply-link {"label":"↵ پاسخ"} /--></div>
 <!-- /wp:group -->
 <!-- /wp:comment-template -->
 

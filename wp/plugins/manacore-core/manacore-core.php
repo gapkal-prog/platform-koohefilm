@@ -58,11 +58,16 @@ function manacore_boot() {
 	ManaCore\Core\Rest_Api::instance()->hooks();
 	ManaCore\Core\Blocks::instance()->hooks();
 	ManaCore\Core\Query::instance()->hooks();
+	ManaCore\Core\Channel::instance()->hooks();
 	ManaCore\Core\Assets::instance()->hooks();
 	ManaCore\Core\Settings::instance()->hooks();
 	ManaCore\Core\Ratings::instance()->hooks();
-	ManaCore\Core\Watchlist::instance()->hooks();		ManaCore\Core\Player::instance()->hooks();
-		ManaCore\Core\Mega_Menu::instance()->hooks();
+	ManaCore\Core\Watchlist::instance()->hooks();
+	ManaCore\Core\Account::instance()->hooks();
+	ManaCore\Core\Account_Actions::instance()->hooks();
+	ManaCore\Core\Player::instance()->hooks();
+	ManaCore\Core\Comments::instance()->hooks();
+	ManaCore\Core\Article::instance()->hooks();
 		ManaCore\Core\Seo::instance()->hooks();
 }
 add_action( 'plugins_loaded', 'manacore_boot', 5 );
@@ -87,6 +92,8 @@ register_activation_hook(
 		ManaCore\Core\Taxonomies::instance()->register();
 		ManaCore\Core\Install::create_tables();
 		ManaCore\Core\Install::default_options();
+		ManaCore\Core\Player::ensure_page();
+		ManaCore\Core\Account::ensure_page();
 		flush_rewrite_rules();
 	}
 );

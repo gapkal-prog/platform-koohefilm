@@ -1,0 +1,6 @@
+PASS  article-parity.cjs             موفق: 455   ناموفق: 0   (مرجع: http://localhost:8098/article.html)
+PASS  magazine-parity.cjs            موفق: 192   ناموفق: 0   (مرجع: http://localhost:8098/magazine.html)
+PASS  home-parity.cjs                موفق: 84   ناموفق: 0   (مرجع: http://localhost:8098/index.html)
+FAIL  harness-all.cjs                 (exit 1)
+  ✗ همه‌ی برگه‌ها در هر سه ویوپورت ۲۰۰ می‌دهند (51 ردیف)  — magazine|desktop, magazine|tablet, magazine|mobile
+---- w18i: 3 PASS / 1 FAIL ----

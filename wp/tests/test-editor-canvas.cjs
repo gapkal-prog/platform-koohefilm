@@ -181,8 +181,8 @@ assert(
 	'target_post() حالت پیش‌نمایش ویرایشگر را تشخیص می‌دهد'
 );
 assert(
-	/sample_post_id\(\)/.test( targetBody ),
-	'در پیش‌نمایش، اثر نمونه جای زمینه‌ی نبودِ پست را می‌گیرد'
+	/sample_post_id\(\s*\$types\s*\)/.test( targetBody ),
+	'در پیش‌نمایش، اثر نمونه‌ی هم‌نوعِ درخواست جای زمینه‌ی نبودِ پست را می‌گیرد'
 );
 
 /*
@@ -194,12 +194,17 @@ assert(
 	'اثر نمونه تنها وقتی به کار می‌رود که زمینه‌ای نباشد و در ویرایشگر باشیم'
 );
 
-var sampleBody = phpBody( blocksCode, 'function sample_post_id()' );
-assert( '' !== sampleBody, 'متد sample_post_id() تعریف شده است' );
+var sampleBody = phpBody( blocksCode, 'function sample_post_id( $types = array() )' );
+assert( '' !== sampleBody, 'متد sample_post_id( $types ) تعریف شده است' );
 assert(
-	/wp_cache_get\(\s*'manacore_sample_post'\s*\)/.test( sampleBody )
-		&& /wp_cache_set\(\s*'manacore_sample_post'/.test( sampleBody ),
-	'نتیجه cache می‌شود تا هر پیش‌نمایش یک کوئری تازه نزند'
+	/\$cache_key\s*=\s*'manacore_sample_post'/.test( sampleBody )
+		&& /wp_cache_get\(\s*\$cache_key\s*\)/.test( sampleBody )
+		&& /wp_cache_set\(\s*\$cache_key/.test( sampleBody ),
+	'نتیجه با کلید نوع‌آگاه cache می‌شود تا هر پیش‌نمایش یک کوئری تازه نزند'
+);
+assert(
+	/manacore_title_post_types\(\)/.test( sampleBody ),
+	'در نبود نوع درخواستی، همه‌ی انواع اثر بررسی می‌شوند'
 );
 
 var numberposts = sampleBody.match( /'numberposts'\s*=>\s*(\d+)/ );
@@ -245,8 +250,8 @@ assert(
 	'پنل فصل‌ها در بوم باز است (تب‌ها بدون JS کار نمی‌کنند)'
 );
 assert(
-	/\.manacore-grid-cards\.is-scroll[\s\S]{0,220}?display:\s*grid/.test( canvasBare ),
-	'ریل افقی در بوم به شبکه تبدیل می‌شود تا همه‌ی کارت‌ها دیده شوند'
+	/\.manacore-grid-cards\.is-scroll[\s\S]{0,220}?overflow-x:\s*auto/.test( canvasBare ),
+	'ریل افقی در بوم هم ریل می‌ماند (فقط اسکرول‌پذیر می‌شود) و به شبکه تبدیل نمی‌شود'
 );
 
 /* ------------------------------------------------------------------
@@ -345,6 +350,59 @@ assert(
 var opens  = ( canvasBare.match( /\{/g ) || [] ).length;
 var closes = ( canvasBare.match( /\}/g ) || [] ).length;
 assert( opens === closes, 'آکولادهای editor-canvas.css متوازن‌اند (' + opens + ' / ' + closes + ')' );
+
+/*
+ * ------------------------------------------------------------------
+ * هم‌خوانی فهرست آیکون‌های سرتیتر بین PHP و JS
+ * ---------------------------------------------------------------
+ *
+ * ریشه‌ی مشکلی که این سنجه از بازگشتش جلوگیری می‌کند:
+ *
+ *   آیکون سرتیتر دو فهرست جدا دارد — مسیرهای SVG در
+ *   `Block_Support::heading_icon_paths()` (PHP) و برچسب‌های گزینش‌گر در
+ *   `HEADING_ICONS` (JS). اگر آیکونی فقط در PHP اضافه شود، در HTML
+ *   رندر می‌شود ولی مدیر نمی‌تواند از ویرایشگر انتخابش کند (و با یک بار
+ *   ذخیره‌ی بلوک، مقدارش پاک می‌شود). همین اتفاق برای آیکون «tv» رخ داد.
+ */
+var supportPhp = fs.readFileSync( path.join( PLUGIN, 'includes', 'class-block-support.php' ), 'utf8' );
+var blocksJs   = fs.readFileSync( path.join( PLUGIN, 'assets', 'js', 'blocks.js' ), 'utf8' );
+
+function iconKeys( source, startMarker, endMarker ) {
+	var from = source.indexOf( startMarker );
+	if ( from < 0 ) {
+		return null;
+	}
+	var to  = source.indexOf( endMarker, from );
+	var box = source.slice( from, to < 0 ? source.length : to );
+	var out = [];
+	var re  = /['\"]([a-z][a-z0-9_-]*)['\"]\s*=>|^\s*([a-z][a-z0-9_-]*):\s*__\(/gm;
+	var m;
+	while ( ( m = re.exec( box ) ) !== null ) {
+		var key = m[1] || m[2];
+		if ( key && out.indexOf( key ) < 0 ) {
+			out.push( key );
+		}
+	}
+	return out;
+}
+
+var phpIcons = iconKeys( supportPhp, 'function heading_icon_paths', '\n\t}' );
+var jsIcons  = iconKeys( blocksJs, 'var HEADING_ICONS = {', '\n\t};' );
+
+assert( !! phpIcons && phpIcons.length > 0, 'فهرست آیکون‌های سرتیتر در PHP خوانده شد (' + ( phpIcons ? phpIcons.length : 0 ) + ' آیکون)' );
+assert( !! jsIcons && jsIcons.length > 0, 'فهرست آیکون‌های سرتیتر در JS خوانده شد (' + ( jsIcons ? jsIcons.length : 0 ) + ' آیکون)' );
+
+var missingInJs  = ( phpIcons || [] ).filter( function ( k ) { return ( jsIcons || [] ).indexOf( k ) < 0; } );
+var missingInPhp = ( jsIcons || [] ).filter( function ( k ) { return ( phpIcons || [] ).indexOf( k ) < 0; } );
+
+assert(
+	0 === missingInJs.length,
+	'هر آیکون PHP در گزینش‌گر ویرایشگر هست' + ( missingInJs.length ? ' — بی‌گزینش‌گر: ' + missingInJs.join( ', ' ) : '' )
+);
+assert(
+	0 === missingInPhp.length,
+	'هر گزینه‌ی ویرایشگر مسیر SVG دارد' + ( missingInPhp.length ? ' — بی‌مسیر: ' + missingInPhp.join( ', ' ) : '' )
+);
 
 console.log( '' );
 console.log( '==========================================================' );

@@ -1,0 +1,22 @@
+— کاشت داده‌ی آزمون —
+  seed.php            seed ok
+  seed-article.php    article seed ok — articles=4 · chapters=4
+  seed-magazine.php   magazine seed ok — page=480 · categories=3 · posts=4
+  seed-info.php       info seed ok — help=6 · privacy=7
+  seed-cast.php       cast seed ok — roles=2 · people=12 · titles=6
+  seed-live.php       live seed ok — channels=3 · today=tuesday · scheduled=3
+  seed-account.php    account seed ok — watchlist=5 · history=4 · watched=1 · minutes=290 · genre=درام
+✗ person wp @1440: «.person-page-does-not-exist» پیدا نشد
+✓ ref-person-1440.png — 1440×1615 @x0
+✗ person wp @390: «.person-page-does-not-exist» پیدا نشد
+✓ ref-person-390.png — 390×1503 @x0
+— برگشت داده‌ی آزمون —
+  seed-live.php       live restore ok — frames reset=4
+  seed-cast.php       cast restore ok — people=11 · media=12 · titles=6
+  seed-info.php       info restore ok — info pages restored
+  seed-magazine.php   magazine restore ok — magazine data restored
+  seed-article.php    article restore ok — article data restored
+
+✗ 2 برش گرفته نشد (خروج ۱):
+   · person wp @1440 → «.person-page-does-not-exist» در http://localhost:8099/person/jared-harris/
+   · person wp @390 → «.person-page-does-not-exist» در http://localhost:8099/person/jared-harris/

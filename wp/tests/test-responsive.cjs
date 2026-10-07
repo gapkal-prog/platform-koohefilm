@@ -180,9 +180,28 @@ assert(
 	themeBare.indexOf( '.manacore-search-box' ) < 0,
 	'گزینشگر ناکارآمد .manacore-search-box حذف شده است'
 );
+/*
+ * سربرگ دیگر «کادر جستجو» ندارد؛ جستجو مثل مرجع به یک دکمه‌ی پیل
+ * (آیکن + متن راهنما + ⌘K) تبدیل شده که پوسته‌ی تمام‌صفحه را باز می‌کند.
+ * پس دو چیز سنجیده می‌شود: (۱) خودِ بلوک در پارت سربرگ هست، (۲) هیچ
+ * قاعده‌ی CSS مرده‌ای برای کادر جستجوی حذف‌شده نمانده است.
+ */
+var headerPart = read( path.join( THEME, 'parts', 'header.html' ) );
 assert(
-	/\.koohe-header-end \.manacore-search\b/.test( themeBare ),
-	'پنهان‌سازی جستجو در سربرگ کلاس واقعی را هدف می‌گیرد'
+	/wp:koohe\/search-trigger/.test( headerPart ),
+	'دکمه‌ی جستجوی سربرگ (بلوک koohe/search-trigger) در پارت سربرگ هست'
+);
+assert(
+	'/wp:manacore/search-box' === 'x' || headerPart.indexOf( 'manacore/search-box' ) < 0,
+	'کادر جستجوی درون‌خطی از سربرگ برداشته شده است (جستجو با دکمه باز می‌شود)'
+);
+assert(
+	'/.koohe-header-end .manacore-search' === 'x' || ! /\.koohe-header-end \.manacore-search\b/.test( themeBare ),
+	'قاعده‌ی مرده‌ی کادر جستجوی سربرگ از theme.css حذف شده است'
+);
+assert(
+	/\.koohe-search-trigger\b/.test( themeBare ),
+	'دکمه‌ی جستجو در theme.css استایل دارد'
 );
 
 /* ------------------------------------------------------------------

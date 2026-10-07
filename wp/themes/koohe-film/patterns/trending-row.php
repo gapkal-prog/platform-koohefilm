@@ -12,4 +12,4 @@
 
 defined( 'ABSPATH' ) || exit;
 ?>
-<!-- wp:manacore/titles-grid {"heading":"<?php echo esc_attr__( 'پرطرفدارترین‌های هفته', 'koohe-film' ); ?>","source":"trending","count":12,"columns":6,"showMore":false,"layout":"grid","ranked":true} /-->
+<!-- wp:manacore/titles-grid {"align":"wide","heading":"<?php echo esc_attr__( 'پرطرفدارترین‌های هفته', 'koohe-film' ); ?>","headingIcon":"fire","source":"trending","count":12,"columns":6,"showMore":true,"layout":"grid","ranked":true,"showTypeTabs":true} /-->

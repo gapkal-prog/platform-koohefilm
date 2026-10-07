@@ -1,0 +1,1245 @@
+==========================================================
+۱) بررسی نحوی PHP
+==========================================================
+  ✓ همه‌ی فایل‌های PHP بدون خطا (79 فایل)
+
+==========================================================
+۲) بررسی نحوی JavaScript
+==========================================================
+  ✓ همه‌ی فایل‌های JS بدون خطا (9 فایل)
+
+==========================================================
+۳) ساخت داده‌های آزمون (fixtures)
+==========================================================
+payload keys: 27
+registry blocks: 34
+  manacore/titles-grid         attrs=71
+  manacore/hero-slider         attrs=57
+  manacore/title-meta          attrs=20
+  manacore/download-links      attrs=25
+  manacore/rating-box          attrs=21
+  manacore/cast-list           attrs=24
+  manacore/trailer             attrs=20
+  manacore/player-page         attrs=6
+  manacore/filter-bar          attrs=40
+  manacore/browse-toolbar      attrs=15
+  manacore/collection-row      attrs=21
+  manacore/magazine-row        attrs=28
+  manacore/magazine-hero       attrs=21
+  manacore/schedule            attrs=35
+  manacore/info-card           attrs=8
+  manacore/taste-banner        attrs=7
+  manacore/page-intro          attrs=14
+  manacore/people-grid         attrs=24
+  manacore/cta-link            attrs=13
+  manacore/person-meta         attrs=13
+  manacore/breadcrumb          attrs=7
+  manacore/live-player         attrs=31
+  manacore/live-channels       attrs=12
+  manacore/account-greeting    attrs=10
+  manacore/account-nav         attrs=7
+  manacore/account-stats       attrs=13
+  manacore/account-panel       attrs=2
+  manacore/account-welcome     attrs=9
+  manacore/account-history     attrs=12
+  manacore/account-analytics   attrs=22
+  manacore/account-invoices    attrs=18
+  manacore/account-settings    attrs=24
+  manacore/search-box          attrs=22
+  manacore/episodes-list       attrs=25
+
+==========================================================
+۴) آزمون موتور نمایش شرطی و سازنده‌ی کوئری
+==========================================================
+=== 1. غیرفعال / بدون قاعده ===
+  ✓ disabled -> render
+  ✓ enabled but no rules -> render
+
+=== 2. قاعده‌ی نوع محتوا (post_type) ===
+  ✓ movie page, rule=[movie] show
+  ✓ movie page, rule=[series] show
+  ✓ movie page, rule=[movie] HIDE
+  ✓ movie page, is_not [movie]
+
+=== 3. قاعده‌ی تاکسونومی (دسته/برچسب/ژانر) ===
+  ✓ has genre=action
+  ✓ has genre=comedy
+  ✓ has category=news
+
+=== 4. زمینه‌ی صفحه (context) ===
+  ✓ singular context
+  ✓ archive context on singular
+  ✓ archive context on archive
+
+=== 5. ورود / نقش / اشتراک ===
+  ✓ logged_out rule, guest
+  ✓ logged_in rule, guest
+  ✓ logged_in rule, user
+  ✓ role=subscriber
+  ✓ role=editor
+  ✓ subscription=vip
+  ✓ subscription=gold
+
+=== 6. رابطه‌ی AND / OR ===
+  ✓ AND ok+bad
+  ✓ OR  ok+bad
+  ✓ AND ok+ok
+
+=== 7. پارامتر URL و بازه‌ی تاریخ ===
+  ✓ query_var promo=summer
+  ✓ query_var promo=winter
+  ✓ date range covering today
+  ✓ date range in the past
+
+=== 8. پرمیوم / شناسه‌ی نوشته ===
+  ✓ premium=yes
+  ✓ premium=no
+  ✓ post_ids [5]
+  ✓ post_ids [9]
+
+=== 9. ویرایشگر همیشه نمایش می‌دهد ===
+  ✓ admin screen ignores rules
+
+=== 10. کلاس‌های دستگاه ===
+  ✓ no devices
+  ✓ mobile+tablet
+
+=== 11. سازنده‌ی کوئری (taxQuery / فیلترها) ===
+  ✓ post_type array
+  ✓ posts_per_page
+  ✓ offset
+  ✓ tax_query count (2 rules + relation)
+  ✓ tax_query relation
+  ✓ tax_query[0] operator
+  ✓ tax_query[1] operator
+  ✓ order DESC
+  ✓ excluded ids
+  ✓ meta_query present
+
+---------------------------------------
+PASS: 43   FAIL: 0
+
+==========================================================
+۵) آزمون تاریخ شمسی و رقم‌های فارسی
+==========================================================
+
+=== ۱) تبدیل میلادی به شمسی (تاریخ‌های مرجع نوروز) ===
+  ✓ 2024-03-20 → 1403-01-01
+  ✓ 2024-03-19 → 1402-12-29
+  ✓ 2025-03-20 → 1403-12-30
+  ✓ 2025-03-21 → 1404-01-01
+  ✓ 2026-03-21 → 1405-01-01
+  ✓ 2011-01-01 → 1389-10-11
+  ✓ 2002-08-30 → 1381-06-08
+  ✓ 2026-10-03 → 1405-07-11
+
+=== ۲) قالب‌بندی فارسی ===
+  ✓ قالب «روز ماه سال» با رقم فارسی  — ۱۰ مهر ۱۴۰۳
+  ✓ بدون سال وقتی with_year=false  — ۱۱ مهر
+  ✓ ورودی نامعتبر رشته‌ی خالی می‌دهد
+  ✓ تبدیل رقم‌های لاتین به فارسی
+  ✓ صفر ابتدایی حفظ می‌شود
+
+=== ۳) ترتیب و بازه‌ی ماه‌های شمسی ===
+  ✓ ماه‌های شمسی با پیشرفت زمان صعودی می‌مانند  — 1,2,3,4,5,6,7,8,9
+  ✓ همه‌ی ماه‌ها در بازه‌ی ۱ تا ۱۲ هستند
+
+==========================================================
+موفق: 15   ناموفق: 0
+==========================================================
+
+==========================================================
+۶) شبیه‌سازی ویرایشگر بلوک
+==========================================================
+registered blocks: 33
+  - manacore/titles-grid  attrs=71
+  - manacore/hero-slider  attrs=57
+  - manacore/title-meta  attrs=20
+  - manacore/download-links  attrs=25
+  - manacore/rating-box  attrs=21
+  - manacore/cast-list  attrs=24
+  - manacore/trailer  attrs=20
+  - manacore/player-page  attrs=6
+  - manacore/filter-bar  attrs=40
+  - manacore/browse-toolbar  attrs=15
+  - manacore/collection-row  attrs=21
+  - manacore/magazine-row  attrs=28
+  - manacore/magazine-hero  attrs=21
+  - manacore/schedule  attrs=35
+  - manacore/info-card  attrs=8
+  - manacore/taste-banner  attrs=7
+  - manacore/page-intro  attrs=14
+  - manacore/people-grid  attrs=24
+  - manacore/cta-link  attrs=13
+  - manacore/person-meta  attrs=13
+  - manacore/breadcrumb  attrs=7
+  - manacore/live-player  attrs=31
+  - manacore/live-channels  attrs=12
+  - manacore/account-greeting  attrs=10
+  - manacore/account-nav  attrs=7
+  - manacore/account-stats  attrs=13
+  - manacore/account-welcome  attrs=9
+  - manacore/account-history  attrs=12
+  - manacore/account-analytics  attrs=22
+  - manacore/account-invoices  attrs=18
+  - manacore/account-settings  attrs=24
+  - manacore/search-box  attrs=22
+  - manacore/episodes-list  attrs=25
+RUNTIME: all edit() calls OK (elements built: 11893)
+
+=== PANEL / CONTROL INVENTORY (default attrs) ===
+manacore/titles-grid  panels=9
+   محتوا و سرتیتر | منبع و کوئری | فیلتر تاکسونومی | فیلترهای پیشرفته | مرتب‌سازی | چیدمان | نمایش کارت | نمایش شرطی | رفتار بلوک
+   controls -> TextControl:10, SelectControl:12, TextareaControl:1, ToggleControl:22, FormTokenField:2, RangeControl:9, Button:1
+manacore/hero-slider  panels=8
+   محتوا و سرتیتر | تنظیمات اسلایدر | منبع و کوئری | فیلتر تاکسونومی | فیلترهای پیشرفته | مرتب‌سازی | نمایش شرطی | رفتار بلوک
+   controls -> TextControl:11, SelectControl:11, TextareaControl:1, ToggleControl:16, RangeControl:8, FormTokenField:2, Button:1
+manacore/title-meta  panels=4
+   محتوا و سرتیتر | مشخصات نمایشی | نمایش شرطی | رفتار بلوک
+   controls -> TextControl:5, SelectControl:4, TextareaControl:1, ToggleControl:5, FormTokenField:1, RangeControl:2
+manacore/download-links  panels=4
+   محتوا و سرتیتر | تنظیمات لینک‌ها | نمایش شرطی | رفتار بلوک
+   controls -> TextControl:7, SelectControl:4, TextareaControl:1, ToggleControl:7, FormTokenField:2, RangeControl:1
+manacore/rating-box  panels=4
+   محتوا و سرتیتر | تنظیمات امتیاز | نمایش شرطی | رفتار بلوک
+   controls -> TextControl:6, SelectControl:3, TextareaControl:1, ToggleControl:7, FormTokenField:1, RangeControl:1
+manacore/cast-list  panels=5
+   محتوا و سرتیتر | تنظیمات بازیگران | چیدمان | نمایش شرطی | رفتار بلوک
+   controls -> TextControl:5, SelectControl:6, TextareaControl:1, ToggleControl:5, RangeControl:9
+manacore/trailer  panels=4
+   محتوا و سرتیتر | تنظیمات تریلر | نمایش شرطی | رفتار بلوک
+   controls -> TextControl:7, SelectControl:4, TextareaControl:1, ToggleControl:5, RangeControl:1
+manacore/player-page  panels=1
+   تنظیمات
+   controls -> TextControl:1
+manacore/filter-bar  panels=4
+   محتوا و سرتیتر | تنظیمات فیلتر | نمایش شرطی | رفتار بلوک
+   controls -> TextControl:5, SelectControl:4, TextareaControl:1, ToggleControl:9, FormTokenField:1, RangeControl:2
+manacore/browse-toolbar  panels=3
+   کنترل‌های نوار مرور | نمایش شرطی | رفتار بلوک
+   controls -> ToggleControl:7, TextControl:3, RangeControl:1
+manacore/collection-row  panels=5
+   محتوا و سرتیتر | تنظیمات کالکشن‌ها | چیدمان | نمایش شرطی | رفتار بلوک
+   controls -> TextControl:5, SelectControl:3, TextareaControl:1, ToggleControl:5, RangeControl:5
+manacore/magazine-row  panels=5
+   محتوا و سرتیتر | تنظیمات مجله | چیدمان | نمایش شرطی | رفتار بلوک
+   controls -> TextControl:8, SelectControl:3, TextareaControl:1, ToggleControl:8, RangeControl:6
+manacore/magazine-hero  panels=4
+   محتوا و سرتیتر | تنظیمات سرصفحه‌ی مجله | نمایش شرطی | رفتار بلوک
+   controls -> TextControl:6, SelectControl:3, TextareaControl:1, ToggleControl:6, RangeControl:3
+manacore/schedule  panels=5
+   محتوا و سرتیتر | تنظیمات برنامه | چیدمان و منبع | نمایش شرطی | رفتار بلوک
+   controls -> TextControl:5, SelectControl:6, TextareaControl:1, ToggleControl:6, RangeControl:2
+manacore/info-card  panels=1
+   کارت
+   controls -> SelectControl:1, TextControl:3, TextareaControl:1, ToggleControl:1
+manacore/taste-banner  panels=2
+   محتوا و سرتیتر | تنظیمات بنر
+   controls -> TextControl:7, SelectControl:2, TextareaControl:1, ToggleControl:2
+manacore/page-intro  panels=1
+   سرصفحه
+   controls -> SelectControl:3, TextControl:5, TextareaControl:1, ToggleControl:3
+manacore/people-grid  panels=5
+   محتوا و سرتیتر | شبکه‌ی چهره‌ها | چیدمان | نمایش شرطی | رفتار بلوک
+   controls -> TextControl:8, SelectControl:5, TextareaControl:1, ToggleControl:5, RangeControl:6, FormTokenField:1
+manacore/cta-link  panels=3
+   دکمه‌ی پیوند | نمایش شرطی | رفتار بلوک
+   controls -> TextControl:5, SelectControl:1, ToggleControl:4, RangeControl:1
+manacore/person-meta  panels=3
+   شناسنامه‌ی چهره | نمایش شرطی | رفتار بلوک
+   controls -> TextControl:4, SelectControl:1, ToggleControl:6, RangeControl:1
+manacore/breadcrumb  panels=2
+   مسیر صفحه | رفتار بلوک
+   controls -> TextControl:5, SelectControl:1, ToggleControl:1, RangeControl:1
+manacore/live-player  panels=5
+   محتوا و سرتیتر | پخش زنده | قاب‌های امروز | نمایش شرطی | رفتار بلوک
+   controls -> TextControl:13, SelectControl:3, TextareaControl:2, ToggleControl:7, RangeControl:2, FormTokenField:1
+manacore/live-channels  panels=3
+   محتوا و سرتیتر | فهرست کانال‌ها | کارت یادداشت
+   controls -> TextControl:9, SelectControl:4, TextareaControl:2, ToggleControl:2
+manacore/account-greeting  panels=1
+   تنظیمات سرصفحه
+   controls -> TextControl:7, TextareaControl:1, SelectControl:1, ToggleControl:1
+manacore/account-nav  panels=1
+   تنظیمات ستون کنار
+   controls -> TextControl:4, ToggleControl:3
+manacore/account-stats  panels=1
+   شمارنده‌ها
+   controls -> ToggleControl:4, TextControl:9
+manacore/account-welcome  panels=0
+   
+   controls -> 
+manacore/account-history  panels=1
+   محتوا و سرتیتر
+   controls -> TextControl:1, SelectControl:2, TextareaControl:1, ToggleControl:1
+manacore/account-analytics  panels=1
+   محتوا و سرتیتر
+   controls -> TextControl:1, SelectControl:2, TextareaControl:1, ToggleControl:1
+manacore/account-invoices  panels=1
+   محتوا و سرتیتر
+   controls -> TextControl:1, SelectControl:2, TextareaControl:1, ToggleControl:1
+manacore/account-settings  panels=1
+   محتوا و سرتیتر
+   controls -> TextControl:1, SelectControl:2, TextareaControl:1, ToggleControl:1
+manacore/search-box  panels=4
+   محتوا و سرتیتر | تنظیمات جستجو | نمایش شرطی | رفتار بلوک
+   controls -> TextControl:6, SelectControl:4, TextareaControl:1, ToggleControl:6, RangeControl:2, FormTokenField:1
+manacore/episodes-list  panels=4
+   محتوا و سرتیتر | تنظیمات قسمت‌ها | نمایش شرطی | رفتار بلوک
+   controls -> TextControl:6, SelectControl:6, TextareaControl:1, ToggleControl:7, RangeControl:2
+
+=== VISIBILITY PANEL (enabled, 12 rule types) ===
+  context        -> TextControl:10,SelectControl:16,TextareaControl:1,ToggleControl:22,FormTokenField:4,RangeControl:9
+  post_type      -> TextControl:10,SelectControl:16,TextareaControl:1,ToggleControl:22,FormTokenField:4,RangeControl:9
+  taxonomy       -> TextControl:10,SelectControl:17,TextareaControl:1,ToggleControl:22,FormTokenField:4,RangeControl:9
+  archive_term   -> TextControl:10,SelectControl:17,TextareaControl:1,ToggleControl:22,FormTokenField:4,RangeControl:9
+  post_ids       -> TextControl:11,SelectControl:16,TextareaControl:1,ToggleControl:22,FormTokenField:3,RangeControl:9
+  login          -> TextControl:10,SelectControl:17,TextareaControl:1,ToggleControl:22,FormTokenField:3,RangeControl:9
+  user_role      -> TextControl:10,SelectControl:16,TextareaControl:1,ToggleControl:22,FormTokenField:4,RangeControl:9
+  subscription   -> TextControl:10,SelectControl:16,TextareaControl:1,ToggleControl:22,FormTokenField:4,RangeControl:9
+  premium        -> TextControl:10,SelectControl:17,TextareaControl:1,ToggleControl:22,FormTokenField:3,RangeControl:9
+  has_links      -> TextControl:10,SelectControl:17,TextareaControl:1,ToggleControl:22,FormTokenField:3,RangeControl:9
+  date_range     -> TextControl:12,SelectControl:16,TextareaControl:1,ToggleControl:22,FormTokenField:3,RangeControl:9
+  query_var      -> TextControl:12,SelectControl:16,TextareaControl:1,ToggleControl:22,FormTokenField:3,RangeControl:9
+
+==========================================================
+۷) آزمون حالت تیره/روشن
+==========================================================
+الف) ویژگی‌مندی انتخابگرهای حالت
+  ✓ انتخابگر حالت تیره با «html» شروع می‌شود (ویژگی‌مندی 0,1,1)
+  ✓ انتخابگر حالت روشن با «html» شروع می‌شود
+  ✓ هیچ انتخابگر حالتِ بدون «html» باقی نمانده است
+
+ب) بازنویسی توکن‌های پیش‌فرض وردپرس
+  ✓ قاعده‌ی حالت «dark» پیدا شد
+  ✓ حالت «dark» همه‌ی ۱۰ رنگ پیش‌فرض وردپرس را بازنویسی می‌کند
+  ✓ حالت «dark» سایه‌های پیش‌فرض را بازنویسی می‌کند
+  ✓ حالت «dark» ویژگی color-scheme را روی «dark» می‌گذارد
+  ✓ قاعده‌ی حالت «light» پیدا شد
+  ✓ حالت «light» همه‌ی ۱۰ رنگ پیش‌فرض وردپرس را بازنویسی می‌کند
+  ✓ حالت «light» سایه‌های پیش‌فرض را بازنویسی می‌کند
+  ✓ حالت «light» ویژگی color-scheme را روی «light» می‌گذارد
+
+پ) رنگ‌ها سخت‌کد نشده‌اند و از theme.json می‌آیند
+  ✓ حالت «dark» رنگ‌ها را از --wp--custom--scheme--dark--* می‌خواند
+  ✓ حالت «light» رنگ‌ها را از --wp--custom--scheme--light--* می‌خواند
+
+ت) نتیجه‌ی نهایی برای هر تنوع استایل
+  ✓ (پیش‌فرض theme.json) — همه‌ی متغیرها حل می‌شوند
+  ✓ (پیش‌فرض theme.json) — پس‌زمینه‌ی تیره و روشن متفاوت است
+  ✓ (پیش‌فرض theme.json) — رنگ متن تیره و روشن متفاوت است
+  ✓ (پیش‌فرض theme.json) — پل --koohe-surface با حالت فعال هم‌گام است
+  ✓ (پیش‌فرض theme.json) — روشناییِ حالت‌ها منطقی است
+  ✓ cinema.json — همه‌ی متغیرها حل می‌شوند
+  ✓ cinema.json — پس‌زمینه‌ی تیره و روشن متفاوت است
+  ✓ cinema.json — رنگ متن تیره و روشن متفاوت است
+  ✓ cinema.json — پل --koohe-surface با حالت فعال هم‌گام است
+  ✓ cinema.json — روشناییِ حالت‌ها منطقی است
+  ✓ cinema.json — رنگ تأکیدِ تنوع در حالت تیره حفظ می‌شود
+  ✓ dark.json — همه‌ی متغیرها حل می‌شوند
+  ✓ dark.json — پس‌زمینه‌ی تیره و روشن متفاوت است
+  ✓ dark.json — رنگ متن تیره و روشن متفاوت است
+  ✓ dark.json — پل --koohe-surface با حالت فعال هم‌گام است
+  ✓ dark.json — روشناییِ حالت‌ها منطقی است
+  ✓ light.json — همه‌ی متغیرها حل می‌شوند
+  ✓ light.json — پس‌زمینه‌ی تیره و روشن متفاوت است
+  ✓ light.json — رنگ متن تیره و روشن متفاوت است
+  ✓ light.json — پل --koohe-surface با حالت فعال هم‌گام است
+  ✓ light.json — روشناییِ حالت‌ها منطقی است
+  ✓ midnight.json — همه‌ی متغیرها حل می‌شوند
+  ✓ midnight.json — پس‌زمینه‌ی تیره و روشن متفاوت است
+  ✓ midnight.json — رنگ متن تیره و روشن متفاوت است
+  ✓ midnight.json — پل --koohe-surface با حالت فعال هم‌گام است
+  ✓ midnight.json — روشناییِ حالت‌ها منطقی است
+  ✓ midnight.json — رنگ تأکیدِ تنوع در حالت تیره حفظ می‌شود
+
+ث) تنوع‌های استایل با کلید حالت درگیر نمی‌شوند
+  ✓ cinema.json — color-scheme را سخت‌کد نمی‌کند
+  ✓ cinema.json — پالت هر دو حالت را تعریف می‌کند
+  ✓ dark.json — color-scheme را سخت‌کد نمی‌کند
+  ✓ dark.json — پالت هر دو حالت را تعریف می‌کند
+  ✓ light.json — color-scheme را سخت‌کد نمی‌کند
+  ✓ light.json — پالت هر دو حالت را تعریف می‌کند
+  ✓ midnight.json — color-scheme را سخت‌کد نمی‌کند
+  ✓ midnight.json — پالت هر دو حالت را تعریف می‌کند
+
+ج) افزونه‌ی هسته
+  ✓ front.css حالت روشن را نیز صریح تعریف می‌کند
+  ✓ front.css در حالت تیره color-scheme را تنظیم می‌کند
+
+----------------------------------------------------------
+آزمون حالت رنگ: 50 بررسی، همه موفق ✓
+
+==========================================================
+۸) آزمون سفارشی‌ساز (سربرگ چسبان و گزینه‌ها)
+==========================================================
+
+الف) ریشه‌ی باگ سربرگ چسبان
+  ✓ قاعده‌ی body پیدا شد
+  ✓ body هیچ overflow ندارد (وگرنه sticky می‌شکند)
+  ✓ html هیچ overflow ندارد
+  ✓ جایگزین ایمن سرریز افقی (max-width:100%) موجود است
+  ✓ پوشش قطعه‌ی قالب (.koohe-header-slot) چسبان است
+  ✓ کلاس koohe-header-slot سمت سرور تزریق می‌شود
+  ✓ تزریق تنها روی بلوک core/template-part انجام می‌شود
+  ✓ جبران نوار مدیریت (۳۲px) موجود است
+
+ب) سلامت پاکسازی چک‌باکس
+  ✓ koohe_sanitize_checkbox رشته‌ی '1'/'' برمی‌گرداند
+  ✓ تبدیل خام (bool) حذف شده است
+  ✓ koohe_get_flag با wp_validate_boolean می‌خواند
+  ✓ پیش‌فرض‌ها در یک منبع واحد نگه‌داری می‌شوند
+  ✓ هیچ تنظیمی پیش‌فرض بولی خام ندارد
+
+پ) هر گزینه مصرف‌کننده دارد
+  ✓ دست‌کم ۱۰ گزینه ثبت شده (12)
+  ✓ «koohe_sticky_header» مصرف‌کننده‌ی واقعی دارد
+  ✓ «koohe_shrink_header» مصرف‌کننده‌ی واقعی دارد
+  ✓ «koohe_show_toggle» مصرف‌کننده‌ی واقعی دارد
+  ✓ «koohe_card_hover_zoom» مصرف‌کننده‌ی واقعی دارد
+  ✓ «koohe_rounded_media» مصرف‌کننده‌ی واقعی دارد
+  ✓ «koohe_back_to_top» مصرف‌کننده‌ی واقعی دارد
+  ✓ «koohe_mobile_actionbar» مصرف‌کننده‌ی واقعی دارد
+  ✓ «koohe_reading_progress» مصرف‌کننده‌ی واقعی دارد
+  ✓ «koohe_footer_credit» مصرف‌کننده‌ی واقعی دارد
+  ✓ «koohe_color_mode» مصرف‌کننده‌ی واقعی دارد
+  ✓ «koohe_poster_ratio» مصرف‌کننده‌ی واقعی دارد
+  ✓ «koohe_copyright» مصرف‌کننده‌ی واقعی دارد
+  ✓ پیش‌فرض‌های بولی ثبت شده (9)
+
+ت) پیش‌نمایش زنده و امنیت
+  ✓ فایل customize-preview.js موجود است
+  ✓ پیش‌نمایش عنوان سایت
+  ✓ پیش‌نمایش نسبت پوستر
+  ✓ مقدار نسبت پوستر در سمت مرورگر اعتبارسنجی می‌شود
+  ✓ دست‌کم یک گزینه پیش‌نمایش زنده دارد
+  ✓ پیش‌نمایش گزینشی برای حق نشر ثبت شده است
+  ✓ متن حق نشر با wp_kses_post پاک می‌شود
+  ✓ کلاس بدنه با sanitize_html_class پاک می‌شود
+  ✓ نسبت پوستر تنها از فهرست مجاز پذیرفته می‌شود (allow-list)
+  ✓ هیچ مقدار خام سفارشی‌ساز بدون پاکسازی چاپ نمی‌شود
+
+ث) دسترس‌پذیری و کارایی
+  ✓ احترام به prefers-reduced-motion
+  ✓ شنونده‌های پیمایش passive هستند
+  ✓ پیمایش با requestAnimationFrame محدود شده است
+  ✓ نوار پیشرفت از دید صفحه‌خوان پنهان است
+  ✓ نوار پیشرفت تنها در صفحات تک‌آیتمی رندر می‌شود
+  ✓ استایل درون‌خطی تنها در صورت نیاز چاپ می‌شود
+
+──────────────────────────────────────────
+موفق: 43   ناموفق: 0
+
+==========================================================
+۹) آزمون استایل ویرایشگر سایت و ثبت بلوک‌های قالب
+==========================================================
+
+الف) استایل‌های ویرایشگر سایت (P4a)
+----------------------------------------------------------
+  ✓ add_editor_style در setup.php فراخوانی می‌شود
+  ✓ theme.css به‌عنوان استایل ویرایشگر بار می‌شود
+  ✓ editor.css به‌عنوان استایل ویرایشگر بار می‌شود
+  ✓ ترتیب درست است: theme.css پیش از editor.css (بازنویسی‌های ویرایشگر برنده می‌شوند)
+  ✓ فایل assets/css/theme.css موجود و غیرخالی است
+  ✓ فایل assets/css/editor.css موجود و غیرخالی است
+
+ب) بی‌اثرسازی چیدمان‌های چسبان/ثابت در بوم ویرایشگر
+----------------------------------------------------------
+  ✓ editor.css موقعیت را با position:static !important خنثی می‌کند
+  ✓ کلاس .koohe-header-slot در بوم ویرایشگر هدف قرار گرفته است
+  ✓ کلاس .koohe-header در بوم ویرایشگر هدف قرار گرفته است
+  ✓ کلاس .koohe-progress در بوم ویرایشگر هدف قرار گرفته است
+  ✓ کلاس .koohe-to-top در بوم ویرایشگر هدف قرار گرفته است
+  ✓ backdrop-filter در ویرایشگر خنثی شده است (شیشه‌ای بودن سربرگ)
+  ✓ انیمیشن بزرگ‌نمایی hover در ویرایشگر خنثی شده است
+  ✓ ظرف واکنش‌گرای فهرست ناوبری در ویرایشگر خنثی شده است
+  ✓ رنگ پس‌زمینه‌ی بوم از پیش‌تنظیم‌های theme.json می‌آید
+  ✓ پل متغیرهای --koohe-* میان theme.css و editor.css برقرار است
+
+پ) ثبت بلوک‌های قالب — تنها یک منبع حقیقت (P4b)
+----------------------------------------------------------
+  ✓ فایل inc/blocks.php موجود است
+  ✓ inc/blocks.php در functions.php بار می‌شود
+  ✓ koohe_block_definitions() تعریف شده است
+  ✓ تعریف بلوک‌ها قابل توسعه است (فیلتر koohe_block_definitions)
+  ✓ بلوک koohe/theme-toggle در تعریف‌ها هست
+  ✓ بلوک koohe/account در تعریف‌ها هست
+  ✓ بلوک koohe/copyright در تعریف‌ها هست
+  ✓ بلوک koohe/watchlist-button در تعریف‌ها هست
+  ✓ بلوک koohe/copy-link در تعریف‌ها هست
+  ✓ هر 8 بلوک تعریف‌شده render_callback دارد (8)
+  ✓ تابع رندر koohe_render_toggle_block() در یکی از فایل‌های inc/ قالب وجود دارد
+  ✓ تابع رندر koohe_render_account_block() در یکی از فایل‌های inc/ قالب وجود دارد
+  ✓ تابع رندر koohe_render_copyright_block() در یکی از فایل‌های inc/ قالب وجود دارد
+  ✓ تابع رندر koohe_render_watchlist_block() در یکی از فایل‌های inc/ قالب وجود دارد
+  ✓ تابع رندر koohe_render_copy_link_block() در یکی از فایل‌های inc/ قالب وجود دارد
+  ✓ تابع رندر koohe_render_post_type_block() در یکی از فایل‌های inc/ قالب وجود دارد
+  ✓ تابع رندر koohe_render_search_trigger_block() در یکی از فایل‌های inc/ قالب وجود دارد
+  ✓ تابع رندر koohe_render_mobile_drawer_block() در یکی از فایل‌های inc/ قالب وجود دارد
+  ✓ ثبت تکراری بلوک از template-tags.php حذف شده است
+  ✓ register_block_type تنها یک بار (در حلقه‌ی blocks.php) صدا زده می‌شود
+  ✓ پیش از ثبت، تکراری‌بودن بررسی می‌شود (جلوگیری از notice)
+  ✓ editorFields به هسته فرستاده نمی‌شود (فقط برای ویرایشگر)
+  ✓ بلوک‌ها با api_version 3 ثبت می‌شوند
+
+ت) پیاده‌سازی سمت ویرایشگر — رفع «بلوک پشتیبانی نمی‌شود»
+----------------------------------------------------------
+  ✓ فایل assets/js/blocks.js موجود است
+  ✓ اسکریپت ویرایشگر در PHP صف می‌شود
+  ✓ به قلاب enqueue_block_editor_assets وصل شده است
+  ✓ وابستگی wp-server-side-render اعلام شده است
+  ✓ وابستگی‌های wp-blocks و wp-element اعلام شده‌اند
+  ✓ رجیستری با wp_add_inline_script(..., 'before') تزریق می‌شود (نه localize)
+  ✓ رجیستری با wp_json_encode ساخته می‌شود (حفظ نوع بولین/عدد)
+  ✓ نسخه‌ی فایل برای کش‌شکنی از koohe_asset_version می‌آید
+  ✓ koohe_asset_version() در assets.php تعریف شده است
+  ✓ callback های PHP از رجیستری ویرایشگر حذف شده‌اند
+  ✓ JS رجیستری را از window.kooheBlockRegistry می‌خواند
+  ✓ blocks.js تابع registerBlockType را صدا می‌زند
+  ✓ پیش از ثبت مجدد، بلوک از ثبت خارج می‌شود (جلوگیری از خطای تکراری)
+  ✓ پیش‌نمایش ویرایشگر با ServerSideRender انجام می‌شود
+  ✓ کنترل‌های نوار کناری (InspectorControls) ساخته می‌شوند
+  ✓ کنترل‌ها به‌صورت خودکار از editorFields ساخته می‌شوند
+  ✓ save همیشه null برمی‌گرداند (بلوک پویا)
+  ✓ در نبود wp، اسکریپت با ایمنی خارج می‌شود
+  ✓ ثبت سمت کلاینت هم apiVersion 3 است
+
+ث) اجرای واقعی ثبت بلوک با محیط شبیه‌سازی‌شده
+----------------------------------------------------------
+  ✓ blocks.js بدون خطا اجرا می‌شود
+  ✓ هر 5 بلوک در ویرایشگر ثبت شدند (5)
+  ✓ بلوک koohe/theme-toggle سمت کلاینت ثبت شد
+  ✓ koohe/theme-toggle پیاده‌سازی edit دارد
+  ✓ koohe/theme-toggle پیاده‌سازی save دارد
+  ✓ koohe/theme-toggle save مقدار null برمی‌گرداند
+  ✓ koohe/theme-toggle اجرای edit بدون خطا
+  ✓ koohe/theme-toggle خروجی edit عنصر تولید می‌کند
+  ✓ بلوک koohe/account سمت کلاینت ثبت شد
+  ✓ koohe/account پیاده‌سازی edit دارد
+  ✓ koohe/account پیاده‌سازی save دارد
+  ✓ koohe/account save مقدار null برمی‌گرداند
+  ✓ koohe/account اجرای edit بدون خطا
+  ✓ koohe/account خروجی edit عنصر تولید می‌کند
+  ✓ بلوک koohe/copyright سمت کلاینت ثبت شد
+  ✓ koohe/copyright پیاده‌سازی edit دارد
+  ✓ koohe/copyright پیاده‌سازی save دارد
+  ✓ koohe/copyright save مقدار null برمی‌گرداند
+  ✓ koohe/copyright اجرای edit بدون خطا
+  ✓ koohe/copyright خروجی edit عنصر تولید می‌کند
+  ✓ بلوک koohe/watchlist-button سمت کلاینت ثبت شد
+  ✓ koohe/watchlist-button پیاده‌سازی edit دارد
+  ✓ koohe/watchlist-button پیاده‌سازی save دارد
+  ✓ koohe/watchlist-button save مقدار null برمی‌گرداند
+  ✓ koohe/watchlist-button اجرای edit بدون خطا
+  ✓ koohe/watchlist-button خروجی edit عنصر تولید می‌کند
+  ✓ بلوک koohe/copy-link سمت کلاینت ثبت شد
+  ✓ koohe/copy-link پیاده‌سازی edit دارد
+  ✓ koohe/copy-link پیاده‌سازی save دارد
+  ✓ koohe/copy-link save مقدار null برمی‌گرداند
+  ✓ koohe/copy-link اجرای edit بدون خطا
+  ✓ koohe/copy-link خروجی edit عنصر تولید می‌کند
+  ✓ ویژگی label بلوک کلید حالت به ویرایشگر رسیده است
+  ✓ فایل‌های مارک‌آپ قالب پیدا شد (36 فایل)
+  ✓ هیچ کامنت HTML غیربلوکی در قالب‌ها نیست
+  ✓ ویژگی‌های JSON همه‌ی بلوک‌ها معتبر است
+  ✓ همه‌ی بلوک‌های باز بسته شده‌اند
+
+==========================================================
+موفق: 95   ناموفق: 0
+==========================================================
+
+==========================================================
+۱۰) آزمون فهرست همبرگری موبایل
+==========================================================
+
+الف) آبشار رنگ فهرست بازشده — قالب باید بر هسته پیروز شود
+----------------------------------------------------------
+  (CSS هسته: /home/user/koohefilm/wp/tests/reference/core-navigation.css)
+  ✓ background-color فهرست بازشده = var(--koohe-surface)   (فعلی: var(--koohe-surface) از theme با ویژهگی 0,5,0)
+  ✓ color فهرست بازشده = var(--koohe-text)   (فعلی: var(--koohe-text) از theme با ویژهگی 0,5,0)
+  ✓ پیروزی بدون !important به‌دست آمده است (ویژهگی برابر + ترتیب بار شدن)
+  ✓ انتخابگر همان الگوی هسته را دارد تا پوشش سفارشی (overlay template part) نشکند
+
+ب) پوشش زیرعنصرهای فهرست بازشده
+----------------------------------------------------------
+  ✓ استایل برای لایه‌ی محتوا («wp-block-navigation__responsive-container-content») وجود دارد
+  ✓ استایل برای دکمه‌ی بستن (×) («wp-block-navigation__responsive-container-close») وجود دارد
+  ✓ استایل برای دکمه‌ی همبرگر («wp-block-navigation__responsive-container-open») وجود دارد
+  ✓ استایل برای محفظه‌ی دیالوگ («wp-block-navigation__responsive-dialog») وجود دارد
+  ✓ استایل برای قاب امن محتوا («wp-block-navigation__responsive-close») وجود دارد
+  ✓ استایل برای وضعیت باز بودن مودال («has-modal-open») وجود دارد
+
+پ) دسترس‌پذیری و کیفیت لمسی
+----------------------------------------------------------
+  ✓ آیتم‌های فهرست دست‌کم ۴۴px ارتفاع دارند (هدف لمسی استاندارد)
+  ✓ حالت :focus-visible برای پیمایش با کیبورد تعریف شده است
+  ✓ حلقه‌ی فوکوس با رنگ تأکید قالب دیده می‌شود
+  ✓ ناحیه‌ی امن (safe-area) گوشی‌های دارای notch رعایت شده است
+  ✓ overscroll-behavior: contain مانع کشیده‌شدن صفحه‌ی پشت می‌شود
+
+ت) درستی RTL — نباید left/right ثابت به‌کار رود
+----------------------------------------------------------
+  ✓ قاعده‌ی دکمه‌ی بستن پیدا شد
+  ✓ دکمه‌ی بستن با inset-inline-end جای‌گذاری شده است (سازگار با RTL)
+  ✓ right: 0 هسته با right: auto بی‌اثر شده است
+  ✓ هیچ ویژگی جهت‌دار padding/margin/border-left|right در بخش overlay نمانده است
+  ✓ از ویژگی‌های منطقی (inline-start/end) استفاده شده است
+
+ث) احترام به تنظیمات کاربر و سازگاری با نوار مدیریت
+----------------------------------------------------------
+  ✓ انیمیشن محوشدن با prefers-reduced-motion خاموش می‌شود
+  ✓ دکمه‌ی بستن با نوار مدیریت وردپرس تداخل ندارد
+  ✓ سربرگ چسبان روی فهرست بازشده نمی‌افتد (z-index کاهش می‌یابد)
+
+ج) هم‌خوانی با سامانه‌ی رنگ تیره/روشن
+----------------------------------------------------------
+  ✓ هیچ رنگ ثابت hex در بخش overlay نیست
+  ✓ توکن --koohe-surface در بخش overlay استفاده شده است
+  ✓ توکن --koohe-text در بخش overlay استفاده شده است
+  ✓ توکن --koohe-border در بخش overlay استفاده شده است
+  ✓ توکن --koohe-accent در بخش overlay استفاده شده است
+
+ح) کشوی منوی موبایل — هم‌سانی با مرجع (P7)
+----------------------------------------------------------
+  ✓ بلوک ناوبری سربرگ با overlayMenu: never رندر می‌شود (هسته پوشش تمام‌صفحه نمی‌سازد)
+  ✓ دکمه‌ی همبرگری [data-mobile-open] در قطعه‌ی سربرگ هست
+  ✓ همبرگری نام قابل‌دسترس دارد
+  ✓ بلوک کشو در سربرگ درج شده است
+  ✓ سمت سرور: پس‌زمینه با data-mobile-drawer و hidden
+  ✓ سمت سرور: کشو با role="dialog"
+  ✓ سمت سرور: aria-modal="true"
+  ✓ سمت سرور: نوار بالای کشو (.drawer-top)
+  ✓ سمت سرور: دکمه‌ی بستن [data-mobile-close]
+  ✓ سمت سرور: ردیف جستجو (.header-search) که پوسته‌ی جستجو را باز می‌کند
+  ✓ سمت سرور: فهرست ردیف‌ها
+  ✓ سمت سرور: ردیف‌ها از فهرست راهبری سربرگ ساخته می‌شوند
+  ✓ سمت سرور: دکمه‌ی اشتراک (button primary full)
+  ✓ سمت سرور: سطر پایانی (.muted)
+  ✓ render_callback کشو در blocks.php ثبت شده است
+  ✓ قاعده‌ی .drawer-backdrop در theme.css هست
+  ✓   · .drawer-backdrop → position: fixed
+  ✓   · .drawer-backdrop → inset: 0
+  ✓   · .drawer-backdrop → z-index: 100
+  ✓   · .drawer-backdrop → backdrop-filter: blur(5px)
+  ✓   · .drawer-backdrop → margin: 0
+  ✓ قاعده‌ی .mobile-drawer در theme.css هست
+  ✓   · .mobile-drawer → position: absolute
+  ✓   · .mobile-drawer → inset-block: 0
+  ✓   · .mobile-drawer → inset-inline-start: 0
+  ✓   · .mobile-drawer → width: min(345px, 88vw)
+  ✓   · .mobile-drawer → padding: 24px
+  ✓   · .mobile-drawer → overflow-y: auto
+  ✓   · .mobile-drawer → animation: drawerIn .25s ease
+  ✓ قاعده‌ی .drawer-top در theme.css هست
+  ✓   · .drawer-top → justify-content: space-between
+  ✓   · .drawer-top → margin-bottom: 30px
+  ✓ قاعده‌ی .mobile-drawer .header-search در theme.css هست
+  ✓   · .mobile-drawer .header-search → width: 100%
+  ✓   · .mobile-drawer .header-search → height: 42px
+  ✓   · .mobile-drawer .header-search → font-size: 12px
+  ✓   · .mobile-drawer .header-search → justify-content: center
+  ✓ قاعده‌ی .mobile-drawer nav در theme.css هست
+  ✓   · .mobile-drawer nav → flex-direction: column
+  ✓   · .mobile-drawer nav → margin: 25px 0
+  ✓ قاعده‌ی .mobile-drawer nav a در theme.css هست
+  ✓   · .mobile-drawer nav a → padding: 16px 5px
+  ✓   · .mobile-drawer nav a → border-bottom: 1px solid var(--koohe-border)
+  ✓   · .mobile-drawer nav a → font-size: 13px
+  ✓   · .mobile-drawer nav a → justify-content: space-between
+  ✓ قاعده‌ی .mobile-drawer > .muted در theme.css هست
+  ✓   · .mobile-drawer > .muted → font-size: 11px
+  ✓   · .mobile-drawer > .muted → text-align: center
+  ✓   · .mobile-drawer > .muted → color: var(--koohe-muted)
+  ✓ قاعده‌ی body.drawer-open در theme.css هست
+  ✓   · body.drawer-open → overflow: hidden
+  ✓ کی‌فریم drawerIn از translateX(100%) آغاز می‌شود (ورود از لبه)
+  ✓ بلوک @media (max-width: 980px) برای سربرگ موبایل هست
+  ✓ بلوک ≤۹۸۰px حاوی قرارداد سربرگ پیدا شد
+  ✓ ≤۹۸۰px: ارتفاع سربرگ ۷۶px (مرجع)
+  ✓ ≤۹۸۰px: ناوبری دسکتاپ پنهان می‌شود (با ویژهگی کافی)
+  ✓ ≤۹۸۰px: همبرگری دیده می‌شود
+  ✓ قفل پیمایش با کلاس روی body انجام می‌شود (مثل مرجع)
+  ✓ انیمیشن کشو با prefers-reduced-motion خاموش می‌شود
+  ✓ تابع initMobileDrawer در theme.js هست
+  ✓ initMobileDrawer در boot() صدا زده می‌شود
+  ✓ بستن با پس‌زمینه و دکمه‌ی × در JS هست
+  ✓ بستن با Escape در JS هست (افزوده‌ی دسترس‌پذیری)
+  ✓ با رسیدن پنجره به عرض دسکتاپ کشو بسته می‌شود
+
+چ) صحت نحوی CSS
+----------------------------------------------------------
+  ✓ آکولادها متوازن‌اند (916 / 916)
+
+==========================================================
+موفق: 93   ناموفق: 0
+==========================================================
+
+==========================================================
+۱۱) آزمون آرشیو، دسته‌بندی و نوار فیلتر
+==========================================================
+==========================================================
+آزمون آرشیو، دسته‌بندی و نوار فیلتر
+==========================================================
+
+الف) منبع یگانه‌ی نگاشت پارامترها
+----------------------------------------------------------
+  ✓ فایل functions.php افزونه موجود است
+  ✓ تابع manacore_filter_params() تعریف شده است
+  ✓ نگاشت با فیلتر manacore_filter_bar_params قابل گسترش است
+  ✓ نگاشت genre → mc_genre موجود است
+  ✓ نگاشت country → mc_country موجود است
+  ✓ نگاشت release_year → mc_year موجود است
+  ✓ نگاشت quality → mc_quality موجود است
+  ✓ نگاشت network → mc_network موجود است
+  ✓ نگاشت studio → mc_studio موجود است
+  ✓ نگاشت language → mc_lang موجود است
+  ✓ نگاشت category → mc_cat موجود است
+  ✓ نگاشت post_tag → mc_tag موجود است
+  ✓ تابع manacore_sort_options() تعریف شده است
+
+ب) کلاس Query همان نگاشت را اعمال می‌کند
+----------------------------------------------------------
+  ✓ Query از manacore_filter_params() استفاده می‌کند (نه فهرست جداگانه)
+  ✓ هیچ نگاشت سخت‌کدشده‌ی موازی در Query باقی نمانده است
+  ✓ پیش از ساخت tax_query وجود تاکسونومی بررسی می‌شود
+  ✓ شاخه‌ی posts_per_page شامل is_category() است
+  ✓ شاخه‌ی posts_per_page شامل is_tag() است
+  ✓ شاخه‌ی posts_per_page شامل is_search() است
+  ✓ تعداد آیتم از تنظیم items_per_page خوانده می‌شود
+  ✓ کمک‌تابع order_by_meta_num برای مرتب‌سازی امن وجود دارد
+  ✓ مرتب‌سازی متا بند NOT EXISTS دارد (آثار بدون مقدار حذف نمی‌شوند)
+  ✓ دیگر از meta_key خام برای مرتب‌سازی استفاده نمی‌شود
+  ✓ هنگام افزودن relation تنها بندهای عددی شمرده می‌شوند
+
+پ) نوار فیلتر: پایه‌ی آرشیو و صفحه‌بندی
+----------------------------------------------------------
+  ✓ تابع manacore_archive_base_url() تعریف شده است
+  ✓ بخش /page/N/ با الگوی صریح از نشانی پایه حذف می‌شود
+  ✓ پارامترهای paged و page نیز از نشانی پایه حذف می‌شوند
+  ✓ پیوند پاک‌سازی دیگر با strtok ساخته نمی‌شود (صفحه‌بندی را نگه می‌داشت)
+  ✓ فرم فیلتر ویژگی action روی پایه‌ی آرشیو دارد
+  ✓ نوار فیلتر پایه را از manacore_archive_base_url() می‌گیرد
+  ✓ در پیش‌نمایش ویرایشگر، پایه به home_url برمی‌گردد (نه نشانی مدیریت)
+  ✓ عبارت جستجو هنگام اعمال فیلتر در صفحه‌ی جستجو حفظ می‌شود
+
+ت) نشانه‌گذاری فیلدها و برچسب‌ها
+----------------------------------------------------------
+  ✓ متن برچسب کلاس manacore-filter-label دارد
+  ✓ گزینشگر ناکارآمد «.manacore-filter-field > label» حذف شده است
+  ✓ قاعده‌ی .manacore-filter-label در CSS تعریف شده است
+  ✓ حالت is-active برای فیلد فیلتر شده استایل دارد
+  ✓ کلاس is-active هنگام فعال‌بودن فیلتر افزوده می‌شود
+  ✓ فیلد مرتب‌سازی نیز هنگام فعال‌بودن کلاس is-active می‌گیرد
+  ✓ ترم انتخاب‌شده در صورت نبود در فهرست، دستی افزوده می‌شود
+  ✓ ترم انتخاب‌شده به ابتدای فهرست گزینه‌ها اضافه می‌شود
+
+ث) نامک فارسی درصدرمزگذاری‌شده
+----------------------------------------------------------
+  ✓ تابع manacore_active_filters() تعریف شده است
+  ✓ مسیر نامک (raw/slugs) از sanitize_text_field نمی‌گذرد (نامک فارسی را خراب می‌کند)
+  ✓ هر نامک جداگانه با sanitize_title پاک‌سازی می‌شود
+  ✓ مقدار mc_sort با sanitize_key پاک‌سازی می‌شود
+  ✓ نامک فارسی پس از sanitize_title دست‌نخورده می‌ماند
+
+ج) برچسب فیلترهای فعال (chips)
+----------------------------------------------------------
+  ✓ ویژگی showActiveChips در تعریف بلوک وجود دارد
+  ✓ کمک‌تابع filter_chip_labels برای ساخت برچسب خوانا وجود دارد
+  ✓ هر برچسب از کمکیِ حذف فیلتر استفاده می‌کند
+  ✓ کمکیِ حذف فیلتر، بازه‌ی سال را به‌صورت یک فیلتر برمی‌دارد
+  ✓ قاعده‌ی .manacore-filter-chip در CSS تعریف شده است
+  ✓ متن جایگزین برای صفحه‌خوان روی دکمه‌ی حذف وجود دارد
+  ✓ کنترل showActiveChips در ویرایشگر بلوک در دسترس است
+
+چ) پوشش قالب‌ها
+----------------------------------------------------------
+  ✓ قالب archive.html نوار فیلتر دارد
+  ✓ قالب home.html نوار فیلتر دارد
+  ✓ قالب search.html نوار فیلتر دارد
+  ✓ قالب taxonomy.html نوار فیلتر دارد
+  ✓ قالب front-page.html نوار فیلتر دارد
+  ✓ قالب archive-movie.html نوار فیلتر دارد
+  ✓ قالب archive-series.html نوار فیلتر دارد
+  ✓ قالب archive-anime.html نوار فیلتر دارد
+  ✓ قالب archive.html تاکسونومی category را فیلتر می‌کند
+  ✓ قالب home.html تاکسونومی category را فیلتر می‌کند
+
+ح) ظاهر آرشیو و صفحه‌بندی
+----------------------------------------------------------
+  ✓ شبکه‌ی پوستری در نمایشگر کوچک بازنویسی واکنش‌گرا دارد
+  ✓ دو نقطه‌ی شکست برای پهنای کمینه‌ی پوستر تعریف شده است
+  ✓ پیام «نتیجه‌ای یافت نشد» استایل کارت‌مانند دارد
+  ✓ صفحه‌بندی حلقه‌ی تمرکز دیدنی دارد
+  ✓ صفحه‌ی جاری قابل کلیک نیست
+  ✓ دکمه‌های صفحه‌بندی هدف لمسی حداقلی دارند
+  ✓ فیلدهای فیلتر هدف لمسی حداقلی دارند
+
+خ) امنیت و صحت نحوی
+----------------------------------------------------------
+  ✓ بدنه‌ی render_filter_bar یافت شد
+  ✓ هیچ خروجی خام بدون esc_* در نوار فیلتر نیست
+  ✓ نشانی پایه با esc_url فرار داده می‌شود
+  ✓ نشانی برچسب‌ها با esc_url فرار داده می‌شود
+  ✓ آکولادهای front.css متوازن‌اند (1240 / 1240)
+  ✓ آکولادهای theme.css متوازن‌اند (916 / 916)
+
+==========================================================
+موفق: 75   ناموفق: 0
+==========================================================
+
+==========================================================
+۱۲) آزمون تنوع ظاهری قالب، الگو و بلوک‌ها
+==========================================================
+==========================================================
+آزمون تنوع ظاهری قالب، الگو و بلوک‌ها
+==========================================================
+
+الف) منبع یگانه‌ی گزینه‌های ظاهری
+----------------------------------------------------------
+  ✓ تابع layouts() تعریف شده است
+  ✓ layouts() دقیقاً 8 گزینه دارد (8)
+  ✓ layouts() با فیلتر manacore_block_layouts قابل توسعه است
+  ✓ تابع card_styles() تعریف شده است
+  ✓ card_styles() دقیقاً 8 گزینه دارد (8)
+  ✓ card_styles() با فیلتر manacore_card_styles قابل توسعه است
+  ✓ تابع slider_styles() تعریف شده است
+  ✓ slider_styles() دقیقاً 5 گزینه دارد (5)
+  ✓ slider_styles() با فیلتر manacore_slider_styles قابل توسعه است
+  ✓ تابع slider_effects() تعریف شده است
+  ✓ slider_effects() دقیقاً 4 گزینه دارد (4)
+  ✓ slider_effects() با فیلتر manacore_slider_effects قابل توسعه است
+  ✓ تابع slider_alignments() تعریف شده است
+  ✓ slider_alignments() دقیقاً 3 گزینه دارد (3)
+  ✓ slider_alignments() با فیلتر manacore_slider_alignments قابل توسعه است
+  ✓ تابع download_styles() تعریف شده است
+  ✓ download_styles() دقیقاً 2 گزینه دارد (2)
+  ✓ download_styles() با فیلتر manacore_download_styles قابل توسعه است
+  ✓ payload کلید layouts را از layouts() می‌گیرد
+  ✓ payload کلید cardStyles را از card_styles() می‌گیرد
+  ✓ payload کلید sliderStyles را از slider_styles() می‌گیرد
+  ✓ payload کلید sliderEffects را از slider_effects() می‌گیرد
+  ✓ payload کلید sliderAligns را از slider_alignments() می‌گیرد
+  ✓ payload کلید downloadStyles را از download_styles() می‌گیرد
+
+ب) اعتبارسنجی مقدار در سمت سرور
+----------------------------------------------------------
+  ✓ کمک‌تابع Block_Support::pick() تعریف شده است
+  ✓ pick() ورودی را با sanitize_key پاک‌سازی می‌کند
+  ✓ pick() مقدار خارج از فهرست را به پیش‌فرض برمی‌گرداند
+  ✓ ویژگی sliderStyle با slider_styles() اعتبارسنجی می‌شود
+  ✓ ویژگی effect با slider_effects() اعتبارسنجی می‌شود
+  ✓ ویژگی contentAlign با slider_alignments() اعتبارسنجی می‌شود
+  ✓ ویژگی boxStyle با download_styles() اعتبارسنجی می‌شود
+  ✓ سبک کارت با card_styles() اعتبارسنجی می‌شود
+  ✓ سبک کارت دیگر با sanitize_key خام ساخته نمی‌شود (کلاس بی‌اثر می‌ساخت)
+  ✓ بدنه‌ی grid_classes() یافت شد
+  ✓ grid_classes() چیدمان را با layouts() اعتبارسنجی می‌کند
+  ✓ switch سخت‌کدشده‌ی پیشین جای خود را به نگاشت داده است
+
+پ) نبودِ فهرست موازی در ویرایشگر
+----------------------------------------------------------
+  ✓ CARD_STYLES از payload خوانده می‌شود نه فهرست سخت‌کدشده
+  ✓ کنترل sliderStyle گزینه‌ها را از data.sliderStyles می‌گیرد
+  ✓ کنترل effect گزینه‌ها را از data.sliderEffects می‌گیرد
+  ✓ کنترل contentAlign گزینه‌ها را از data.sliderAligns می‌گیرد
+  ✓ کنترل boxStyle گزینه‌ها را از data.downloadStyles می‌گیرد
+  ✓ کنترل شدت پوشش تصویر به‌صورت لغزنده افزوده شده است
+
+ت) پوشش CSS برای همه‌ی گزینه‌ها
+----------------------------------------------------------
+  ✓ هر 8 چیدمان کلاس و CSS دارد
+  ✓ هر 8 سبک کارت CSS دارد
+  ✓ هر 5 سبک اسلایدر CSS دارد
+  ✓ هر 4 جلوه‌ی گذر CSS دارد
+  ✓ هر 3 جای‌گیری محتوا CSS دارد
+  ✓ هر 2 سبک بخش دانلود CSS دارد
+  ✓ گزینه‌های ارتفاع اسلایدر در ویرایشگر یافت شد (small, medium, large, full)
+  ✓ هر گزینه‌ی ارتفاع قاعده‌ی CSS دارد
+  ✓ ارتفاع سربرگ تصویری با متغیر --mc-hero-h تعیین می‌شود
+  ✓ حالت تمام‌صفحه ارتفاع ۱۰۰vh می‌گیرد و سقف ثابتی ندارد
+  ✓ تصویر زمینه‌ی سربرگ خودش کشیده می‌شود (width/height/object-fit روی همان عنصر)
+
+ث) سبک‌های بلوک قالب
+----------------------------------------------------------
+  ✓ حداقل ۲۱ سبک بلوک ثبت شده است (21)
+  ✓ هر سبک بلوک قالب CSS دارد
+  ✓ سبک koohe-showcase ثبت شده و CSS دارد
+  ✓ سبک koohe-ranking ثبت شده و CSS دارد
+  ✓ سبک koohe-listing ثبت شده و CSS دارد
+  ✓ سبک koohe-overlay ثبت شده و CSS دارد
+  ✓ سبک koohe-compact ثبت شده و CSS دارد
+  ✓ سبک گروه koohe-elevated ثبت شده و CSS دارد
+  ✓ سبک گروه koohe-accent-bar ثبت شده و CSS دارد
+  ✓ همه‌ی سبک‌ها برچسب ترجمه‌پذیر دارند (21 / 21)
+
+ج) بخش دانلود و صفحه‌ی پخش
+----------------------------------------------------------
+  ✓ بدنه‌ی links() یافت شد
+  ✓ بخش دانلود با <section class="download-section"> ساخته می‌شود
+  ✓ بخش دانلود شناسه‌ی اثر را برای تب فصل‌ها نگه می‌دارد
+  ✓ ساختار جدول دانلود (سرستون و ستون‌ها) ساخته می‌شود
+  ✓ ردیف‌ها کیفیت، فرمت و کنش‌ها را دارند
+  ✓ ردیف دانلود در تابع مستقل link_row() ساخته می‌شود
+  ✓ هیچ نشانه‌ای از جعبه‌های قدیمی دانلود در PHP نمانده است
+  ✓ هیچ نشانه‌ای از جعبه‌های قدیمی دانلود در بلوک و ویرایشگر نمانده است (جز پوشش بلوک)
+  ✓ CSS سبک‌های جعبه‌ی دانلود پاک شده است
+  ✓ CSS بخش دانلود کنش‌ها را می‌چیند
+  ✓ بلوک manacore/player-page در PHP ثبت شده است
+  ✓ متد render_player_page() خروجی صفحه‌ی پخش را می‌سازد
+  ✓ قالب 「پخش آنلاین」 در ویرایشگر سایت بلوک پخش را نشان می‌دهد
+  ✓ صفحه‌ی پخش مستقل از قالب جزئیات است
+  ✓ CSS صفحه‌ی پخش (قاب ویدئو، نوار کنترل و نشان‌ها) نوشته شده است
+  ✓ کنترل‌های پخش (کیفیت، سینما، تمام‌صفحه) در front.js پیاده شده‌اند
+
+چ) اعتبار مقادیر CSS
+----------------------------------------------------------
+  ✓ front.css جهت گرادیان نامعتبر (to inline-*) ندارد
+  ✓ front.css مقدار نامعتبر برای transform-origin ندارد
+  ✓ theme.css جهت گرادیان نامعتبر (to inline-*) ندارد
+  ✓ theme.css مقدار نامعتبر برای transform-origin ندارد
+  ✓ front.css هیچ متغیر تعیین‌نشده‌ای نمی‌خواند
+  ✓ theme.css هیچ متغیر تعیین‌نشده‌ای نمی‌خواند
+  ✓ متغیر مرده‌ی --mc-hero-dir حذف شده و جهت پوشش با [dir] تعیین می‌شود
+  ✓ جهت پوشش اسلایدر برای LTR جداگانه بازنویسی می‌شود
+  ✓ جلوه‌های اسلایدر با prefers-reduced-motion غیرفعال می‌شوند
+  ✓ سبک برجسته‌ی کارت با prefers-reduced-motion آرام می‌شود
+
+ح) امنیت خروجی و توازن نحوی
+----------------------------------------------------------
+  ✓ بدنه‌ی render_hero_slider() یافت شد
+  ✓ هیچ خروجی خام بدون esc_* در اسلایدر نیست
+  ✓ شدت پوشش با esc_attr فرار داده می‌شود
+  ✓ شدت پوشش به بازه‌ی ۰ تا ۱۰۰ محدود می‌شود
+  ✓ هیچ خروجی خام بدون esc_* در بخش دانلود نیست
+  ✓ آکولادهای front.css متوازن‌اند (1240 / 1240)
+  ✓ آکولادهای theme.css متوازن‌اند (916 / 916)
+
+ط) کشف داستان‌ها: صفحه‌بندی، بارگذاری بیشتر و حالت خالی
+----------------------------------------------------------
+  ✓ تابع pagination_attributes() یافت شد
+  ✓ ویژگی showFilterSummary در ویژگی‌های صفحه‌بندی هست
+  ✓ ویژگی loadMore در ویژگی‌های صفحه‌بندی هست
+  ✓ ویژگی loadText در ویژگی‌های صفحه‌بندی هست
+  ✓ query_args() برای خلاصه‌ی نتیجه و «بیشتر» شمارش کل را روشن می‌کند
+  ✓ تابع render_load_more() یافت شد
+  ✓ دکمه‌ی «بیشتر» نشانه‌ی data-manacore-load-more دارد
+  ✓ نشانی دکمه با add_query_arg( 'paged', … ) ساخته می‌شود
+  ✓ برچسب پیش‌فرض دکمه «داستان‌های بیشتر» است
+  ✓ تابع render_discovery_empty() یافت شد
+  ✓ هر دو سرصفحه‌ی حالت خالی (فیلترشده و صفحه‌ی بی‌سرانجام) موجود است
+  ✓ حالت خالی دکمه‌ی «نمایش همه‌ی آثار» با نشانی پایه‌ی آرشیو دارد
+  ✓ تابع render_filter_summary() یافت شد
+  ✓ خلاصه‌ی نتیجه شمارنده و دکمه‌ی پاک‌سازی دارد
+  ✓ تراشه‌های فیلتر فعال در خلاصه‌ی نتیجه رندر می‌شوند
+  ✓ initLoadMore() پیش از افزودن، از children رونوشت می‌گیرد (هر کارت دوم حذف نشود)
+  ✓ نگاشت مرتب‌سازی امتیاز در manacore_sort_query_args() تعریف شده است
+  ✓ مرتب‌سازی عددی با DECIMAL(10,2) انجام می‌شود، نه SIGNED (اعشار امتیاز بریده نشود)
+  ✓ تابع مشترک resolve_more_url() یافت شد
+  ✓ resolve_more_url() برگه‌ی کشف را بر آرشیو مقدم می‌دارد (مثل a.text-link مرجع)
+  ✓ render_titles_grid() هم از همان تابع مشترک استفاده می‌کند (دو پیاده‌سازی جدا نماند)
+  ✓ پیوند «مشاهده همه» کلاس مرجع (text-link) را هم دارد
+
+ی) سایدبار «فیلتر پیشرفته»
+----------------------------------------------------------
+  ✓ متد render_sidebar_groups() وجود دارد
+  ✓ متد render_sidebar_footer() وجود دارد
+  ✓ ویژگی «sidebarTitle» در تعریف بلوک هست
+  ✓ ویژگی «sidebarTitle» در پنل ویرایشگر هم هست
+  ✓ ویژگی «checkTaxonomy» در تعریف بلوک هست
+  ✓ ویژگی «checkTaxonomy» در پنل ویرایشگر هم هست
+  ✓ ویژگی «showGenreChecks» در تعریف بلوک هست
+  ✓ ویژگی «showGenreChecks» در پنل ویرایشگر هم هست
+  ✓ ویژگی «showYearRange» در تعریف بلوک هست
+  ✓ ویژگی «showYearRange» در پنل ویرایشگر هم هست
+  ✓ ویژگی «showRating» در تعریف بلوک هست
+  ✓ ویژگی «showRating» در پنل ویرایشگر هم هست
+  ✓ ویژگی «ratingMax» در تعریف بلوک هست
+  ✓ ویژگی «ratingMax» در پنل ویرایشگر هم هست
+  ✓ ویژگی «showDubbed» در تعریف بلوک هست
+  ✓ ویژگی «showDubbed» در پنل ویرایشگر هم هست
+  ✓ ویژگی «dubbedLabel» در تعریف بلوک هست
+  ✓ ویژگی «dubbedLabel» در پنل ویرایشگر هم هست
+  ✓ ویژگی «showHint» در تعریف بلوک هست
+  ✓ ویژگی «showHint» در پنل ویرایشگر هم هست
+  ✓ ویژگی «hintUrl» در تعریف بلوک هست
+  ✓ ویژگی «hintUrl» در پنل ویرایشگر هم هست
+  ✓ ویژگی «resetLabel» در تعریف بلوک هست
+  ✓ ویژگی «resetLabel» در پنل ویرایشگر هم هست
+  ✓ گزینه‌ی چیدمان «سایدبار پیشرفته» در گزینشگر ویرایشگر هست
+  ✓ جزء «فهرست تیک‌زنی ژانر» در رندر سایدبار آمده است
+  ✓ قاعده‌ی CSS برای «فهرست تیک‌زنی ژانر» نوشته شده است
+  ✓ جزء «مربع تیک سفارشی» در رندر سایدبار آمده است
+  ✓ قاعده‌ی CSS برای «مربع تیک سفارشی» نوشته شده است
+  ✓ جزء «بازه‌ی سال» در رندر سایدبار آمده است
+  ✓ قاعده‌ی CSS برای «بازه‌ی سال» نوشته شده است
+  ✓ جزء «لغزنده‌ی امتیاز» در رندر سایدبار آمده است
+  ✓ قاعده‌ی CSS برای «لغزنده‌ی امتیاز» نوشته شده است
+  ✓ جزء «برچسب‌های بازه» در رندر سایدبار آمده است
+  ✓ قاعده‌ی CSS برای «برچسب‌های بازه» نوشته شده است
+  ✓ جزء «کلید دوبله» در رندر سایدبار آمده است
+  ✓ قاعده‌ی CSS برای «کلید دوبله» نوشته شده است
+  ✓ جزء «کلید کشویی» در رندر سایدبار آمده است
+  ✓ قاعده‌ی CSS برای «کلید کشویی» نوشته شده است
+  ✓ جزء «دکمه‌ی پاک‌سازی» در رندر سایدبار آمده است
+  ✓ قاعده‌ی CSS برای «دکمه‌ی پاک‌سازی» نوشته شده است
+  ✓ جزء «پنل راهنما» در رندر سایدبار آمده است
+  ✓ قاعده‌ی CSS برای «پنل راهنما» نوشته شده است
+  ✓ شمار آثار هر ترم از داده محاسبه می‌شود
+  ✓ بازه‌ی سال از داده خوانده می‌شود
+  ✓ شمارها کش می‌شوند (هر بارگذاری، کوئری گران تکرار نمی‌شود)
+  ✓ فهرست پارامترهای فراداده‌ای تعریف شده است
+  ✓ کوئری اصلی (آرشیوها) فیلترهای فراداده‌ای سایدبار را اعمال می‌کند
+  ✓ حلقه‌ی بلوک هم همان فیلترهای فراداده‌ای را اعمال می‌کند
+  ✓ برداشتن برچسب فیلتر، بازه‌ی سال را به‌صورت یک فیلتر برمی‌دارد
+  ✓ فیلد «دوبله فارسی» در متاباکس اثرها تعریف شده است
+  ✓ کلید فراداده‌ای دوبله با فیلتر قابل تغییر است
+  ✓ برچسب امتیاز در جاوااسکریپت به‌روز می‌شود
+  ✓ تیک‌باکس‌ها فرم را خودکار ارسال می‌کنند
+
+ک) برگه‌ی «برنامه پخش»
+----------------------------------------------------------
+  ✓ متد render_schedule() وجود دارد
+  ✓ الگوی برگه‌ی «برنامه پخش» در پوسته هست
+  ✓ الگو بلوک «برنامه پخش» را می‌سازد
+  ✓ چیدمان بلوک در الگو «پنل کامل» است
+  ✓ ستون کنار از بلوک «کارت اطلاعاتی» ساخته می‌شود (ویرایش‌پذیر، نه مارک‌آپ دست‌نویس)
+  ✓ مقصد کارت ترویجی با نشانه‌ی حساب کاربری تعیین شده است
+  ✓ رندر پنل «پنل هفتگی» را می‌سازد
+  ✓ قاعده‌ی CSS برای «پنل هفتگی» نوشته شده است
+  ✓ رندر پنل «چیدمان تمام‌قد پنل» را می‌سازد
+  ✓ قاعده‌ی CSS برای «چیدمان تمام‌قد پنل» نوشته شده است
+  ✓ رندر پنل «ردیف تب‌های روز» را می‌سازد
+  ✓ قاعده‌ی CSS برای «ردیف تب‌های روز» نوشته شده است
+  ✓ رندر پنل «ظرف ردیف‌های روز» را می‌سازد
+  ✓ قاعده‌ی CSS برای «ظرف ردیف‌های روز» نوشته شده است
+  ✓ رندر پنل «ردیف اثر» را می‌سازد
+  ✓ قاعده‌ی CSS برای «ردیف اثر» نوشته شده است
+  ✓ رندر پنل «ساعت پخش» را می‌سازد
+  ✓ قاعده‌ی CSS برای «ساعت پخش» نوشته شده است
+  ✓ رندر پنل «نشانه‌ی پخش» را می‌سازد
+  ✓ قاعده‌ی CSS برای «نشانه‌ی پخش» نوشته شده است
+  ✓ رندر پنل «حالت روز خالی» را می‌سازد
+  ✓ قاعده‌ی CSS برای «حالت روز خالی» نوشته شده است
+  ✓ رندر پنل «یادداشت پایین پنل» را می‌سازد
+  ✓ قاعده‌ی CSS برای «یادداشت پایین پنل» نوشته شده است
+  ✓ رندر پنل «نقطه‌ی روز جاری» را می‌سازد
+  ✓ قاعده‌ی CSS برای «نقطه‌ی روز جاری» نوشته شده است
+  ✓ رندر پنل «سرتیتر پنل» را می‌سازد
+  ✓ قاعده‌ی CSS برای «سرتیتر پنل» نوشته شده است
+  ✓ رندر پنل «نشانگر زمان» را می‌سازد
+  ✓ قاعده‌ی CSS برای «نشانگر زمان» نوشته شده است
+  ✓ تب‌های روز نقش tab دارند
+  ✓ ردیف تب‌ها نقش tablist دارد
+  ✓ هر روز یک tabpanel دارد
+  ✓ تب فعال با aria-selected نشانه‌گذاری می‌شود
+  ✓ روزهای غیرفعال با hidden پنهان می‌شوند
+  ✓ هر تب روز، کلید داده‌ی خود را دارد
+  ✓ ویژگی «چیدمان» در تعریف بلوک هست
+  ✓ ویژگی «چیدمان» در پنل ویرایشگر هم هست
+  ✓ ویژگی «منبع داده» در تعریف بلوک هست
+  ✓ ویژگی «منبع داده» در پنل ویرایشگر هم هست
+  ✓ ویژگی «عنوان پنل» در تعریف بلوک هست
+  ✓ ویژگی «عنوان پنل» در پنل ویرایشگر هم هست
+  ✓ ویژگی «زیرنویس پنل» در تعریف بلوک هست
+  ✓ ویژگی «زیرنویس پنل» در پنل ویرایشگر هم هست
+  ✓ ویژگی «نشانه‌ی پنل» در تعریف بلوک هست
+  ✓ ویژگی «نشانه‌ی پنل» در پنل ویرایشگر هم هست
+  ✓ ویژگی «نمایش نشانگر زمان» در تعریف بلوک هست
+  ✓ ویژگی «نمایش نشانگر زمان» در پنل ویرایشگر هم هست
+  ✓ ویژگی «متن نشانگر زمان» در تعریف بلوک هست
+  ✓ ویژگی «متن نشانگر زمان» در پنل ویرایشگر هم هست
+  ✓ ویژگی «نمایش فصل/قسمت» در تعریف بلوک هست
+  ✓ ویژگی «نمایش فصل/قسمت» در پنل ویرایشگر هم هست
+  ✓ ویژگی «نمایش نام اصلی» در تعریف بلوک هست
+  ✓ ویژگی «نمایش نام اصلی» در پنل ویرایشگر هم هست
+  ✓ ویژگی «نمایش دکمه‌ی پخش» در تعریف بلوک هست
+  ✓ ویژگی «نمایش دکمه‌ی پخش» در پنل ویرایشگر هم هست
+  ✓ ویژگی «پیام روز خالی» در تعریف بلوک هست
+  ✓ ویژگی «پیام روز خالی» در پنل ویرایشگر هم هست
+  ✓ ویژگی «برچسب پیوند روز خالی» در تعریف بلوک هست
+  ✓ ویژگی «برچسب پیوند روز خالی» در پنل ویرایشگر هم هست
+  ✓ ویژگی «مقصد پیوند روز خالی» در تعریف بلوک هست
+  ✓ ویژگی «مقصد پیوند روز خالی» در پنل ویرایشگر هم هست
+  ✓ ویژگی «نوع محتوا» در تعریف بلوک هست
+  ✓ ویژگی «نوع محتوا» در پنل ویرایشگر هم هست
+  ✓ ویژگی «قسمت در هر روز» در تعریف بلوک هست
+  ✓ ویژگی «قسمت در هر روز» در پنل ویرایشگر هم هست
+  ✓ ویژگی «روز فعال در آغاز» در تعریف بلوک هست
+  ✓ ویژگی «روز فعال در آغاز» در پنل ویرایشگر هم هست
+  ✓ گزینشگرهای چیدمان/منبع در ویرایشگر هستند
+  ✓ قاعده‌های چیدمان پنل در CSS افزونه هست
+  ✓ بلوک کارت اطلاعاتی کلاس‌های مرجع ستون کنار را می‌سازد
+  ✓ پنل بازرس «تنظیمات برنامه» در ویرایشگر هست
+  ✓ پنل بازرس «چیدمان و منبع» در ویرایشگر هست
+  ✓ پنل بازرس «سرصفحه‌ی پنل» در ویرایشگر هست
+  ✓ پنل بازرس «حالت خالی روز» در ویرایشگر هست
+  ✓ جاوااسکریپت تب‌های روز را پیدا می‌کند
+  ✓ جاوااسکریپت چیدمان پنل را هم می‌شناسد (نه فقط بلوک صفحه‌ی نخست)
+  ✓ روز پخش روی متاباکس ویرایش می‌شود
+  ✓ ساعت پخش روی متاباکس ویرایش می‌شود
+  ✓ رندر، روز و ساعت پخش را از فراداده‌ی واقعی اثر می‌خواند (نه جدول ثابت)
+
+==========================================================
+موفق: 252   ناموفق: 0
+==========================================================
+
+==========================================================
+۱۳) آزمون ریسپانسیو، دسترس‌پذیری و گزینشگرهای یتیم
+==========================================================
+==========================================================
+آزمون ریسپانسیو، دسترس‌پذیری و گزینشگرهای یتیم
+==========================================================
+
+الف) هر کلاس در CSS باید در کد تولید شود
+----------------------------------------------------------
+  ✓ front.css: هیچ گزینشگر یتیمی ندارد (106 کلاس بررسی شد)
+  ✓ theme.css: هیچ گزینشگر یتیمی ندارد (141 کلاس بررسی شد)
+  ✓ گزینشگر ناکارآمد .manacore-cast-list حذف شده است
+  ✓ چیدمان شبکه‌ای بازیگران کلاس واقعی (.manacore-cast-track) را هدف می‌گیرد
+  ✓ گزینشگر ناکارآمد پهنای برچسب حذف شده است
+  ✓ پهنای برچسب روی <dt> واقعی اعمال می‌شود
+  ✓ گزینشگر ناکارآمد .manacore-search-box حذف شده است
+  ✓ دکمه‌ی جستجوی سربرگ (بلوک koohe/search-trigger) در پارت سربرگ هست
+  ✓ کادر جستجوی درون‌خطی از سربرگ برداشته شده است (جستجو با دکمه باز می‌شود)
+  ✓ قاعده‌ی مرده‌ی کادر جستجوی سربرگ از theme.css حذف شده است
+  ✓ دکمه‌ی جستجو در theme.css استایل دارد
+
+ب) نقاط شکست نباید همپوشانی داشته باشند
+----------------------------------------------------------
+  ✓ front.css: هیچ نقطه‌ی شکستی هم max و هم min ندارد
+  ✓ عرض محتوای اسلایدر در مرز ۷۸۲px با قاعده‌ی دسکتاپ تضاد ندارد
+  ✓ قاعده‌ی موبایلِ محتوای اسلایدر روی ۷۸۱px است
+  ✓ front.css: مرز موبایل ۵۹۹px است (نه ۶۰۰px که با کلاس‌های نمایش ناهمخوان بود)
+  ✓ theme.css: مرز موبایل ۵۹۹px است (نه ۶۰۰px که با کلاس‌های نمایش ناهمخوان بود)
+  ✓ theme.css: همپوشانی نقطه‌ی شکست تنها برای قواعد نوار مدیریت است (همسو با هسته)
+
+پ) هیچ متغیر تعیین‌نشده‌ای خوانده نشود
+----------------------------------------------------------
+  ✓ front.css: هیچ متغیر تعیین‌نشده‌ای نمی‌خواند
+  ✓ theme.css: هیچ متغیر تعیین‌نشده‌ای نمی‌خواند
+
+ت) هدف لمسی امن (WCAG 2.5.5)
+----------------------------------------------------------
+  ✓ front.css برای نمایشگر لمسی قواعد جداگانه دارد
+  ✓ theme.css برای نمایشگر لمسی قواعد جداگانه دارد
+  ✓ ناحیه‌ی لمسی .manacore-hero-dot با شبه‌عنصر بزرگ می‌شود
+  ✓ ناحیه‌ی لمسی .manacore-hero-arrow با شبه‌عنصر بزرگ می‌شود
+  ✓ ناحیه‌ی لمسی .manacore-filter-chip با شبه‌عنصر بزرگ می‌شود
+  ✓ ناحیه‌ی لمسی .manacore-season-tab با شبه‌عنصر بزرگ می‌شود
+  ✓ ناحیه‌ی لمسی .manacore-card-fav با شبه‌عنصر بزرگ می‌شود
+  ✓ front.css هدف ۴۴px را تعریف می‌کند
+  ✓ theme.css هدف ۴۴px را تعریف می‌کند
+  ✓ دکمه‌ی بالارو هنگام وجود نوار کنش جابه‌جا می‌شود
+
+ث) جلوگیری از سرریز و احترام به ناحیه‌ی امن
+----------------------------------------------------------
+  ✓ front.css: متن بلند صفحه را جانبی‌پیمایش نمی‌کند
+  ✓ front.css: رسانه از ظرف بیرون نمی‌زند
+  ✓ theme.css: متن بلند صفحه را جانبی‌پیمایش نمی‌کند
+  ✓ theme.css: رسانه از ظرف بیرون نمی‌زند
+  ✓ نوار پایین صفحه ناحیه‌ی امن گوشی‌های بدون دکمه‌ی خانه را رعایت می‌کند
+  ✓ حالت افقی با ارتفاع کم پوشش داده شده است
+
+ج) دسترس‌پذیری نشانه‌گذاری
+----------------------------------------------------------
+  ✓ نتایج جستجوی زنده ناحیه‌ی aria-live دارند
+  ✓ نتایج جستجوی زنده role="status" دارند
+  ✓ فهرست نتایج یک‌جا خوانده می‌شود نه تکه‌تکه
+  ✓ نوار کنش موبایل برچسب دسترس‌پذیر دارد
+  ✓ شرط نمایش نوار کنش در تابع مستقل و آزمون‌پذیر است
+  ✓ نوار کنش تنها در صفحه‌ی اثر و با وجود کنش واقعی چاپ می‌شود
+  ✓ کلاس بدنه افزوده می‌شود تا فضای پایین صفحه باز شود
+  ✓ حلقه‌ی تمرکز با outline ساخته می‌شود (در حالت کنتراست بالا هم می‌ماند)
+
+چ) احترام به تنظیمات کاربر
+----------------------------------------------------------
+  ✓ front.css: کاهش حرکت را رعایت می‌کند
+  ✓ front.css: حالت کنتراست بالا را پوشش می‌دهد
+  ✓ theme.css: کاهش حرکت را رعایت می‌کند
+  ✓ theme.css: حالت کنتراست بالا را پوشش می‌دهد
+
+ح) توازن نحوی
+----------------------------------------------------------
+  ✓ آکولادهای front.css متوازن‌اند (1240 / 1240)
+  ✓ آکولادهای theme.css متوازن‌اند (916 / 916)
+
+==========================================================
+موفق: 49   ناموفق: 0
+==========================================================
+
+==========================================================
+۱۴) آزمون بومِ ویرایشگر بلوک‌های افزونه
+==========================================================
+==========================================================
+آزمون بومِ ویرایشگر بلوک‌های ManaCore
+==========================================================
+
+الف) استایل بلوک‌ها باید به بوم ویرایشگر برسد
+----------------------------------------------------------
+  ✓ قلاب enqueue_block_assets ثبت شده است (بوم ویرایشگر)
+  ✓ هم قلاب سمت کاربر و هم قلاب بوم ثبت می‌شوند
+  ✓ متد editor_canvas() تعریف شده است
+  ✓ front.css در بوم ویرایشگر صف می‌شود (ریشه‌ی «چینش خالی»)
+  ✓ استایل ویژه‌ی بوم نیز صف می‌شود
+  ✓ با is_admin() از صف‌شدن دوباره در سمت کاربر جلوگیری می‌شود
+  ✓ front.js در بوم بارگذاری نمی‌شود (مزاحم ویرایش است)
+  ✓ فایل editor-canvas.css روی دیسک موجود است
+  ✓ editor-canvas.css خالی نیست (4900 بایت)
+
+ب) پیش‌نمایش سمت سرور
+----------------------------------------------------------
+  ✓ بلوک‌ها با ServerSideRender پیش‌نمایش می‌شوند
+  ✓ پیش‌نمایش در پوشش .manacore-block-preview قرار می‌گیرد
+  ✓ پوشش پیش‌نمایش در CSS بوم مهار می‌شود (جلوگیری از سرریز)
+  ✓ کلیک روی اجزای پیش‌نمایش کاربر را از ویرایشگر بیرون نمی‌برد
+
+پ) بلوک‌های یک‌اثر در ویرایشگر محتوا نشان می‌دهند
+----------------------------------------------------------
+  ✓ بدنه‌ی target_post() یافت شد
+  ✓ target_post() حالت پیش‌نمایش ویرایشگر را تشخیص می‌دهد
+  ✓ در پیش‌نمایش، اثر نمونه‌ی هم‌نوعِ درخواست جای زمینه‌ی نبودِ پست را می‌گیرد
+  ✓ اثر نمونه تنها وقتی به کار می‌رود که زمینه‌ای نباشد و در ویرایشگر باشیم
+  ✓ متد sample_post_id( $types ) تعریف شده است
+  ✓ نتیجه با کلید نوع‌آگاه cache می‌شود تا هر پیش‌نمایش یک کوئری تازه نزند
+  ✓ در نبود نوع درخواستی، همه‌ی انواع اثر بررسی می‌شوند
+  ✓ بیش از یک نامزد بررسی می‌شود (تازه‌ترین اثر ممکن است خالی باشد)
+  ✓ اثری که لینک دانلود دارد امتیاز بیشتری می‌گیرد
+  ✓ کوئری نمونه no_found_rows دارد (بی‌نیاز از شمارش کل)
+
+ت) اجزای وابسته به JS در بوم ایستا دیده می‌شوند
+----------------------------------------------------------
+  ✓ اسلاید نخست اسلایدر در بوم دیده می‌شود (بدون JS همه پنهان بودند)
+  ✓ شفافیت اسلاید نخست بازنویسی می‌شود
+  ✓ visibility اسلاید نخست بازنویسی می‌شود
+  ✓ پنل فصل‌ها در بوم باز است (تب‌ها بدون JS کار نمی‌کنند)
+  ✓ ریل افقی در بوم هم ریل می‌ماند (فقط اسکرول‌پذیر می‌شود) و به شبکه تبدیل نمی‌شود
+
+ث) حالت خالی در ویرایشگر گویا است
+----------------------------------------------------------
+  ✓ حالت خالی در بوم قاعده‌ی اختصاصی دارد
+  ✓ کادر نقطه‌چین مثل جای‌نگهدار بلوک‌های هسته (با «بلوک خراب» اشتباه نشود)
+  ✓ متن حالت خالی در بوم قالب‌بندی می‌شود
+
+ج) اجزای شناور و حرکت در بوم
+----------------------------------------------------------
+  ✓ جزء شناور .manacore-toast در بوم پنهان می‌شود
+  ✓ جزء شناور .manacore-modal در بوم پنهان می‌شود
+  ✓ جزء شناور .manacore-player در بوم پنهان می‌شود
+  ✓ انیمیشن در بوم خاموش است (حواس را از ویرایش نبرد)
+
+چ) قواعد بوم به سمت کاربر نشت نکنند
+----------------------------------------------------------
+  ✓ همه‌ی قواعد رفتاری به .editor-styles-wrapper محدودند
+  ✓ آکولادهای editor-canvas.css متوازن‌اند (13 / 13)
+  ✓ فهرست آیکون‌های سرتیتر در PHP خوانده شد (13 آیکون)
+  ✓ فهرست آیکون‌های سرتیتر در JS خوانده شد (13 آیکون)
+  ✓ هر آیکون PHP در گزینش‌گر ویرایشگر هست
+  ✓ هر گزینه‌ی ویرایشگر مسیر SVG دارد
+
+==========================================================
+موفق: 41   ناموفق: 0
+==========================================================
+
+==========================================================
+نتیجه: همه‌ی آزمون‌ها موفق ✓
+==========================================================

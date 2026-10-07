@@ -22,6 +22,51 @@ class Player {
 	public function hooks() {
 		add_shortcode( 'manacore_player', array( $this, 'shortcode' ) );
 		add_action( 'wp_footer', array( $this, 'modal' ) );
+		add_filter( 'request', array( $this, 'strip_own_params' ) );
+	}
+
+	/**
+	 * حذف پارامترهای مخصوص صفحه‌ی پخش از پرسمانِ اصلی وردپرس.
+	 *
+	 * چرا لازم است؟ پارامترهای `season`/`episode`/`quality` داده‌ی خودِ
+	 * صفحه‌ی پخش‌اند و همین صفحه آن‌ها را از `$_GET` می‌خواند، ولی نام
+	 * `episode` با متغیر پرسمانِ عمومیِ نوع‌محتوای «قسمت» همنام است
+	 * (`register_post_type( 'episode', query_var: true )`). نتیجه در آزمون
+	 * واقعی: هر پیوند پخشِ قسمت (`/watch/?manacore_id=8&season=1&episode=2`)
+	 * **۴۰۴** می‌داد، چون وردپرس می‌خواست قسمتِ با نامک «2» را در پرسمانِ
+	 * اصلی بیابد. اینجا درست پیش از ساخت `WP_Query` از پرسمان بیرون
+	 * گذاشته می‌شوند تا صفحه‌ی پخش عادی resolve شود.
+	 *
+	 * فقط وقتی فعال است که `manacore_id` معتبر در نشانی باشد؛ پس هیچ
+	 * پرسمانِ دیگری در سایت تغییر نمی‌کند (مثلاً آرشیو با `?season=2`
+	 * همچنان کار می‌کند).
+	 *
+	 * @param array $vars متغیرهای پرسمان.
+	 * @return array
+	 */
+	public function strip_own_params( $vars ) {
+		if ( ! self::watched_id() ) {
+			return $vars;
+		}
+
+		if ( isset( $vars['episode'] ) && isset( $vars['post_type'] ) && 'episode' === (string) $vars['post_type'] ) {
+			/*
+			 * وردپرس پیش از فیلتر `request` مقدار `?episode=` را به
+			 * `post_type=episode` و `name=<مقدار>` ترجمه می‌کند
+			 * (`WP::parse_request()`)، و همین `post_type` جای پرسمانِ برگه را
+			 * می‌گیرد. اگر مقدار از پارامتر خودمان آمده باشد، برگردانده
+			 * می‌شود.
+			 */
+			if ( (string) $vars['episode'] === (string) ( $vars['name'] ?? '' ) ) {
+				unset( $vars['post_type'], $vars['name'] );
+			}
+		}
+
+		foreach ( array( 'season', 'episode', 'quality' ) as $key ) {
+			unset( $vars[ $key ] );
+		}
+
+		return $vars;
 	}
 
 	/**
@@ -120,13 +165,23 @@ class Player {
 	public function shortcode( $atts ) {
 		$atts = shortcode_atts(
 			array(
-				'url'   => '',
-				'title' => '',
-				'id'    => 0,
+				'url'        => '',
+				'title'      => '',
+				'id'         => 0,
+				'show_title' => '',
 			),
 			$atts,
 			'manacore_player'
 		);
+
+		/*
+		 * صفحه‌ی پخش (`/watch/?manacore_id=…`) شناسه را از کوئری می‌خواند؛
+		 * همان کاری که مرجع با `player.html?id=…` می‌کند. نام پارامتر
+		 * اختصاصی است تا با کوئری‌های خود وردپرس تلاقی نکند.
+		 */
+		if ( ! $atts['id'] && isset( $_GET['manacore_id'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			$atts['id'] = absint( wp_unslash( $_GET['manacore_id'] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		}
 
 		$url = $atts['url'];
 		if ( ! $url && $atts['id'] ) {
@@ -136,7 +191,107 @@ class Player {
 			$url = get_post_meta( get_the_ID(), 'manacore_trailer_url', true );
 		}
 
-		return self::render( $url, $atts['title'] );
+		$title = (string) $atts['title'];
+		if ( '' === $title && $atts['id'] ) {
+			$title = get_the_title( absint( $atts['id'] ) );
+		}
+
+		/*
+		 * در صفحه‌ی پخش، نام اثر باید دیده شود؛ پیش‌فرض نمایش عنوان فقط
+		 * وقتی است که شناسه از کوئری آمده باشد (خودِ صفحه‌ی پخش) تا در
+		 * جاهای دیگر رفتار قبلی دست‌نخورده بماند.
+		 */
+		$show_title = '' === $atts['show_title']
+			? (bool) self::watched_id()
+			: rest_sanitize_boolean( $atts['show_title'] );
+
+		$html = self::render( $url, $title );
+
+		if ( $html && $show_title ) {
+			$html = '<h2 class="manacore-player-title">' . esc_html( $title ) . '</h2>' . $html;
+		}
+
+		if ( '' === $html ) {
+			return '<p class="manacore-empty-state">'
+				. esc_html__( 'برای این اثر تریلری ثبت نشده است.', 'manacore' )
+				. '</p>';
+		}
+
+		return $html;
+	}
+
+	/**
+	 * آدرس «صفحه‌ی پخش» برای یک اثر.
+	 *
+	 * صفحه‌ای با نامک `watch` میزبان شورت‌کد `[manacore_player]` است؛ اگر
+	 * چنین صفحه‌ای ساخته نشده باشد، رشته‌ی خالی برمی‌گردد تا فراخوان‌ها
+	 * به ساز‌و‌کار جانشین (مُدال پخش) برگردند و پیوندِ مرده ساخته نشود.
+	 *
+	 * @param int $post_id شناسه‌ی اثر.
+	 * @return string آدرس یا رشته‌ی خالی.
+	 */
+	public static function watched_id() {
+		if ( ! isset( $_GET['manacore_id'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			return 0;
+		}
+
+		$post_id = absint( wp_unslash( $_GET['manacore_id'] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+
+		if ( ! $post_id || 'publish' !== get_post_status( $post_id ) ) {
+			return 0;
+		}
+
+		return in_array( get_post_type( $post_id ), manacore_title_post_types(), true ) ? $post_id : 0;
+	}
+
+	/**
+	 * ساخت یک‌باره‌ی صفحه‌ی پخش (`/watch/`) هنگام فعال‌سازی افزونه.
+	 *
+	 * تنها اگر چنین صفحه‌ای نباشد ساخته می‌شود؛ صفحه‌ی موجود هرگز بازنویسی
+	 * نمی‌شود تا کاربر آزاد باشد قالب یا متن آن را دلخواه تغییر دهد.
+	 */
+	public static function ensure_page() {
+		if ( get_page_by_path( 'watch', OBJECT, 'page' ) ) {
+			return;
+		}
+
+		/*
+		 * برگه بدون محتوا ساخته می‌شود و چیدمان از قالب `page-watch` قالب
+		 * فعال می‌آید (بلوک `manacore/player-page`)؛ شورت‌کد
+		 * `[manacore_player]` همچنان برای قالب‌هایی که این قالب را ندارند
+		 * کار می‌کند و در «راهنمای پخش» برگه آمده است.
+		 */
+		$page_id = wp_insert_post(
+			array(
+				'post_title'   => __( 'پخش آنلاین', 'manacore' ),
+				'post_name'    => 'watch',
+				'post_type'    => 'page',
+				'post_status'  => 'publish',
+				'post_content' => '',
+			)
+		);
+
+		if ( $page_id && ! is_wp_error( $page_id ) ) {
+			update_option( 'manacore_watch_page', (int) $page_id );
+		}
+	}
+
+	public static function page_url( $post_id = 0 ) {
+		$post_id = $post_id ? (int) $post_id : (int) get_the_ID();
+		if ( ! $post_id ) {
+			return '';
+		}
+
+		$page = get_page_by_path( 'watch', OBJECT, 'page' );
+		/* صفحه‌ی پخش فقط برای بازدیدکننده‌ی عادی معنا دارد، نه پیش‌نمایش ویرایشگر. */
+		if ( is_admin() && ! wp_doing_ajax() ) {
+			return '';
+		}
+		if ( ! $page || 'publish' !== get_post_status( $page ) ) {
+			return '';
+		}
+
+		return (string) add_query_arg( 'manacore_id', $post_id, get_permalink( $page ) );
 	}
 
 	/**

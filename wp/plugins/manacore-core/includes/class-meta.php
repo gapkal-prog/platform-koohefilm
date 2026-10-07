@@ -43,6 +43,7 @@ class Meta {
 		$titles  = manacore_title_post_types();
 		$serials = manacore_serial_post_types();
 		$all     = array_merge( $titles, array( 'episode' ) );
+		$people  = array( 'person' );
 
 		$schema = array(
 
@@ -129,6 +130,18 @@ class Meta {
 						'label'       => __( 'نمایش در اسلایدر ویژه', 'manacore' ),
 						'type'        => 'checkbox',
 						'post_types'  => $titles,
+					),
+					/*
+					 * کلید «فقط دوبله فارسی» سایدبار کشف، همین فیلد را
+					 * می‌خواند (`manacore_dubbed_meta_key()`). مرجع این
+					 * کلید را سمت کاربر داشت؛ در وردپرس معادل درستش یک
+					 * فراداده‌ی ویرایش‌پذیر در همین متاباکس است.
+					 */
+					'manacore_dubbed' => array(
+						'label'       => __( 'دوبله فارسی دارد', 'manacore' ),
+						'type'        => 'checkbox',
+						'post_types'  => $titles,
+						'description' => __( 'با فعال بودن، کلید «فقط دوبله فارسی» در نوار فیلتر این اثر را نشان می‌دهد.', 'manacore' ),
 					),
 					'manacore_is_premium' => array(
 						'label'       => __( 'محتوای ویژه‌ی اشتراکی', 'manacore' ),
@@ -354,6 +367,12 @@ class Meta {
 							'friday'    => __( 'جمعه', 'manacore' ),
 						),
 					),
+					'manacore_air_time' => array(
+						'label'       => __( 'ساعت پخش', 'manacore' ),
+						'type'        => 'text',
+						'post_types'  => $serials,
+						'description' => __( 'مثلاً «۲۱:۳۰». در برنامه‌ی هفتگی کنار نام اثر نمایش داده می‌شود.', 'manacore' ),
+					),
 					'manacore_next_episode_date' => array(
 						'label'      => __( 'تاریخ قسمت بعدی', 'manacore' ),
 						'type'       => 'date',
@@ -456,6 +475,100 @@ class Meta {
 						'post_types'  => $titles,
 						'source'      => array( 'collection' ),
 						'description' => __( 'مجموعه‌ای که این اثر عضو آن است (برای بلوک «آثار مجموعه»).', 'manacore' ),
+					),
+				),
+			),
+
+			/* ---------------- تب: کانال پخش زنده ---------------- */
+			'channel' => array(
+				'label'  => __( 'کانال', 'manacore' ),
+				'icon'   => 'video-alt3',
+				'fields' => array(
+					'manacore_channel_title' => array(
+						'label'       => __( 'تیتر کانال', 'manacore' ),
+						'type'        => 'text',
+						'post_types'  => array( 'channel' ),
+						'description' => __( 'خط تیتر کارت «در حال پخش»؛ مثلاً «یک قرار با دنیای سینما».', 'manacore' ),
+					),
+					'manacore_channel_subtitle' => array(
+						'label'       => __( 'زیرعنوان کانال', 'manacore' ),
+						'type'        => 'text',
+						'post_types'  => array( 'channel' ),
+						'description' => __( 'توضیح کوتاه زیر تیتر؛ مثلاً «تجربه آزمایشی کانال سینمایی».', 'manacore' ),
+					),
+					'manacore_channel_quality' => array(
+						'label'      => __( 'کیفیت پخش', 'manacore' ),
+						'type'       => 'select',
+						'post_types' => array( 'channel' ),
+						'options'    => array(
+							'360'  => '۳۶۰p',
+							'480'  => '۴۸۰p',
+							'720'  => '۷۲۰p',
+							'1080' => '۱۰۸۰p',
+						),
+					),
+					'manacore_channel_icon' => array(
+						'label'       => __( 'نشانه‌ی کانال', 'manacore' ),
+						'type'        => 'select',
+						'post_types'  => array( 'channel' ),
+						'options'     => Channel::icon_options(),
+						'description' => __( 'آیکون تازه‌ی همین افزونه؛ مرجع به‌جای آن نویسه‌ی یونیکد سخت‌کد داشت.', 'manacore' ),
+					),
+					'manacore_channel_video' => array(
+						'label'       => __( 'نشانی ویدئو', 'manacore' ),
+						'type'        => 'url',
+						'post_types'  => array( 'channel' ),
+						'description' => __( 'فایل یا نشانی ویدئوی پخش؛ خالی بگذارید تا فقط پوستر نشان داده شود.', 'manacore' ),
+					),
+					'manacore_channel_poster' => array(
+						'label'       => __( 'نشانی پوستر', 'manacore' ),
+						'type'        => 'image_url',
+						'post_types'  => array( 'channel' ),
+						'description' => __( 'اگر تصویر شاخص گذاشته شود، همان اولویت دارد.', 'manacore' ),
+					),
+				),
+			),
+
+			/* ---------------- تب: عوامل ---------------- */
+			'person' => array(
+				'label'  => __( 'عوامل', 'manacore' ),
+				'icon'   => 'groups',
+				'fields' => array(
+					'manacore_person_english' => array(
+						'label'       => __( 'نام لاتین', 'manacore' ),
+						'type'        => 'text',
+						'post_types'  => $people,
+						'description' => __( 'زیر نام فارسی و چپ‌چین نمایش داده می‌شود (هم‌ارز `person-english` مرجع).', 'manacore' ),
+					),
+					'manacore_person_born' => array(
+						'label'      => __( 'زادروز', 'manacore' ),
+						'type'       => 'text',
+						'post_types' => $people,
+					),
+					'manacore_country' => array(
+						'label'      => __( 'کشور', 'manacore' ),
+						'type'       => 'text',
+						'post_types' => $people,
+					),
+					'manacore_person_photo' => array(
+						'label'       => __( 'نشانی تصویر چهره', 'manacore' ),
+						'type'        => 'url',
+						'post_types'  => $people,
+						'description' => __( 'اگر تصویر شاخص نگذاشته باشید، همین تصویر در کارت‌ها و قاب چهره استفاده می‌شود.', 'manacore' ),
+					),
+				),
+			),
+
+			/* ---------------- تب: مقاله ---------------- */
+			'article' => array(
+				'label'  => __( 'مقاله', 'manacore' ),
+				'icon'   => 'welcome-write-blog',
+				'fields' => array(
+					'manacore_reading_time' => array(
+						'label'       => __( 'زمان مطالعه (دقیقه)', 'manacore' ),
+						'type'        => 'number',
+						'post_types'  => array( 'post' ),
+						'description' => __( 'خالی بگذارید تا از شمار واژه‌های متن محاسبه شود.', 'manacore' ),
 					),
 				),
 			),

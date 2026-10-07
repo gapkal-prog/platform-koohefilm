@@ -12,4 +12,4 @@
 
 defined( 'ABSPATH' ) || exit;
 ?>
-<!-- wp:manacore/titles-grid {"heading":"<?php echo esc_attr__( 'آخرین سریال‌ها', 'koohe-film' ); ?>","source":"latest","postType":"series","count":12,"columns":6,"showMore":true,"layout":"grid"} /-->
+<!-- wp:manacore/titles-grid {"align":"wide","heading":"<?php echo esc_attr__( 'آخرین سریال‌ها', 'koohe-film' ); ?>","source":"latest","postType":"series","count":12,"columns":6,"showMore":true,"layout":"grid"} /-->

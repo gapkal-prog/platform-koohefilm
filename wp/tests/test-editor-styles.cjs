@@ -36,6 +36,32 @@ function read( rel ) {
 	return fs.existsSync( file ) ? fs.readFileSync( file, 'utf8' ) : '';
 }
 
+/**
+ * خواندن همه‌ی فایل‌های inc/ قالب (بدون کامنت) به‌صورت یک متن.
+ *
+ * توابع رندر بلوک‌ها لازم نیست همه در template-tags.php باشند؛ هر فایل
+ * inc/ که در functions.php بار شود معتبر است. این تابع همان تضمین را
+ * می‌دهد («تابع جایی در قالب تعریف شده») بدون وابستگی به نام فایل.
+ *
+ * @return {string} متن همه‌ی فایل‌های PHP پوشه‌ی inc.
+ */
+function readInc() {
+	var dir = path.join( THEME, 'inc' );
+
+	if ( ! fs.existsSync( dir ) ) {
+		return '';
+	}
+
+	return fs.readdirSync( dir )
+		.filter( function ( file ) {
+			return /\.php$/.test( file );
+		} )
+		.map( function ( file ) {
+			return stripCode( fs.readFileSync( path.join( dir, file ), 'utf8' ) );
+		} )
+		.join( '\n' );
+}
+
 /** حذف کامنت‌های CSS تا تطبیق‌ها روی کد واقعی انجام شود. */
 function stripCss( css ) {
 	return css.replace( /\/\*[\s\S]*?\*\//g, '' );
@@ -150,7 +176,13 @@ assert(
 	'تعریف بلوک‌ها قابل توسعه است (فیلتر koohe_block_definitions)'
 );
 
-var EXPECTED_BLOCKS = [ 'koohe/theme-toggle', 'koohe/account', 'koohe/copyright' ];
+var EXPECTED_BLOCKS = [
+	'koohe/theme-toggle',
+	'koohe/account',
+	'koohe/copyright',
+	'koohe/watchlist-button',
+	'koohe/copy-link',
+];
 
 EXPECTED_BLOCKS.forEach( function ( name ) {
 	assert(
@@ -159,17 +191,37 @@ EXPECTED_BLOCKS.forEach( function ( name ) {
 	);
 } );
 
+/*
+ * هر بلوک تعریف‌شده باید render_callback داشته باشد.
+ *
+ * پیش‌تر تعداد callback ها با عدد ثابتِ تعداد بلوک‌ها سنجیده می‌شد؛ با
+ * افزودن هر بلوک تازه، این آزمون می‌شکست بدون آنکه اشکالی در کد باشد.
+ * اکنون تناسب دو طرف — تعداد بلوک‌های تعریف‌شده و تعداد callback ها —
+ * سنجیده می‌شود که همان تضمین را می‌دهد و به تعداد وابسته نیست.
+ */
+var definedBlocks = blocksPhp.match( /^\s*'koohe\/[a-z-]+'\s*=>/gm ) || [];
+
 /* هر بلوک باید render_callback موجود در template-tags.php داشته باشد. */
 var callbacks = blocksPhp.match( /'render_callback'\s*=>\s*'([a-z_]+)'/g ) || [];
 assert(
-	callbacks.length === EXPECTED_BLOCKS.length,
-	'هر ' + EXPECTED_BLOCKS.length + ' بلوک render_callback دارد (' + callbacks.length + ')'
+	callbacks.length === definedBlocks.length && callbacks.length > 0,
+	'هر ' + definedBlocks.length + ' بلوک تعریف‌شده render_callback دارد (' + callbacks.length + ')'
 );
+/*
+ * تابع رندر می‌تواند در هر فایل inc/ باشد.
+ *
+ * پیش‌تر فقط template-tags.php بررسی می‌شد؛ با افزودن بلوک کشوی موبایل که
+ * تابع رندرش در inc/mobile-drawer.php زندگی می‌کند (کنار منطق خودش)، آزمون
+ * بی‌دلیل می‌شکست. ضمانت همان است: تابع باید در یکی از فایل‌های inc/ قالب
+ * تعریف شده باشد.
+ */
+var themePhp = readInc();
+
 callbacks.forEach( function ( raw ) {
 	var fn = raw.replace( /.*'([a-z_]+)'$/, '$1' );
 	assert(
-		new RegExp( 'function\\s+' + fn + '\\s*\\(' ).test( tagsPhp ),
-		'تابع رندر ' + fn + '() در template-tags.php وجود دارد'
+		new RegExp( 'function\\s+' + fn + '\\s*\\(' ).test( themePhp ),
+		'تابع رندر ' + fn + '() در یکی از فایل‌های inc/ قالب وجود دارد'
 	);
 } );
 
@@ -386,6 +438,92 @@ if ( toggleCfg ) {
 		'ویژگی label بلوک کلید حالت به ویرایشگر رسیده است'
 	);
 }
+
+/* -------------------------------------------------------------------------
+ * ه) اعتبار مارک‌آپ بلوکی قالب‌ها و پاره‌قالب‌ها
+ *
+ * ویرایش دستی فایل‌های `templates/*.html` و `parts/*.html` دو خطای خاموش
+ * می‌سازد که نه در پیش‌نمایش دیده می‌شوند و نه کارکرد را می‌شکنند، اما
+ * ویرایشگر سایت بلوک را «نامعتبر» نشان می‌دهد:
+ *
+ *   ۱) توضیح HTML (`<!-- ... -->`) درون مارک‌آپ بلوک — هسته آن را
+ *      جداکننده‌ی بلوک می‌خواند و بلوکِ والد نامعتبر می‌شود
+ *      (همین اتفاق در `parts/header.html` افتاد).
+ *   ۲) ویژگی‌های JSON ناقص، مثل `{,` که پس از حذف یک کلید می‌ماند
+ *      (در شش قالب تک‌اثر پس از حذف `fontSize` پیش آمد).
+ *
+ * این بخش هر دو را می‌گیرد؛ پیش از افزودنش، ممیزی بوم ویرایشگر
+ * `invalid=["core/group"]` را نشان می‌داد.
+ * ---------------------------------------------------------------------- */
+
+var fs   = require( 'fs' );
+var path = require( 'path' );
+
+var themeDir    = path.join( __dirname, '..', 'themes', 'koohe-film' );
+var markupFiles = [];
+
+[ 'templates', 'parts' ].forEach( function ( dir ) {
+	var full = path.join( themeDir, dir );
+	if ( ! fs.existsSync( full ) ) {
+		return;
+	}
+	fs.readdirSync( full ).forEach( function ( name ) {
+		if ( /\.html$/.test( name ) ) {
+			markupFiles.push( path.join( full, name ) );
+		}
+	} );
+} );
+
+assert( markupFiles.length > 0, 'فایل‌های مارک‌آپ قالب پیدا شد (' + markupFiles.length + ' فایل)' );
+
+var strayComments = [];
+var badJson       = [];
+var unbalanced    = [];
+
+markupFiles.forEach( function ( file ) {
+	var raw = fs.readFileSync( file, 'utf8' );
+	var rel = path.relative( themeDir, file );
+
+	( raw.match( /<!--[\s\S]*?-->/g ) || [] ).forEach( function ( comment ) {
+		if ( ! /^<!--\s*\/?wp:/.test( comment ) ) {
+			strayComments.push( rel + ': ' + comment.replace( /\s+/g, ' ' ).slice( 0, 60 ) );
+		}
+	} );
+
+	var open = /<!--\s*(\/?)wp:([a-z0-9\-\/]+)(\s+\{[\s\S]*?\})?\s*(\/?)-->/g;
+	var m;
+	var depth = {};
+
+	while ( ( m = open.exec( raw ) ) ) {
+		var attrs = ( m[ 3 ] || '' ).trim();
+
+		if ( attrs ) {
+			try {
+				JSON.parse( attrs );
+			} catch ( e ) {
+				badJson.push( rel + ' ' + m[ 2 ] + ': ' + attrs.slice( 0, 60 ) );
+			}
+		}
+
+		if ( '/' !== m[ 1 ] && '/' !== m[ 4 ] ) {
+			depth[ m[ 2 ] ] = ( depth[ m[ 2 ] ] || 0 ) + 1;
+		}
+
+		if ( '/' === m[ 1 ] ) {
+			depth[ m[ 2 ] ] = ( depth[ m[ 2 ] ] || 0 ) - 1;
+		}
+	}
+
+	Object.keys( depth ).forEach( function ( name ) {
+		if ( 0 !== depth[ name ] ) {
+			unbalanced.push( rel + ' ' + name + ' (' + depth[ name ] + ')' );
+		}
+	} );
+} );
+
+assert( 0 === strayComments.length, 'هیچ کامنت HTML غیربلوکی در قالب‌ها نیست' + ( strayComments.length ? ' — ' + strayComments.join( ' | ' ) : '' ) );
+assert( 0 === badJson.length, 'ویژگی‌های JSON همه‌ی بلوک‌ها معتبر است' + ( badJson.length ? ' — ' + badJson.join( ' | ' ) : '' ) );
+assert( 0 === unbalanced.length, 'همه‌ی بلوک‌های باز بسته شده‌اند' + ( unbalanced.length ? ' — ' + unbalanced.join( ' | ' ) : '' ) );
 
 console.log( '' );
 console.log( '==========================================================' );

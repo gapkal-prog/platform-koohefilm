@@ -105,6 +105,18 @@ class Taxonomies {
 					'hierarchical' => false,
 					'slug'         => 'title-tag',
 				),
+			/*
+			 * نقش چهره («بازیگر»/«کارگردان»): دکمه‌های صافی برگه‌ی
+			 * «بازیگران و عوامل» از همین ترم‌ها ساخته می‌شوند، پس افزودن
+			 * نقش تازه از پیشخوان کافی است — هیچ فهرست سختی در قالب نیست.
+			 */
+			'person_role' => array(
+				'singular'     => __( 'نقش چهره', 'manacore' ),
+				'plural'       => __( 'نقش‌های چهره', 'manacore' ),
+				'object_types' => array( 'person' ),
+				'hierarchical' => false,
+				'slug'         => 'role',
+			),
 			)
 		);
 	}

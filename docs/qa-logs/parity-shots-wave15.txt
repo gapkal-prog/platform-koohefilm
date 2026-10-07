@@ -1,0 +1,36 @@
+✓ wp-home-1440.png — 1440×4508 @x0
+✓ ref-home-1440.png — 1440×2794 @x0
+✓ wp-home-390.png — 390×6856 @x0
+✓ ref-home-390.png — 390×4405 @x0
+✓ wp-hero-1440.png — 1440×414 @x0
+✓ ref-hero-1440.png — 1440×483 @x0
+✗ plans wp @1440: «.manacore-plans» پیدا نشد
+✓ ref-plans-1440.png — 1100×602 @x170
+✗ plans wp @980: «.manacore-plans» پیدا نشد
+✓ ref-plans-980.png — 924×554 @x28
+✓ wp-download-1440.png — 1009×789 @x375
+✓ ref-download-1440.png — 1010×1301 @x374
+✓ wp-download-980.png — 673×788 @x279
+✓ ref-download-980.png — 673×1300 @x279
+✓ wp-browse-1440.png — 1328×1149 @x56
+✓ ref-browse-1440.png — 1328×1191 @x56
+✓ wp-browse-390.png — 358×1054 @x16
+✓ ref-browse-390.png — 358×1509 @x16
+✓ wp-schedule-1440.png — 1328×619 @x56
+✓ ref-schedule-1440.png — 1328×424 @x56
+✓ wp-schedule-390.png — 358×943 @x16
+✓ ref-schedule-390.png — 358×770 @x16
+✓ wp-player-1440.png — 1328×1078 @x56
+✓ ref-player-1440.png — 1440×1718 @x0
+✓ wp-player-980.png — 924×923 @x28
+✓ ref-player-980.png — 980×1991 @x0
+✓ wp-player-390.png — 358×605 @x16
+✓ ref-player-390.png — 390×1921 @x0
+✓ wp-live-1440.png — 1328×970 @x56
+✓ ref-live-1440.png — 1328×963 @x56
+✓ wp-live-980.png — 924×764 @x28
+✓ ref-live-980.png — 924×758 @x28
+✓ wp-live-390.png — 358×1157 @x16
+✓ ref-live-390.png — 358×1190 @x16
+
+2 برش گرفته نشد.

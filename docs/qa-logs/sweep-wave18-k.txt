@@ -1,0 +1,6 @@
+PASS  article-parity.cjs             موفق: 460   ناموفق: 0   (مرجع: http://localhost:8098/article.html)
+PASS  harness-all.cjs                
+PASS  axe-drawer.cjs                 
+PASS  axe-episode.cjs                
+PASS  download-parity.cjs            
+---- w18k: 5 PASS / 0 FAIL ----

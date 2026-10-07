@@ -1,0 +1,53 @@
+موج پانزدهم/۴ — بازاجرای ۲۰ آزمون مرورگری پس از تغییر سراسری front.css (تایپوگرافی کارت مقاله + پله‌های ۹۸۰/۷۶۸ مجله)
+
+=== دسته‌ی الف) ۱۱ آزمون هم‌سانی (sweep h) ===
+PASS home-parity.cjs (exit 0)
+PASS browse-parity.cjs (exit 0)
+PASS cast-parity.cjs (exit 0)
+PASS live-parity.cjs (exit 0)
+PASS download-parity.cjs (exit 0)
+PASS schedule-parity.cjs (exit 0)
+PASS plans-parity.cjs (exit 0)
+PASS player-parity.cjs (exit 0)
+PASS account-parity.cjs (exit 0)
+PASS drawer-parity.cjs (exit 0)
+PASS magazine-parity.cjs (exit 0)
+
+=== دسته‌ی ب) ۹ آزمون دیگر (sweep i) ===
+PASS harness-all.cjs (exit 0)
+PASS picker-e2e.cjs (exit 0)
+PASS editor-schedule.cjs (exit 0)
+PASS editor-templates-audit.cjs (exit 0)
+PASS lang-audit.cjs (exit 0)
+PASS axe-drawer.cjs (exit 0)
+PASS axe-episode.cjs (exit 0)
+PASS axe-player.cjs (exit 0)
+PASS editor-blocks-support.cjs (exit 0)
+
+=== آزمون‌های خودِ پروژه ===
+
+==========================================================
+نتیجه: همه‌ی آزمون‌ها موفق ✓
+==========================================================
+
+=== قرارداد مجله (اجرای نهایی پس از تغییر شناسه‌ی ترم) ===
+
+==========================================================
+موفق: 167   ناموفق: 0   (مرجع: http://localhost:8098/magazine.html)
+==========================================================
+
+=== شاهد چشمی ===
+✓ wp-home-1440.png — 1440×4317 @x0
+✓ ref-home-1440.png — 1440×2794 @x0
+✓ wp-home-390.png — 390×6920 @x0
+✓ ref-home-390.png — 390×4405 @x0
+
+همه‌ی برش‌ها گرفته شد.
+
+=== نمونه‌ی سربرگ اجراها ===
+  ✓ @1440 h: 29 (مرجع 29)
+  ✓ @1440 gap: 6px (مرجع 6px)
+  ✓ @1440 marginInlineStart: 22px (مرجع 22px)
+
+=== الف) رندر در سه ویوپورت ===
+  ✓ همه‌ی برگه‌ها در هر سه ویوپورت ۲۰۰ می‌دهند (51 ردیف)

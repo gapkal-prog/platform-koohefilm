@@ -70,9 +70,25 @@ class Templates {
 		 * است و کلاس جداگانه نمی‌گیرد.
 		 */
 		$style = Block_Support::pick( $args['style'], Block_Data::card_styles(), 'poster' );
+
+		/*
+		 * سازگاری با محتوای ذخیره‌شده‌ی قدیمی: «عریض» و «افقی (۱۶:۹)» یک
+		 * نتیجه داشتند و از فهرست گزینه‌ها یکی شدند، اما مقدار `wide` در
+		 * نوشته‌های قدیمی باید همان ظاهر پیشین را نگه دارد.
+		 */
+		if ( 'wide' === $style ) {
+			$style = 'landscape';
+		}
+
 		if ( 'poster' !== $style ) {
 			$classes[] = 'is-style-' . $style;
 		}
+
+		/*
+		 * کارت افقی ۱۶:۹ در طرح مرجع سه نشانه‌ی ویژه دارد: برچسب فصل/قسمت
+		 * روی تصویر، دکمه‌ی پخش با برچسب «کشف داستان» و نوار پایین تصویر.
+		 */
+		$is_landscape = ( 'landscape' === $style );
 		if ( $args['image_ratio'] ) {
 			$classes[] = 'is-ratio-' . sanitize_html_class( $args['image_ratio'] );
 		}
@@ -114,6 +130,13 @@ class Templates {
 			<a class="manacore-card-link" href="<?php echo esc_url( get_permalink( $post_id ) ); ?>"
 				<?php echo $new_tab ? ' target="_blank" rel="noopener"' : ''; ?>>
 				<div class="manacore-card-poster">
+					<?php if ( $is_landscape && $args['show_episode'] ) : ?>
+						<?php $badge = wp_strip_all_tags( self::episode_badge( $post_id, $post_type ) ); ?>
+						<?php if ( $badge ) : ?>
+							<span class="manacore-card-badge"><?php echo esc_html( $badge ); ?></span>
+						<?php endif; ?>
+					<?php endif; ?>
+
 					<img
 						src="<?php echo esc_url( manacore_poster_url( $post_id ) ); ?>"
 						alt="<?php echo esc_attr( get_the_title( $post_id ) ); ?>"
@@ -149,6 +172,7 @@ class Templates {
 							<span class="manacore-card-play" aria-hidden="true">
 								<svg viewBox="0 0 24 24" width="22" height="22"><path fill="currentColor" d="M8 5v14l11-7z"/></svg>
 							</span>
+							<span class="manacore-card-play-label"><?php esc_html_e( 'کشف داستان', 'manacore' ); ?></span>
 						</div>
 					<?php endif; ?>
 				</div>
@@ -344,6 +368,7 @@ class Templates {
 			array(
 				'box_style'    => 'cards',
 				'heading'      => '',
+				'subtitle'     => '',
 				'heading_tag'  => 'h2',
 				'show_heading' => true,
 				'show_icon'    => true,
@@ -353,7 +378,6 @@ class Templates {
 				'types'        => array(),
 				'qualities'    => array(),
 				'season'       => 0,
-				'open_first'   => true,
 			)
 		);
 
@@ -376,7 +400,24 @@ class Templates {
 		}
 
 		$has_access = manacore_user_can_access( $post_id );
-		$notice     = $args['show_notice'] ? get_post_meta( $post_id, 'manacore_custom_notice', true ) : '';
+		$notice     = $args['show_notice'] ? (string) get_post_meta( $post_id, 'manacore_custom_notice', true ) : '';
+
+		/*
+		 * مرجع همیشه یک یادداشت زیر سرستون دارد (`demo-notice`). اگر مدیر
+		 * یادداشت اثر را ننوشته باشد، متن پیش‌فرض کتابخانه می‌آید تا
+		 * ساختار دقیقاً همان مرجع بماند.
+		 */
+		if ( $args['show_notice'] && '' === trim( (string) $notice ) ) {
+			$notice = (string) apply_filters(
+				'manacore_download_notice',
+				__( 'برای رعایت حقوق نشر، پخش و دانلود این نسخه از نمونه ۱۰ ثانیه‌ای ویدئوی آزاد استفاده می‌کند.', 'manacore' ),
+				$post_id
+			);
+		}
+
+		if ( ! $args['show_notice'] ) {
+			$notice = '';
+		}
 		$by_season  = Links::by_season( $post_id );
 
 		// فیلتر بر اساس فصل انتخاب‌شده در بلوک.
@@ -404,37 +445,50 @@ class Templates {
 		// سبک ظاهری با فهرست مشترک اعتبارسنجی می‌شود.
 		$box_style = Block_Support::pick( $args['box_style'], Block_Data::download_styles(), 'cards' );
 
+		/*
+		 * چیدمان این بخش از الگوی مرجع (`detail.html` سینورا) گرفته شده است:
+		 *   `.download-section`  → همین قاب
+		 *   `.demo-notice`       → یادداشت اثر (`manacore_custom_notice`)
+		 *   `.download-table`    → جدول کیفیت/فرمت/حجم/کنش‌ها
+		 * هر گروه لینک، یک ردیف (`.download-row`) می‌شود و دکمه‌های «پخش» و
+		 * «دانلود» به ترتیب به صفحه‌ی پخش و به خود فایل می‌روند.
+		 */
 		ob_start();
 		?>
-		<section class="manacore-links is-box-<?php echo esc_attr( $box_style ); ?>" id="download">
-			<?php if ( $args['show_heading'] || $args['show_count'] ) : ?>
-				<header class="manacore-links-header">
-					<?php if ( $args['show_heading'] ) : ?>
-						<<?php echo esc_html( $heading_tag ); ?> class="manacore-section-title">
-							<?php if ( $args['show_icon'] ) : ?>
-								<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
-									<path fill="currentColor" d="M5 20h14v-2H5v2zM19 9h-4V3H9v6H5l7 7 7-7z"/>
-								</svg>
-							<?php endif; ?>
-							<?php echo esc_html( $heading ); ?>
-						</<?php echo esc_html( $heading_tag ); ?>>
+		<section class="download-section<?php echo 'cards' === $box_style ? '' : ' is-' . esc_attr( $box_style ); ?>"
+			id="download" data-manacore-downloads="<?php echo esc_attr( $post_id ); ?>">
+			<div class="section-heading">
+				<div class="heading-title">
+					<?php if ( $args['show_icon'] ) : ?>
+						<?php /* نشانه‌ی بخش، مثل مرجع یک نویسه‌ی متنی است (`detail.html`). */ ?>
+						<span class="section-icon" aria-hidden="true">⇩</span>
 					<?php endif; ?>
-					<?php if ( $args['show_count'] ) : ?>
-						<span class="manacore-links-total">
-							<?php
-							printf(
-								/* translators: %s: تعداد لینک */
-								esc_html__( '%s لینک', 'manacore' ),
-								esc_html( number_format_i18n( Links::count( $post_id ) ) )
-							);
-							?>
-						</span>
-					<?php endif; ?>
-				</header>
+					<<?php echo esc_html( $heading_tag ); ?>><?php echo esc_html( $heading ); ?></<?php echo esc_html( $heading_tag ); ?>>
+				</div>
+				<?php if ( $args['show_count'] ) : ?>
+					<span class="text-link">
+						<?php
+						printf(
+							/* translators: %s: تعداد لینک */
+							esc_html__( '%s لینک', 'manacore' ),
+							esc_html( number_format_i18n( Links::count( $post_id ) ) )
+						);
+						?>
+					</span>
+				<?php endif; ?>
+			</div>
+
+			<?php if ( '' !== trim( (string) $args['subtitle'] ) ) : ?>
+				<p class="muted"><?php echo esc_html( $args['subtitle'] ); ?></p>
 			<?php endif; ?>
 
 			<?php if ( $notice ) : ?>
-				<div class="manacore-inline-notice"><?php echo esc_html( $notice ); ?></div>
+				<div class="demo-notice">
+					<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+						<circle cx="12" cy="12" r="9"/><path d="M12 16v-5"/><path d="M12 8h.01"/>
+					</svg>
+					<p><?php echo esc_html( $notice ); ?></p>
+				</div>
 			<?php endif; ?>
 
 			<?php if ( $multi ) : ?>
@@ -460,9 +514,17 @@ class Templates {
 			<?php foreach ( $by_season as $season => $season_groups ) : ?>
 				<div class="manacore-season-panel<?php echo ( ! $multi || $first ) ? ' is-active' : ''; ?>"
 					data-season-panel="<?php echo esc_attr( $season ); ?>">
-					<?php foreach ( $season_groups as $group ) : ?>
-						<?php echo self::link_group( $group, $has_access, $post_id, $box_style ); // phpcs:ignore WordPress.Security.EscapeOutput ?>
-					<?php endforeach; ?>
+					<div class="download-table">
+						<div class="download-table-header">
+							<span><?php esc_html_e( 'کیفیت تصویر', 'manacore' ); ?></span>
+							<span><?php esc_html_e( 'فرمت', 'manacore' ); ?></span>
+							<span><?php esc_html_e( 'حجم نمونه', 'manacore' ); ?></span>
+							<span><?php esc_html_e( 'پخش و دانلود', 'manacore' ); ?></span>
+						</div>
+						<?php foreach ( $season_groups as $group ) : ?>
+							<?php echo self::link_row( $group, $has_access, $post_id ); // phpcs:ignore WordPress.Security.EscapeOutput ?>
+						<?php endforeach; ?>
+					</div>
 				</div>
 				<?php $first = false; ?>
 			<?php endforeach; ?>
@@ -472,196 +534,109 @@ class Templates {
 	}
 
 	/**
-	 * فیلتر گروه‌های لینک بر اساس نوع و کیفیت.
+	 * یک ردیف جدول دانلود (`.download-row` مرجع) برای هر گروه لینک.
 	 *
-	 * @param array $by_season      گروه‌ها به تفکیک فصل.
-	 * @param array $type_filter    نوع‌های مجاز.
-	 * @param array $quality_filter کیفیت‌های مجاز.
-	 * @return array
-	 */
-	protected static function filter_link_seasons( $by_season, $type_filter, $quality_filter ) {
-		$out = array();
-
-		foreach ( $by_season as $season => $groups ) {
-			$kept = array();
-
-			foreach ( $groups as $group ) {
-				if ( $quality_filter && ! in_array( sanitize_key( (string) $group['quality'] ), $quality_filter, true ) ) {
-					continue;
-				}
-
-				if ( $type_filter ) {
-					$items = array();
-					foreach ( $group['items'] as $item ) {
-						if ( in_array( sanitize_key( (string) $item['type'] ), $type_filter, true ) ) {
-							$items[] = $item;
-						}
-					}
-					if ( empty( $items ) ) {
-						continue;
-					}
-					$group['items'] = $items;
-				}
-
-				$kept[] = $group;
-			}
-
-			if ( $kept ) {
-				$out[ $season ] = $kept;
-			}
-		}
-
-		return $out;
-	}
-
-	/**
-	 * رندر یک گروه لینک.
+	 * ستون‌های نگاشت‌شده:
+	 *   کیفیت تصویر → `quality` گروه (با برچسب زبان/رمزگذار در `small`)
+	 *   فرمت        → `encoder` گروه (یا برچسب نوع نخستین لینک)
+	 *   حجم         → `size` گروه
+	 *   کنش‌ها       → «▶ پخش» برای لینک‌های آنلاین و «⇩ دانلود» برای بقیه؛
+	 *                 گروه ویژه (اشتراکی) به‌جای کنش‌ها دکمه‌ی اشتراک می‌گیرد.
 	 *
-	 * @param array  $group      گروه.
-	 * @param bool   $has_access دسترسی کاربر.
-	 * @param int    $post_id    شناسه‌ی پست.
-	 * @param string $box_style  سبک ظاهری جعبه.
+	 * @param array $group      گروه لینک.
+	 * @param bool  $has_access دسترسی کاربر به محتوای ویژه.
+	 * @param int   $post_id    شناسه‌ی اثر.
 	 * @return string
 	 */
-	protected static function link_group( $group, $has_access, $post_id, $box_style = 'cards' ) {
+	public static function link_row( $group, $has_access, $post_id, $play_url_override = '' ) {
 		$locked = $group['premium'] && ! $has_access;
 
-		/*
-		 * در سبک آکاردئونی از <details>/<summary> بومی استفاده می‌شود؛
-		 * بازشو/بست‌شدن، دسترسی با صفحه‌کلید و اعلام وضعیت برای صفحه‌خوان
-		 * را خودِ مرورگر تأمین می‌کند و هیچ جاوااسکریپتی لازم نیست.
-		 */
-		$accordion = 'accordion' === $box_style;
-		$wrap_tag  = $accordion ? 'details' : 'div';
-		$head_tag  = $accordion ? 'summary' : 'div';
+		$quality = trim( (string) $group['quality'] );
+		if ( '' === $quality ) {
+			$quality = trim( (string) $group['title'] );
+		}
 
-		/*
-		 * ویژگی open به‌صورت رشته‌ی آماده ساخته می‌شود تا در حالت بسته،
-		 * فاصله‌ی اضافی هم در تگ نماند.
-		 */
-		$open_attr = $accordion && ! $locked ? ' open' : '';
+		$badge = $group['language'] ? Links::language_label( $group['language'] ) : '';
+		if ( '' === $badge && $group['premium'] ) {
+			$badge = __( 'ویژه', 'manacore' );
+		}
+
+		$format = trim( (string) $group['encoder'] );
+		if ( '' === $format && ! empty( $group['items'][0]['type'] ) ) {
+			$format = Links::type_label( $group['items'][0]['type'] );
+		}
+
+		$player = class_exists( '\ManaCore\Core\Player' ) ? Player::page_url( $post_id ) : '';
 
 		ob_start();
 		?>
-		<<?php echo esc_html( $wrap_tag ); ?> class="<?php echo esc_attr( $locked ? 'manacore-link-group is-locked' : 'manacore-link-group' ); ?>"<?php echo esc_html( $open_attr ); ?>>
-			<<?php echo esc_html( $head_tag ); ?> class="manacore-link-group-head">
-				<h3 class="manacore-link-group-title"><?php echo esc_html( $group['title'] ); ?></h3>
-				<div class="manacore-chips">
-					<?php if ( $group['quality'] ) : ?>
-						<span class="manacore-chip is-quality"><?php echo esc_html( Links::quality_label( $group['quality'] ) ); ?></span>
-					<?php endif; ?>
-					<?php if ( $group['language'] ) : ?>
-						<span class="manacore-chip"><?php echo esc_html( Links::language_label( $group['language'] ) ); ?></span>
-					<?php endif; ?>
-					<?php if ( $group['encoder'] ) : ?>
-						<span class="manacore-chip"><?php echo esc_html( $group['encoder'] ); ?></span>
-					<?php endif; ?>
-					<?php if ( $group['size'] ) : ?>
-						<span class="manacore-chip"><?php echo esc_html( $group['size'] ); ?></span>
-					<?php endif; ?>
-					<?php if ( $group['premium'] ) : ?>
-						<span class="manacore-chip is-premium"><?php esc_html_e( 'ویژه', 'manacore' ); ?></span>
-					<?php endif; ?>
-				</div>
-			</<?php echo esc_html( $head_tag ); ?>>
-
-			<?php if ( $group['note'] ) : ?>
-				<p class="manacore-link-note"><?php echo esc_html( $group['note'] ); ?></p>
-			<?php endif; ?>
-
-			<?php if ( $locked ) : ?>
-				<?php
-				echo self::locked_notice( // phpcs:ignore WordPress.Security.EscapeOutput
-					__( 'این بخش مخصوص کاربران دارای اشتراک فعال است.', 'manacore' ),
-					apply_filters( 'manacore_subscribe_url', home_url( '/subscribe/' ) ),
-					__( 'تهیه اشتراک', 'manacore' )
-				);
-				?>
-			<?php else : ?>
-				<ul class="manacore-link-list">
+		<div class="download-row">
+			<span class="quality-name">
+				<b dir="ltr"><?php echo esc_html( $quality ); ?></b>
+				<?php if ( '' !== $badge ) : ?>
+					<small><?php echo esc_html( $badge ); ?></small>
+				<?php endif; ?>
+			</span>
+			<span class="format-tag"><?php echo esc_html( $format ); ?></span>
+			<span class="download-size"><?php echo esc_html( (string) $group['size'] ); ?></span>
+			<div class="download-actions">
+				<?php if ( $locked ) : ?>
+					<a class="manacore-btn is-primary is-small"
+						href="<?php echo esc_url( apply_filters( 'manacore_subscribe_url', home_url( '/subscribe/' ) ) ); ?>">
+						<?php esc_html_e( 'تهیه اشتراک', 'manacore' ); ?>
+					</a>
+				<?php else : ?>
 					<?php foreach ( $group['items'] as $item ) : ?>
-						<li class="manacore-link-item">
-							<span class="manacore-link-icon" data-type="<?php echo esc_attr( $item['type'] ); ?>" aria-hidden="true">
-								<?php echo self::link_icon( $item['type'] ); // phpcs:ignore WordPress.Security.EscapeOutput ?>
-							</span>
+						<?php
+						$label = $item['label']
+							? $item['label']
+							: Links::type_label( $item['type'] );
 
-							<span class="manacore-link-label">
-								<?php
-								echo esc_html(
-									$item['label']
-										? $item['label']
-										: Links::type_label( $item['type'] )
-								);
-								?>
-								<?php if ( '' !== $item['episode'] ) : ?>
-									<small class="manacore-link-episode">
-										<?php
-										printf(
-											/* translators: %s: شماره قسمت */
-											esc_html__( 'قسمت %s', 'manacore' ),
-											esc_html( number_format_i18n( $item['episode'] ) )
-										);
-										?>
-									</small>
-								<?php endif; ?>
-							</span>
-
-							<span class="manacore-link-tags">
-								<?php if ( $item['quality'] ) : ?>
-									<span class="manacore-chip is-small"><?php echo esc_html( $item['quality'] ); ?></span>
-								<?php endif; ?>
-								<?php if ( $item['size'] ) : ?>
-									<span class="manacore-chip is-small"><?php echo esc_html( $item['size'] ); ?></span>
-								<?php endif; ?>
-							</span>
-
-							<span class="manacore-link-actions">
-								<?php if ( 'stream' === $item['type'] ) : ?>
-									<button type="button" class="manacore-btn is-primary is-small"
-										data-manacore-play="<?php echo esc_url( $item['url'] ); ?>"
-										data-title="<?php echo esc_attr( $item['label'] ); ?>">
-										<?php esc_html_e( 'پخش', 'manacore' ); ?>
-									</button>
-								<?php endif; ?>
-								<a class="manacore-btn is-small" href="<?php echo esc_url( $item['url'] ); ?>"
-									rel="nofollow noopener" target="_blank"
-									data-manacore-download="<?php echo esc_attr( $post_id ); ?>">
-									<?php esc_html_e( 'دریافت', 'manacore' ); ?>
-								</a>
-								<button type="button" class="manacore-btn is-ghost is-small"
-									data-manacore-copy="<?php echo esc_url( $item['url'] ); ?>"
-									aria-label="<?php esc_attr_e( 'کپی لینک', 'manacore' ); ?>">
-									<svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true">
-										<path fill="currentColor" d="M16 1H4a2 2 0 0 0-2 2v14h2V3h12V1zm3 4H8a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2z"/>
-									</svg>
-								</button>
-							</span>
-						</li>
+						if ( 'stream' === $item['type'] && $player ) :
+							/*
+							 * «پخش» مثل مرجع به صفحه‌ی پخش می‌رود (نه مُدال) تا
+							 * تمام‌صفحه و کیفیت‌ها همان صفحه باشد. کیفیت گروه
+							 * در نشانی می‌آید تا پلیر همان را پیش‌انتخاب کند.
+							 */
+							/*
+							 * صفحه‌ی پخشِ صریح (قسمت‌ها) بر ساخت پیش‌فرض
+							 * مقدم است و کیفیت هم روی همان سوار می‌شود.
+							 */
+							if ( '' !== $play_url_override ) {
+								$play_url = '' !== $quality
+									? add_query_arg( 'quality', rawurlencode( $quality ), $play_url_override )
+									: $play_url_override;
+							} else {
+								$play_url = add_query_arg( 'quality', rawurlencode( $quality ), $player );
+							}
+							?>
+							<a class="manacore-btn is-secondary is-small" href="<?php echo esc_url( $play_url ); ?>"
+								aria-label="<?php echo esc_attr( $label ); ?>">
+								<svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="m8 5 11 7-11 7V5Z"/></svg>
+								<?php esc_html_e( 'پخش', 'manacore' ); ?>
+							</a>
+						<?php elseif ( 'stream' === $item['type'] ) : ?>
+							<button type="button" class="manacore-btn is-secondary is-small"
+								data-manacore-play="<?php echo esc_url( $item['url'] ); ?>"
+								data-title="<?php echo esc_attr( $label ); ?>">
+								<svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="m8 5 11 7-11 7V5Z"/></svg>
+								<?php esc_html_e( 'پخش', 'manacore' ); ?>
+							</button>
+						<?php else : ?>
+							<a class="manacore-btn is-primary is-small" href="<?php echo esc_url( $item['url'] ); ?>"
+								rel="nofollow noopener" target="_blank"
+								aria-label="<?php echo esc_attr( $label ); ?>"
+								data-manacore-download="<?php echo esc_attr( $post_id ); ?>">
+								<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M12 3v12m0 0 4-4m-4 4-4-4M4 21h16"/></svg>
+								<?php esc_html_e( 'دانلود', 'manacore' ); ?>
+							</a>
+						<?php endif; ?>
 					<?php endforeach; ?>
-				</ul>
-			<?php endif; ?>
-		</<?php echo esc_html( $wrap_tag ); ?>>
+				<?php endif; ?>
+			</div>
+		</div>
 		<?php
 		return (string) ob_get_clean();
-	}
-
-	/**
-	 * آیکون نوع لینک.
-	 *
-	 * @param string $type نوع.
-	 * @return string
-	 */
-	protected static function link_icon( $type ) {
-		$paths = array(
-			'direct'   => 'M5 20h14v-2H5v2zM19 9h-4V3H9v6H5l7 7 7-7z',
-			'stream'   => 'M8 5v14l11-7z',
-			'torrent'  => 'M12 2L2 7l10 5 10-5-10-5zm0 9L2 16l10 5 10-5-10-5z',
-			'magnet'   => 'M15 3v8a3 3 0 1 1-6 0V3H5v8a7 7 0 1 0 14 0V3h-4z',
-			'subtitle' => 'M20 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2zM6 14h5v2H6v-2zm12 0h-5v2h5v-2z',
-			'external' => 'M14 3v2h3.6l-9.8 9.8 1.4 1.4L19 6.4V10h2V3h-7zM5 5h5V3H3v18h18v-7h-2v5H5V5z',
-		);
-		$path  = isset( $paths[ $type ] ) ? $paths[ $type ] : $paths['direct'];
-		return '<svg viewBox="0 0 24 24" width="16" height="16"><path fill="currentColor" d="' . esc_attr( $path ) . '"/></svg>';
 	}
 
 	/**

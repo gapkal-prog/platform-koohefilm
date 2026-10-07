@@ -1,0 +1,87 @@
+<!-- wp:template-part {"slug":"header","tagName":"div","area":"header"} /-->
+
+<!-- wp:group {"tagName":"main","className":"koohe-main koohe-page article-page","style":{"spacing":{"margin":{"top":"var:preset|spacing|30"}}},"layout":{"type":"constrained"}} -->
+<main id="koohe-main" class="wp-block-group koohe-main koohe-page article-page" style="margin-top:var(--wp--preset--spacing--30)">
+
+<!-- wp:manacore/breadcrumb {"parentLabel":"سینورامگ","parentUrl":"magazine","currentTaxonomy":"category"} /-->
+
+<!-- wp:manacore/article-header {"showCategoryBadge":true,"showDescription":true,"showMeta":true,"showCopyLink":true} /-->
+
+<!-- wp:group {"align":"wide","className":"article-layout","layout":{"type":"default"}} -->
+<div class="wp-block-group alignwide article-layout">
+
+	<!-- wp:group {"tagName":"article","className":"article-body","layout":{"type":"default"}} -->
+	<article class="wp-block-group article-body">
+
+		<!-- wp:post-featured-image {"className":"article-cover","aspectRatio":"16/9"} /-->
+
+		<!-- wp:post-content {"layout":{"type":"constrained"}} /-->
+
+		<!-- wp:post-terms {"term":"post_tag","separator":"","className":"article-tags"} /-->
+
+		<!-- wp:comments {"className":"comments-section"} -->
+		<div class="wp-block-comments comments-section"><!-- wp:comments-title {"level":2} /-->
+
+		<!-- wp:comment-template -->
+		<!-- wp:group {"className":"comment-item","style":{"spacing":{"blockGap":"6px"}},"layout":{"type":"default"}} -->
+		<div class="wp-block-group comment-item"><!-- wp:group {"layout":{"type":"flex","flexWrap":"nowrap","verticalAlignment":"center"},"style":{"spacing":{"blockGap":"10px"}}} -->
+		<div class="wp-block-group"><!-- wp:avatar {"size":40,"style":{"border":{"radius":"999px"}}} /-->
+
+		<!-- wp:comment-author-name /-->
+
+		<!-- wp:comment-date {"style":{"color":{"text":"var:preset|color|muted"}}} /--></div>
+		<!-- /wp:group -->
+
+		<!-- wp:comment-content /-->
+
+		<!-- wp:comment-reply-link {"label":"↵ پاسخ"} /--></div>
+		<!-- /wp:group -->
+		<!-- /wp:comment-template -->
+
+		<!-- wp:comments-pagination {"layout":{"type":"flex","justifyContent":"space-between"}} -->
+		<!-- wp:comments-pagination-previous /-->
+
+		<!-- wp:comments-pagination-numbers /-->
+
+		<!-- wp:comments-pagination-next /-->
+		<!-- /wp:comments-pagination -->
+
+		<!-- wp:post-comments-form /--></div>
+		<!-- /wp:comments -->
+
+	</article>
+	<!-- /wp:group -->
+
+	<!-- wp:group {"tagName":"aside","className":"article-sidebar","layout":{"type":"default"}} -->
+	<aside class="wp-block-group article-sidebar">
+
+		<!-- wp:manacore/article-toc {"showNumbers":true,"showProgress":true} /-->
+
+		<!-- wp:manacore/related-titles {"heading":"بعد از خواندن، ببین.","count":3,"showOriginalTitle":true,"postTypes":["movie","series"]} /-->
+
+		<!-- wp:manacore/info-card {"variant":"promo","title":"از خواندن تا تماشا.","text":"دنیای کوهه را کشف کن و همان امشب شروع کن.","linkLabel":"انتخاب اشتراک ‹","linkUrl":"subscribe"} /-->
+
+	</aside>
+	<!-- /wp:group -->
+
+</div>
+<!-- /wp:group -->
+
+<!-- wp:group {"align":"wide","layout":{"type":"default"}} -->
+<div class="wp-block-group alignwide">
+
+	<!-- wp:group {"className":"home-section","layout":{"type":"default"}} -->
+	<div class="wp-block-group home-section">
+
+		<!-- wp:manacore/magazine-row {"heading":"داستان هنوز ادامه دارد...","count":3,"columns":3,"columnsTablet":2,"columnsMobile":1,"excludeCurrent":true,"showCategoryBadge":true,"showMore":true,"moreLabel":"همه مقاله‌ها","moreUrl":"magazine","showReadTime":true,"showDate":true,"showExcerpt":true,"excerptWords":18,"linkLabel":"ادامه داستان"} /-->
+
+	</div>
+	<!-- /wp:group -->
+
+</div>
+<!-- /wp:group -->
+
+</main>
+<!-- /wp:group -->
+
+<!-- wp:template-part {"slug":"footer","tagName":"div","area":"footer"} /-->

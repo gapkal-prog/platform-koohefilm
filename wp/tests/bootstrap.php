@@ -87,6 +87,24 @@ function get_post_types( $args = array(), $output = 'names' ) {
 	return 'objects' === $output ? $types : array_keys( $types );
 }
 
+/*
+ * get_post_type_object — گزینش‌گر «اثر» ویرایشگر (`Block_Data::pickable_types`)
+ * به `show_in_rest` و `rest_base` هر نوع محتوا نیاز دارد. بدون این پوسته،
+ * سنجه‌ی payload در محیط بدون وردپرس خطای «تابع تعریف نشده» می‌داد.
+ */
+function get_post_type_object( $type ) {
+	$objects = get_post_types( array(), 'objects' );
+	if ( ! isset( $objects[ $type ] ) ) {
+		return null;
+	}
+
+	$object              = $objects[ $type ];
+	$object->show_in_rest = true;
+	$object->rest_base    = 'post' === $type ? 'posts' : $type;
+
+	return $object;
+}
+
 function get_taxonomies( $args = array(), $output = 'names' ) {
 	$mc = array( 'movie', 'series', 'anime' );
 	$taxes = array(

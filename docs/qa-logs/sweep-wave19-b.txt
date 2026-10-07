@@ -1,0 +1,26 @@
+PASS  harness-all.cjs                  HARNESS: 53 passed, 0 failed
+PASS  home-parity.cjs                  موفق: 84   ناموفق: 0
+PASS  browse-parity.cjs                موفق: 123   ناموفق: 0
+PASS  schedule-parity.cjs              موفق: 138   ناموفق: 0
+PASS  account-parity.cjs                 ✓ پیام موفقیت به‌شکل toast با متن 
+PASS  player-parity.cjs                
+PASS  live-parity.cjs                  موفق: 128   ناموفق: 0
+PASS  download-parity.cjs              
+PASS  magazine-parity.cjs              موفق: 192   ناموفق: 0
+PASS  article-parity.cjs               موفق: 460   ناموفق: 0
+PASS  info-parity.cjs                  208 موفق / 0 ناموفق
+PASS  about-parity.cjs                 156 موفق / 0 ناموفق
+PASS  cast-parity.cjs                  موفق: 175   ناموفق: 0
+PASS  plans-parity.cjs                 موفق: 81   ناموفق: 0
+PASS  drawer-parity.cjs                موفق: 106   ناموفق: 0
+PASS  picker-e2e.cjs                   PICKER E2E: 8 passed, 0 failed
+PASS  editor-blocks-support.cjs        موفق: 7   ناموفق: 0
+PASS  editor-schedule.cjs              
+PASS  editor-templates-audit.cjs       
+PASS  lang-audit.cjs                   
+PASS  width-audit.cjs                  
+PASS  parity-shots.cjs                 
+PASS  axe-drawer.cjs                   
+PASS  axe-episode.cjs                  
+PASS  axe-player.cjs                   
+---- w19b: 25 PASS / 0 FAIL / 0 MISSING (خام: /tmp/sweep-raw/w19b-*.txt · خلاصه: /tmp/sweep-w19b.txt) ----

@@ -125,6 +125,19 @@ class Block_Query {
 				'type'    => 'string',
 				'default' => '',
 			),
+			/*
+			 * ارث‌بری فیلترهای نشانی (ژانر/سال/کشور/کیفیت/زبان + مرتب‌سازی).
+			 *
+			 * آرشیوها این کار را در کوئری اصلی انجام می‌دهند (`Query::adjust`)،
+			 * ولی حلقه‌های بلوکی روی «برگه»ها به کوئری اصلی وصل نیستند. روی
+			 * صفحه‌ی «کشف داستان‌ها» همین ویژگی باعث می‌شود نوار فیلتر کناری
+			 * واقعاً روی حلقه اثر بگذارد. پیش‌فرض خاموش است تا صفحه‌ی نخست با
+			 * آمدن `?mc_genre=...` در نشانی بی‌خبرانه فیلتر نشود.
+			 */
+			'inheritFilters' => array(
+				'type'    => 'boolean',
+				'default' => false,
+			),
 			'inheritQuery'   => array(
 				'type'    => 'boolean',
 				'default' => false,
@@ -307,6 +320,11 @@ class Block_Query {
 			$args = self::inherit( $args );
 		}
 
+		// --- ارث‌بری فیلترهای نشانی (برگه‌ی «کشف داستان‌ها») --------------
+		if ( ! empty( $attrs['inheritFilters'] ) ) {
+			$args = self::inherit_request_filters( $args );
+		}
+
 		/**
 		 * فیلتر آرگومان‌های ساخته‌شده از ویژگی‌های بلوک.
 		 *
@@ -314,6 +332,158 @@ class Block_Query {
 		 * @param array $attrs ویژگی‌ها.
 		 */
 		return (array) apply_filters( 'manacore_block_query_args', $args, $attrs );
+	}
+
+	/**
+	 * اعمال فیلترها و مرتب‌سازیِ موجود در نشانی روی آرگومان‌های حلقه.
+	 *
+	 * دقیقاً همان پارامترهایی که نوار فیلتر می‌فرستد: تاکسونومی‌ها از
+	 * `manacore_filter_params()`، مرتب‌سازی از `mc_sort` (با نگاشت مشترک
+	 * `manacore_sort_query_args()`) و جستجو از `manacore_q` — پارامتر
+	 * اختصاصی برگه‌ها، چون `s` در نشانیِ یک برگه آن را به «جستجو» می‌برد و
+	 * ۴۰۴ می‌دهد.
+	 *
+	 * @param array $args آرگومان‌های ساخته‌شده.
+	 * @return array
+	 */
+	protected static function inherit_request_filters( $args ) {
+		// phpcs:disable WordPress.Security.NonceVerification.Recommended
+		$tax_query = isset( $args['tax_query'] ) ? (array) $args['tax_query'] : array();
+		$mappings  = array_flip( manacore_filter_params() );
+
+		foreach ( $mappings as $param => $taxonomy ) {
+			if ( empty( $_GET[ $param ] ) || ! taxonomy_exists( $taxonomy ) ) {
+				continue;
+			}
+
+			$raw   = wp_unslash( $_GET[ $param ] );
+			$slugs = is_array( $raw ) ? $raw : explode( ',', (string) $raw );
+			$slugs = array_filter( array_map( 'sanitize_title', $slugs ) );
+
+			if ( $slugs ) {
+				$tax_query[] = array(
+					'taxonomy' => $taxonomy,
+					'field'    => 'slug',
+					'terms'    => $slugs,
+				);
+			}
+		}
+
+		$clauses = array_filter( array_keys( $tax_query ), 'is_int' );
+		if ( count( $clauses ) > 1 ) {
+			$tax_query['relation'] = 'AND';
+		}
+		if ( $tax_query ) {
+			$args['tax_query'] = $tax_query; // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_tax_query
+		}
+
+		/*
+		 * فیلترهای فراداده‌ای سایدبار — همان بندهایی که کوئری اصلی هم
+		 * می‌گیرد، تا فیلتر دیده‌شده در سایدبار در حلقه‌ی بلوک هم اثر کند.
+		 */
+		$meta_clauses = manacore_meta_filter_clauses();
+		if ( $meta_clauses ) {
+			$args['meta_query'] = manacore_merge_meta_query( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
+				isset( $args['meta_query'] ) ? (array) $args['meta_query'] : array(),
+				$meta_clauses
+			);
+		}
+
+		if ( ! empty( $_GET['manacore_q'] ) ) {
+			$args['s'] = sanitize_text_field( wp_unslash( $_GET['manacore_q'] ) );
+
+			/*
+			 * نام اصلی و نام‌های دیگر اثر هم جست‌وجو شوند؛ همان کاری که
+			 * کوئری اصلی در برگه‌ی جستجو می‌کند (`Query::search_meta`).
+			 */
+			$args['manacore_search_meta'] = true;
+		}
+
+		$sort = isset( $_GET['mc_sort'] ) ? sanitize_key( wp_unslash( $_GET['mc_sort'] ) ) : '';
+
+		/*
+		 * صافی نوع از نشانی (`?type=movie|series|anime`).
+		 *
+		 * مرجع همین را در نشانی می‌گذارد؛ پیوندهای «مشاهده همه»ی صفحه‌ی نخست
+		 * به `browse.html?type=series` می‌روند و `browse.js` هم مقدار را از
+		 * `URLSearchParams` می‌خواند. اینجا معادل سرور‌ی آن اجرا می‌شود تا
+		 * پیوند عمیق بدون جاوااسکریپت هم همان نتیجه را بدهد (و شمارش/صفحه‌بندی
+		 * هم درست بماند، چون پالایش سمت کاربر آن‌ها را به‌روز نمی‌کند).
+		 */
+		if ( ! empty( $_GET['type'] ) ) {
+			$type = sanitize_key( wp_unslash( $_GET['type'] ) );
+			if ( 'all' !== $type && in_array( $type, manacore_title_post_types(), true ) ) {
+				$args['post_type'] = array( $type );
+			}
+		}
+
+		/*
+		 * صفحه‌بندی حلقه از نشانی (`?paged=2`).
+		 *
+		 * برگه‌ی «کشف داستان‌ها» یک برگه است، پس `paged` کوئری اصلی همیشه ۱
+		 * است و `inherit()` نمی‌تواند کمکی کند؛ عدد را از همان نشانیِ
+		 * «داستان‌های بیشتر» می‌خوانیم. `no_found_rows` هم خاموش می‌شود تا
+		 * شمار کل و شمار صفحه‌ها برای همان دکمه در دست باشد.
+		 */
+		$paged = isset( $_GET['paged'] ) ? max( 1, (int) $_GET['paged'] ) : 1;
+		if ( $paged > 1 ) {
+			$args['paged'] = $paged;
+		}
+		$args['no_found_rows'] = false;
+		// phpcs:enable
+
+		$definition = manacore_sort_query_args( $sort );
+
+		/*
+		 * مرتب‌سازی گزینش‌شده‌ی کاربر باید بر ترتیب پیش‌فرضِ «منبع» مقدم باشد
+		 * (همان قرارداد `manacore_force_order` که حلقه با ویژگی `orderBy`
+		 * هم از آن استفاده می‌کند).
+		 */
+		if ( $definition ) {
+			$args['manacore_force_order'] = true;
+		}
+
+		if ( isset( $definition['meta'] ) ) {
+			/*
+			 * همان الگوی کوئری اصلی: بند EXISTS برای مرتب‌سازی و NOT EXISTS
+			 * برای اینکه آثاری که این فیلد را ندارند از فهرست بیرون نیفتند.
+			 * گروه تودرتو است تا اگر حلقه خودش meta_query داشته باشد،
+			 * رابطه‌ی بندهای خودش دست‌نخورده بماند.
+			 */
+			$meta_query = isset( $args['meta_query'] ) ? (array) $args['meta_query'] : array();
+
+			$meta_query['manacore_sort_group'] = array(
+				'relation'              => 'OR',
+				/*
+				 * اعشاری، نه `NUMERIC`: نگاشت `NUMERIC` به
+				 * `CAST(... AS SIGNED)` اعشار را می‌بُرد و دو امتیاز
+				 * هم‌بخش (۹.۴ و ۹.۲) هم‌ارز می‌شدند. جزئیات در
+				 * `Query::order_by_meta_num()` آمده است.
+				 */
+				'manacore_sort'         => array(
+					'key'     => $definition['meta'],
+					'compare' => 'EXISTS',
+					'type'    => 'DECIMAL(10,2)',
+				),
+				'manacore_sort_missing' => array(
+					'key'     => $definition['meta'],
+					'compare' => 'NOT EXISTS',
+				),
+			);
+
+			$args['meta_query'] = $meta_query; // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
+			$args['orderby']    = array(
+				'manacore_sort' => 'DESC',
+				'date'          => 'DESC',
+			);
+			unset( $args['meta_key'], $args['order'] );
+		} elseif ( isset( $definition['orderby'] ) ) {
+			$args['orderby'] = $definition['orderby'];
+			$args['order']   = $definition['order'];
+			unset( $args['meta_key'] );
+		}
+
+		return $args;
 	}
 
 	/**

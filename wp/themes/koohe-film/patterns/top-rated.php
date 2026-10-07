@@ -12,4 +12,4 @@
 
 defined( 'ABSPATH' ) || exit;
 ?>
-<!-- wp:manacore/titles-grid {"heading":"<?php echo esc_attr__( 'برترین امتیازها', 'koohe-film' ); ?>","source":"top_rated","count":12,"columns":6,"showMore":false,"layout":"grid"} /-->
+<!-- wp:manacore/titles-grid {"align":"wide","heading":"<?php echo esc_attr__( 'برترین امتیازها', 'koohe-film' ); ?>","source":"top_rated","count":12,"columns":6,"showMore":false,"layout":"grid"} /-->

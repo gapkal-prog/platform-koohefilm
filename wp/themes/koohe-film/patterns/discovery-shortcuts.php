@@ -42,7 +42,7 @@ $links = array(
 );
 ?>
 <!-- wp:html -->
-<div class="koohe-shortcuts">
+<div class="koohe-shortcuts alignwide">
 	<?php foreach ( $links as $link ) : ?>
 		<?php
 		if ( empty( $link['url'] ) ) {

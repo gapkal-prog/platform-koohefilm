@@ -123,17 +123,53 @@
  * Plans grid
  * ---------------------------------------------------------------------- */
 
+/*
+ * هندسه‌ی شبکه‌ی طرح‌ها — عیناً مثل `.pricing-grid` مرجع:
+ *   `{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:23px;
+ *     max-width:1100px;margin:48px auto 0}` و پله‌های ≤۹۸۰ (gap ۱۷) و
+ *   ≤۷۶۸ (یک ستون، `max-width:440px`، gap ۲۷).
+ *
+ * پیش‌تر `repeat(auto-fit,minmax(200px,1fr))` بی‌سقف بود: در ۱۴۴۰px
+ * شش ستون می‌ساخت (سه‌تای خالی) و کارت‌ها ۴۳۱px می‌شدند، در حالی که
+ * مرجع سه کارت ۳۵۱px در قاب ۱۱۰۰px دارد.
+ */
 .manacore-plans {
 	display: grid;
-	grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-	gap: clamp(12px, 2vw, 18px);
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+	gap: 23px;
+	max-width: 1100px;
+	margin-inline: auto;
+}
+
+@media (max-width: 980px) {
+	.manacore-plans {
+		gap: 17px;
+	}
+}
+
+@media (max-width: 768px) {
+	.manacore-plans {
+		grid-template-columns: minmax(0, 1fr);
+		max-width: 440px;
+		gap: 27px;
+	}
 }
 
 .manacore-plan {
+	position: relative;
 	display: flex;
 	flex-direction: column;
 	align-items: flex-start;
-	gap: 10px;
+	/*
+	 * بدون `gap`: مرجع هم فاصله‌ها را با margin می‌دهد و gap سراسری
+	 * (۱۰px بین هر فرزند) کارت را ۶۰px بلندتر از مرجع می‌کرد
+	 * (سنجیده‌شده: ۶۶۹ در برابر ۶۰۲).
+	 */
+	gap: 0;
+	/* مرجع `line-height` را از `body` به ارث می‌برد (`normal`)، نه از قالب. */
+	line-height: normal;
+	/* برچسب بالای کارت بیرون از کادر می‌نشیند (`top:-13px`) */
+	overflow: visible;
 	padding: 30px;
 	border: 1px solid var(--mcs-border);
 	border-radius: 13px;
@@ -159,25 +195,204 @@
 	box-shadow: 0 10px 55px color-mix(in srgb, var(--mcs-accent) 6%, transparent);
 }
 
+/*
+ * کارت طرح — ابعاد داخلی عیناً از `.pricing-card` مرجع:
+ *   نشان ۴۵×۴۵ (شعاع ۱۱)، عنوان ۲۱px بالا ۲۰، تگ‌لاین ۱۰px بالا ۹،
+ *   بلوک قیمت بالا ۲۴، قیمت ۳۹px با `small` ۱۱px هم‌تراز پایین،
+ *   فهرست ویژگی‌ها با خط جداکننده بالا ۲۵ پدینگ ۱۶/۲۴ و ردیف ۱۰px.
+ * پله‌های ≤۱۱۰۰ (۲۵) / ≤۹۸۰ (۲۳) / ≤۷۶۸ (۳۰) / ≤۴۸۰ (۲۸) هم آمده‌اند.
+ */
 .manacore-plan-title {
-	margin: 0;
-	font-size: 1.0625rem;
-	font-weight: 800;
-	line-height: 1.4;
+	margin: 20px 0 0;
+	font-size: 21px;
+	font-weight: 700;
+	line-height: normal;
+}
+
+.manacore-plan-icon {
+	display: grid;
+	place-items: center;
+	width: 45px;
+	height: 45px;
+	border: 1px solid var(--mcs-border);
+	border-radius: 11px;
+	background: var(--mcs-surface-2);
+	color: var(--mcs-accent);
+}
+
+/* برچسب «انتخاب محبوب»: مرکزِ بالای کارت، مثل مرجع. */
+.manacore-plan-ribbon {
+	position: absolute;
+	top: -13px;
+	inset-inline: 0;
+	width: fit-content;
+	margin-inline: auto;
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	padding: 6px 13px;
+	border-radius: 5px;
+	background: var(--mcs-accent);
+	color: var(--mcs-accent-contrast);
+	font-size: 9px;
+	font-weight: 400;
+	line-height: normal;
+	white-space: nowrap;
+}
+
+.manacore-plan-tag {
+	margin: 9px 0 0;
+	color: var(--mcs-muted);
+	font-size: 10px;
+	line-height: normal;
 }
 
 .manacore-plan-price {
-	font-size: 1.25rem;
-	font-weight: 800;
-	color: var(--mcs-accent);
-	line-height: 1.4;
+	margin-top: 24px;
+	line-height: normal;
 }
 
 .manacore-plan-price del {
-	font-size: .875rem;
-	font-weight: 500;
-	opacity: .6;
-	margin-inline-end: 6px;
+	color: var(--mcs-muted);
+	font-size: 11px;
+	font-weight: 400;
+	line-height: normal;
+}
+
+.manacore-plan-discount {
+	display: inline-block;
+	margin-inline-end: 10px;
+	padding: 4px 7px;
+	border-radius: 4px;
+	background: color-mix(in srgb, var(--mcs-accent) 8%, transparent);
+	color: var(--mcs-accent);
+	font-size: 8px;
+	line-height: normal;
+}
+
+.manacore-plan-price strong {
+	display: flex;
+	align-items: center;
+	gap: 9px;
+	margin-top: 8px;
+	color: var(--mcs-text);
+	font-size: 39px;
+	font-weight: 650;
+	line-height: normal;
+}
+
+.manacore-plan-price strong small {
+	align-self: flex-end;
+	margin-bottom: 13px;
+	color: var(--mcs-muted);
+	font-size: 11px;
+	font-weight: 400;
+	line-height: normal;
+}
+
+.manacore-plan-price p {
+	/* حاشیه‌ی پیش‌فرض پاراگراف قالب اینجا بازنویسی می‌شود (۱۰px). */
+	margin: 4px 0 0;
+	color: var(--mcs-muted);
+	font-size: 10px;
+	line-height: normal;
+}
+
+.manacore-plan-features {
+	margin: 25px 0 0;
+	padding: 16px 0 24px;
+	border-top: 1px solid var(--mcs-border);
+	list-style: none;
+}
+
+.manacore-plan-features li {
+	display: flex;
+	align-items: center;
+	gap: 9px;
+	padding: 10px 0;
+	color: var(--mcs-muted);
+	font-size: 10px;
+	line-height: normal;
+}
+
+/*
+ * قلم تیک — مرجع از نویسه‌ی «✓» استفاده می‌کند و ارتفاع ردیف در ≤۹۸۰ فقط
+ * از خطِ متن می‌آید (۳۲px)؛ پس آیکن هم باید با همان پله کوچک شود، وگرنه
+ * ردیف ۲px بلندتر از مرجع می‌شود (سنجیده‌شده: ۳۴ در برابر ۳۲).
+ */
+.manacore-plan-features li > svg {
+	flex: 0 0 auto;
+	width: 14px;
+	height: 14px;
+	color: var(--mcs-accent);
+}
+
+@media (max-width: 1100px) {
+	.manacore-plan {
+		padding: 25px;
+	}
+
+	.manacore-plan-features li {
+		font-size: 9px;
+	}
+
+	.manacore-plan-price strong {
+		font-size: 33px;
+	}
+}
+
+@media (max-width: 980px) {
+	.manacore-plan {
+		padding: 23px;
+	}
+
+	.manacore-plan-title {
+		font-size: 19px;
+	}
+
+	.manacore-plan-features li {
+		gap: 6px;
+		font-size: 8px;
+	}
+
+	.manacore-plan-features li > svg {
+		width: 12px;
+		height: 12px;
+	}
+
+	.manacore-plan-price strong {
+		font-size: 29px;
+	}
+}
+
+@media (max-width: 768px) {
+	.manacore-plan {
+		padding: 30px;
+	}
+
+	.manacore-plan-title {
+		font-size: 23px;
+	}
+
+	.manacore-plan-features li {
+		gap: 10px;
+		font-size: 11px;
+	}
+
+	.manacore-plan-features li > svg {
+		width: 16px;
+		height: 16px;
+	}
+
+	.manacore-plan-price strong {
+		font-size: 40px;
+	}
+}
+
+@media (max-width: 480px) {
+	.manacore-plan {
+		padding: 28px;
+	}
 }
 
 .manacore-plan-badge {
@@ -195,22 +410,35 @@
  * Buttons (fallback when the core CSS is not loaded)
  * ---------------------------------------------------------------------- */
 
+/*
+ * دکمه‌ی کارت — همان قرارداد `.button` مرجع: min-height ۴۳، پدینگ
+ * `11px 19px`، شعاع ۷px، اندازه‌ی ۱۲px، وزن ۶۰۰، gap ۹px. (پیش‌تر پیل
+ * ۹۹۹px با ۱۴px بود و از مرجع جدا می‌افتاد.)
+ */
 .manacore-sub-card .manacore-btn,
 .manacore-plan .manacore-btn {
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
-	gap: 6px;
-	padding: 9px 18px;
+	gap: 9px;
+	min-height: 43px;
+	padding: 11px 19px;
 	border: 1px solid var(--mcs-border);
-	border-radius: 999px;
+	border-radius: 7px;
 	background: var(--mcs-surface-2);
 	color: inherit;
-	font-size: .875rem;
-	font-weight: 700;
+	font-size: 12px;
+	font-weight: 600;
+	line-height: normal;
 	text-decoration: none;
 	cursor: pointer;
 	transition: background var(--mcs-transition), color var(--mcs-transition), transform var(--mcs-transition);
+}
+
+/* دکمه‌ی کارت تمام‌عرض و چسبیده به پایین، مثل مرجع. */
+.manacore-plan .manacore-btn {
+	align-self: stretch;
+	margin-top: auto;
 }
 
 .manacore-sub-card .manacore-btn:hover,

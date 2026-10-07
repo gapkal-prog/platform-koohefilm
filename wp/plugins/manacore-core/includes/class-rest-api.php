@@ -29,6 +29,39 @@ class Rest_Api {
 	}
 
 	/**
+	 * دروازه‌بان نوشتنِ عمومی.
+	 *
+	 * مسیرهای `/rate` و `/track-download` عمداً برای کاربر وارد‌نشده هم باز
+	 * هستند (امتیازدهی مهمان و شمارش دانلود)، ولی پیش‌تر
+	 * `permission_callback => '__return_true'` داشتند؛ یعنی هیچ نشانی
+	 * (nonce) بررسی نمی‌شد. وردپرس توکن `X-WP-Nonce` را فقط زمانی اعتبارسنجی
+	 * می‌کند که خودِ دروازه‌بان این کار را بخواهد، پس یک درخواست
+	 * cross-site می‌توانست امتیاز و شمارش دانلود را تغییر دهد
+	 * (آزمون‌شده: POST بی‌نشان و بی‌نام از بیرون پاسخ ۲۰۰ می‌گرفت).
+	 *
+	 * اکنون حداقلِ لازم اعمال می‌شود: یک نشستِ معتبر `wp_rest`.
+	 * کاربر وارد‌نشده همان نشانی را از `wp_create_nonce( 'wp_rest' )`
+	 * می‌گیرد که افزونه با `manaCore.nonce` به front.js می‌دهد، پس رفتار
+	 * سمت کاربر تغییری نمی‌کند.
+	 *
+	 * @param \WP_REST_Request $request درخواست.
+	 * @return bool|\WP_Error
+	 */
+	public function verify_public_write( $request ) {
+		$nonce = $request->get_header( 'X-WP-Nonce' );
+
+		if ( $nonce && wp_verify_nonce( $nonce, 'wp_rest' ) ) {
+			return true;
+		}
+
+		return new \WP_Error(
+			'manacore_bad_nonce',
+			__( 'نشست شما منقضی شده است. صفحه را دوباره بارگذاری کنید.', 'manacore' ),
+			array( 'status' => 403 )
+		);
+	}
+
+	/**
 	 * ثبت مسیرها.
 	 */
 	public function register_routes() {
@@ -39,7 +72,7 @@ class Rest_Api {
 			array(
 				'methods'             => \WP_REST_Server::CREATABLE,
 				'callback'            => array( $this, 'rate' ),
-				'permission_callback' => '__return_true',
+				'permission_callback' => array( $this, 'verify_public_write' ),
 				'args'                => array(
 					'post_id' => array(
 						'required'          => true,
@@ -107,6 +140,23 @@ class Rest_Api {
 
 		register_rest_route(
 			self::NS,
+			'/live/(?P<slug>[a-z0-9-]+)',
+			array(
+				'methods'             => \WP_REST_Server::READABLE,
+				'callback'            => array( $this, 'live_channel' ),
+				'permission_callback' => '__return_true',
+				'args'                => array(
+					'slug' => array(
+						'required'          => true,
+						'type'              => 'string',
+						'sanitize_callback' => 'sanitize_title',
+					),
+				),
+			)
+		);
+
+		register_rest_route(
+			self::NS,
 			'/titles',
 			array(
 				'methods'             => \WP_REST_Server::READABLE,
@@ -137,7 +187,7 @@ class Rest_Api {
 			array(
 				'methods'             => \WP_REST_Server::CREATABLE,
 				'callback'            => array( $this, 'track_download' ),
-				'permission_callback' => '__return_true',
+				'permission_callback' => array( $this, 'verify_public_write' ),
 				'args'                => array(
 					'post_id' => array(
 						'required'          => true,
@@ -348,4 +398,41 @@ class Rest_Api {
 			'premium'   => (bool) get_post_meta( $post->ID, 'manacore_is_premium', true ),
 		);
 	}
+
+	/**
+	 * داده‌ی یک کانال پخش زنده برای جابه‌جایی درجا.
+	 *
+	 * `live.js` مرجع کل آرایه‌ی کانال‌ها را در جاوااسکریپت داشت؛ این‌جا داده
+	 * از نوع محتوای `channel` خوانده می‌شود و این نقطه فقط همان یک کانال را
+	 * برمی‌گرداند. پاسخ هیچ فیلد مدیریتی (متای خام، وضعیت، نویسنده) را
+	 * بیرون نمی‌دهد و فقط کانال **منتشرشده** را می‌پذیرد؛ نامک ناشناس
+	 * پاسخ ۴۰۴ می‌گیرد تا رفتار سمت کاربر قابل اتکا باشد.
+	 *
+	 * @param \WP_REST_Request $request درخواست.
+	 * @return \WP_REST_Response|\WP_Error
+	 */
+	public function live_channel( $request ) {
+		$slug    = sanitize_title( (string) $request->get_param( 'slug' ) );
+		$channel = Channel::resolve( $slug );
+
+		/*
+		 * `Channel::resolve()` در نبود کانال، نخستین کانال را برمی‌گرداند
+		 * (رفتار درست برای رندر سرور). این‌جا اما نامک ناشناس باید صریح
+		 * پاسخ ۴۰۴ بگیرد؛ وگرنه کاربر نشانی اشتباه می‌گیرد و کانال دیگری
+		 * می‌بیند.
+		 */
+		if ( ! $channel || ( $slug && $slug !== $channel->post_name ) ) {
+			return new \WP_Error(
+				'manacore_channel_not_found',
+				__( 'کانال درخواستی پیدا نشد.', 'manacore' ),
+				array( 'status' => 404 )
+			);
+		}
+
+		$payload = Channel::payload( $channel );
+		$payload['iconSvg'] = Block_Support::heading_icon( $payload['icon'] );
+
+		return rest_ensure_response( $payload );
+	}
+
 }

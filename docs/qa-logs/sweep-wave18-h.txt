@@ -1,0 +1,8 @@
+PASS  info-parity.cjs                208 موفق / 0 ناموفق
+PASS  home-parity.cjs                موفق: 84   ناموفق: 0   (مرجع: http://localhost:8098/index.html)
+PASS  article-parity.cjs             موفق: 432   ناموفق: 0   (مرجع: http://localhost:8098/article.html)
+PASS  harness-all.cjs                
+PASS  width-audit.cjs                
+PASS  mega-mobile-probe.cjs          موفق: 25   ناموفق: 0   (مرجع: http://localhost:8098/index.html)
+PASS  editor-blocks-support.cjs      موفق: 7   ناموفق: 0
+---- w18h: 7 PASS / 0 FAIL ----
