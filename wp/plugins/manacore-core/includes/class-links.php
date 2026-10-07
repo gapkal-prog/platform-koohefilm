@@ -246,6 +246,126 @@ class Links {
 	}
 
 	/**
+	 * جمع شمارش لینک‌های یک ساختار فصل‌بندی‌شده.
+	 *
+	 * روی خروجی `by_season()` یا `episode_groups()` کار می‌کند؛ چون
+	 * «باکس دانلود» ممکن است از دو منبع (لینک‌های خودِ اثر و لینک‌های
+	 * قسمت‌ها) پر شود و شمارش سرصفحه باید مجموع واقعیِ ردیف‌های رندرشده
+	 * باشد، نه فقط لینک‌های خودِ اثر.
+	 *
+	 * @param array $by_season گروه‌ها به تفکیک فصل.
+	 * @return int
+	 */
+	public static function total( $by_season ) {
+		$total = 0;
+
+		foreach ( (array) $by_season as $groups ) {
+			foreach ( (array) $groups as $group ) {
+				$total += count( (array) ( $group['items'] ?? array() ) );
+			}
+		}
+
+		return $total;
+	}
+
+	/**
+	 * گروه‌های لینک قسمت‌های یک سریال/انیمه، به تفکیک فصل.
+	 *
+	 * روش متعارف سایت‌های سریالی این است که لینک هر قسمت روی پست همان
+	 * قسمت ثبت شود. باکس دانلود سریالی باید همه‌ی آن‌ها را یک‌جا نشان
+	 * دهد، وگرنه باکسِ سریالِ بدون لینک روی خودش خالی می‌ماند.
+	 *
+	 * هر گروه با سه کلید کمکی برمی‌گردد که فقط هنگام رندر معنا دارند:
+	 *   • `owner`   → شناسه‌ی قسمت (امضای دانلود و شمارش روی همان است)،
+	 *   • `episode` → شماره‌ی قسمت برای نشان ردیف،
+	 *   • `episode_label` → عنوان قسمت (اگر مدیر نوشته باشد).
+	 *
+	 * @param int   $parent_id شناسه‌ی سریال/انیمه.
+	 * @param array $args      season (۰ = همه)، order (ASC/DESC)، limit.
+	 * @return array<int,array>
+	 */
+	public static function episode_groups( $parent_id, $args = array() ) {
+		$parent_id = (int) $parent_id;
+
+		if ( ! $parent_id ) {
+			return array();
+		}
+
+		$args = wp_parse_args(
+			$args,
+			array(
+				'season' => 0,
+				'order'  => 'ASC',
+				'limit'  => 0,
+			)
+		);
+
+		$meta_query = array(
+			array(
+				'key'   => 'manacore_parent_title',
+				'value' => (string) $parent_id,
+			),
+		);
+
+		$season_filter = max( 0, (int) $args['season'] );
+
+		if ( $season_filter ) {
+			$meta_query[] = array(
+				'key'   => 'manacore_season_number',
+				'value' => $season_filter,
+			);
+		}
+
+		$limit = max( 0, (int) $args['limit'] );
+
+		$episodes = get_posts(
+			array(
+				'post_type'      => 'episode',
+				'posts_per_page' => $limit ? $limit : 500,
+				'post_status'    => 'publish',
+				'meta_key'       => 'manacore_episode_number', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
+				'orderby'        => array( 'meta_value_num' => 'DESC' === strtoupper( (string) $args['order'] ) ? 'DESC' : 'ASC' ),
+				'meta_query'     => $meta_query, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
+			)
+		);
+
+		$out = array();
+
+		foreach ( $episodes as $episode ) {
+			$groups = self::get( $episode->ID );
+
+			if ( ! $groups ) {
+				continue;
+			}
+
+			$season = (int) get_post_meta( $episode->ID, 'manacore_season_number', true );
+			$number = (int) get_post_meta( $episode->ID, 'manacore_episode_number', true );
+
+			foreach ( $groups as $group ) {
+				$group['owner']         = (int) $episode->ID;
+				$group['episode']       = $number;
+				/* `get_the_title()` روی شیء پست هم کار می‌کند و همیشه تعریف‌شده است. */
+				$group['episode_label'] = (string) get_the_title( $episode );
+				$out[ $season ][]       = $group;
+			}
+		}
+
+		ksort( $out );
+
+		return $out;
+	}
+
+	/**
+	 * شمارش لینک‌های ثبت‌شده روی قسمت‌های یک سریال.
+	 *
+	 * @param int $parent_id شناسه‌ی سریال/انیمه.
+	 * @return int
+	 */
+	public static function episode_count( $parent_id ) {
+		return self::total( self::episode_groups( $parent_id ) );
+	}
+
+	/**
 	 * برچسب خوانای کیفیت.
 	 *
 	 * @param string $key کلید کیفیت.

@@ -57,6 +57,7 @@ class Requests {
 
 		add_shortcode( 'manacore_request_form', array( $this, 'form_shortcode' ) );
 		add_shortcode( 'manacore_requests', array( $this, 'board_shortcode' ) );
+		add_shortcode( 'manacore_my_requests', array( $this, 'mine_shortcode' ) );
 
 		/* ستون‌های پیشخوان */
 		add_filter( 'manage_' . self::POST_TYPE . '_posts_columns', array( $this, 'admin_columns' ) );
@@ -490,6 +491,7 @@ class Requests {
 				'paged'   => 1,
 				'status'  => 'approved',
 				'type'    => '',
+				'author'  => 0,
 			)
 		);
 
@@ -517,6 +519,14 @@ class Requests {
 			);
 		}
 
+		/*
+		 * صفر یعنی «همه‌ی نویسندگان» — همان رفتار پیشین. هر مقدار مثبت
+		 * کوئری را به درخواست‌های همان کاربر می‌بندد (پنل کاربری).
+		 */
+		if ( (int) $args['author'] > 0 ) {
+			$query_args['author'] = (int) $args['author'];
+		}
+
 		return new \WP_Query( $query_args );
 	}
 
@@ -534,6 +544,101 @@ class Requests {
 			'draft'   => isset( $counts['draft'] ) ? (int) $counts['draft'] : 0,
 			'trash'   => isset( $counts['trash'] ) ? (int) $counts['trash'] : 0,
 		);
+	}
+
+	/**
+	 * درخواست‌های خودِ کاربر — همه‌ی وضعیت‌ها (در انتظار، تأییدشده، ردشده).
+	 *
+	 * کوئری عمداً هر سه وضعیت را می‌آورد: کاربر باید وضعیت درخواست خودش
+	 * را ببیند، نه فقط موارد تأییدشده را (که تخته‌ی عمومی نشان می‌دهد).
+	 *
+	 * @param int   $user_id شناسه‌ی کاربر (۰ = کاربر جاری).
+	 * @param array $args    `per_page` و `paged`.
+	 * @return \WP_Query
+	 */
+	public static function mine( $user_id = 0, $args = array() ) {
+		$args = wp_parse_args(
+			$args,
+			array(
+				'per_page' => 12,
+				'paged'    => 1,
+			)
+		);
+
+		$user_id = $user_id ? (int) $user_id : (int) get_current_user_id();
+
+		$query_args = array(
+			'post_type'      => self::POST_TYPE,
+			'post_status'    => array( 'publish', 'pending', 'draft' ),
+			'posts_per_page' => max( 1, min( 60, (int) $args['per_page'] ) ),
+			'paged'          => max( 1, (int) $args['paged'] ),
+			'orderby'        => 'date',
+			'order'          => 'DESC',
+		);
+
+		/*
+		 * کاربر وارد‌نشده هرگز نباید کوئریِ «همه‌ی نویسندگان» بگیرد؛
+		 * `author => 0` در وردپرس یعنی همه، پس با `post__in` بسته می‌شود.
+		 */
+		if ( $user_id > 0 ) {
+			$query_args['author'] = $user_id;
+		} else {
+			$query_args['post__in'] = array( 0 );
+		}
+
+		return new \WP_Query( $query_args );
+	}
+
+	/**
+	 * شمار کل درخواست‌های کاربر (برای نشان کنار تب).
+	 *
+	 * @param int $user_id شناسه‌ی کاربر (۰ = کاربر جاری).
+	 * @return int
+	 */
+	public static function mine_total( $user_id = 0 ) {
+		$user_id = $user_id ? (int) $user_id : (int) get_current_user_id();
+
+		if ( ! $user_id ) {
+			return 0;
+		}
+
+		$query = self::mine( $user_id, array( 'per_page' => 1 ) );
+
+		return (int) $query->found_posts;
+	}
+
+	/**
+	 * برچسب فارسی وضعیت یک درخواست.
+	 *
+	 * @param string $status وضعیت پست.
+	 * @return string
+	 */
+	public static function status_label( $status ) {
+		switch ( (string) $status ) {
+			case 'publish':
+				return __( 'تأییدشده', 'manacore' );
+			case 'draft':
+				return __( 'ردشده', 'manacore' );
+			default:
+				return __( 'در انتظار تأیید', 'manacore' );
+		}
+	}
+
+	/**
+	 * کلاس CSS وضعیت (هم‌راستا با کلاس‌های تخته).
+	 *
+	 * @param string $status وضعیت پست.
+	 * @return string
+	 */
+	public static function status_class( $status ) {
+		switch ( (string) $status ) {
+			case 'publish':
+				return 'is-approved';
+			case 'draft':
+				return 'is-rejected';
+			default:
+				return 'is-pending';
+		}
 	}
 
 	/* ---------------------------------------------------------------------
@@ -613,6 +718,21 @@ class Requests {
 			)
 		);
 
+		/*
+		 * فهرست «درخواست‌های من» با HTML سرورسوی خودش؛ تا پس از ثبت
+		 * درخواست تازه، همان بخش صفحه بدون بازخوانی کامل تازه شود
+		 * (مارک‌آپ یک جا می‌ماند: PHP).
+		 */
+		register_rest_route(
+			Rest_Api::NS,
+			'/my-requests',
+			array(
+				'methods'             => \WP_REST_Server::READABLE,
+				'callback'            => array( $this, 'rest_mine' ),
+				'permission_callback' => array( $this, 'permission_mine' ),
+			)
+		);
+
 		register_rest_route(
 			Rest_Api::NS,
 			'/request-vote',
@@ -686,6 +806,33 @@ class Requests {
 				'ok'    => true,
 				'total' => (int) $query->found_posts,
 				'items' => $items,
+			),
+			200
+		);
+	}
+
+	/**
+	 * دسترسی مسیر «درخواست‌های من»: فقط کاربر وارد‌شده.
+	 *
+	 * @return bool
+	 */
+	public function permission_mine() {
+		return is_user_logged_in();
+	}
+
+	/**
+	 * پاسخ مسیر «درخواست‌های من» (HTML آماده برای جای‌گذاری).
+	 *
+	 * @return \WP_REST_Response
+	 */
+	public function rest_mine() {
+		$user_id = (int) get_current_user_id();
+
+		return new \WP_REST_Response(
+			array(
+				'ok'    => true,
+				'total' => self::mine_total( $user_id ),
+				'html'  => $this->mine_html(),
 			),
 			200
 		);
@@ -920,6 +1067,197 @@ class Requests {
 	}
 
 	/**
+	 * رندر پنل «درخواست‌های من» (حساب کاربری).
+	 *
+	 * این پنل از دو تکه ساخته می‌شود: فرم ثبت درخواست (همان فرم عمومی) و
+	 * فهرست درخواست‌های خودِ کاربر با وضعیت هر کدام. تخته‌ی عمومی فقط
+	 * درخواست‌های تأییدشده را نشان می‌دهد؛ کاربر باید «در انتظار» و
+	 * «ردشده» را هم جایی ببیند.
+	 *
+	 * @param array $attrs ویژگی‌های بلوک.
+	 * @return string
+	 */
+	public function render_mine( $attrs = array() ) {
+		$settings = self::settings();
+		$attrs    = wp_parse_args(
+			is_array( $attrs ) ? $attrs : array(),
+			array(
+				'heading'     => '',
+				'subheading'  => '',
+				'showForm'    => true,
+				'formHeading' => '',
+				'formIntro'   => '',
+				'formButton'  => '',
+				'perPage'     => 12,
+				'emptyTitle'  => '',
+				'emptyText'   => '',
+			)
+		);
+
+		if ( ! $settings['enabled'] ) {
+			return '';
+		}
+
+		if ( ! is_user_logged_in() ) {
+			return sprintf(
+				'<div class="manacore-request-gate">%s <a href="%s">%s</a></div>',
+				esc_html__( 'برای دیدن درخواست‌های خود باید وارد حساب شوید.', 'manacore' ),
+				esc_url( wp_login_url( get_permalink() ? get_permalink() : home_url( '/' ) ) ),
+				esc_html__( 'ورود به حساب', 'manacore' )
+			);
+		}
+
+		$heading    = '' !== trim( (string) $attrs['heading'] ) ? (string) $attrs['heading'] : __( 'درخواست‌های من', 'manacore' );
+		$subheading = '' !== trim( (string) $attrs['subheading'] )
+			? (string) $attrs['subheading']
+			: __( 'هر چه فرستادی، وضعیتش همین‌جاست؛ رأی بقیه را هم از تخته‌ی درخواست‌ها ببین.', 'manacore' );
+
+		ob_start();
+		?>
+		<div class="manacore-my-requests-wrap">
+			<div class="section-heading">
+				<div class="heading-title">
+					<div>
+						<h2><?php echo esc_html( $heading ); ?></h2>
+						<?php if ( '' !== trim( $subheading ) ) : ?>
+							<p><?php echo esc_html( $subheading ); ?></p>
+						<?php endif; ?>
+					</div>
+				</div>
+			</div>
+
+			<?php
+			if ( ! empty( $attrs['showForm'] ) ) {
+				// phpcs:ignore WordPress.Security.EscapeOutput -- خروجی همین کلاس و امن است.
+				echo $this->render_form(
+					array(
+						'heading' => (string) $attrs['formHeading'],
+						'intro'   => (string) $attrs['formIntro'],
+						'button'  => (string) $attrs['formButton'],
+					)
+				);
+			}
+
+			// phpcs:ignore WordPress.Security.EscapeOutput -- خروجی همین کلاس و امن است.
+			echo $this->mine_html(
+				array(
+					'perPage'    => (int) $attrs['perPage'],
+					'emptyTitle' => (string) $attrs['emptyTitle'],
+					'emptyText'  => (string) $attrs['emptyText'],
+				)
+			);
+			?>
+		</div>
+		<?php
+
+		return (string) ob_get_clean();
+	}
+
+	/**
+	 * فهرست درخواست‌های کاربر جاری (تکه‌ی قابل تازه‌سازی با REST).
+	 *
+	 * جدا از `render_mine()` نوشته شده تا مسیر `/my-requests` بتواند فقط
+	 * همین تکه را برگرداند و مرورگر آن را جای تکه‌ی قدیمی بگذارد؛ پس
+	 * مارک‌آپ یک جا (همین‌جا) می‌ماند.
+	 *
+	 * @param array $attrs `perPage`, `emptyTitle`, `emptyText`.
+	 * @return string
+	 */
+	public function mine_html( $attrs = array() ) {
+		$attrs = wp_parse_args(
+			is_array( $attrs ) ? $attrs : array(),
+			array(
+				'perPage'    => 12,
+				'emptyTitle' => '',
+				'emptyText'  => '',
+			)
+		);
+
+		$query = self::mine( 0, array( 'per_page' => max( 1, (int) $attrs['perPage'] ) ) );
+		$types = self::types();
+
+		ob_start();
+		?>
+		<div class="manacore-my-requests" data-manacore-mine>
+			<?php if ( ! $query->have_posts() ) : ?>
+				<div class="empty-state">
+					<h3>
+						<?php
+						echo esc_html(
+							'' !== trim( (string) $attrs['emptyTitle'] )
+								? (string) $attrs['emptyTitle']
+								: __( 'هنوز درخواستی ثبت نکرده‌ای', 'manacore' )
+						);
+						?>
+					</h3>
+					<p>
+						<?php
+						echo esc_html(
+							'' !== trim( (string) $attrs['emptyText'] )
+								? (string) $attrs['emptyText']
+								: __( 'نام فیلم یا سریالی را که دنبالش هستی از فرم بالا بفرست؛ وضعیتش همین‌جا به‌روز می‌شود.', 'manacore' )
+						);
+						?>
+					</p>
+				</div>
+			<?php else : ?>
+				<ul class="manacore-requests__list manacore-my-requests__list">
+					<?php
+					while ( $query->have_posts() ) :
+						$query->the_post();
+						$id     = (int) get_the_ID();
+						$status = (string) get_post_status( $id );
+						$type   = (string) get_post_meta( $id, 'manacore_request_type', true );
+						$year   = (int) get_post_meta( $id, 'manacore_request_year', true );
+						$link   = (string) get_post_meta( $id, 'manacore_request_link', true );
+						?>
+						<li class="manacore-request <?php echo esc_attr( self::status_class( $status ) ); ?>" data-request-id="<?php echo esc_attr( (string) $id ); ?>">
+							<div class="manacore-my-requests__votes">
+								<span class="manacore-request__count" data-request-count><?php echo esc_html( manacore_fa_digits( number_format_i18n( self::votes( $id ) ) ) ); ?></span>
+								<span class="manacore-request__vote-label"><?php esc_html_e( 'رأی', 'manacore' ); ?></span>
+							</div>
+
+							<div class="manacore-request__body">
+								<h3 class="manacore-request__title"><?php the_title(); ?></h3>
+
+								<p class="manacore-request__meta">
+									<?php if ( isset( $types[ $type ] ) ) : ?>
+										<span class="manacore-request__chip"><?php echo esc_html( $types[ $type ] ); ?></span>
+									<?php endif; ?>
+
+									<?php if ( $year ) : ?>
+										<span class="manacore-request__chip"><?php echo esc_html( manacore_fa_digits( (string) $year ) ); ?></span>
+									<?php endif; ?>
+
+									<span class="manacore-request__chip <?php echo esc_attr( self::status_class( $status ) ); ?>"><?php echo esc_html( self::status_label( $status ) ); ?></span>
+
+									<span class="manacore-request__date"><?php echo esc_html( manacore_fa_date( get_the_date( 'Y-m-d H:i:s' ) ) ); ?></span>
+								</p>
+
+								<?php if ( '' !== trim( (string) get_the_content() ) ) : ?>
+									<p class="manacore-request__note"><?php echo esc_html( wp_trim_words( wp_strip_all_tags( get_the_content() ), 30 ) ); ?></p>
+								<?php endif; ?>
+
+								<?php if ( $link ) : ?>
+									<a class="manacore-request__source" href="<?php echo esc_url( $link ); ?>" target="_blank" rel="noopener noreferrer nofollow">
+										<?php esc_html_e( 'دیدن منبع', 'manacore' ); ?>
+									</a>
+								<?php endif; ?>
+							</div>
+						</li>
+						<?php
+					endwhile;
+					wp_reset_postdata();
+					?>
+				</ul>
+			<?php endif; ?>
+		</div>
+		<?php
+
+		return (string) ob_get_clean();
+	}
+
+	/**
 	 * شورت‌کد فرم.
 	 *
 	 * @param array $atts ویژگی‌ها.
@@ -963,6 +1301,32 @@ class Requests {
 				'perPage'     => (int) $atts['per_page'],
 				'orderby'     => $atts['orderby'],
 				'showPending' => in_array( (string) $atts['show_pending'], array( '1', 'true', 'yes' ), true ),
+			)
+		);
+	}
+
+	/**
+	 * شورت‌کد پنل «درخواست‌های من».
+	 *
+	 * @param array $atts ویژگی‌ها.
+	 * @return string
+	 */
+	public function mine_shortcode( $atts = array() ) {
+		$atts = shortcode_atts(
+			array(
+				'heading'   => '',
+				'show_form' => '1',
+				'per_page'  => 12,
+			),
+			is_array( $atts ) ? $atts : array(),
+			'manacore_my_requests'
+		);
+
+		return $this->render_mine(
+			array(
+				'heading'  => (string) $atts['heading'],
+				'showForm' => in_array( strtolower( (string) $atts['show_form'] ), array( '1', 'true', 'yes' ), true ),
+				'perPage'  => (int) $atts['per_page'],
 			)
 		);
 	}

@@ -541,3 +541,33 @@ body:not(.rtl) .manacore-switch input:checked + .manacore-switch-track .manacore
 	color: #1a202c;
 	flex: none;
 }
+
+/* ---------------------------------------------------------------------------
+ * ستون «لینک‌ها» در فهرست فیلم/سریال/انیمه/قسمت.
+ * ------------------------------------------------------------------------ */
+
+.column-manacore_links {
+	width: 150px;
+}
+
+.manacore-links-state {
+	display: inline-block;
+	padding: 1px 7px;
+	border-radius: 999px;
+	font-size: 11px;
+	line-height: 1.7;
+}
+
+.manacore-links-state.is-ok {
+	background: rgba(34, 150, 90, .14);
+	color: #1c7c4c;
+}
+
+.manacore-links-state.is-empty {
+	background: rgba(214, 54, 56, .12);
+	color: #b32d2e;
+}
+
+.manacore-links-edit {
+	font-size: 11px;
+}

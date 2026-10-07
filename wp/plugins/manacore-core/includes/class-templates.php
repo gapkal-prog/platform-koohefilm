@@ -363,13 +363,21 @@ class Templates {
 	 * گونه‌ی محتوا ساخته شود:
 	 *   • `auto`   → بر پایه‌ی نوع پست (سریال/انیمه → `series`، بقیه → `movie`)
 	 *   • `movie`  → جدول کیفیت‌ها (مرجع `detail.html` سینورا)
-	 *   • `series` → بسته‌های کامل فصل روی پست سریال («دانلود کامل فصل‌ها»)
+	 *   • `series` → جدول فصل‌به‌فصل: بسته‌های کامل فصل + لینک قسمت‌ها
 	 *   • `episode`→ جدول کیفیت‌های یک قسمت
 	 *
+	 * منبع داده (`source`) برای سریال‌ها تعیین می‌کند ردیف‌ها از کجا
+	 * بیایند:
+	 *   • `auto`     → فیلم/قسمت: لینک‌های خودِ اثر؛ سریال: هر دو منبع
+	 *   • `post`     → فقط لینک‌های خودِ اثر (بسته‌های فصل)
+	 *   • `episodes` → فقط لینک‌های قسمت‌های فرزند
+	 *   • `both`     → هر دو
+	 *
 	 * @param int   $post_id شناسه‌ی پست.
-	 * @param array $args    تنظیمات: mode، box_style، heading، subtitle،
+	 * @param array $args    تنظیمات: mode، source، box_style، heading، subtitle،
 	 *                       heading_tag، show_heading/icon/count/notice/tabs،
-	 *                       types، qualities، season، pack_label، size_label.
+	 *                       types، qualities، season، pack_label، size_label،
+	 *                       episode_label.
 	 * @return string
 	 */
 	public static function links( $post_id, $args = array() ) {
@@ -388,21 +396,36 @@ class Templates {
 				'mode'         => 'auto',
 				'pack_label'   => '',
 				'size_label'   => '',
-				'types'        => array(),
-				'qualities'    => array(),
-				'season'       => 0,
+				'types'         => array(),
+				'qualities'     => array(),
+				'season'        => 0,
+				'source'        => 'auto',
+				'episode_label' => '',
 			)
 		);
 
 		$args['mode'] = self::resolve_mode( $args['mode'], $post_id );
+		$source       = self::resolve_source( $args['source'], $post_id, $args['mode'] );
 
 		if ( get_post_meta( $post_id, 'manacore_disable_links', true ) ) {
 			return '';
 		}
 
 		$groups = Links::get( $post_id );
-		if ( empty( $groups ) ) {
-			return '';
+
+		/*
+		 * لینک‌های قسمت‌ها: در سریال‌ها روش متعارف این است که لینک هر قسمت
+		 * روی پست همان قسمت ثبت شود؛ باکس سریالی باید آن‌ها را هم بیاورد،
+		 * وگرنه برای سریالی که لینک روی خودش ندارد هیچ باکسی ساخته نمی‌شد.
+		 */
+		$season_filter = (int) $args['season'];
+
+		$episode_rows = in_array( $source, array( 'episodes', 'both' ), true )
+			? Links::episode_groups( $post_id, array( 'season' => $season_filter ) )
+			: array();
+
+		if ( empty( $groups ) && empty( $episode_rows ) ) {
+			return self::editor_hint( $post_id, $args['mode'] );
 		}
 
 		$login_only = (int) manacore_get_option( 'links_login_only', 0 );
@@ -440,13 +463,22 @@ class Templates {
 		if ( ! $args['show_notice'] ) {
 			$notice = '';
 		}
-		$by_season  = Links::by_season( $post_id );
+		$by_season = Links::by_season( $post_id );
 
 		// فیلتر بر اساس فصل انتخاب‌شده در بلوک.
-		$season_filter = (int) $args['season'];
 		if ( $season_filter && isset( $by_season[ $season_filter ] ) ) {
 			$by_season = array( $season_filter => $by_season[ $season_filter ] );
 		}
+
+		// ادغام «بسته‌های فصل» با ردیف‌های قسمت‌ها؛ هر فصل تب خودش را دارد.
+		foreach ( $episode_rows as $episode_season => $episode_groups ) {
+			$by_season[ $episode_season ] = array_merge(
+				isset( $by_season[ $episode_season ] ) ? (array) $by_season[ $episode_season ] : array(),
+				(array) $episode_groups
+			);
+		}
+
+		ksort( $by_season );
 
 		// فیلتر بر اساس نوع لینک و کیفیت.
 		$type_filter    = array_filter( array_map( 'sanitize_key', (array) $args['types'] ) );
@@ -502,7 +534,7 @@ class Templates {
 						printf(
 							/* translators: %s: تعداد لینک */
 							esc_html__( '%s لینک', 'manacore' ),
-							esc_html( number_format_i18n( Links::count( $post_id ) ) )
+							esc_html( number_format_i18n( Links::total( $by_season ) ) )
 						);
 						?>
 					</span>
@@ -558,9 +590,22 @@ class Templates {
 							 * در حالت سریال، هر گروه «بسته‌ی کامل فصل» است؛
 							 * نشان ریزِ زیر کیفیت همین را به کاربر می‌گوید
 							 * (در حالت فیلم/قسمت، همان برچسب زبان می‌ماند).
+							 *
+							 * ردیف‌های قسمت‌ها مالک جدا دارند: امضای دانلود
+							 * و شمارش باید روی شناسه‌ی خودِ قسمت انجام شود و
+							 * دکمه‌ی پخش به همان قسمت برود.
 							 */
-							$badge_override = 'series' === $args['mode'] ? $pack_label : '';
-							echo self::link_row( $group, $has_access, $post_id, '', $badge_override ); // phpcs:ignore WordPress.Security.EscapeOutput
+							$row_post   = ! empty( $group['owner'] ) ? (int) $group['owner'] : (int) $post_id;
+							$row_access = $row_post === (int) $post_id ? $has_access : manacore_user_can_access( $row_post );
+							$row_play   = '';
+							$row_badge  = 'series' === $args['mode'] ? $pack_label : '';
+
+							if ( ! empty( $group['owner'] ) ) {
+								$row_badge = self::episode_row_badge( $group, $args['episode_label'] );
+								$row_play  = self::episode_play_url( $post_id, (int) $season, $group );
+							}
+
+							echo self::link_row( $group, $row_access, $row_post, $row_play, $row_badge ); // phpcs:ignore WordPress.Security.EscapeOutput
 							?>
 						<?php endforeach; ?>
 					</div>
@@ -627,6 +672,161 @@ class Templates {
 		}
 
 		return 'movie';
+	}
+
+	/**
+	 * تعیین منبع داده‌ی باکس دانلود.
+	 *
+	 * `auto` برای فیلم و قسمت یعنی «لینک‌های خودِ اثر» و برای سریال/انیمه
+	 * یعنی «هم بسته‌های فصل، هم لینک قسمت‌ها» — چون مدیر می‌تواند هر کدام
+	 * را جای دیگری ثبت کرده باشد.
+	 *
+	 * @param string $source  منبع درخواستی (`auto|post|episodes|both`).
+	 * @param int    $post_id شناسه‌ی پست.
+	 * @param string $mode    حالت باکس.
+	 * @return string
+	 */
+	public static function resolve_source( $source, $post_id = 0, $mode = 'movie' ) {
+		$source = sanitize_key( (string) $source );
+		$types  = array( 'auto', 'post', 'episodes', 'both' );
+
+		if ( ! in_array( $source, $types, true ) ) {
+			$source = 'auto';
+		}
+
+		if ( 'auto' !== $source ) {
+			return $source;
+		}
+
+		return 'series' === $mode ? 'both' : 'post';
+	}
+
+	/**
+	 * نشان ریزِ ردیف‌های قسمت («قسمت ۲»).
+	 *
+	 * برچسب از پنل مدیریت یا ویژگی بلوک می‌آید و می‌تواند در خودش `%s`
+	 * داشته باشد؛ اگر نداشت، شماره به انتهای متن می‌چسبد. زبان گروه هم
+	 * اگر ثبت شده باشد، کنار شماره می‌آید (مثل «قسمت ۲ · زیرنویس فارسی»).
+	 *
+	 * @param array  $group گروه لینک (با کلیدهای کمکی owner/episode).
+	 * @param string $label برچسب دلخواه مدیر (خالی = پیش‌فرض).
+	 * @return string
+	 */
+	protected static function episode_row_badge( $group, $label = '' ) {
+		$template = trim( (string) $label );
+
+		if ( '' === $template ) {
+			$template = __( 'قسمت %s', 'manacore' );
+		}
+
+		$number = manacore_fa_digits( number_format_i18n( max( 0, (int) ( $group['episode'] ?? 0 ) ) ) );
+
+		$badge = false === strpos( $template, '%' )
+			? trim( $template . ' ' . $number )
+			: str_replace( array( '%s', '%d' ), $number, $template );
+
+		if ( ! empty( $group['language'] ) ) {
+			$badge .= ' · ' . Links::language_label( $group['language'] );
+		}
+
+		return $badge;
+	}
+
+	/**
+	 * نشانی پخش برای ردیفِ یک قسمت.
+	 *
+	 * اولویت مثل `Blocks::render_episodes()` است: پستِ هدف با همان
+	 * فصل/قسمت، بعد خودِ قسمت، بعد سریال؛ و در نبود هر منبعی رشته‌ی
+	 * خالی برمی‌گردد تا پیوند ناقص به کاربر نرسد.
+	 *
+	 * @param int   $parent شناسه‌ی سریال.
+	 * @param int   $season شماره‌ی فصل.
+	 * @param array $group  گروه لینک (با کلید owner).
+	 * @return string
+	 */
+	protected static function episode_play_url( $parent, $season, $group ) {
+		if ( ! class_exists( __NAMESPACE__ . '\Player' ) ) {
+			return '';
+		}
+
+		$episode_id = (int) ( $group['owner'] ?? 0 );
+		$number     = max( 0, (int) ( $group['episode'] ?? 0 ) );
+		$season     = max( 0, (int) $season );
+		$args       = array(
+			'season'  => $season,
+			'episode' => $number,
+		);
+
+		$target = Player::resolve_target( (int) $parent, $season, $number );
+
+		if ( $target && Player::has_sources( $target ) ) {
+			return Player::url_for( $target, $args );
+		}
+
+		if ( $episode_id && Player::has_sources( $episode_id ) ) {
+			return Player::url_for( $episode_id, $args );
+		}
+
+		return Player::has_sources( (int) $parent ) ? Player::url_for( (int) $parent, $args ) : '';
+	}
+
+	/**
+	 * راهنمای مدیر وقتی اثری هیچ لینکی ندارد.
+	 *
+	 * در نمای همگانی هیچ‌چیز چاپ نمی‌شود (مارک‌آپ دست‌نخورده می‌ماند)، ولی
+	 * در پیش‌نمایش ویرایشگر/بافت مدیریت، جای خالی باکس با پیوند
+	 * «افزودن لینک‌ها» پر می‌شود؛ پیش‌تر باکس بی‌صدا ناپدید می‌شد و
+	 * تشخیص علتش سخت بود.
+	 *
+	 * @param int    $post_id شناسه‌ی پست.
+	 * @param string $mode    حالت باکس.
+	 * @return string
+	 */
+	protected static function editor_hint( $post_id, $mode = 'movie' ) {
+		/*
+		 * راهنما فقط در بافتِ مدیریت/پیش‌نمایش ویرایشگر می‌آید: در نمای
+		 * همگانی — حتی برای مدیر وارد‌شده — هیچ مارک‌آپی اضافه نمی‌شود تا
+		 * هندسه‌ی صفحه‌ی عمومی و خروجی خزش‌گرها دست‌نخورده بماند.
+		 */
+		$in_admin = is_admin() || ( defined( 'REST_REQUEST' ) && REST_REQUEST );
+
+		if ( ! $post_id || ! $in_admin || ! current_user_can( 'edit_post', $post_id ) ) {
+			return '';
+		}
+
+		/*
+		 * نشانی ویرایشگر از همان متد کلاس `Links_Admin` می‌آید تا لنگر
+		 * متاباکس لینک‌ها در یک جا ساخته شود (یک منبع حقیقت).
+		 */
+		$edit_url = class_exists( __NAMESPACE__ . '\Links_Admin' )
+			? Links_Admin::links_url( $post_id )
+			: (string) get_edit_post_link( $post_id, 'raw' );
+
+		if ( '' === $edit_url ) {
+			return '';
+		}
+
+		$label = 'series' === $mode
+			? __( 'برای این سریال و قسمت‌هایش هنوز لینکی ثبت نشده است.', 'manacore' )
+			: __( 'برای این اثر هنوز لینکی ثبت نشده است.', 'manacore' );
+
+		ob_start();
+		?>
+		<section class="download-section is-empty" id="download" data-mode="<?php echo esc_attr( $mode ); ?>">
+			<div class="demo-notice">
+				<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+					<circle cx="12" cy="12" r="9"/><path d="M12 16v-5"/><path d="M12 8h.01"/>
+				</svg>
+				<p>
+					<?php echo esc_html( $label ); ?>
+					<a class="text-link" href="<?php echo esc_url( $edit_url ); ?>">
+						<?php esc_html_e( 'افزودن لینک‌ها', 'manacore' ); ?>
+					</a>
+				</p>
+			</div>
+		</section>
+		<?php
+		return (string) ob_get_clean();
 	}
 
 	/**

@@ -93,12 +93,19 @@ function is_user_logged_in() { return false; }
 function get_current_user_id() { return 0; }
 function wp_unslash( $v ) { return $v; }
 function wp_doing_ajax() { return false; }
-function is_admin() { return false; }
+$GLOBALS['mc_is_admin'] = false;
+function is_admin() { return (bool) $GLOBALS['mc_is_admin']; }
 function get_the_ID() { return 0; }
-function get_the_title( $id = 0 ) { return 'عنوان ' . (int) $id; }
+function get_the_title( $id = 0 ) {
+	/* مثل وردپرس: هم شناسه و هم شیء پست را می‌پذیرد. */
+	return 'عنوان ' . ( is_object( $id ) ? (int) $id->ID : (int) $id );
+}
 function get_permalink( $id = 0 ) { return 'http://example.test/?p=' . (int) $id; }
 function get_post_field( $f, $id = 0 ) { return ''; }
 function get_edit_post_link( $id = 0, $ctx = 'display' ) { return 'http://example.test/wp-admin/post.php?post=' . (int) $id; }
+/* دسترسی ویرایش، از بیرون آزمون قابل کنترل است (راهنمای مدیر در باکس خالی). */
+$GLOBALS['mc_can_edit'] = false;
+function current_user_can( $cap, $id = 0 ) { return (bool) $GLOBALS['mc_can_edit']; }
 function add_query_arg( $a, $url = '' ) {
 	if ( is_array( $a ) ) {
 		$parts = array();
@@ -118,6 +125,40 @@ function get_option( $k, $d = false ) {
 	return array_key_exists( $k, $GLOBALS['mc_options'] ) ? $GLOBALS['mc_options'][ $k ] : $d;
 }
 function update_option( $k, $v ) { $GLOBALS['mc_options'][ $k ] = $v; return true; }
+$GLOBALS['mc_transients'] = array();
+function get_transient( $k ) { return $GLOBALS['mc_transients'][ $k ] ?? false; }
+function set_transient( $k, $v, $t = 0 ) { $GLOBALS['mc_transients'][ $k ] = $v; return true; }
+function delete_transient( $k ) { unset( $GLOBALS['mc_transients'][ $k ] ); return true; }
+function update_post_meta( $id, $key, $value ) {
+	$GLOBALS['mc_posts'][ (int) $id ]['meta'][ $key ] = $value;
+	return true;
+}
+function do_action() {}
+function wp_salt( $scheme = '' ) { return 'mc-test-salt'; }
+function current_time( $t = 'mysql' ) { return 'mysql' === $t ? '2026-10-08 12:00:00' : '2026-10-08'; }
+
+/**
+ * نمونه‌ی کمینه‌ی $wpdb برای ثبت پرس‌وجوهای آماری.
+ */
+class MC_Watch_Wpdb {
+	public $prefix  = 'wp_';
+	public $queries = array();
+
+	public function get_charset_collate() { return ''; }
+	public function prepare( $query, ...$args ) {
+		if ( 1 === count( $args ) && is_array( $args[0] ) ) {
+			$args = $args[0];
+		}
+		$sql = $query;
+		foreach ( $args as $arg ) {
+			$sql = preg_replace( '/%[dsf]/', is_int( $arg ) || is_float( $arg ) ? (string) $arg : "'" . $arg . "'", $sql, 1 );
+		}
+		return $sql;
+	}
+	public function query( $sql ) { $this->queries[] = $sql; return 1; }
+}
+
+$GLOBALS['wpdb'] = new MC_Watch_Wpdb();
 function mc_post_id( $post ) { return is_object( $post ) ? (int) $post->ID : (int) $post; }
 function get_post_type( $post = 0 ) { return $GLOBALS['mc_posts'][ mc_post_id( $post ) ]['type'] ?? ''; }
 function get_post_status( $post = 0 ) { return $GLOBALS['mc_posts'][ mc_post_id( $post ) ]['status'] ?? ''; }
@@ -184,10 +225,15 @@ function wp_list_pluck_ids( $list ) {
 require_once MANACORE_PATH . 'includes/functions.php';
 require_once MANACORE_PATH . 'includes/trait-singleton.php';
 require_once MANACORE_PATH . 'includes/class-links.php';
+/* راهنمای مدیرِ باکس خالی، لنگر متاباکس را از همین کلاس می‌گیرد. */
+require_once MANACORE_PATH . 'includes/class-links-admin.php';
 require_once MANACORE_PATH . 'includes/class-block-data.php';
 require_once MANACORE_PATH . 'includes/class-block-support.php';
 require_once MANACORE_PATH . 'includes/class-templates.php';
 require_once MANACORE_PATH . 'includes/class-player.php';
+/* شمارش تماشا (بخش ۷) روی همین دو کلاس می‌نشیند. */
+require_once MANACORE_PATH . 'includes/class-install.php';
+require_once MANACORE_PATH . 'includes/class-ratings.php';
 
 /* ---------------------------------------------------------------
  * داده‌ی آزمون
@@ -421,6 +467,162 @@ mc_ok( true === \ManaCore\Core\Player::has_hls( array( '1080p' => 'https://cdn.e
 mc_ok( false === \ManaCore\Core\Player::has_hls( array( '1080p' => 'https://cdn.example/a.mp4' ) ), 'منبع‌های فقط mp4 حالت HLS ندارند' );
 
 mc_ok( false !== strpos( \ManaCore\Core\Player::hls_script_url(), 'assets/vendor/hls/hls.min.js' ), 'کتابخانه‌ی HLS از پوشه‌ی خود افزونه می‌آید' );
+
+/* ---------------------------------------------------------------
+ * ۶) باکس دانلود سریالی: لینک قسمت‌های فرزند
+ * ------------------------------------------------------------ */
+
+echo "\n=== ۶) باکس سریالی و لینک قسمت‌های فرزند ===\n";
+
+/*
+ * دو پست تازه در همین بخش ساخته می‌شوند تا سنجه‌های پیشین دست‌نخورده
+ * بمانند: سریالی که هم بسته‌ی فصل دارد و هم لینک روی قسمت‌ها.
+ */
+$episode_pack_links = array(
+	array(
+		'id'      => 'ep1',
+		'title'   => 'قسمت اول',
+		'season'  => 1,
+		'quality' => '1080p',
+		'items'   => array(
+			array( 'id' => 'd1', 'label' => 'دانلود', 'url' => 'https://example.test/ep1.mp4', 'type' => 'direct' ),
+			array( 'id' => 's9', 'label' => 'پخش', 'url' => 'https://example.test/ep1-stream', 'type' => 'stream' ),
+		),
+	),
+);
+
+mc_post( 14, 'series', array( 'manacore_links' => mc_links( $series_links ) ) );
+mc_post( 15, 'episode', array(
+	'manacore_parent_title'   => 14,
+	'manacore_season_number'  => 1,
+	'manacore_episode_number' => 1,
+	'manacore_links'          => mc_links( $episode_pack_links ),
+) );
+
+/* ۶.۱ جمع‌آوری لینک قسمت‌ها */
+$episode_groups = \ManaCore\Core\Links::episode_groups( 10 );
+mc_ok( isset( $episode_groups[1] ), 'گروه‌های قسمت‌ها به تفکیک فصل می‌آیند', 'فصل‌ها: ' . implode( ',', array_keys( $episode_groups ) ) );
+mc_ok( 1 === count( $episode_groups[1] ), 'فقط قسمتِ دارای لینک گروه می‌سازد (قسمت ۱۲ لینک ندارد)' );
+mc_ok( 11 === (int) $episode_groups[1][0]['owner'], 'مالک گروه شناسه‌ی خودِ قسمت است' );
+mc_ok( 1 === (int) $episode_groups[1][0]['episode'], 'شماره‌ی قسمت روی گروه می‌آید' );
+mc_ok( false === isset( $episode_groups[2] ), 'فصل بدون لینک ساخته نمی‌شود' );
+mc_ok( array() === \ManaCore\Core\Links::episode_groups( 10, array( 'season' => 2 ) ), 'فیلتر فصل روی قسمت‌ها اعمال می‌شود' );
+mc_ok( array() === \ManaCore\Core\Links::episode_groups( 0 ), 'شناسه‌ی صفر بدون کوئری، آرایه‌ی خالی می‌دهد' );
+
+mc_ok( 1 === \ManaCore\Core\Links::episode_count( 10 ), 'شمارش لینک قسمت‌های یک سریال' );
+mc_ok( 0 === \ManaCore\Core\Links::episode_count( 8 ), 'سریال بدون قسمت لینک‌دار صفر می‌دهد' );
+
+/* ۶.۲ جمع شمارش */
+mc_ok( 3 === \ManaCore\Core\Links::total( \ManaCore\Core\Links::by_season( 4 ) ), 'total شمارش لینک‌های یک ساختار فصل‌بندی‌شده را جمع می‌زند' );
+mc_ok( 0 === \ManaCore\Core\Links::total( array() ), 'total روی آرایه‌ی خالی صفر می‌دهد' );
+
+/* ۶.۳ انتخاب منبع */
+mc_ok( 'both' === \ManaCore\Core\Templates::resolve_source( 'auto', 10, 'series' ), 'خودکار برای سریال، هر دو منبع را می‌آورد' );
+mc_ok( 'post' === \ManaCore\Core\Templates::resolve_source( 'auto', 4, 'movie' ), 'خودکار برای فیلم، فقط لینک‌های خود اثر' );
+mc_ok( 'episodes' === \ManaCore\Core\Templates::resolve_source( 'episodes', 8, 'series' ), 'منبع صریح «قسمت‌ها» پذیرفته می‌شود' );
+mc_ok( 'both' === \ManaCore\Core\Templates::resolve_source( 'چیز نامعتبر', 8, 'series' ), 'منبع نامعتبر به auto برمی‌گردد (و برای سریال both می‌شود)' );
+
+/* ۶.۴ باکس سریالی با لینک فقط روی قسمت‌ها (باگ «باکس خالی») */
+$series_box = \ManaCore\Core\Templates::links( 10 );
+mc_ok( '' !== trim( $series_box ), 'سریالی که فقط لینک قسمت دارد هم باکس دانلود می‌گیرد' );
+mc_ok( false !== strpos( $series_box, 'data-mode="series"' ), 'حالت باکس سریال است' );
+mc_ok( false !== strpos( $series_box, 'قسمت ۱' ), 'نشان ردیف قسمت روی جدول می‌آید' );
+mc_ok( false !== strpos( \ManaCore\Core\Templates::links( 14 ), 'data-manacore-download="15"' ), 'کنش دانلود ردیفِ قسمت، مالک را خودِ قسمت می‌داند (امضا و شمارش روی قسمت)' );
+mc_ok( false !== strpos( $series_box, 'manacore_id=11' ), 'دکمه‌ی پخش ردیف به صفحه‌ی پخشِ همان قسمت می‌رود' );
+mc_ok( false !== strpos( $series_box, 'season=1' ) && false !== strpos( $series_box, 'episode=1' ), 'فصل و قسمت در نشانی پخش ردیف می‌آید' );
+mc_ok( false !== strpos( $series_box, '1 لینک' ), 'شمارش سرصفحه مجموع ردیف‌های رندرشده است (نه فقط لینک‌های سریال)' );
+
+/* ۶.۵ منبع و برچسب دلخواه */
+mc_ok( '' === \ManaCore\Core\Templates::links( 10, array( 'source' => 'post' ) ), 'با منبع «فقط خود اثر»، سریالِ بی‌لینک باکس نمی‌سازد' );
+$only_episodes = \ManaCore\Core\Templates::links( 10, array( 'source' => 'episodes', 'episode_label' => 'بخش %s' ) );
+mc_ok( false !== strpos( $only_episodes, 'بخش ۱' ), 'برچسب دلخواه قسمت از ویژگی بلوک می‌آید' );
+$pack_only = \ManaCore\Core\Templates::links( 8, array( 'source' => 'post' ) );
+mc_ok( false !== strpos( $pack_only, 'بسته‌ی کامل فصل' ), 'بسته‌های فصل با منبع «خود اثر» دست‌نخورده می‌مانند' );
+
+/* ۶.۶ ادغام بسته‌ها و لینک قسمت‌ها در یک جدول */
+$merged = \ManaCore\Core\Templates::links( 14 );
+mc_ok( 3 === substr_count( $merged, 'class="download-row"' ), 'باکس سریال، دو بسته‌ی فصل و یک ردیف قسمت را کنار هم می‌آورد', 'ردیف‌ها: ' . substr_count( $merged, 'class="download-row"' ) );
+mc_ok( 2 === substr_count( $merged, 'data-season-tab=' ), 'برای هر فصل یک تب ساخته می‌شود' );
+mc_ok( 2 === substr_count( $merged, 'data-season-panel=' ), 'هر تب پنل خودش را دارد' );
+mc_ok( false !== strpos( $merged, 'بسته‌ی کامل فصل' ) && false !== strpos( $merged, 'قسمت ۱' ), 'نشان بسته و نشان قسمت هر دو در یک جدول‌اند' );
+mc_ok( 3 === substr_count( $merged, 'data-manacore-download=' ), 'هر ردیفِ دانلود (دو بسته + یک قسمت) کنش خودش را دارد', 'کنش‌ها: ' . substr_count( $merged, 'data-manacore-download=' ) );
+
+/* ۶.۷ فیلترها روی نتیجه‌ی ادغام‌شده هم می‌نشینند */
+mc_ok( '' === \ManaCore\Core\Templates::links( 10, array( 'types' => array( 'direct' ) ) ), 'فیلتری که هیچ لینکی از قسمت نمی‌ماند، باکس را خالی می‌کند' );
+$only_stream = \ManaCore\Core\Templates::links( 10, array( 'types' => array( 'stream' ) ) );
+mc_ok( false !== strpos( $only_stream, 'is-secondary' ), 'با فیلتر «فقط پخش»، کنش پخش در ردیف قسمت می‌ماند' );
+
+/* ۶.۸ راهنمای مدیر در باکس خالی (تنها در بافت مدیریت/پیش‌نمایش) */
+$GLOBALS['mc_can_edit'] = true;
+$GLOBALS['mc_is_admin'] = true;
+$hint = \ManaCore\Core\Templates::links( 12 );
+mc_ok( false !== strpos( $hint, 'افزودن لینک‌ها' ), 'مدیر در ویرایشگر، جای خالی باکس را با پیوند افزودن لینک می‌بیند' );
+mc_ok( false !== strpos( $hint, '#manacore-links' ), 'پیوند راهنما مستقیم متاباکس لینک‌ها را باز می‌کند' );
+
+$GLOBALS['mc_is_admin'] = false;
+mc_ok( '' === \ManaCore\Core\Templates::links( 12 ), 'همین مدیر در نمای همگانی هیچ مارک‌آپی نمی‌بیند (هندسه‌ی صفحه دست‌نخورده)' );
+
+$GLOBALS['mc_is_admin'] = true;
+$GLOBALS['mc_can_edit'] = false;
+mc_ok( '' === \ManaCore\Core\Templates::links( 12 ), 'کاربر بی‌دسترسی (حتی در پیشخوان) راهنما را نمی‌بیند' );
+$GLOBALS['mc_is_admin'] = false;
+
+/* ۶.۹ قالب سریال: باکس دانلود همان‌جا که باید باشد */
+$series_tpl = file_exists( dirname( __DIR__ ) . '/themes/koohe-film/templates/single-series.html' )
+	? file_get_contents( dirname( __DIR__ ) . '/themes/koohe-film/templates/single-series.html' )
+	: '';
+
+mc_ok( false !== strpos( $series_tpl, 'wp:manacore/download-links' ), 'قالب سریال، باکس دانلود را می‌آورد (پیش‌تر هیچ باکسی نداشت)' );
+mc_ok( false !== strpos( $series_tpl, '"linkSource":"post"' ), 'باکس سریال فقط بسته‌های خودِ سریال را می‌آورد تا با جدول قسمت‌ها تکرار نشود' );
+mc_ok( false !== strpos( $series_tpl, 'data-koohe-target="#episodes"' ), 'تب «فصل‌ها و قسمت‌ها» به فهرست قسمت‌ها می‌رود، نه به باکس دانلود' );
+
+/* ---------------------------------------------------------------
+ * ۷) شمارش تماشا: رویداد پخش، نه بازشدن صفحه
+ * ------------------------------------------------------------ */
+
+echo "\n=== ۷) شمارش تماشا (رویداد پخش، نه بازشدن صفحه) ===\n";
+
+/*
+ * پیش‌تر شمارش روی قلاب `wp` بود: هر بازشدن صفحه‌ی تکی یک «بازدید»
+ * ثبت می‌کرد و رفرش/خزنده آن را باد می‌کرد. اکنون سنجه فقط با شروع
+ * واقعی پخش از مرورگر می‌آید. این بخش همان تفاوت را قفل می‌کند.
+ */
+$ratings_src = file_get_contents( MANACORE_PATH . 'includes/class-ratings.php' );
+$rest_src    = file_get_contents( MANACORE_PATH . 'includes/class-rest-api.php' );
+$front_src   = file_get_contents( MANACORE_PATH . 'assets/js/front.js' );
+
+mc_ok( false === strpos( $ratings_src, 'maybe_count_view' ), 'بازشماری هر بازشدن صفحه حذف شده است' );
+mc_ok( false === strpos( $ratings_src, 'manacore_v_' ), 'کوکی/متای شمارشِ رفرشی دیگر ساخته نمی‌شود' );
+mc_ok( false !== strpos( $rest_src, "'/track-view'" ), 'مسیر REST شمارش تماشا ثبت می‌شود' );
+mc_ok( false !== strpos( $front_src, "'track-view'" ), 'مرورگر رویداد تماشا را به مسیر تازه می‌فرستد' );
+
+/* ۷.۱ پایه: گزینه روشن، تماشای تازه */
+$GLOBALS['mc_options']['manacore_settings'] = array( 'enable_views' => 1 );
+$GLOBALS['mc_posts'][4]['meta']['manacore_views'] = 0;
+
+mc_ok( true === \ManaCore\Core\Ratings::instance()->count_watch( 4 ), 'نخستین تماشا شمرده می‌شود' );
+mc_ok( 1 === (int) $GLOBALS['mc_posts'][4]['meta']['manacore_views'], 'شمارش روی متای اثر ذخیره می‌شود' );
+mc_ok( false === \ManaCore\Core\Ratings::instance()->count_watch( 4 ), 'تماشای پشت‌سرهم داخل پنجره‌ی ضدرعدّ‌سازی دوباره شمرده نمی‌شود' );
+mc_ok( 1 === (int) $GLOBALS['mc_posts'][4]['meta']['manacore_views'], 'شمارش متا در کلیک تکرارشده بالا نمی‌رود' );
+
+$stats_hits = 0;
+foreach ( $GLOBALS['wpdb']->queries as $sql ) {
+	if ( false !== strpos( $sql, 'manacore_stats' ) && false !== strpos( $sql, "'view'" ) ) {
+		$stats_hits++;
+	}
+}
+mc_ok( 1 === $stats_hits, 'آمار روزانه فقط یک بار برای همان تماشا ثبت می‌شود', 'ردیف‌ها: ' . $stats_hits );
+
+/* ۷.۲ خاموش‌کردن گزینه، شمارش را کامل می‌بندد */
+$GLOBALS['mc_options']['manacore_settings'] = array( 'enable_views' => 0 );
+$GLOBALS['mc_posts'][5]['meta']['manacore_views'] = 0;
+
+mc_ok( false === \ManaCore\Core\Ratings::instance()->count_watch( 5 ), 'با خاموش‌بودن گزینه‌ی «شمارش تماشا»، رویداد شمرده نمی‌شود' );
+mc_ok( 0 === (int) $GLOBALS['mc_posts'][5]['meta']['manacore_views'], 'در حالت خاموش، متای شمارش دست‌نخورده می‌ماند' );
+
+/* ۷.۳ نگهبان ورودی */
+$GLOBALS['mc_options']['manacore_settings'] = array( 'enable_views' => 1 );
+mc_ok( false === \ManaCore\Core\Ratings::instance()->count_watch( 0 ), 'شناسه‌ی صفر شمرده نمی‌شود' );
 
 /* ---------------------------------------------------------------
  * پایان

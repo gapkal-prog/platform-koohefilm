@@ -173,13 +173,13 @@ function ads_stats( $id ) {
  * ۱) جمع آمار
  * ------------------------------------------------------------ */
 
-echo "\n=== ۱) جمع بازدید/دانلود ===\n";
+echo "\n=== ۱) جمع تماشا/دانلود ===\n";
 
 $GLOBALS['wpdb']->vars    = array( '150' );
 $GLOBALS['wpdb']->queries = array();
 $total = ManaCore\Core\Analytics::total( 'view', 7 );
 
-mc_ok( 150 === $total, 'جمع بازدید برگردانده می‌شود' );
+mc_ok( 150 === $total, 'جمع تماشا برگردانده می‌شود' );
 mc_ok( 1 === count( $GLOBALS['wpdb']->queries ), 'یک پرس‌وجو اجرا می‌شود' );
 mc_ok( false !== strpos( $GLOBALS['wpdb']->queries[0], "stat_type = 'view'" ), 'نوع آمار در کوئری می‌آید' );
 mc_ok( false !== strpos( $GLOBALS['wpdb']->queries[0], 'stat_date >=' ), 'بازه‌ی زمانی در کوئری می‌آید' );
@@ -211,9 +211,9 @@ $GLOBALS['wpdb']->queries = array();
 $summary = ManaCore\Core\Analytics::summary();
 $first_queries = count( $GLOBALS['wpdb']->queries );
 
-mc_ok( 10 === $summary['views_today'], 'بازدید امروز' );
-mc_ok( 70 === $summary['views_week'], 'بازدید هفته' );
-mc_ok( 300 === $summary['views_month'], 'بازدید ماه' );
+mc_ok( 10 === $summary['views_today'], 'تماشا امروز' );
+mc_ok( 70 === $summary['views_week'], 'تماشا هفته' );
+mc_ok( 300 === $summary['views_month'], 'تماشا ماه' );
 mc_ok( 25 === $summary['downloads_week'], 'دانلود هفته' );
 mc_ok( 4 === $summary['comments_pending'], 'دیدگاه‌های در صف از `wp_count_comments` می‌آید' );
 mc_ok( is_array( $summary['ads'] ), 'بخش تبلیغات همیشه آرایه است (حتی وقتی خالی است)' );

@@ -2022,6 +2022,31 @@
 							help: __( 'خالی = «حجم نمونه».', 'manacore' ),
 						},
 						{
+							/*
+							 * منبع ردیف‌های جدول. در سریال‌ها لینک هر قسمت روی
+							 * پست همان قسمت ثبت می‌شود؛ «هر دو» بسته‌های کامل
+							 * فصل و لینک قسمت‌ها را یک‌جا می‌آورد.
+							 */
+							attr: 'linkSource',
+							type: 'select',
+							label: __( 'منبع ردیف‌ها', 'manacore' ),
+							help: __( '«خودکار» برای سریال‌ها هر دو منبع را می‌آورد (بسته‌های فصل و لینک قسمت‌ها).', 'manacore' ),
+							options: [
+								{ label: __( 'خودکار (از نوع محتوا)', 'manacore' ), value: 'auto' },
+								{ label: __( 'فقط لینک‌های همین اثر', 'manacore' ), value: 'post' },
+								{ label: __( 'فقط لینک‌های قسمت‌ها', 'manacore' ), value: 'episodes' },
+								{ label: __( 'هر دو', 'manacore' ), value: 'both' },
+							],
+						},
+						'linkSource-episodes' === a.linkSource || 'both' === a.linkSource || 'auto' === a.linkSource
+							? {
+								attr: 'episodeLabel',
+								type: 'text',
+								label: __( 'برچسب ردیف قسمت‌ها', 'manacore' ),
+								help: __( 'زیر کیفیت هر ردیف می‌آید؛ `%s` جای شماره‌ی قسمت است. خالی = «قسمت ۲».', 'manacore' ),
+							}
+							: null,
+						{
 							attr: 'subtitle',
 							type: 'text',
 							label: __( 'زیرعنوان', 'manacore' ),
@@ -2814,6 +2839,32 @@
 			 * بلوک‌های برگه‌ی «حساب کاربری» — هم‌ارز `account.html` مرجع.
 			 * هر متن و هر نشانه‌ی این بلوک‌ها از همین‌جا قابل ویرایش است.
 			 */
+			case 'manacore/account-requests':
+				return [
+					optionsPanel( props, __( 'پنل درخواست‌ها', 'manacore' ), [
+						{ attr: 'showForm', type: 'toggle', label: __( 'نمایش فرم ثبت درخواست', 'manacore' ), help: __( 'خاموش کردنش فقط فهرست درخواست‌های کاربر را نگه می‌دارد.', 'manacore' ) },
+						{ attr: 'formHeading', type: 'text', label: __( 'عنوان فرم', 'manacore' ), help: __( 'خالی بگذارید تا عنوان پیش‌فرض تنظیمات درخواست‌ها بیاید.', 'manacore' ) },
+						{ attr: 'formIntro', type: 'textarea', label: __( 'توضیح فرم', 'manacore' ) },
+						{ attr: 'formButton', type: 'text', label: __( 'برچسب دکمه‌ی فرم', 'manacore' ) },
+						{ attr: 'perPage', type: 'range', label: __( 'حداکثر درخواست در فهرست', 'manacore' ), min: 1, max: 60 },
+						{ attr: 'emptyTitle', type: 'text', label: __( 'عنوان حالت خالی', 'manacore' ) },
+						{ attr: 'emptyText', type: 'textarea', label: __( 'متن حالت خالی', 'manacore' ) },
+					] ),
+				];
+
+			case 'manacore/account-requests':
+				return [
+					optionsPanel( props, __( 'پنل درخواست‌ها', 'manacore' ), [
+						{ attr: 'showForm', type: 'toggle', label: __( 'نمایش فرم ثبت درخواست', 'manacore' ), help: __( 'خاموش کردنش فقط فهرست درخواست‌های کاربر را نگه می‌دارد.', 'manacore' ) },
+						{ attr: 'formHeading', type: 'text', label: __( 'عنوان فرم', 'manacore' ), help: __( 'خالی بگذارید تا عنوان پیش‌فرض تنظیمات درخواست‌ها بیاید.', 'manacore' ) },
+						{ attr: 'formIntro', type: 'textarea', label: __( 'توضیح فرم', 'manacore' ) },
+						{ attr: 'formButton', type: 'text', label: __( 'برچسب دکمه‌ی فرم', 'manacore' ) },
+						{ attr: 'perPage', type: 'range', label: __( 'حداکثر درخواست در فهرست', 'manacore' ), min: 1, max: 60 },
+						{ attr: 'emptyTitle', type: 'text', label: __( 'عنوان حالت خالی', 'manacore' ) },
+						{ attr: 'emptyText', type: 'textarea', label: __( 'متن حالت خالی', 'manacore' ) },
+					] ),
+				];
+
 			case 'manacore/account-greeting':
 				return [
 					optionsPanel( props, __( 'تنظیمات سرصفحه', 'manacore' ), [

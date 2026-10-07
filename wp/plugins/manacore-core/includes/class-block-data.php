@@ -433,7 +433,7 @@ class Block_Data {
 			'air_date'        => __( 'تاریخ پخش قسمت', 'manacore' ),
 			'season_number'   => __( 'شماره‌ی فصل', 'manacore' ),
 			'episode_number'  => __( 'شماره‌ی قسمت', 'manacore' ),
-			'views'           => __( 'بازدید', 'manacore' ),
+			'views'           => __( 'تماشا', 'manacore' ),
 		);
 
 		/**

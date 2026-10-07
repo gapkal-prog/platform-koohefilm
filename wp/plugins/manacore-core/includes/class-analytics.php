@@ -3,7 +3,7 @@
  * داشبورد تحلیلی مدیر.
  *
  * همه‌ی داده‌ی این گزارش‌ها از پیش در سایت هست (جدول `manacore_stats` برای
- * بازدید/دانلود، امتیازها، گزارش‌های خرابی لینک، درخواست‌ها، بنرها و
+ * تماشا/دانلود، امتیازها، گزارش‌های خرابی لینک، درخواست‌ها، بنرها و
  * دیدگاه‌ها)؛ چیزی که کم بود «یک جا دیدنشان» بود. این کلاس فقط می‌خواند و
  * هیچ‌وقت داده‌ی تازه‌ای نمی‌سازد.
  *
@@ -82,7 +82,7 @@ class Analytics {
 		$keys = array( 'summary', 'top_reported', 'top_requests', 'ratings' );
 
 		/*
-		 * کلیدهای «پربازدیدترین» به نوع و بازه وابسته‌اند؛ همان بازه‌های
+		 * کلیدهای «پرتماشاترین» به نوع و بازه وابسته‌اند؛ همان بازه‌های
 		 * رایج پاک می‌شوند تا کلید جامانده‌ای نماند.
 		 */
 		foreach ( array( 'view', 'download' ) as $type ) {
@@ -97,7 +97,7 @@ class Analytics {
 	}
 
 	/**
-	 * جمع بازدید یا دانلود در یک بازه‌ی زمانی.
+	 * جمع تماشا یا دانلود در یک بازه‌ی زمانی.
 	 *
 	 * @param string $type نوع آمار (view|download).
 	 * @param int    $days تعداد روز.
@@ -207,7 +207,7 @@ class Analytics {
 	}
 
 	/**
-	 * پربازدیدترین/پربارگیری‌شده‌ترین آثار یک بازه.
+	 * پرتماشاترین/پربارگیری‌شده‌ترین آثار یک بازه.
 	 *
 	 * @param string $type  نوع آمار.
 	 * @param int    $days  تعداد روز.
@@ -415,8 +415,8 @@ class Analytics {
 		$summary = self::summary();
 
 		$cells = array(
-			__( 'بازدید امروز', 'manacore' )  => $summary['views_today'],
-			__( 'بازدید ۷ روز', 'manacore' )  => $summary['views_week'],
+			__( 'تماشا امروز', 'manacore' )  => $summary['views_today'],
+			__( 'تماشا ۷ روز', 'manacore' )  => $summary['views_week'],
 			__( 'دانلود ۷ روز', 'manacore' )  => $summary['downloads_week'],
 			__( 'گزارش تازه', 'manacore' )    => $summary['reports_new'],
 			__( 'درخواست باز', 'manacore' )   => $summary['requests_pending'],

@@ -181,6 +181,27 @@ class Rest_Api {
 			)
 		);
 
+		/*
+		 * شمارش تماشا: از سمت مرورگر و تنها با شروع واقعی پخش صدا زده
+		 * می‌شود (همان الگوی `track-download`).
+		 */
+		register_rest_route(
+			self::NS,
+			'/track-view',
+			array(
+				'methods'             => \WP_REST_Server::CREATABLE,
+				'callback'            => array( $this, 'track_view' ),
+				'permission_callback' => array( $this, 'verify_public_write' ),
+				'args'                => array(
+					'post_id' => array(
+						'required'          => true,
+						'type'              => 'integer',
+						'sanitize_callback' => 'absint',
+					),
+				),
+			)
+		);
+
 		register_rest_route(
 			self::NS,
 			'/track-download',
@@ -365,7 +386,28 @@ class Rest_Api {
 	}
 
 	/**
-	 * ثبت آمار دانلود.
+	 * ثبت شمارش تماشا (رویداد واقعی شروع پخش).
+	 *
+	 * @param \WP_REST_Request $request درخواست.
+	 * @return \WP_REST_Response
+	 */
+	public function track_view( $request ) {
+		/*
+		 * «تماشا» فقط با رویداد واقعی پخش از مرورگر می‌آید؛ سرور هم
+		 * پنجره‌ی ضدرعدّ‌سازی دارد تا یک تماشا چند بار شمرده نشود.
+		 */
+		$counted = Ratings::instance()->count_watch( (int) $request['post_id'] );
+
+		return rest_ensure_response(
+			array(
+				'ok'      => true,
+				'counted' => (bool) $counted,
+			)
+		);
+	}
+
+	/**
+	 * شمارش دانلود.
 	 *
 	 * @param \WP_REST_Request $request درخواست.
 	 * @return \WP_REST_Response

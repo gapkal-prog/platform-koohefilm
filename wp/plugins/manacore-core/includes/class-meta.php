@@ -237,7 +237,7 @@ class Meta {
 						),
 					),
 					'manacore_views' => array(
-						'label'      => __( 'تعداد بازدید', 'manacore' ),
+						'label'      => __( 'تعداد تماشا', 'manacore' ),
 						'type'       => 'number',
 						'post_types' => $all,
 						'attrs'      => array( 'readonly' => true ),

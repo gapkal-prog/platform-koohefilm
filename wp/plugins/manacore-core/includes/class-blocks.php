@@ -246,6 +246,19 @@ class Blocks {
 							'type'    => 'string',
 							'default' => '',
 						),
+						/*
+						 * منبع ردیف‌های جدول: در سریال‌ها لینک هر قسمت روی
+						 * پست همان قسمت ثبت می‌شود؛ «هر دو» (پیش‌فرض سریال)
+						 * بسته‌های کامل فصل و لینک قسمت‌ها را یک‌جا می‌آورد.
+						 */
+						'linkSource' => array(
+							'type'    => 'string',
+							'default' => 'auto',
+						),
+						'episodeLabel' => array(
+							'type'    => 'string',
+							'default' => '',
+						),
 						'sizeLabel'  => array(
 							'type'    => 'string',
 							'default' => '',
@@ -1842,6 +1855,51 @@ class Blocks {
 				'render'      => array( $this, 'render_account_history' ),
 			),
 
+			'manacore/account-requests' => array(
+				'title'       => __( 'درخواست‌های من', 'manacore' ),
+				'description' => __( 'فرم ثبت درخواست فیلم/سریال و فهرست درخواست‌های خودِ کاربر با وضعیت هر کدام (در انتظار، تأییدشده، ردشده).', 'manacore' ),
+				'icon'        => 'feedback',
+				'attributes'  => array(
+					'heading'     => array(
+						'type'    => 'string',
+						'default' => __( 'درخواست‌های من', 'manacore' ),
+					),
+					'subheading'  => array(
+						'type'    => 'string',
+						'default' => __( 'هر چه فرستادی، وضعیتش همین‌جاست؛ رأی بقیه را هم از تخته‌ی درخواست‌ها ببین.', 'manacore' ),
+					),
+					'showForm'    => array(
+						'type'    => 'boolean',
+						'default' => true,
+					),
+					'formHeading' => array(
+						'type'    => 'string',
+						'default' => '',
+					),
+					'formIntro'   => array(
+						'type'    => 'string',
+						'default' => '',
+					),
+					'formButton'  => array(
+						'type'    => 'string',
+						'default' => '',
+					),
+					'perPage'     => array(
+						'type'    => 'number',
+						'default' => 12,
+					),
+					'emptyTitle'  => array(
+						'type'    => 'string',
+						'default' => '',
+					),
+					'emptyText'   => array(
+						'type'    => 'string',
+						'default' => '',
+					),
+				),
+				'render'      => array( $this, 'render_account_requests' ),
+			),
+
 			'manacore/account-analytics' => array(
 				'title'       => __( 'تحلیل سلیقه', 'manacore' ),
 				'description' => __( 'چهار کارت تحلیل: حلقه‌ی ژانرها، سهم فیلم/سریال، نمودار هفته و کشورها (هم‌ارز `data-panel=\"analytics\"` مرجع).', 'manacore' ),
@@ -3256,6 +3314,8 @@ class Blocks {
 				'types'        => $this->to_array( $attrs['types'] ),
 				'qualities'    => $this->to_array( $attrs['qualities'] ),
 				'season'       => max( 0, (int) $attrs['season'] ),
+				'source'       => (string) $attrs['linkSource'],
+				'episode_label' => (string) $attrs['episodeLabel'],
 			)
 		);
 
@@ -6574,6 +6634,30 @@ class Blocks {
 	 * @param array $attrs ویژگی‌های بلوک.
 	 * @return string
 	 */
+	/**
+	 * رندر پنل «درخواست‌های من» در حساب کاربری.
+	 *
+	 * رندر واقعی در `Requests::render_mine()` است تا شورت‌کد و بلوک یک
+	 * مارک‌آپ بدهند (یک منبع حقیقت).
+	 *
+	 * @param array $attrs ویژگی‌های بلوک.
+	 * @return string
+	 */
+	public function render_account_requests( $attrs ) {
+		$definitions = $this->definitions();
+		$attrs       = wp_parse_args(
+			is_array( $attrs ) ? $attrs : array(),
+			Block_Support::defaults( $definitions['manacore/account-requests']['attributes'] )
+		);
+
+		if ( ! Block_Support::should_render( $attrs ) ) {
+			return '';
+		}
+
+		// phpcs:ignore WordPress.Security.EscapeOutput -- خروجی همین کلاس و امن است.
+		return Requests::instance()->render_mine( $attrs );
+	}
+
 	public function render_account_analytics( $attrs ) {
 		$definitions = $this->definitions();
 		$attrs       = wp_parse_args(
@@ -7250,7 +7334,15 @@ class Blocks {
 						<?php echo $item['active'] ? ' class="active" aria-current="true"' : ''; ?>
 					><?php echo esc_html( $item['label'] ); ?><?php
 						if ( '' !== $item['badge'] ) {
-							echo '<span id="watch-count">' . esc_html( $item['badge'] ) . '</span>';
+							/*
+							 * شناسه‌ی نشان، مخصوص همان تب است: `watch-count`
+							 * برای لیست تماشا (هم‌نام مرجع) و برای تب‌های دیگر
+							 * `<اسلاگ>-count`. با یک شناسه‌ی مشترک، دو تب
+							 * نشان‌دار شناسه‌ی تکراری می‌ساختند.
+							 */
+							$badge_id = 'watchlist' === $item['slug'] ? 'watch-count' : $item['slug'] . '-count';
+
+							echo '<span id="' . esc_attr( $badge_id ) . '">' . esc_html( $item['badge'] ) . '</span>';
 						}
 						if ( '' !== $item['tag'] ) {
 							echo '<small>' . esc_html( $item['tag'] ) . '</small>';
@@ -7604,6 +7696,17 @@ class Blocks {
 		 */
 		$box_style = Block_Support::pick( $attrs['boxStyle'], Block_Data::download_styles(), 'cards' );
 
+		/*
+		 * سه ویژگی بلوک (`showAirDate`/`showCount`/`showThumb`) در تعریف و
+		 * پنل ویرایشگر بودند ولی در رندر هیچ مصرفی نداشتند؛ یعنی چیزی که
+		 * مدیر خاموش/روشن می‌کرد اثری نداشت. اکنون هر سه کار می‌کنند و
+		 * مقدار پیش‌فرضشان همان رندر پیشین را می‌دهد (بی‌تغییر برای
+		 * محتوای موجود).
+		 */
+		$show_air_date = ! empty( $attrs['showAirDate'] );
+		$show_count    = ! empty( $attrs['showCount'] );
+		$show_thumb    = ! empty( $attrs['showThumb'] );
+
 		$pack_label = '' !== trim( (string) $attrs['packTitle'] )
 			? (string) $attrs['packTitle']
 			: __( 'بسته‌ی کامل فصل', 'manacore' );
@@ -7683,7 +7786,9 @@ class Blocks {
 								? esc_html( sprintf( __( 'فصل %s', 'manacore' ), manacore_fa_digits( number_format_i18n( $season ) ) ) )
 								: esc_html__( 'عمومی', 'manacore' );
 							?>
-							<small><?php echo esc_html( sprintf( /* translators: %s: تعداد قسمت */ __( '%s قسمت', 'manacore' ), manacore_fa_digits( number_format_i18n( count( $items ) ) ) ) ); ?></small>
+							<?php if ( $show_count ) : ?>
+								<small><?php echo esc_html( sprintf( /* translators: %s: تعداد قسمت */ __( '%s قسمت', 'manacore' ), manacore_fa_digits( number_format_i18n( count( $items ) ) ) ) ); ?></small>
+							<?php endif; ?>
 						</button>
 						<?php $first = false; ?>
 					<?php endforeach; ?>
@@ -7740,7 +7845,16 @@ class Blocks {
 						$number    = (int) get_post_meta( $episode->ID, 'manacore_episode_number', true );
 						$air_date  = (string) get_post_meta( $episode->ID, 'manacore_air_date', true );
 						$expanded  = $is_open && 0 === $episode_index;
-						$sub_label = $air_date ? $air_date : __( 'نسخه نمایشی', 'manacore' );
+						/*
+						 * با خاموش‌بودن «نمایش تاریخ پخش»، برچسب نمایشی هم
+						 * نمی‌آید تا خط زیرنویس خالی نماند (پیش‌تر این ویژگی
+						 * اثری نداشت و همیشه تاریخ می‌آمد).
+						 */
+						$sub_label = $show_air_date ? $air_date : '';
+
+						if ( $show_air_date && '' === $sub_label ) {
+							$sub_label = __( 'نسخه نمایشی', 'manacore' );
+						}
 
 						/*
 						 * هدف پخش با `Player::resolve_target()` تعیین می‌شود:
@@ -7773,6 +7887,12 @@ class Blocks {
 								<button type="button" class="episode-toggle" data-episode="<?php echo esc_attr( $number ); ?>"
 									aria-controls="episode-download-<?php echo esc_attr( $episode->ID ); ?>"
 									aria-expanded="<?php echo $expanded ? 'true' : 'false'; ?>">
+									<?php if ( $show_thumb ) : ?>
+										<?php $thumb = get_the_post_thumbnail( $episode, 'thumbnail', array( 'alt' => '', 'loading' => 'lazy' ) ); ?>
+										<?php if ( '' !== $thumb ) : ?>
+											<span class="episode-thumb"><?php echo $thumb; // phpcs:ignore WordPress.Security.EscapeOutput — خروجی get_the_post_thumbnail خودش escape شده است ?></span>
+										<?php endif; ?>
+									<?php endif; ?>
 									<?php /* مرجع شماره‌ی کارت را دو رقمی و با ارقام فارسی می‌نویسد: «۰۱». */ ?>
 									<span class="episode-number"><?php echo esc_html( manacore_fa_digits( str_pad( (string) number_format_i18n( $number ), 2, '0', STR_PAD_LEFT ) ) ); ?></span>
 									<span>
@@ -7782,14 +7902,16 @@ class Blocks {
 											echo esc_html( sprintf( __( 'قسمت %s', 'manacore' ), manacore_fa_digits( number_format_i18n( $number ) ) ) );
 											?>
 										</strong>
+										<?php if ( $show_air_date || 0 < $season || '' !== $sub_label ) : ?>
 										<small>
 											<?php
 											echo 0 < $season
 												/* translators: 1: شماره فصل، 2: برچسب قسمت */
-												? esc_html( sprintf( __( 'فصل %1$s · %2$s', 'manacore' ), manacore_fa_digits( number_format_i18n( $season ) ), manacore_fa_digits( $sub_label ) ) )
+												? esc_html( sprintf( '' !== $sub_label ? __( 'فصل %1$s · %2$s', 'manacore' ) : __( 'فصل %s', 'manacore' ), manacore_fa_digits( number_format_i18n( $season ) ), manacore_fa_digits( $sub_label ) ) )
 												: esc_html( manacore_fa_digits( $sub_label ) );
 											?>
 										</small>
+										<?php endif; ?>
 									</span>
 									<?php if ( ! empty( $attrs['showEpisodeName'] ) && '' !== trim( (string) $episode->post_title ) ) : ?>
 										<span class="episode-subtitle"><?php echo esc_html( get_the_title( $episode ) ); ?></span>
@@ -7812,7 +7934,8 @@ class Blocks {
 								<div class="download-table-header">
 									<span><?php esc_html_e( 'کیفیت تصویر', 'manacore' ); ?></span>
 									<span><?php esc_html_e( 'فرمت', 'manacore' ); ?></span>
-									<span><?php esc_html_e( 'حجم نمونه', 'manacore' ); ?></span>
+									<?php /* همان برچسب ستونِ بسته‌های فصل؛ پیش‌تر همیشه «حجم نمونه» بود و ویژگی بلوک بی‌اثر می‌ماند. */ ?>
+								<span><?php echo esc_html( $size_label ); ?></span>
 									<span><?php esc_html_e( 'پخش و دانلود', 'manacore' ); ?></span>
 								</div>
 								<?php

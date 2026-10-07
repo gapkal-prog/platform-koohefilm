@@ -364,6 +364,30 @@
 				}
 			}
 
+			/*
+			 * «تماشا» = شروع واقعی پخش، نه بازشدن صفحه. یک‌بار برای هر
+			 * بارگذاریِ صفحه فرستاده می‌شود و سرور هم پنجره‌ی
+			 * ضدرعدّ‌سازی دارد؛ پس رفرش، عدد را باد نمی‌کند.
+			 */
+			if ( video ) {
+				var watchCounted = false;
+
+				video.addEventListener( 'play', function () {
+					if ( watchCounted ) {
+						return;
+					}
+
+					watchCounted = true;
+
+					api( 'track-view', {
+						method: 'POST',
+						body: {
+							post_id: parseInt( root.getAttribute( 'data-manacore-player-page' ), 10 ) || 0,
+						},
+					} ).catch( function () {} );
+				} );
+			}
+
 			if ( video && select ) {
 				select.addEventListener( 'change', function () {
 					var option = select.options[ select.selectedIndex ];
@@ -969,6 +993,22 @@
 	 */
 	function refreshRequests() {
 		var board = document.querySelector( '[data-manacore-requests]' );
+		var mine  = document.querySelector( '[data-manacore-mine]' );
+
+		/*
+		 * پنل «درخواست‌های من» هم بعد از ثبت درخواست تازه باید فهرست
+		 * کامل را بگیرد؛ سرور همان تکه‌ی HTML را می‌فرستد، پس کاربر
+		 * بدون بازخوانی صفحه Markup تازه می‌بیند.
+		 */
+		if ( mine ) {
+			api( 'my-requests', { method: 'GET' } )
+				.then( function ( json ) {
+					if ( json && json.html ) {
+						mine.innerHTML = json.html;
+					}
+				} )
+				.catch( function () {} );
+		}
 
 		if ( ! board ) {
 			return;

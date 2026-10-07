@@ -72,6 +72,9 @@ function is_main_query() { return true; }
 function home_url( $p = '/' ) { return 'http://example.test' . $p; }
 function get_permalink( $id = 0 ) { return 'http://example.test/?p=' . (int) $id; }
 function wp_login_url( $r = '' ) { return 'http://example.test/wp-login.php'; }
+function shortcode_atts( $pairs, $atts, $shortcode = '' ) {
+	return array_merge( (array) $pairs, array_intersect_key( (array) $atts, (array) $pairs ) );
+}
 function wp_strip_all_tags( $v ) { return strip_tags( (string) $v ); }
 function wp_trim_words( $v, $n = 55 ) { return implode( ' ', array_slice( preg_split( '/\s+/u', (string) $v ), 0, $n ) ); }
 function number_format_i18n( $n, $dec = 0 ) { return number_format( (float) $n, (int) $dec ); }
@@ -851,6 +854,128 @@ mc_ok(
 	'هر دو تب در فهرست تب‌ها هستند'
 );
 mc_ok( false !== strpos( $settings, "case 'request-page':" ), 'ابزار ساخت برگه‌ی درخواست‌ها ثبت شده است' );
+
+/* ---------------------------------------------------------------
+ * ۱۲) درخواست‌های من (پنل کاربری)
+ * ------------------------------------------------------------ */
+
+echo "\n=== ۱۲) درخواست‌های من (پنل کاربری) ===\n";
+
+/*
+ * کوئری: کاربر واردشده فقط درخواست‌های خودش را می‌گیرد — با هر سه
+ * وضعیت. تخته‌ی عمومی «در انتظار» را نشان نمی‌دهد، پس کاربر باید جای
+ * دیگری وضعیت درخواست خودش را ببیند؛ همین پنل.
+ */
+$GLOBALS['mc_queries'] = array();
+$GLOBALS['mc_user']    = 7;
+$GLOBALS['mc_query']   = array( 'posts' => array(), 'found' => 0 );
+
+ManaCore\Core\Requests::mine( 0, array( 'per_page' => 500 ) );
+$q = end( $GLOBALS['mc_queries'] );
+
+mc_ok( 7 === $q['author'], 'فهرست «درخواست‌های من» به نویسنده‌ی جاری بسته می‌شود' );
+mc_ok( array( 'publish', 'pending', 'draft' ) === $q['post_status'], 'هر سه وضعیت (تأییدشده، در انتظار، ردشده) در فهرست کاربر می‌آید' );
+mc_ok( 60 === $q['posts_per_page'], 'تعداد ردیف‌های فهرست کاربر هم کرانه می‌شود' );
+mc_ok( 'date' === $q['orderby'], 'فهرست کاربر بر پایه‌ی تاریخ مرتب می‌شود' );
+
+/* مهمان هرگز نباید کوئری «همه‌ی نویسندگان» بگیرد. */
+$GLOBALS['mc_queries'] = array();
+$GLOBALS['mc_user']    = 0;
+
+ManaCore\Core\Requests::mine( 0 );
+$q = end( $GLOBALS['mc_queries'] );
+
+mc_ok( ! isset( $q['author'] ), 'کاربر وارد‌نشده کوئری نویسنده‌محور نمی‌گیرد' );
+mc_ok( array( 0 ) === $q['post__in'], 'مهمان با کوئری بسته می‌شود (نه فهرست همه‌ی درخواست‌ها)' );
+mc_ok( 0 === ManaCore\Core\Requests::mine_total(), 'شمار درخواست‌ها برای مهمان صفر است' );
+
+$GLOBALS['mc_query'] = array( 'posts' => array(), 'found' => 4 );
+mc_ok( 4 === ManaCore\Core\Requests::mine_total( 7 ), 'شمار کل از found_posts کوئری خودِ کاربر می‌آید' );
+
+/* برچسب و کلاس وضعیت */
+mc_ok( 'تأییدشده' === ManaCore\Core\Requests::status_label( 'publish' ), 'وضعیت منتشرشده «تأییدشده» است' );
+mc_ok( 'در انتظار تأیید' === ManaCore\Core\Requests::status_label( 'pending' ), 'وضعیت بازبینی «در انتظار تأیید» است' );
+mc_ok( 'ردشده' === ManaCore\Core\Requests::status_label( 'draft' ), 'پیش‌نویسْ همان «ردشده»ی درخواست است' );
+mc_ok( 'is-pending' === ManaCore\Core\Requests::status_class( 'چیز نامعتبر' ), 'وضعیت ناشناخته به کلاس «در انتظار» می‌افتد' );
+
+/* رندر فهرست: حالت خالی */
+$mine = ManaCore\Core\Requests::instance()->mine_html();
+
+mc_ok( false !== strpos( $mine, 'data-manacore-mine' ), 'فهرست «درخواست‌های من» لنگر تازه‌سازی دارد' );
+mc_ok( false !== strpos( $mine, 'هنوز درخواستی ثبت نکرده‌ای' ), 'حالت خالی متن راهنما دارد' );
+
+/* رندر فهرست: یک درخواست در انتظار */
+$GLOBALS['mc_posts'][710]->post_type    = 'manacore_request';
+$GLOBALS['mc_posts'][710]->post_status  = 'pending';
+$GLOBALS['mc_posts'][710]->post_title   = 'سریال در انتظار';
+$GLOBALS['mc_posts'][710]->post_content = 'توضیح نمونه';
+$GLOBALS['mc_meta'][710]                = array(
+	'manacore_request_type'            => 'series',
+	'manacore_request_year'            => 2024,
+	'manacore_request_link'            => 'https://example.test/source',
+	ManaCore\Core\Requests::COUNT_META => 3,
+);
+
+$GLOBALS['mc_query'] = array(
+	'posts' => array( $GLOBALS['mc_posts'][710] ),
+	'found' => 1,
+);
+
+$mine = ManaCore\Core\Requests::instance()->mine_html();
+
+mc_ok( false !== strpos( $mine, 'manacore-request is-pending' ), 'ردیف در انتظار کلاس وضعیت می‌گیرد' );
+mc_ok( false !== strpos( $mine, 'در انتظار تأیید' ), 'برچسب وضعیت روی ردیف می‌آید' );
+mc_ok( false !== strpos( $mine, '>سریال<' ), 'نوع درخواست روی ردیف می‌آید' );
+mc_ok( false !== strpos( $mine, '>2024<' ), 'سال درخواست روی ردیف می‌آید' );
+mc_ok( false !== strpos( $mine, 'data-request-id="710"' ), 'شناسه‌ی درخواست برای تازه‌سازی زنده روی ردیف هست' );
+mc_ok( false !== strpos( $mine, '>3<' ), 'شمار رأی از متا خوانده می‌شود' );
+mc_ok( false !== strpos( $mine, 'https://example.test/source' ), 'پیوند منبع در ردیف کاربر می‌آید' );
+
+/* مهمان: دروازه‌ی ورود */
+$GLOBALS['mc_user'] = 0;
+$gate               = ManaCore\Core\Requests::instance()->render_mine();
+
+mc_ok( false !== strpos( $gate, 'manacore-request-gate' ), 'مهمان به‌جای پنل، دروازه‌ی ورود می‌بیند' );
+mc_ok( false !== strpos( $gate, 'wp-login.php' ), 'دروازه‌ی ورود به صفحه‌ی ورود وصل است' );
+
+/* کاربر: فرم + فهرست، و خاموش‌کردن فرم */
+$GLOBALS['mc_user'] = 7;
+$panel              = ManaCore\Core\Requests::instance()->render_mine();
+
+mc_ok( false !== strpos( $panel, 'data-manacore-request-form' ), 'پنل، فرم ثبت درخواست را هم می‌آورد' );
+mc_ok( false !== strpos( $panel, 'data-manacore-mine' ), 'پنل، فهرست درخواست‌های کاربر را می‌آورد' );
+
+$list_only = ManaCore\Core\Requests::instance()->render_mine( array( 'showForm' => false ) );
+mc_ok( false === strpos( $list_only, 'data-manacore-request-form' ), 'با خاموش‌کردن فرم، فقط فهرست می‌ماند' );
+
+$short = ManaCore\Core\Requests::instance()->mine_shortcode( array( 'show_form' => '0' ) );
+mc_ok(
+	false === strpos( $short, 'data-manacore-request-form' ) && false !== strpos( $short, 'data-manacore-mine' ),
+	'شورت‌کد پنل، همان رفتار بلوک را دارد'
+);
+
+/* خاموش بودن ماژول: هیچ‌کس پنل نمی‌بیند */
+update_option( 'manacore_settings', array( 'requests_enabled' => 0 ) );
+mc_ok( '' === ManaCore\Core\Requests::instance()->render_mine(), 'با خاموش بودن ماژول، پنل رندر نمی‌شود' );
+update_option( 'manacore_settings', array( 'requests_enabled' => 1 ) );
+
+/* میدان دید: مسیر، دسترسی، بلوک، تب و قالب */
+mc_ok( false !== strpos( $requests, "'/my-requests'" ), 'مسیر «درخواست‌های من» ثبت شده است' );
+mc_ok( false !== strpos( $requests, 'permission_mine' ), 'مسیر فقط برای کاربر واردشده باز است' );
+mc_ok( true === ManaCore\Core\Requests::instance()->permission_mine(), 'دسترسی مسیر برای کاربر واردشده برقرار است' );
+
+$GLOBALS['mc_user'] = 0;
+mc_ok( false === ManaCore\Core\Requests::instance()->permission_mine(), 'دسترسی مسیر برای مهمان بسته است' );
+
+$account = file_get_contents( MANACORE_PATH . 'includes/class-account.php' );
+$theme   = dirname( __DIR__ ) . '/themes/koohe-film/templates/page-account.html';
+$page    = file_exists( $theme ) ? file_get_contents( $theme ) : '';
+$front   = file_get_contents( MANACORE_PATH . 'assets/js/front.js' );
+
+mc_ok( false !== strpos( $account, "'requests'" ) && false !== strpos( $account, 'Requests::mine_total()' ), 'تب «درخواست‌های من» با نشان شمارشی به فهرست تب‌ها اضافه شده است' );
+mc_ok( false !== strpos( $blocks, 'manacore/account-requests' ) && false !== strpos( $blocks, 'render_account_requests' ), 'بلوک «درخواست‌های من» در افزونه تعریف شده است' );
+mc_ok( false !== strpos( $page, 'manacore/account-requests' ), 'قالب برگه‌ی حساب، پنل درخواست‌ها را در تب خودش می‌آورد' );
+mc_ok( false !== strpos( $front, 'data-manacore-mine' ) && false !== strpos( $front, "'my-requests'" ), 'مرورگر فهرست درخواست‌های کاربر را از REST تازه می‌کند' );
 
 /* ---------------------------------------------------------------
  * پایان

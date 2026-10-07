@@ -852,10 +852,19 @@ class Settings {
 				<h2 class="title"><?php esc_html_e( 'امکانات', 'manacore' ); ?></h2>
 				<table class="form-table" role="presentation">
 					<?php
+					/*
+					 * توضیح کوتاه زیر گزینه‌هایی که معنی‌شان از برچسبشان پیدا
+					 * نیست. «شمارش تماشا» عمداً روشن است: عدد آمار باید از
+					 * رویداد واقعی بیاید، نه از بازشدن صفحه.
+					 */
+					$toggle_help = array(
+						'enable_views' => __( 'فقط وقتی کاربر پخش را شروع کند شمرده می‌شود؛ بازشدن صفحه و رفرش، آمار را بالا نمی‌برد.', 'manacore' ),
+					);
+
 					$toggles = array(
 						'enable_ratings'   => __( 'فعال بودن امتیازدهی کاربران', 'manacore' ),
 						'enable_watchlist' => __( 'فعال بودن لیست تماشا', 'manacore' ),
-						'enable_views'     => __( 'شمارش بازدید', 'manacore' ),
+						'enable_views'     => __( 'شمارش تماشا (شروع واقعی پخش)', 'manacore' ),
 						'links_login_only' => __( 'نمایش لینک‌ها فقط برای کاربران وارد شده', 'manacore' ),
 					);
 					foreach ( $toggles as $key => $label ) :
@@ -868,6 +877,9 @@ class Settings {
 										value="1" <?php checked( 1, (int) manacore_get_option( $key, 0 ) ); ?> />
 									<?php esc_html_e( 'فعال', 'manacore' ); ?>
 								</label>
+								<?php if ( ! empty( $toggle_help[ $key ] ) ) : ?>
+									<p class="description"><?php echo esc_html( $toggle_help[ $key ] ); ?></p>
+								<?php endif; ?>
 							</td>
 						</tr>
 					<?php endforeach; ?>
@@ -1032,8 +1044,8 @@ class Settings {
 		$ratings = Analytics::ratings_summary();
 
 		$cards = array(
-			array( __( 'بازدید امروز', 'manacore' ), $summary['views_today'], '' ),
-			array( __( 'بازدید ۷ روز', 'manacore' ), $summary['views_week'], '' ),
+			array( __( 'تماشا امروز', 'manacore' ), $summary['views_today'], '' ),
+			array( __( 'تماشا ۷ روز', 'manacore' ), $summary['views_week'], '' ),
 			array( __( 'بازدید ۳۰ روز', 'manacore' ), $summary['views_month'], '' ),
 			array( __( 'دانلود ۷ روز', 'manacore' ), $summary['downloads_week'], '' ),
 			array( __( 'امتیاز میانگین', 'manacore' ), number_format_i18n( $ratings['average'], 2 ), sprintf( __( '%s رأی', 'manacore' ), number_format_i18n( $ratings['total'] ) ) ),

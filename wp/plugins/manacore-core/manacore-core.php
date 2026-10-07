@@ -96,6 +96,14 @@ function manacore_boot() {
 	 * از چند ساعت به چند دقیقه می‌رسانند.
 	 */
 	/* دانلود امضاشده: مسیر REST زمان‌دار + شمارش سرورسوی دانلود. */
+	/*
+	 * مدیریت لینک‌ها از فهرست پیشخوان (ستون، پالایه و پیوند سریع).
+	 * فقط در پیشخوان قلاب می‌بندد؛ در REST/CLI بی‌اثر است.
+	 */
+	if ( is_admin() ) {
+		ManaCore\Core\Links_Admin::instance()->hooks();
+	}
+
 	ManaCore\Core\Downloads::instance()->hooks();
 
 	ManaCore\Core\Portability::instance()->hooks();
