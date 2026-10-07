@@ -37,8 +37,9 @@ class Settings {
 	 */
 	public static function tabs() {
 		return array(
-			'general' => __( 'تنظیمات عمومی', 'manacore' ),
-			'watch'   => __( 'پخش و دانلود', 'manacore' ),
+			'general'   => __( 'تنظیمات عمومی', 'manacore' ),
+			'analytics' => __( 'تحلیل و آمار', 'manacore' ),
+			'watch'     => __( 'پخش و دانلود', 'manacore' ),
 			'requests' => __( 'درخواست‌ها', 'manacore' ),
 			'ads'     => __( 'تبلیغات', 'manacore' ),
 			'mega'    => __( 'مگامنو', 'manacore' ),
@@ -351,6 +352,11 @@ class Settings {
 					Mega_Menu::flush_cache();
 				}
 				delete_transient( 'manacore_home_stats' );
+
+				if ( class_exists( __NAMESPACE__ . '\\Analytics' ) ) {
+					Analytics::instance()->flush();
+				}
+
 				$notice = 'cache-ok';
 				break;
 
@@ -617,6 +623,10 @@ class Settings {
 
 			<?php
 			switch ( $tab ) {
+				case 'analytics':
+					$this->render_analytics_tab();
+					break;
+
 				case 'watch':
 					$this->render_watch_tab();
 					break;
@@ -869,6 +879,216 @@ class Settings {
 		$this->tab_form( 'watch', function () {
 			echo ob_get_clean(); // phpcs:ignore WordPress.Security.EscapeOutput
 		} );
+	}
+
+	/**
+	 * تب «تحلیل و آمار».
+	 *
+	 * @return void
+	 */
+	protected function render_analytics_tab() {
+		if ( ! class_exists( __NAMESPACE__ . '\Analytics' ) ) {
+			return;
+		}
+
+		$summary = Analytics::summary();
+		$ratings = Analytics::ratings_summary();
+
+		$cards = array(
+			array( __( 'بازدید امروز', 'manacore' ), $summary['views_today'], '' ),
+			array( __( 'بازدید ۷ روز', 'manacore' ), $summary['views_week'], '' ),
+			array( __( 'بازدید ۳۰ روز', 'manacore' ), $summary['views_month'], '' ),
+			array( __( 'دانلود ۷ روز', 'manacore' ), $summary['downloads_week'], '' ),
+			array( __( 'امتیاز میانگین', 'manacore' ), number_format_i18n( $ratings['average'], 2 ), sprintf( __( '%s رأی', 'manacore' ), number_format_i18n( $ratings['total'] ) ) ),
+			array( __( 'گزارش خرابی تازه', 'manacore' ), $summary['reports_new'], '' ),
+			array( __( 'درخواست در انتظار', 'manacore' ), $summary['requests_pending'], sprintf( __( '%s تأییدشده', 'manacore' ), number_format_i18n( $summary['requests_publish'] ) ) ),
+			array( __( 'دیدگاه در صف', 'manacore' ), $summary['comments_pending'], '' ),
+		);
+
+		if ( $summary['ads']['impressions'] || $summary['ads']['clicks'] ) {
+			$cards[] = array(
+				__( 'نمایش بنرها', 'manacore' ),
+				number_format_i18n( $summary['ads']['impressions'] ),
+				sprintf( __( '%1$s کلیک — نرخ %2$s٪', 'manacore' ), number_format_i18n( $summary['ads']['clicks'] ), number_format_i18n( $summary['ads']['ctr'], 2 ) ),
+			);
+		}
+		?>
+		<style>
+			.manacore-stat-grid{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));margin:14px 0}
+			.manacore-stat{padding:14px;border:1px solid #dcdcde;border-radius:10px;background:#fff}
+			.manacore-stat b{display:block;font-size:1.5rem;line-height:1.4}
+			.manacore-stat span{color:#646970;font-size:.8125rem}
+			.manacore-stat em{display:block;color:#646970;font-size:.75rem;font-style:normal}
+			.manacore-analytics-cols{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));margin-top:6px}
+		</style>
+
+		<div class="manacore-stat-grid">
+			<?php foreach ( $cards as $card ) : ?>
+				<div class="manacore-stat">
+					<b><?php echo esc_html( manacore_fa_digits( (string) $card[1] ) ); ?></b>
+					<span><?php echo esc_html( $card[0] ); ?></span>
+					<?php if ( '' !== $card[2] ) : ?>
+						<em><?php echo esc_html( manacore_fa_digits( (string) $card[2] ) ); ?></em>
+					<?php endif; ?>
+				</div>
+			<?php endforeach; ?>
+		</div>
+
+		<p class="description">
+			<?php esc_html_e( 'عددها هر ۵ دقیقه یک‌بار تازه می‌شوند (کش) تا بازکردن پیشخوان روی سایت بزرگ کند نشود.', 'manacore' ); ?>
+		</p>
+
+		<div class="manacore-analytics-cols">
+			<?php
+			$this->analytics_table(
+				__( 'پربازدیدترین‌های ۷ روز', 'manacore' ),
+				Analytics::top( 'view', 7, 10 ),
+				__( 'بازدید', 'manacore' )
+			);
+
+			$this->analytics_table(
+				__( 'پربارگیری‌شده‌ترین‌های ۷ روز', 'manacore' ),
+				Analytics::top( 'download', 7, 10 ),
+				__( 'دانلود', 'manacore' )
+			);
+
+			$this->analytics_table(
+				__( 'بیشترین گزارش خرابی لینک', 'manacore' ),
+				Analytics::top_reported( 10 ),
+				__( 'گزارش', 'manacore' ),
+				'open'
+			);
+
+			$this->analytics_table(
+				__( 'پررأی‌ترین درخواست‌ها', 'manacore' ),
+				Analytics::top_requests( 10 ),
+				__( 'رأی', 'manacore' ),
+				'votes',
+				true
+			);
+			?>
+		</div>
+
+		<div class="card" style="max-width:900px;margin-top:16px">
+			<h2><?php esc_html_e( 'کارهای باز', 'manacore' ); ?></h2>
+			<ul style="margin:8px 0;padding-inline-start:20px;list-style:disc">
+				<?php if ( $summary['reports_new'] ) : ?>
+					<li>
+						<?php
+						printf(
+							/* translators: %s: تعداد */
+							esc_html__( '%s گزارش خرابی لینک تازه در انتظار بررسی است.', 'manacore' ),
+							esc_html( number_format_i18n( $summary['reports_new'] ) )
+						);
+						?>
+					</li>
+				<?php endif; ?>
+
+				<?php if ( $summary['requests_pending'] ) : ?>
+					<li>
+						<?php
+						printf(
+							/* translators: %s: تعداد */
+							esc_html__( '%s درخواست کاربر در انتظار تأیید است.', 'manacore' ),
+							esc_html( number_format_i18n( $summary['requests_pending'] ) )
+						);
+						?>
+					</li>
+				<?php endif; ?>
+
+				<?php if ( $summary['comments_pending'] ) : ?>
+					<li>
+						<?php
+						printf(
+							/* translators: %s: تعداد */
+							esc_html__( '%s دیدگاه در صف بازبینی است.', 'manacore' ),
+							esc_html( number_format_i18n( $summary['comments_pending'] ) )
+						);
+						?>
+					</li>
+				<?php endif; ?>
+
+				<?php if ( ! $summary['reports_new'] && ! $summary['requests_pending'] && ! $summary['comments_pending'] ) : ?>
+					<li><?php esc_html_e( 'صف بازبینی خالی است. کار خوبی کرده‌اید!', 'manacore' ); ?></li>
+				<?php endif; ?>
+			</ul>
+
+			<p>
+				<a class="button" href="<?php echo esc_url( add_query_arg( array( 'page' => 'manacore', 'tab' => 'tools' ), admin_url( 'admin.php' ) ) ); ?>">
+					<?php esc_html_e( 'گزارش‌های خرابی لینک', 'manacore' ); ?>
+				</a>
+				<a class="button" href="<?php echo esc_url( add_query_arg( array( 'post_status' => 'pending' ), admin_url( 'edit-comments.php' ) ) ); ?>">
+					<?php esc_html_e( 'دیدگاه‌های در صف', 'manacore' ); ?>
+				</a>
+			</p>
+		</div>
+		<?php
+	}
+
+	/**
+	 * جدول کوچک یک گزارش تحلیلی.
+	 *
+	 * @param string $title     عنوان.
+	 * @param array  $rows      ردیف‌ها.
+	 * @param string $value     برچسب ستون شمار.
+	 * @param string $extra_key کلید ستون جانبی (اختیاری).
+	 * @param bool   $pending   نمایش نشان «در انتظار» برای وضعیت pending.
+	 * @return void
+	 */
+	protected function analytics_table( $title, $rows, $value, $extra_key = '', $pending = false ) {
+		?>
+		<div class="card">
+			<h2><?php echo esc_html( $title ); ?></h2>
+			<?php if ( ! $rows ) : ?>
+				<p class="description"><?php esc_html_e( 'داده‌ای در این بازه ثبت نشده است.', 'manacore' ); ?></p>
+			<?php else : ?>
+				<table class="widefat striped">
+					<thead>
+						<tr>
+							<th><?php esc_html_e( 'اثر', 'manacore' ); ?></th>
+							<th><?php echo esc_html( $value ); ?></th>
+							<?php if ( $extra_key ) : ?>
+								<th><?php echo esc_html( 'open' === $extra_key ? __( 'باز', 'manacore' ) : __( 'وضعیت', 'manacore' ) ); ?></th>
+							<?php endif; ?>
+						</tr>
+					</thead>
+					<tbody>
+						<?php foreach ( $rows as $row ) : ?>
+							<?php
+							$edit   = current_user_can( 'edit_post', (int) $row['id'] ) ? get_edit_post_link( (int) $row['id'] ) : '';
+							$amount = isset( $row['total'] ) ? $row['total'] : ( isset( $row['votes'] ) ? $row['votes'] : 0 );
+							?>
+							<tr>
+								<td>
+									<?php if ( $edit ) : ?>
+										<a href="<?php echo esc_url( $edit ); ?>"><?php echo esc_html( $row['title'] ); ?></a>
+									<?php else : ?>
+										<?php echo esc_html( $row['title'] ); ?>
+									<?php endif; ?>
+
+									<?php if ( $pending && isset( $row['status'] ) && 'publish' !== $row['status'] ) : ?>
+										<em><?php esc_html_e( '— در انتظار تأیید', 'manacore' ); ?></em>
+									<?php endif; ?>
+								</td>
+								<td><?php echo esc_html( manacore_fa_digits( number_format_i18n( (int) $amount ) ) ); ?></td>
+								<?php if ( $extra_key ) : ?>
+									<td>
+										<?php
+										if ( 'open' === $extra_key ) {
+											echo esc_html( manacore_fa_digits( number_format_i18n( isset( $row['open'] ) ? (int) $row['open'] : 0 ) ) );
+										} else {
+											echo esc_html( isset( $row['status'] ) && 'publish' === $row['status'] ? __( 'تأییدشده', 'manacore' ) : __( 'در انتظار', 'manacore' ) );
+										}
+										?>
+									</td>
+								<?php endif; ?>
+							</tr>
+						<?php endforeach; ?>
+					</tbody>
+				</table>
+			<?php endif; ?>
+		</div>
+		<?php
 	}
 
 	/**
