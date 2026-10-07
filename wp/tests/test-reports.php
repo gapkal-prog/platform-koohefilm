@@ -109,6 +109,22 @@ class MC_Wpdb {
 }
 
 function wp_json_encode( $v, $f = 0 ) { return json_encode( $v, $f | JSON_UNESCAPED_UNICODE ); }
+
+/**
+ * شناسه‌ی بازدیدکننده: همان سازوکار مشترک `manacore_visitor_hash()` در
+ * `includes/functions.php` (پوسته‌ی همان‌رفتار برای محیط آزمون).
+ */
+function manacore_visitor_hash( $context = 'visitor' ) {
+	$user_id = get_current_user_id();
+
+	if ( $user_id ) {
+		return 'u' . (int) $user_id;
+	}
+
+	$ip = isset( $_SERVER['REMOTE_ADDR'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REMOTE_ADDR'] ) ) : '';
+
+	return 'g' . substr( hash( 'sha256', $context . '|' . $ip . wp_salt( 'nonce' ) ), 0, 32 );
+}
 function dbDelta( $sql ) { $GLOBALS['mc_dbdelta'][] = $sql; }
 
 /*
@@ -140,7 +156,7 @@ require_once MANACORE_PATH . 'includes/class-reports.php';
 
 echo "\n=== ۱) ارتقای پایگاه‌داده ===\n";
 
-mc_ok( '1.1.0' === \ManaCore\Core\Install::DB_VERSION, 'نسخه‌ی پایگاه‌داده برای جدول گزارش‌ها بالا رفته است' );
+mc_ok( version_compare( \ManaCore\Core\Install::DB_VERSION, '1.1.0', '>=' ), 'نسخه‌ی پایگاه‌داده برای جدول گزارش‌ها بالا رفته است', \ManaCore\Core\Install::DB_VERSION );
 mc_ok( 'wp_manacore_reports' === \ManaCore\Core\Install::reports_table(), 'نام جدول گزارش‌ها درست ساخته می‌شود' );
 
 /* نسخه‌ی همانند → هیچ ارتقایی اجرا نمی‌شود. */

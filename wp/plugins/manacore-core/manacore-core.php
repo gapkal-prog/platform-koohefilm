@@ -81,6 +81,12 @@ function manacore_boot() {
 	/* گزارش خرابی لینک: مسیر REST، کنش‌های پیشخوان و ارتقای پایگاه‌داده. */
 	ManaCore\Core\Reports::instance()->hooks();
 
+	/* درخواست فیلم/سریال کاربران: نوع محتوا، رأی‌گیری، بازبینی و تخته. */
+	ManaCore\Core\Requests::instance()->hooks();
+
+	/* جایگاه‌های تبلیغاتی بنری با زمان‌بندی و شمار نمایش/کلیک. */
+	ManaCore\Core\Ads::instance()->hooks();
+
 	/*
 	 * ارتقای پایگاه‌داده. یک مقایسه‌ی گزینه‌ی خودبارگذاری‌شده در هر درخواست
 	 * است و کار سنگین (CREATE/ALTER) فقط وقتی نسخه اختلاف دارد اجرا
@@ -111,6 +117,8 @@ register_activation_hook(
 		ManaCore\Core\Taxonomies::instance()->register();
 		ManaCore\Core\Install::create_tables();
 		ManaCore\Core\Install::default_options();
+		ManaCore\Core\Requests::instance()->register_post_type();
+		ManaCore\Core\Ads::instance()->register_post_type();
 		ManaCore\Core\Player::ensure_page();
 		ManaCore\Core\Account::ensure_page();
 		flush_rewrite_rules();

@@ -20,6 +20,29 @@ function manacore_get_option( $key, $default = '' ) {
 }
 
 /**
+ * شناسه‌ی درهم‌شده‌ی بازدیدکننده.
+ *
+ * برای رأی/امتیاز/گزارش کاربران وارد‌نشده به‌جای نشانی شبکه‌ی خام (که هم
+ * حریم خصوصی را نقض می‌کند و هم با یک تغییر IP بی‌اثر می‌شود) یک درهم‌سازی
+ * نمک‌دار ذخیره می‌شود؛ عضو وارد‌شده با شناسه‌ی کاربری مشخص می‌شود تا رأی
+ * او در همه‌ی دستگاه‌ها یکی بماند.
+ *
+ * @param string $context پیشوند دامنه (تا رأی و گزارش یک کاربر با هم قاطی نشوند).
+ * @return string
+ */
+function manacore_visitor_hash( $context = 'visitor' ) {
+	$user_id = get_current_user_id();
+
+	if ( $user_id ) {
+		return 'u' . (int) $user_id;
+	}
+
+	$ip = isset( $_SERVER['REMOTE_ADDR'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REMOTE_ADDR'] ) ) : '';
+
+	return 'g' . substr( hash( 'sha256', $context . '|' . $ip . wp_salt( 'nonce' ) ), 0, 32 );
+}
+
+/**
  * فهرست انواع محتوای مدیریت‌شده توسط ManaCore.
  *
  * @return array<string,string>

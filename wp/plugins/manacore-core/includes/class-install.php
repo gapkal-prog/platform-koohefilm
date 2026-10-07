@@ -17,7 +17,7 @@ class Install {
 	/**
 	 * نسخه‌ی شمای پایگاه داده.
 	 */
-	const DB_VERSION = '1.1.0';
+	const DB_VERSION = '1.2.0';
 
 	/**
 	 * نام جدول امتیازها.
@@ -47,6 +47,16 @@ class Install {
 	public static function reports_table() {
 		global $wpdb;
 		return $wpdb->prefix . 'manacore_reports';
+	}
+
+	/**
+	 * نام جدول رأی‌های «درخواست فیلم/سریال».
+	 *
+	 * @return string
+	 */
+	public static function request_votes_table() {
+		global $wpdb;
+		return $wpdb->prefix . 'manacore_request_votes';
 	}
 
 	/**
@@ -91,6 +101,7 @@ class Install {
 		$ratings = self::ratings_table();
 		$stats   = self::stats_table();
 		$reports = self::reports_table();
+		$votes   = self::request_votes_table();
 
 		$sql = array();
 
@@ -139,6 +150,23 @@ class Install {
 			KEY post_id (post_id),
 			KEY status_date (status, created_at),
 			UNIQUE KEY unique_report (post_id, reporter_hash, quality)
+		) {$charset};";
+
+		/*
+		 * رأی‌های درخواست کاربران: یک ردیف برای هر کاربر در هر درخواست.
+		 * `UNIQUE KEY unique_vote` جلوی رأی تکراری (و رأی دوباره با
+		 * کلیک پشت‌سرهم) را می‌گیرد؛ شمارش از همین جدول می‌آید تا
+		 * همیشه با واقعیت یکی باشد.
+		 */
+		$sql[] = "CREATE TABLE {$votes} (
+			id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+			request_id BIGINT UNSIGNED NOT NULL,
+			voter_id BIGINT UNSIGNED NOT NULL DEFAULT 0,
+			voter_hash VARCHAR(64) NOT NULL DEFAULT '',
+			created_at DATETIME NOT NULL DEFAULT '0000-00-00 00:00:00',
+			PRIMARY KEY  (id),
+			KEY request_id (request_id),
+			UNIQUE KEY unique_vote (request_id, voter_hash)
 		) {$charset};";
 
 		foreach ( $sql as $query ) {

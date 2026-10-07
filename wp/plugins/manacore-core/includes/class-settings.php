@@ -39,6 +39,8 @@ class Settings {
 		return array(
 			'general' => __( 'تنظیمات عمومی', 'manacore' ),
 			'watch'   => __( 'پخش و دانلود', 'manacore' ),
+			'requests' => __( 'درخواست‌ها', 'manacore' ),
+			'ads'     => __( 'تبلیغات', 'manacore' ),
 			'mega'    => __( 'مگامنو', 'manacore' ),
 			'tools'   => __( 'وضعیت و ابزارها', 'manacore' ),
 		);
@@ -183,6 +185,46 @@ class Settings {
 			$clean['subscribe_url'] = isset( $input['subscribe_url'] ) ? esc_url_raw( trim( (string) $input['subscribe_url'] ) ) : '';
 		}
 
+		/* ---------------- تب درخواست‌ها ---------------- */
+		if ( $do( 'requests' ) ) {
+			foreach ( array( 'requests_enabled', 'requests_guests', 'requests_show_pending' ) as $key ) {
+				$clean[ $key ] = empty( $input[ $key ] ) ? 0 : 1;
+			}
+
+			foreach ( array( 'requests_heading', 'requests_board_title', 'requests_button' ) as $key ) {
+				$clean[ $key ] = isset( $input[ $key ] ) ? sanitize_text_field( $input[ $key ] ) : '';
+			}
+
+			foreach ( array( 'requests_intro', 'requests_thanks' ) as $key ) {
+				$clean[ $key ] = isset( $input[ $key ] ) ? sanitize_textarea_field( $input[ $key ] ) : '';
+			}
+
+			$clean['requests_per_page'] = isset( $input['requests_per_page'] )
+				? max( 3, min( 60, (int) $input['requests_per_page'] ) )
+				: 12;
+		}
+
+		/* ---------------- تب تبلیغات ---------------- */
+		if ( $do( 'ads' ) ) {
+			foreach ( array( 'ads_enabled', 'ads_hide_members', 'ads_counters' ) as $key ) {
+				$clean[ $key ] = empty( $input[ $key ] ) ? 0 : 1;
+			}
+
+			$clean['ads_label']        = isset( $input['ads_label'] ) ? sanitize_text_field( $input['ads_label'] ) : '';
+			$clean['ads_per_position'] = isset( $input['ads_per_position'] ) ? max( 1, min( 3, (int) $input['ads_per_position'] ) ) : 1;
+
+			/*
+			 * جایگاه‌ها: فقط کلیدهای شناخته‌شده پذیرفته می‌شوند. خالی بودن
+			 * فهرست یعنی «هیچ جایگاهی» (نه «همه») — همان چیزی که مدیر با
+			 * برداشتن همه‌ی تیک‌ها می‌خواهد.
+			 */
+			$allowed   = class_exists( __NAMESPACE__ . '\\Ads' ) ? array_keys( Ads::positions() ) : array();
+			$positions = isset( $input['ads_positions'] ) ? (array) $input['ads_positions'] : array();
+			$positions = array_map( 'sanitize_key', $positions );
+
+			$clean['ads_positions'] = array_values( array_intersect( $positions, $allowed ) );
+		}
+
 		/* ---------------- تب مگامنو ---------------- */
 		if ( $do( 'mega' ) ) {
 			$clean['mega_enabled']     = empty( $input['mega_enabled'] ) ? 0 : 1;
@@ -258,6 +300,7 @@ class Settings {
 			'cache-ok'      => array( 'success', __( 'کش مگامنو و برگه‌های گذرا پاک شد.', 'manacore' ) ),
 			'rewrite-ok'    => array( 'success', __( 'قواعد پیوندهای یکتا بازسازی شد.', 'manacore' ) ),
 			'report-ok'     => array( 'success', __( 'گزارش به‌روز شد.', 'manacore' ) ),
+			'request-ok'    => array( 'success', __( 'برگه‌ی درخواست‌ها ساخته شد.', 'manacore' ) ),
 			'failed'        => array( 'error', __( 'ابزار اجرا نشد؛ شرایط پیش‌نیاز را ببینید.', 'manacore' ) ),
 		);
 
@@ -292,6 +335,11 @@ class Settings {
 			case 'watch-page':
 				$page_id = Player::create_page();
 				$notice  = $page_id ? 'watch-ok' : 'failed';
+				break;
+
+			case 'request-page':
+				$page_id = Requests::create_page();
+				$notice  = $page_id ? 'request-ok' : 'failed';
 				break;
 
 			case 'mega-rebuild':
@@ -573,6 +621,14 @@ class Settings {
 					$this->render_watch_tab();
 					break;
 
+				case 'requests':
+					$this->render_requests_tab();
+					break;
+
+				case 'ads':
+					$this->render_ads_tab();
+					break;
+
 				case 'mega':
 					$this->render_mega_tab();
 					break;
@@ -816,12 +872,276 @@ class Settings {
 	}
 
 	/**
-	 * تب «مگامنو»: تاکسونومی، تعداد، متن‌ها و کارت ویژه.
+	 * تب «درخواست‌ها».
 	 *
 	 * @return void
 	 */
+	protected function render_requests_tab() {
+		$this->tab_form(
+			'requests',
+			function () {
+				?>
+				<h2 class="title"><?php esc_html_e( 'درخواست فیلم و سریال', 'manacore' ); ?></h2>
+				<p class="description">
+					<?php esc_html_e( 'کاربران عنوانی را که در آرشیو نیست ثبت می‌کنند، بقیه رأی می‌دهند و شما از فهرست «درخواست‌ها» بازبینی می‌کنید. برای نمایش، بلوک «فرم درخواست فیلم/سریال» و «تخته‌ی درخواست‌ها» را در هر برگه‌ای بگذارید (یا از دکمه‌ی ساخت برگه در پایین استفاده کنید).', 'manacore' ); ?>
+				</p>
+
+				<table class="form-table" role="presentation">
+					<tr>
+						<th scope="row"><?php esc_html_e( 'وضعیت', 'manacore' ); ?></th>
+						<td>
+							<label>
+								<input type="checkbox" name="manacore_settings[requests_enabled]" value="1" <?php checked( 1, (int) manacore_get_option( 'requests_enabled', 1 ) ); ?> />
+								<?php esc_html_e( 'درخواست‌ها فعال باشد', 'manacore' ); ?>
+							</label>
+							<br />
+							<label>
+								<input type="checkbox" name="manacore_settings[requests_guests]" value="1" <?php checked( 1, (int) manacore_get_option( 'requests_guests', 1 ) ); ?> />
+								<?php esc_html_e( 'کاربران مهمان هم می‌توانند درخواست بدهند', 'manacore' ); ?>
+							</label>
+							<br />
+							<label>
+								<input type="checkbox" name="manacore_settings[requests_show_pending]" value="1" <?php checked( 1, (int) manacore_get_option( 'requests_show_pending', 1 ) ); ?> />
+								<?php esc_html_e( 'درخواست‌های در انتظار تأیید هم در تخته دیده شوند (با برچسب)', 'manacore' ); ?>
+							</label>
+						</td>
+					</tr>
+					<tr>
+						<th scope="row"><label for="requests_heading"><?php esc_html_e( 'عنوان فرم', 'manacore' ); ?></label></th>
+						<td>
+							<input type="text" class="regular-text" id="requests_heading" name="manacore_settings[requests_heading]"
+								value="<?php echo esc_attr( (string) manacore_get_option( 'requests_heading', __( 'فیلم یا سریالی که دنبالش هستید را بگویید', 'manacore' ) ) ); ?>" />
+						</td>
+					</tr>
+					<tr>
+						<th scope="row"><label for="requests_intro"><?php esc_html_e( 'توضیح کوتاه فرم', 'manacore' ); ?></label></th>
+						<td>
+							<textarea class="large-text" rows="2" id="requests_intro" name="manacore_settings[requests_intro]"><?php echo esc_textarea( (string) manacore_get_option( 'requests_intro', __( 'عنوان را ثبت کنید؛ هرچه رأی بیشتری بگیرد، زودتر منتشر می‌شود.', 'manacore' ) ) ); ?></textarea>
+						</td>
+					</tr>
+					<tr>
+						<th scope="row"><label for="requests_button"><?php esc_html_e( 'متن دکمه‌ی ثبت', 'manacore' ); ?></label></th>
+						<td>
+							<input type="text" class="regular-text" id="requests_button" name="manacore_settings[requests_button]"
+								value="<?php echo esc_attr( (string) manacore_get_option( 'requests_button', __( 'ثبت درخواست', 'manacore' ) ) ); ?>" />
+						</td>
+					</tr>
+					<tr>
+						<th scope="row"><label for="requests_thanks"><?php esc_html_e( 'پیام پس از ثبت', 'manacore' ); ?></label></th>
+						<td>
+							<textarea class="large-text" rows="2" id="requests_thanks" name="manacore_settings[requests_thanks]"><?php echo esc_textarea( (string) manacore_get_option( 'requests_thanks', __( 'درخواست شما ثبت شد. به‌محض تأیید، به تخته‌ی درخواست‌ها اضافه می‌شود.', 'manacore' ) ) ); ?></textarea>
+						</td>
+					</tr>
+					<tr>
+						<th scope="row"><label for="requests_board_title"><?php esc_html_e( 'عنوان تخته', 'manacore' ); ?></label></th>
+						<td>
+							<input type="text" class="regular-text" id="requests_board_title" name="manacore_settings[requests_board_title]"
+								value="<?php echo esc_attr( (string) manacore_get_option( 'requests_board_title', __( 'درخواست‌های کاربران', 'manacore' ) ) ); ?>" />
+						</td>
+					</tr>
+					<tr>
+						<th scope="row"><label for="requests_per_page"><?php esc_html_e( 'تعداد در هر صفحه', 'manacore' ); ?></label></th>
+						<td>
+							<input type="number" min="3" max="60" class="small-text" id="requests_per_page" name="manacore_settings[requests_per_page]"
+								value="<?php echo esc_attr( (string) (int) manacore_get_option( 'requests_per_page', 12 ) ); ?>" />
+						</td>
+					</tr>
+				</table>
+				<?php
+			}
+		);
+
+		$this->render_requests_status();
+	}
+
+	/**
+	 * کارت وضعیت درخواست‌ها.
+	 *
+	 * @return void
+	 */
+	protected function render_requests_status() {
+		if ( ! class_exists( __NAMESPACE__ . '\\Requests' ) ) {
+			return;
+		}
+
+		$counts = Requests::counts();
+		$page   = Requests::page_url();
+		?>
+		<div class="card" style="max-width:900px;margin-top:16px">
+			<h2><?php esc_html_e( 'وضعیت درخواست‌ها', 'manacore' ); ?></h2>
+			<p class="description">
+				<?php
+				printf(
+					/* translators: ۱: در انتظار، ۲: تأییدشده، ۳: ردشده */
+					esc_html__( 'در انتظار بازبینی: %1$s — تأییدشده: %2$s — ردشده: %3$s', 'manacore' ),
+					esc_html( number_format_i18n( $counts['pending'] ) ),
+					esc_html( number_format_i18n( $counts['publish'] ) ),
+					esc_html( number_format_i18n( $counts['draft'] ) )
+				);
+				?>
+			</p>
+			<p>
+				<a class="button" href="<?php echo esc_url( add_query_arg( array( 'post_type' => Requests::POST_TYPE ), admin_url( 'edit.php' ) ) ); ?>">
+					<?php esc_html_e( 'فهرست درخواست‌ها', 'manacore' ); ?>
+				</a>
+				<a class="button" href="<?php echo esc_url( add_query_arg( array( 'post_type' => Requests::POST_TYPE, 'post_status' => 'pending' ), admin_url( 'edit.php' ) ) ); ?>">
+					<?php esc_html_e( 'در انتظار بازبینی', 'manacore' ); ?>
+				</a>
+				<?php if ( $page ) : ?>
+					<a class="button" href="<?php echo esc_url( $page ); ?>" target="_blank" rel="noopener"><?php esc_html_e( 'دیدن برگه‌ی درخواست‌ها', 'manacore' ); ?></a>
+				<?php endif; ?>
+			</p>
+
+			<?php if ( ! $page ) : ?>
+				<p class="description"><?php esc_html_e( 'هنوز برگه‌ای برای درخواست‌ها ساخته نشده است. با دکمه‌ی زیر یک برگه با فرم و تخته ساخته می‌شود.', 'manacore' ); ?></p>
+			<?php endif; ?>
+
+			<?php $this->tool_button( 'request-page', __( 'ساخت برگه‌ی درخواست‌ها', 'manacore' ) ); ?>
+
+			<p class="description" style="margin-top:12px">
+				<?php esc_html_e( 'شورت‌کدهای معادل:', 'manacore' ); ?>
+				<code>[manacore_request_form]</code> — <code>[manacore_requests orderby="votes"]</code>
+			</p>
+		</div>
+		<?php
+	}
+
+	/**
+	 * تب «تبلیغات».
+	 *
+	 * @return void
+	 */
+	protected function render_ads_tab() {
+		$positions = class_exists( __NAMESPACE__ . '\\Ads' ) ? Ads::positions() : array();
+		$enabled   = (array) manacore_get_option( 'ads_positions', array_keys( $positions ) );
+
+		$this->tab_form(
+			'ads',
+			function () use ( $positions, $enabled ) {
+				?>
+				<h2 class="title"><?php esc_html_e( 'جایگاه‌های تبلیغاتی', 'manacore' ); ?></h2>
+				<p class="description">
+					<?php
+					printf(
+						/* translators: %s: پیوند فهرست بنرها */
+						esc_html__( 'بنرها را از %s بسازید؛ تصویر، مقصد، جایگاه و زمان‌بندی هر بنر در همان صفحه تنظیم می‌شود.', 'manacore' ),
+						'<a href="' . esc_url( add_query_arg( array( 'post_type' => 'manacore_ad' ), admin_url( 'edit.php' ) ) ) . '">' . esc_html__( 'فهرست تبلیغات', 'manacore' ) . '</a>'
+					);
+					?>
+				</p>
+
+				<table class="form-table" role="presentation">
+					<tr>
+						<th scope="row"><?php esc_html_e( 'وضعیت', 'manacore' ); ?></th>
+						<td>
+							<label>
+								<input type="checkbox" name="manacore_settings[ads_enabled]" value="1" <?php checked( 1, (int) manacore_get_option( 'ads_enabled', 0 ) ); ?> />
+								<?php esc_html_e( 'نمایش تبلیغات فعال باشد', 'manacore' ); ?>
+							</label>
+							<br />
+							<label>
+								<input type="checkbox" name="manacore_settings[ads_hide_members]" value="1" <?php checked( 1, (int) manacore_get_option( 'ads_hide_members', 0 ) ); ?> />
+								<?php esc_html_e( 'برای کاربران وارد‌شده نمایش داده نشود', 'manacore' ); ?>
+							</label>
+							<br />
+							<label>
+								<input type="checkbox" name="manacore_settings[ads_counters]" value="1" <?php checked( 1, (int) manacore_get_option( 'ads_counters', 1 ) ); ?> />
+								<?php esc_html_e( 'شمارش نمایش و کلیک روشن باشد', 'manacore' ); ?>
+							</label>
+						</td>
+					</tr>
+					<tr>
+						<th scope="row"><?php esc_html_e( 'جایگاه‌های فعال', 'manacore' ); ?></th>
+						<td>
+							<?php foreach ( $positions as $key => $label ) : ?>
+								<label style="display:block;margin-bottom:4px">
+									<input type="checkbox" name="manacore_settings[ads_positions][]" value="<?php echo esc_attr( $key ); ?>"
+										<?php checked( in_array( $key, $enabled, true ) ); ?> />
+									<?php echo esc_html( $label ); ?>
+								</label>
+							<?php endforeach; ?>
+							<p class="description"><?php esc_html_e( '«بالای صفحه» پیش از سربرگ، «پیش از محتوا» و «پس از محتوا» در محتوای نوشته‌ها و «پیش از پخش‌کننده» بالای پلیر می‌آید. برای جای‌گذاری دستی، بلوک «جایگاه تبلیغاتی» یا شورت‌کد را به کار ببرید.', 'manacore' ); ?></p>
+						</td>
+					</tr>
+					<tr>
+						<th scope="row"><label for="ads_label"><?php esc_html_e( 'برچسب روی بنر', 'manacore' ); ?></label></th>
+						<td>
+							<input type="text" class="regular-text" id="ads_label" name="manacore_settings[ads_label]"
+								value="<?php echo esc_attr( (string) manacore_get_option( 'ads_label', __( 'تبلیغ', 'manacore' ) ) ); ?>" />
+							<p class="description"><?php esc_html_e( 'خالی بگذارید تا هیچ برچسبی روی بنر نیاید.', 'manacore' ); ?></p>
+						</td>
+					</tr>
+					<tr>
+						<th scope="row"><label for="ads_per_position"><?php esc_html_e( 'تعداد بنر در هر جایگاه', 'manacore' ); ?></label></th>
+						<td>
+							<input type="number" min="1" max="3" class="small-text" id="ads_per_position" name="manacore_settings[ads_per_position]"
+								value="<?php echo esc_attr( (string) (int) manacore_get_option( 'ads_per_position', 1 ) ); ?>" />
+						</td>
+					</tr>
+				</table>
+				<?php
+			}
+		);
+
+		if ( ! class_exists( __NAMESPACE__ . '\\Ads' ) ) {
+			return;
+		}
+		?>
+		<div class="card" style="max-width:900px;margin-top:16px">
+			<h2><?php esc_html_e( 'بنرهای فعال', 'manacore' ); ?></h2>
+			<?php
+			$ads = get_posts(
+				array(
+					'post_type'      => Ads::POST_TYPE,
+					'post_status'    => 'publish',
+					'posts_per_page' => 8,
+					'orderby'        => 'menu_order',
+					'order'          => 'DESC',
+				)
+			);
+			?>
+			<?php if ( ! $ads ) : ?>
+				<p><?php esc_html_e( 'هنوز بنری ساخته نشده است.', 'manacore' ); ?></p>
+			<?php else : ?>
+				<table class="widefat striped">
+					<thead>
+						<tr>
+							<th><?php esc_html_e( 'بنر', 'manacore' ); ?></th>
+							<th><?php esc_html_e( 'نمایش', 'manacore' ); ?></th>
+							<th><?php esc_html_e( 'کلیک', 'manacore' ); ?></th>
+							<th><?php esc_html_e( 'نرخ کلیک', 'manacore' ); ?></th>
+							<th><?php esc_html_e( 'وضعیت', 'manacore' ); ?></th>
+						</tr>
+					</thead>
+					<tbody>
+						<?php foreach ( $ads as $ad ) : ?>
+							<?php $stats = Ads::stats( $ad->ID ); ?>
+							<tr>
+								<td><a href="<?php echo esc_url( (string) get_edit_post_link( $ad->ID ) ); ?>"><?php echo esc_html( get_the_title( $ad->ID ) ); ?></a></td>
+								<td><?php echo esc_html( number_format_i18n( $stats['impressions'] ) ); ?></td>
+								<td><?php echo esc_html( number_format_i18n( $stats['clicks'] ) ); ?></td>
+								<td><?php echo esc_html( number_format_i18n( $stats['ctr'], 2 ) ); ?>٪</td>
+								<td><code><?php echo esc_html( Ads::state( $ad->ID ) ); ?></code></td>
+							</tr>
+						<?php endforeach; ?>
+					</tbody>
+				</table>
+			<?php endif; ?>
+
+			<p class="description" style="margin-top:12px">
+				<?php esc_html_e( 'شورت‌کد:', 'manacore' ); ?> <code>[manacore_ad position="before-content"]</code>
+			</p>
+		</div>
+		<?php
+	}
+
+	/**
+	 * تب «مگامنو»: تاکسونومی، تعداد، متن‌ها و کارت ویژه.
+ *
+ * @return void
+ */
 	protected function render_mega_tab() {
-		$settings = class_exists( __NAMESPACE__ . '\Mega_Menu' ) ? Mega_Menu::settings() : array();
+		$settings = class_exists( __NAMESPACE__ . '\\Mega_Menu' ) ? Mega_Menu::settings() : array();
 		ob_start();
 		?>
 				<h2 class="title"><?php esc_html_e( 'پنل مگامنو', 'manacore' ); ?></h2>

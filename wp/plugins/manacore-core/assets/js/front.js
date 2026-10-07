@@ -842,6 +842,236 @@
 	 * گزینه‌ها از خودِ جدول دانلود خوانده می‌شود (نه داده‌ی تکراری در
 	 * مارک‌آپ)، پس هر تغییری در جدول خودکار اینجا هم دیده می‌شود.
 	 */
+	/*
+	 * ---------------- درخواست فیلم/سریال ----------------
+	 *
+	 * فرم ثبت و رأی‌گیری هر دو روی REST کار می‌کنند. حالت‌های خطا از
+	 * پیام خود سرور می‌آید (پیام فارسی، همان‌جا در PHP) تا متن‌ها دو جا
+	 * تکرار نشوند؛ فقط وقتی پاسخ پیامی نداشت، متن جانشین نشان داده
+	 * می‌شود.
+	 */
+	function initRequests() {
+		var form = document.querySelector( '[data-manacore-request-form]' );
+
+		if ( form ) {
+			form.addEventListener( 'submit', function ( event ) {
+				event.preventDefault();
+
+				var status = form.querySelector( '[data-manacore-request-status]' );
+				var submit = form.querySelector( 'button[type="submit"]' );
+				var body = {
+					title: valueOf( form, 'title' ),
+					type: valueOf( form, 'type' ),
+					year: parseInt( valueOf( form, 'year' ), 10 ) || 0,
+					link: valueOf( form, 'link' ),
+					note: valueOf( form, 'note' ),
+					hp: valueOf( form, 'hp' ),
+				};
+
+				if ( body.title.length < 2 ) {
+					setStatus( status, i18n.requestTitle || 'نام فیلم یا سریال را کامل بنویسید.', true );
+					return;
+				}
+
+				if ( submit ) {
+					submit.disabled = true;
+				}
+
+				setStatus( status, i18n.requestSending || 'در حال ارسال…', false );
+
+				api( 'request', { method: 'POST', body: body } )
+					.then( function ( json ) {
+						setStatus( status, json && json.message ? json.message : i18n.requestDone || 'درخواست شما ثبت شد.', false );
+						toast( json && json.message ? json.message : i18n.requestDone || 'درخواست شما ثبت شد.', false );
+
+						form.reset();
+
+						/* تخته‌ی همین صفحه تازه می‌شود تا رأی تازه دیده شود. */
+						if ( json && json.id ) {
+							refreshRequests();
+						}
+					} )
+					.catch( function ( error ) {
+						setStatus( status, ( error && error.message ) || i18n.requestError || 'ارسال نشد؛ دوباره تلاش کنید.', true );
+					} )
+					.then( function () {
+						if ( submit ) {
+							submit.disabled = false;
+						}
+					} );
+			} );
+		}
+
+		document.addEventListener( 'click', function ( event ) {
+			var button = event.target.closest ? event.target.closest( '[data-manacore-vote]' ) : null;
+
+			if ( ! button ) {
+				return;
+			}
+
+			event.preventDefault();
+
+			if ( button.classList.contains( 'is-voted' ) ) {
+				toast( i18n.requestVoted || 'شما پیش‌تر به این درخواست رأی داده‌اید.', false );
+				return;
+			}
+
+			button.disabled = true;
+
+			api( 'request-vote', {
+				method: 'POST',
+				body: { request_id: parseInt( button.getAttribute( 'data-request-id' ), 10 ) || 0 },
+			} )
+				.then( function ( json ) {
+					var count = button.closest( '.manacore-request' ).querySelector( '[data-request-count]' );
+
+					if ( count && json && typeof json.votes !== 'undefined' ) {
+						count.textContent = json.votes;
+					}
+
+					button.classList.add( 'is-voted' );
+					toast( json && json.message ? json.message : i18n.requestVoted || 'رأی ثبت شد.', false );
+				} )
+				.catch( function ( error ) {
+					toast( ( error && error.message ) || i18n.requestError || 'رأی ثبت نشد.', true );
+				} )
+				.then( function () {
+					button.disabled = false;
+				} );
+		} );
+
+		refreshRequests();
+	}
+
+	/* خواندن یک فیلد فرم با پیشوند `manacore_settings`-مانند؛ ساده و امن. */
+	function valueOf( form, name ) {
+		var field = form.elements[ name ];
+
+		if ( ! field ) {
+			return '';
+		}
+
+		return ( field.value || '' ).trim();
+	}
+
+	function setStatus( node, message, isError ) {
+		if ( ! node ) {
+			return;
+		}
+
+		node.textContent = message || '';
+		node.classList.toggle( 'is-error', !! isError );
+	}
+
+	/*
+	 * تخته‌ی درخواست‌ها را از همان مسیر REST سرور تازه می‌کند تا شمار
+	 * رأی‌ها پس از ثبت درخواست/رأی همیشه واقعی باشد (بدون بازخوانی صفحه).
+	 */
+	function refreshRequests() {
+		var board = document.querySelector( '[data-manacore-requests]' );
+
+		if ( ! board ) {
+			return;
+		}
+
+		fetch( config.restUrl + 'requests?status=all&per_page=60' )
+			.then( function ( response ) {
+				return response.ok ? response.json() : null;
+			} )
+			.then( function ( json ) {
+				if ( ! json || ! json.items ) {
+					return;
+				}
+
+				json.items.forEach( function ( item ) {
+					var node = board.querySelector( '[data-request-id="' + item.id + '"]' );
+
+					if ( ! node ) {
+						return;
+					}
+
+					var count = node.querySelector( '[data-request-count]' );
+
+					if ( count ) {
+						count.textContent = item.votes;
+					}
+				} );
+			} )
+			.catch( function () {
+				/* تازه‌سازی تزئینی است؛ خطایش نباید چیزی را بشکند. */
+			} );
+	}
+
+	/*
+	 * ---------------- تبلیغات ----------------
+	 *
+	 * شمارش سمت سرور در رندر بی‌معنا بود (کش صفحه)، پس نمایش وقتی ثبت
+	 * می‌شود که بنر واقعاً در دید کاربر بیاید و کلیک هم پیش از رفتن به
+	 * مقصد با `sendBeacon` فرستاده می‌شود تا هرگز جلوی ناوبری گرفته نشود.
+	 */
+	function initAds() {
+		var ads = document.querySelectorAll( '[data-manacore-ad]' );
+
+		if ( ! ads.length ) {
+			return;
+		}
+
+		var send = function ( adId, eventName ) {
+			var url = config.restUrl + 'ad-event';
+			var payload = JSON.stringify( { ad_id: adId, event: eventName } );
+
+			if ( navigator.sendBeacon ) {
+				try {
+					var blob = new Blob( [ payload ], { type: 'application/json' } );
+					var sent = navigator.sendBeacon( url, blob );
+
+					if ( sent ) {
+						return;
+					}
+				} catch ( error ) {
+					/* پشتیبانی ناقص؛ به fetch برمی‌گردیم. */
+				}
+			}
+
+			api( 'ad-event', { method: 'POST', body: { ad_id: adId, event: eventName } } ).catch( function () {} );
+		};
+
+		ads.forEach( function ( ad ) {
+			var adId = parseInt( ad.getAttribute( 'data-ad-id' ), 10 ) || 0;
+
+			if ( ! adId ) {
+				return;
+			}
+
+			var link = ad.querySelector( '[data-manacore-ad-link]' );
+
+			if ( link ) {
+				link.addEventListener( 'click', function () {
+					send( adId, 'click' );
+				} );
+			}
+
+			/* شمارش نمایش: یک بار، وقتی بنر در دید می‌آید. */
+			if ( ! ( 'IntersectionObserver' in window ) ) {
+				send( adId, 'impression' );
+				return;
+			}
+
+			var observer = new IntersectionObserver( function ( entries ) {
+				entries.forEach( function ( entry ) {
+					if ( ! entry.isIntersecting ) {
+						return;
+					}
+
+					send( adId, 'impression' );
+					observer.disconnect();
+				} );
+			}, { threshold: 0.5 } );
+
+			observer.observe( ad );
+		} );
+	}
+
 	function initReports() {
 		document.querySelectorAll( '[data-manacore-report]' ).forEach( function ( button ) {
 			button.addEventListener( 'click', function () {
@@ -2350,6 +2580,8 @@
 		initHero();
 		initDownloadTracking();
 		initReports();
+		initRequests();
+		initAds();
 		initSectionTypeTabs();
 		initFilterForm();
 		initBrowseToolbar();

@@ -120,9 +120,12 @@ console.log( '----------------------------------------------------------' );
  *     پس رشته‌ی کامل در کد نیست.
  *   • koohe-no-dim : کلاس فرار برای کاربر است تا تصویری در حالت تیره
  *     ملایم نشود؛ در کد قالب تولید نمی‌شود و نباید بشود.
+ *   • manacore-ad-slot-- : جایگاه تبلیغاتی با
+ *     `manacore-ad-slot--%s` از کلید جایگاه ساخته می‌شود، پس نام کامل
+ *     جایگاه‌ها (top/before-content/…) در کد نیست.
  */
 var ALLOWED_ORPHANS = [ 'koohe-no-dim' ];
-var DYNAMIC_PREFIXES = [ 'manacore-hide-' ];
+var DYNAMIC_PREFIXES = [ 'manacore-hide-', 'manacore-ad-slot--' ];
 
 [
 	[ 'front.css', frontBare ],

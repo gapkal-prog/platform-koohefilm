@@ -204,6 +204,12 @@ class Assets {
 					'reportSend'    => __( 'ارسال گزارش', 'manacore' ),
 					'reportGeneric' => __( 'لینک این بخش', 'manacore' ),
 					'reportDone'    => __( 'گزارش ثبت شد. ممنون که اطلاع دادید!', 'manacore' ),
+					/* درخواست فیلم/سریال. */
+					'requestTitle'  => __( 'نام فیلم یا سریال را کامل بنویسید.', 'manacore' ),
+					'requestSending'=> __( 'در حال ارسال…', 'manacore' ),
+					'requestDone'   => __( 'درخواست شما ثبت شد.', 'manacore' ),
+					'requestError'  => __( 'ارسال نشد؛ دوباره تلاش کنید.', 'manacore' ),
+					'requestVoted'  => __( 'رأی شما ثبت شد.', 'manacore' ),
 					'playNext'      => __( 'پخش قسمت بعدی', 'manacore' ),
 					'cancel'        => __( 'لغو', 'manacore' ),
 					/*

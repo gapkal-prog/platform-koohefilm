@@ -174,16 +174,12 @@ class Reports {
 	 * @return string
 	 */
 	public static function reporter_hash() {
-		$user_id = get_current_user_id();
-
-		if ( $user_id ) {
-			return 'u' . $user_id;
-		}
-
-		$ip = isset( $_SERVER['REMOTE_ADDR'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REMOTE_ADDR'] ) ) : '';
-
-		/* نمک سایت تا نشت جدول، نشانی شبکه‌ی کاربران را لو ندهد. */
-		return 'g' . substr( hash( 'sha256', $ip . wp_salt( 'nonce' ) ), 0, 32 );
+		/*
+		 * همان سازوکار مشترک `manacore_visitor_hash()`: عضو با شناسه‌ی
+		 * کاربری، مهمان با درهم‌سازی نمک‌دار نشانی شبکه («reporter» دامنه‌ی
+		 * جدا می‌سازد تا رأی‌های درخواست‌ها با گزارش‌ها قاطی نشوند).
+		 */
+		return manacore_visitor_hash( 'reporter' );
 	}
 
 	/**

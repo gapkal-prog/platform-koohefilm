@@ -2249,6 +2249,83 @@ class Blocks {
 				),
 				'render'      => array( $this, 'render_episodes' ),
 			),
+
+			/*
+			 * درخواست کاربران: فرم ثبت + تخته‌ی رأی‌گیری. دو بلوک جداگانه
+			 * است تا مدیر بتواند فقط یکی را در برگه بگذارد (مثلاً تخته در
+			 * صفحه‌ی اصلی و فرم در برگه‌ی «درخواست‌ها»).
+			 */
+			'manacore/request-form'   => array(
+				'title'       => __( 'فرم درخواست فیلم/سریال', 'manacore' ),
+				'description' => __( 'فرم ثبت درخواست کاربران برای اثری که در آرشیو نیست.', 'manacore' ),
+				'icon'        => 'feedback',
+				'attributes'  => array(
+					'heading'   => array(
+						'type'    => 'string',
+						'default' => '',
+					),
+					'intro'     => array(
+						'type'    => 'string',
+						'default' => '',
+					),
+					'button'    => array(
+						'type'    => 'string',
+						'default' => '',
+					),
+					'showTypes' => array(
+						'type'    => 'boolean',
+						'default' => true,
+					),
+				),
+				'render'      => array( $this, 'render_request_form' ),
+			),
+
+			'manacore/requests'       => array(
+				'title'       => __( 'تخته‌ی درخواست‌ها', 'manacore' ),
+				'description' => __( 'فهرست درخواست‌های کاربران با رأی‌گیری و نشان «در انتظار تأیید».', 'manacore' ),
+				'icon'        => 'list-view',
+				'attributes'  => array(
+					'heading'     => array(
+						'type'    => 'string',
+						'default' => '',
+					),
+					'perPage'     => array(
+						'type'    => 'number',
+						'default' => 0,
+					),
+					'orderby'     => array(
+						'type'    => 'string',
+						'default' => 'votes',
+					),
+					'showPending' => array(
+						'type'    => 'boolean',
+						'default' => true,
+					),
+					'type'        => array(
+						'type'    => 'string',
+						'default' => '',
+					),
+				),
+				'render'      => array( $this, 'render_requests_board' ),
+			),
+
+			/* جایگاه تبلیغاتی دستی: هرجا مدیر بگذاردش، بنر همان جایگاه می‌آید. */
+			'manacore/ad-slot'        => array(
+				'title'       => __( 'جایگاه تبلیغاتی', 'manacore' ),
+				'description' => __( 'نمایش بنر یک جایگاه تبلیغاتی (بالای صفحه، پیش/پس از محتوا، پیش از پلیر).', 'manacore' ),
+				'icon'        => 'megaphone',
+				'attributes'  => array(
+					'position' => array(
+						'type'    => 'string',
+						'default' => 'before-content',
+					),
+					'label'    => array(
+						'type'    => 'string',
+						'default' => '',
+					),
+				),
+				'render'      => array( $this, 'render_ad_slot' ),
+			),
 		);
 
 		/**
@@ -3505,6 +3582,17 @@ class Blocks {
 			return Block_Support::render_empty( $attrs, 'manacore-player-page' );
 		}
 
+		/*
+		 * جایگاه تبلیغاتی «پیش از پخش‌کننده». این قلاب هم برای ماژول
+		 * تبلیغات داخلی است و هم در دسترس افزونه‌های دیگر تا نیازی به
+		 * دست‌کاری مارک‌آپ پلیر نباشد.
+		 *
+		 * @param int $display_id شناسه‌ی اثر در حال پخش.
+		 */
+		ob_start();
+		do_action( 'manacore_before_player', (int) $display_id );
+		$before_player = (string) ob_get_clean();
+
 		// فصل/قسمت درخواستی (از پیوندهای «پخش» جدول دانلود).
 		$req_season  = isset( $_GET['season'] ) ? absint( wp_unslash( $_GET['season'] ) ) : 0; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 		$req_episode = isset( $_GET['episode'] ) ? absint( wp_unslash( $_GET['episode'] ) ) : 0; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
@@ -3725,6 +3813,7 @@ class Blocks {
 		?>
 		<div class="player-page" data-manacore-player-page="<?php echo esc_attr( $source_id ); ?>"
 			<?php echo '' !== $next_url ? 'data-next-url="' . esc_url( $next_url ) . '" data-next-title="' . esc_attr( $next_title ) . '"' : ''; ?>>
+			<?php echo $before_player; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- مارک‌آپ جایگاه تبلیغاتی، از پیش امن‌سازی‌شده. ?>
 			<div class="player-top">
 				<a class="text-link" href="<?php echo esc_url( (string) get_permalink( $display_id ) ); ?>">
 					<?php echo esc_html( '← ' . $back_label ); ?>
@@ -3968,6 +4057,61 @@ class Blocks {
 		</div>
 		<?php
 		return (string) ob_get_clean();
+	}
+
+	/**
+	 * رندر بلوک فرم درخواست.
+	 *
+	 * @param array $attrs ویژگی‌ها.
+	 * @return string
+	 */
+	public function render_request_form( $attrs = array() ) {
+		if ( ! class_exists( __NAMESPACE__ . '\\Requests' ) ) {
+			return '';
+		}
+
+		return Requests::instance()->render_form( is_array( $attrs ) ? $attrs : array() );
+	}
+
+	/**
+	 * رندر بلوک تخته‌ی درخواست‌ها.
+	 *
+	 * @param array $attrs ویژگی‌ها.
+	 * @return string
+	 */
+	public function render_requests_board( $attrs = array() ) {
+		if ( ! class_exists( __NAMESPACE__ . '\\Requests' ) ) {
+			return '';
+		}
+
+		return Requests::instance()->render_board( is_array( $attrs ) ? $attrs : array() );
+	}
+
+	/**
+	 * رندر بلوک جایگاه تبلیغاتی.
+	 *
+	 * @param array $attrs ویژگی‌ها.
+	 * @return string
+	 */
+	public function render_ad_slot( $attrs = array() ) {
+		if ( ! class_exists( __NAMESPACE__ . '\\Ads' ) ) {
+			return '';
+		}
+
+		$attrs = wp_parse_args(
+			is_array( $attrs ) ? $attrs : array(),
+			array(
+				'position' => 'before-content',
+				'label'    => '',
+			)
+		);
+
+		return Ads::render(
+			$attrs['position'],
+			array(
+				'label' => '' !== $attrs['label'] ? $attrs['label'] : null,
+			)
+		);
 	}
 
 	public function render_trailer( $attrs = array() ) {
