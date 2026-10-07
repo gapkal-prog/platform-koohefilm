@@ -177,6 +177,13 @@ class Assets {
 				'nonce'     => wp_create_nonce( 'wp_rest' ),
 				'loggedIn'  => is_user_logged_in(),
 				'loginUrl'  => wp_login_url( get_permalink() ),
+
+				/*
+				 * نشانی کتابخانه‌ی HLS. از خودِ افزونه سرو می‌شود (نه CDN)
+				 * و فقط وقتی برگه منبع `.m3u8` داشته باشد بارگذاری می‌شود.
+				 * با فیلتر `manacore_hls_script_url` قابل جایگزینی است.
+				 */
+				'hlsUrl'    => Player::hls_script_url(),
 				'i18n'      => array(
 					'copied'        => __( 'کپی شد', 'manacore' ),
 					'copy'          => __( 'کپی لینک', 'manacore' ),
@@ -186,6 +193,12 @@ class Assets {
 					'error'         => __( 'خطایی رخ داد. دوباره تلاش کنید.', 'manacore' ),
 					'searching'     => __( 'در حال جستجو…', 'manacore' ),
 					'noResults'     => __( 'نتیجه‌ای یافت نشد.', 'manacore' ),
+					/* کنترل‌های افزودنی پلیر. */
+					'playbackSpeed' => __( 'سرعت پخش', 'manacore' ),
+					'pictureInPicture' => __( 'تصویر در تصویر', 'manacore' ),
+					'nextEpisode'   => __( 'قسمت بعدی', 'manacore' ),
+					'playNext'      => __( 'پخش قسمت بعدی', 'manacore' ),
+					'cancel'        => __( 'لغو', 'manacore' ),
 					/*
 					 * پیام‌های برگه‌ی حساب؛ کلیدها همان کدهایی هستند که
 					 * `Account_Actions` با `?notice=` برمی‌گرداند.

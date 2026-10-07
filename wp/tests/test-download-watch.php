@@ -85,6 +85,9 @@ function number_format_i18n( $n, $d = 0 ) { return number_format( (float) $n, (i
 function wp_login_url( $r = '' ) { return 'http://example.test/wp-login.php'; }
 function wp_rand( $min = 0, $max = 0 ) { return 12345; }
 function wp_slash( $v ) { return $v; }
+function wp_parse_url( $url, $component = -1 ) {
+	return -1 === $component ? parse_url( $url ) : parse_url( $url, $component );
+}
 function esc_url_raw( $v ) { return (string) $v; }
 function is_user_logged_in() { return false; }
 function get_current_user_id() { return 0; }
@@ -395,6 +398,29 @@ mc_ok( 11 === \ManaCore\Core\Player::watched_id(), 'شناسه‌ی قسمت د�
 $_GET['manacore_id'] = 5;
 mc_ok( 0 === \ManaCore\Core\Player::watched_id(), 'برگه‌ی معمولی به‌عنوان اثر پخش پذیرفته نمی‌شود' );
 unset( $_GET['manacore_id'] );
+
+/* ---------------------------------------------------------------
+ * ۵) منابع HLS و نوع رسانه
+ * ------------------------------------------------------------ */
+
+echo "\n=== ۵) منابع HLS و نوع رسانه ===\n";
+
+mc_ok( true === \ManaCore\Core\Player::is_hls_url( 'https://cdn.example/movie/1080/index.m3u8' ), 'نشانی m3u8 فهرست‌پخش شناخته می‌شود' );
+mc_ok( true === \ManaCore\Core\Player::is_hls_url( 'https://cdn.example/movie/master.M3U8?token=abc' ), 'پسوند با حروف بزرگ و رشته‌ی پرس‌وجو هم پذیرفته می‌شود' );
+mc_ok( false === \ManaCore\Core\Player::is_hls_url( 'https://cdn.example/movie/1080.mp4' ), 'فایل mp4 فهرست‌پخش نیست' );
+mc_ok( false === \ManaCore\Core\Player::is_hls_url( 'https://cdn.example/movie/index.m3u8.mp4' ), '«m3u8» میان نام فایل، HLS شمرده نمی‌شود' );
+mc_ok( false === \ManaCore\Core\Player::is_hls_url( '' ), 'نشانی خالی HLS نیست' );
+
+mc_ok( 'application/vnd.apple.mpegurl' === \ManaCore\Core\Player::mime_for( 'https://cdn.example/a/index.m3u8' ), 'نوع MIME فهرست‌پخش درست است' );
+mc_ok( 'video/mp4' === \ManaCore\Core\Player::mime_for( 'https://cdn.example/a/x.mp4' ), 'نوع MIME فایل mp4 درست است' );
+mc_ok( 'video/webm' === \ManaCore\Core\Player::mime_for( 'https://cdn.example/a/x.webm' ), 'نوع MIME فایل webm درست است' );
+mc_ok( '' === \ManaCore\Core\Player::mime_for( 'https://cdn.example/a/x.mp4?token=1#t' ) || 'video/mp4' === \ManaCore\Core\Player::mime_for( 'https://cdn.example/a/x.mp4?token=1#t' ), 'نوع MIME فایل mp4 با پارامتر هم درست است' );
+mc_ok( '' === \ManaCore\Core\Player::mime_for( 'https://player.example/embed/xyz' ), 'نشانی ناشناخته نوع MIME خالی می‌دهد' );
+
+mc_ok( true === \ManaCore\Core\Player::has_hls( array( '1080p' => 'https://cdn.example/a.mp4', '720p' => 'https://cdn.example/b.m3u8' ) ), 'میان منبع‌ها یک HLS کافی است' );
+mc_ok( false === \ManaCore\Core\Player::has_hls( array( '1080p' => 'https://cdn.example/a.mp4' ) ), 'منبع‌های فقط mp4 حالت HLS ندارند' );
+
+mc_ok( false !== strpos( \ManaCore\Core\Player::hls_script_url(), 'assets/vendor/hls/hls.min.js' ), 'کتابخانه‌ی HLS از پوشه‌ی خود افزونه می‌آید' );
 
 /* ---------------------------------------------------------------
  * پایان

@@ -1042,6 +1042,92 @@ html:not([dir="rtl"]) .manacore-hero-bg::after {
 	font-size: .625rem;
 }
 
+/*
+ * ---------------------------------------------------------------------
+ * افزودنی‌های پلیر حرفه‌ای
+ * ---------------------------------------------------------------------
+ * دکمه‌های «سرعت پخش» و «تصویر در تصویر» و کارت «قسمت بعدی» را
+ * جاوااسکریپت می‌سازد (`initPlayerExtras`/`initNextEpisode`). اینجا فقط
+ * ظاهرشان تنظیم می‌شود تا با نوار کنترل و کارت‌های موجود هم‌خانواده باشد.
+ */
+.player-controls [data-player-speed],
+.player-controls [data-player-pip] {
+	padding: 8px 10px;
+}
+
+/* نشان سرعت با ارقام لاتین خوانا می‌ماند (۱٫۲۵× و…). */
+.player-controls [data-player-speed-label] {
+	direction: ltr;
+	font-variant-numeric: tabular-nums;
+}
+
+/*
+ * کارت «قسمت بعدی»: روی کادر ویدئو می‌نشیند و با شمارش معکوس به قسمت
+ * بعد می‌رود. `inset-block-end` تا روی کنترل‌های بومی ویدئو نیفتد.
+ */
+.player-next {
+	position: absolute;
+	z-index: 3;
+	inset-block-end: 14px;
+	inset-inline-start: 14px;
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 8px 10px;
+	max-width: min(92%, 420px);
+	padding: 12px 14px;
+	border: 1px solid color-mix(in srgb, var(--mc-accent) 22%, var(--mc-border));
+	border-radius: 10px;
+	background: color-mix(in srgb, var(--mc-surface) 92%, transparent);
+	box-shadow: 0 18px 40px rgb(0 0 0 / 35%);
+	color: var(--mc-text);
+	text-align: start;
+}
+
+.player-next__label {
+	width: 100%;
+	margin: 0;
+	color: var(--mc-accent);
+	font-size: .6875rem;
+	letter-spacing: .02em;
+}
+
+.player-next > strong {
+	flex: 1 1 auto;
+	min-width: 0;
+	overflow: hidden;
+	font-size: .95rem;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.player-next__count {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 26px;
+	height: 26px;
+	border-radius: 50%;
+	background: var(--mc-accent);
+	color: #0d1218;
+	font-size: .8125rem;
+	font-weight: 700;
+}
+
+.player-next .manacore-btn {
+	min-height: 32px;
+	padding: 6px 12px;
+	font-size: .6875rem;
+}
+
+/* روی صفحه‌های باریک کارت تمام‌عرض می‌شود تا متن بریده نشود. */
+@media (max-width: 640px) {
+	.player-next {
+		inset-inline: 10px;
+		max-width: none;
+	}
+}
+
 .player-page .demo-notice {
 	display: flex;
 	align-items: center;

@@ -415,6 +415,98 @@ class Player {
 	}
 
 	/**
+	 * آیا این نشانی یک فهرست‌پخش HLS است؟
+	 *
+	 * پسوند `.m3u8` (با یا بی رشته‌ی پرس‌وجو) نشانه‌ی HLS است. مرورگرهای
+	 * دسکتاپ آن را بومی پخش نمی‌کنند و به `hls.js` نیاز دارند، ولی
+	 * Safari/iOS از خودش پخش می‌کند — همین تفکیک در
+	 * `data-player-media` به جاوااسکریپت داده می‌شود.
+	 *
+	 * @param string $url نشانی منبع.
+	 * @return bool
+	 */
+	public static function is_hls_url( $url ) {
+		$url = trim( (string) $url );
+
+		if ( '' === $url ) {
+			return false;
+		}
+
+		$path = (string) wp_parse_url( $url, PHP_URL_PATH );
+
+		if ( '' === $path ) {
+			$path = $url;
+		}
+
+		$path = preg_replace( '/[?#].*$/', '', $path );
+
+		return (bool) preg_match( '/\.m3u8$/i', (string) $path );
+	}
+
+	/**
+	 * نوع MIME مناسب برای یک منبع پخش.
+	 *
+	 * @param string $url نشانی.
+	 * @return string نوع MIME یا رشته‌ی خالی (مرورگر خودش حدس بزند).
+	 */
+	public static function mime_for( $url ) {
+		if ( self::is_hls_url( $url ) ) {
+			return 'application/vnd.apple.mpegurl';
+		}
+
+		$path = (string) wp_parse_url( (string) $url, PHP_URL_PATH );
+
+		if ( preg_match( '/\.webm$/i', $path ) ) {
+			return 'video/webm';
+		}
+
+		if ( preg_match( '/\.(mp4|m4v)$/i', $path ) ) {
+			return 'video/mp4';
+		}
+
+		if ( preg_match( '/\.ogv$/i', $path ) ) {
+			return 'video/ogg';
+		}
+
+		return '';
+	}
+
+	/**
+	 * آیا هر یک از منبع‌ها HLS است؟
+	 *
+	 * @param array<string,string> $sources نقشه‌ی کیفیت → نشانی.
+	 * @return bool
+	 */
+	public static function has_hls( $sources ) {
+		foreach ( (array) $sources as $url ) {
+			if ( self::is_hls_url( $url ) ) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/**
+	 * نشانی کتابخانه‌ی HLS (فروشده در افزونه، نه CDN).
+	 *
+	 * فیلتر `manacore_hls_script_url` اجازه می‌دهد سایت‌دار نسخه‌ی
+	 * روزآمد یا نسخه‌ی سبک‌تر را جایگزین کند.
+	 *
+	 * @return string
+	 */
+	public static function hls_script_url() {
+		$url = MANACORE_URL . 'assets/vendor/hls/hls.min.js';
+
+		/**
+		 * فیلتر نشانی کتابخانه‌ی HLS.
+		 *
+		 * @param string $url نشانی پیش‌فرض.
+		 */
+		return (string) apply_filters( 'manacore_hls_script_url', $url );
+	}
+
+	/**
 	 * شناسه‌ی برگه‌ی پخش.
 	 *
 	 * سه لایه، به ترتیب اولویت: گزینه‌ی `manacore_watch_page` (که هنگام

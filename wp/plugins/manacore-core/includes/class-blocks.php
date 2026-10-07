@@ -3564,7 +3564,10 @@ class Blocks {
 			$season_number = 1;
 		}
 
-		$episodes = array();
+		$episodes   = array();
+		$next_item  = null;   // قسمت بعدی برای پخش خودکار.
+		$next_value = 0;
+
 		if ( $series_id ) {
 			$episodes = get_posts(
 				array(
@@ -3599,11 +3602,49 @@ class Blocks {
 			if ( ! $episode_number && $episodes ) {
 				$episode_number = (int) get_post_meta( $episodes[0]->ID, 'manacore_episode_number', true );
 			}
+
+			/*
+			 * قسمت بعدی برای پخش خودکار پس از پایان قسمت جاری. کوچک‌ترین
+			 * شماره‌ی بزرگ‌تر از قسمت جاری انتخاب می‌شود (نه «قسمت بعد در
+			 * فهرست») تا با شماره‌گذاری نامرتب هم درست کار کند.
+			 */
+			foreach ( $episodes as $episode_item ) {
+				$number = (int) get_post_meta( $episode_item->ID, 'manacore_episode_number', true );
+
+				if ( $number > $episode_number && ( ! $next_item || $number < $next_value ) ) {
+					$next_item  = $episode_item;
+					$next_value = $number;
+				}
+			}
 		}
+
+		/*
+		 * پخش خودکار قسمت بعدی: نشانی و نام قسمت بعدی روی ریشه‌ی صفحه
+		 * می‌نشیند تا جاوااسکریپت وقتی `ended` شد، کارت «قسمت بعدی» را
+		 * با شمارش معکوس نشان دهد. برای فیلم (بی‌قسمت بعدی) هیچ‌چیز چاپ
+		 * نمی‌شود و رفتار پیشین دست‌نخورده می‌ماند.
+		 */
+		$next_url   = '';
+		$next_title = '';
+
+		if ( $next_item && $series_id ) {
+			$next_url   = Player::url_for(
+				(int) $series_id,
+				array(
+					'season'  => $season_number,
+					'episode' => $next_value,
+					'quality' => $current,
+				)
+			);
+			$next_title = (string) get_the_title( $next_item->ID );
+		}
+
+		$is_hls = Player::has_hls( $sources );
 
 		ob_start();
 		?>
-		<div class="player-page" data-manacore-player-page="<?php echo esc_attr( $source_id ); ?>">
+		<div class="player-page" data-manacore-player-page="<?php echo esc_attr( $source_id ); ?>"
+			<?php echo '' !== $next_url ? 'data-next-url="' . esc_url( $next_url ) . '" data-next-title="' . esc_attr( $next_title ) . '"' : ''; ?>>
 			<div class="player-top">
 				<a class="text-link" href="<?php echo esc_url( (string) get_permalink( $display_id ) ); ?>">
 					<?php echo esc_html( '← ' . $back_label ); ?>
@@ -3648,6 +3689,7 @@ class Blocks {
 			<div class="video-frame" data-player-frame>
 				<?php if ( 'video' === $resolved['type'] ) : ?>
 					<video controls preload="metadata" playsinline data-player-video
+						data-player-media="<?php echo $is_hls ? 'hls' : 'file'; ?>"
 						<?php echo $poster ? ' poster="' . esc_url( $poster ) . '"' : ''; ?>
 						title="<?php echo esc_attr( $title ); ?>">
 						<?php
@@ -3665,8 +3707,10 @@ class Blocks {
 						$first = true;
 						?>
 						<?php foreach ( $ordered as $label => $url ) : ?>
+							<?php $mime = Player::mime_for( $url ); ?>
 							<source <?php echo $first ? 'src="' . esc_url( $url ) . '"' : ''; ?>
 								data-quality="<?php echo esc_attr( (string) $label ); ?>"
+								<?php echo '' !== $mime ? 'type="' . esc_attr( $mime ) . '"' : ''; ?>
 								data-src="<?php echo esc_url( $url ); ?>" />
 							<?php $first = false; ?>
 						<?php endforeach; ?>

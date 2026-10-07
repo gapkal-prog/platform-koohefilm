@@ -343,6 +343,27 @@
 			var badge = root.querySelector( '.player-badges > span:last-child' );
 			var download = root.querySelector( '[data-player-download]' );
 
+			/*
+			 * نشاندن منبع جاری با آگاهی از نوع رسانه: `.m3u8` روی مرورگرهای
+			 * بدون پخش بومی HLS از راه `hls.js` می‌رود. نمونه‌ی فعال در
+			 * `detachHls` نگه داشته می‌شود تا با هر تعویض کیفیت آزاد شود.
+			 */
+			var detachHls = null;
+
+			if ( video && null === video.getAttribute( 'src' ) ) {
+				var initial = video.querySelector( 'source[data-src]' );
+				var initialUrl = initial ? String( initial.getAttribute( 'data-src' ) || '' ) : '';
+
+				/*
+				 * منبع نخست HLS است و مرورگر پخش بومی ندارد؟ پس پیش از هر
+				 * اقدامی `hls.js` وصل می‌شود. برای mp4 همان مسیر بومی
+				 * `<source>` می‌ماند و هیچ اسکریپتی اضافه نمی‌شود.
+				 */
+				if ( /\.m3u8(\?|#|$)/i.test( initialUrl ) ) {
+					detachHls = attachSource( video, initialUrl, false );
+				}
+			}
+
 			if ( video && select ) {
 				select.addEventListener( 'change', function () {
 					var option = select.options[ select.selectedIndex ];
@@ -354,11 +375,17 @@
 					if ( ! source ) {
 						return;
 					}
-					video.src = source;
-					video.load();
-					if ( ! video.paused ) {
-						video.play().catch( function () {} );
+
+					/* نمونه‌ی پیشین HLS آزاد می‌شود؛ وگرنه هر تعویض کیفیت
+					 * یک نمونه‌ی زنده‌ی دیگر در حافظه می‌گذاشت. */
+					if ( typeof detachHls === 'function' ) {
+						detachHls();
+						detachHls = null;
 					}
+
+					var wasPlaying = ! video.paused;
+					video.setAttribute( 'data-player-media', /\.m3u8(\?|#|$)/i.test( source ) ? 'hls' : 'file' );
+					detachHls = attachSource( video, source, wasPlaying );
 
 					/*
 					 * مرجع با تغییر کیفیت، نشان کیفیت و پیوند دانلود را هم
@@ -472,7 +499,339 @@
 					}
 				}
 			} );
+
+			/* افزودنی‌های پلیر: سرعت پخش، تصویر در تصویر، میان‌بُرها، قسمت بعدی. */
+			if ( video ) {
+				initPlayerExtras( root, video );
+				initPlayerKeyboard( root, video, frame );
+				initNextEpisode( root, video );
+			}
 		} );
+	}
+
+	/* ---------------- پخش‌کننده‌ی حرفه‌ای ---------------- */
+
+	/*
+	 * کتابخانه‌ی HLS فقط در صورت نیاز بارگذاری می‌شود: صفحه‌هایی که منبع
+	 * `.m3u8` دارند یک اسکریپت ۶۰۰ کیلوبایتی می‌گیرند و بقیه هیچ. فایل از
+	 * خودِ افزونه سرو می‌شود (`config.hlsUrl`)، نه CDN — سایت‌های فارسی
+	 * مخاطب ما به CDN دسترسی پایدار ندارند.
+	 */
+	var hlsPromise = null;
+
+	function loadHls() {
+		if ( window.Hls ) {
+			return Promise.resolve( window.Hls );
+		}
+
+		if ( hlsPromise ) {
+			return hlsPromise;
+		}
+
+		hlsPromise = new Promise( function ( resolve, reject ) {
+			if ( ! config.hlsUrl ) {
+				reject( new Error( 'hls-url-missing' ) );
+				return;
+			}
+
+			var script = document.createElement( 'script' );
+			script.src = config.hlsUrl;
+			script.async = true;
+			script.onload = function () {
+				window.Hls ? resolve( window.Hls ) : reject( new Error( 'hls-missing' ) );
+			};
+			script.onerror = function () {
+				reject( new Error( 'hls-load-failed' ) );
+			};
+			document.head.appendChild( script );
+		} );
+
+		return hlsPromise;
+	}
+
+	/*
+	 * نشاندن یک منبع روی پلیر: اگر HLS باشد و مرورگر پخش بومی نداشته
+	 * باشد، `hls.js` وصل می‌شود؛ در غیر این صورت همان `video.src`.
+	 * مقدار برگشتی، نمونه‌ی فعال HLS است (یا null) تا با تغییر کیفیت
+	 * نمونه‌ی قبلی آزاد شود — بی آن، هر تعویض کیفیت یک نمونه‌ی زنده‌ی
+	 * دیگر در حافظه می‌گذاشت.
+	 */
+	function attachSource( video, url, autoplay, onReady ) {
+		var needHls = /\.m3u8(\?|#|$)/i.test( String( url || '' ) );
+		var nativeHls = video.canPlayType( 'application/vnd.apple.mpegurl' );
+
+		if ( ! needHls || nativeHls ) {
+			video.src = url;
+			video.load();
+			if ( autoplay ) {
+				video.play().catch( function () {} );
+			}
+			if ( onReady ) {
+				onReady( null );
+			}
+			return null;
+		}
+
+		var instance = null;
+
+		loadHls()
+			.then( function ( Hls ) {
+				if ( ! Hls.isSupported() ) {
+					video.src = url;
+					video.load();
+					return;
+				}
+
+				instance = new Hls( { enableWorker: true, lowLatencyMode: false } );
+				instance.loadSource( url );
+				instance.attachMedia( video );
+
+				instance.on( Hls.Events.MANIFEST_PARSED, function () {
+					if ( autoplay ) {
+						video.play().catch( function () {} );
+					}
+				} );
+
+				if ( onReady ) {
+					onReady( instance );
+				}
+			} )
+			.catch( function () {
+				/* شکست بارگذاری کتابخانه = افت به پخش مستقیم. */
+				video.src = url;
+				video.load();
+			} );
+
+		return function () {
+			if ( instance ) {
+				instance.destroy();
+			}
+		};
+	}
+
+	/*
+	 * میان‌بُرهای کیبورد پلیر. مرجع ندارد، ولی هر پلیر حرفه‌ای دارد و
+	 * دسترس‌پذیری را هم بالا می‌برد (کاربر بدون ماوس هم می‌تواند پخش را
+	 * کنترل کند). در ورودی‌های متنی هرگز فعال نمی‌شود.
+	 */
+	function isTyping( target ) {
+		if ( ! target ) {
+			return false;
+		}
+
+		var tag = String( target.tagName || '' ).toLowerCase();
+
+		return 'input' === tag || 'textarea' === tag || 'select' === tag || target.isContentEditable;
+	}
+
+	function initPlayerKeyboard( root, video, frame ) {
+		document.addEventListener( 'keydown', function ( event ) {
+			if ( isTyping( event.target ) || event.metaKey || event.ctrlKey || event.altKey ) {
+				return;
+			}
+
+			/* فقط وقتی صفحه‌ی پخش واقعاً در دید است. */
+			if ( ! root.isConnected || root.offsetParent === null ) {
+				return;
+			}
+
+			var handled = true;
+
+			switch ( event.key ) {
+				case ' ':
+				case 'k':
+				case 'K':
+					video.paused ? video.play().catch( function () {} ) : video.pause();
+					break;
+				case 'ArrowRight':
+					video.currentTime = Math.min( video.duration || 0, video.currentTime + 5 );
+					break;
+				case 'ArrowLeft':
+					video.currentTime = Math.max( 0, video.currentTime - 5 );
+					break;
+				case 'ArrowUp':
+					video.volume = Math.min( 1, video.volume + 0.1 );
+					break;
+				case 'ArrowDown':
+					video.volume = Math.max( 0, video.volume - 0.1 );
+					break;
+				case 'm':
+				case 'M':
+					video.muted = ! video.muted;
+					break;
+				case 'f':
+				case 'F':
+					if ( frame && frame.requestFullscreen && ! document.fullscreenElement ) {
+						frame.requestFullscreen();
+					} else if ( document.fullscreenElement ) {
+						document.exitFullscreen();
+					}
+					break;
+				default:
+					handled = false;
+			}
+
+			if ( handled ) {
+				event.preventDefault();
+			}
+		} );
+	}
+
+	/*
+	 * دکمه‌های «سرعت پخش» و «تصویر در تصویر» با جاوااسکریپت ساخته
+	 * می‌شوند تا مارک‌آپ سمت سرور (و قرارداد آزمون‌های هم‌سانی با مرجع)
+	 * دست‌نخورده بماند. اگر مرورگر PiP نداشته باشد، دکمه ساخته نمی‌شود.
+	 */
+	var SPEEDS = [ 0.75, 1, 1.25, 1.5, 2 ];
+
+	function initPlayerExtras( root, video ) {
+		var controls = root.querySelector( '.player-controls' );
+		if ( ! controls || root.querySelector( '[data-player-speed]' ) ) {
+			return;
+		}
+
+		var speedIndex = 1;
+
+		try {
+			var saved = parseFloat( window.localStorage.getItem( 'manacore-speed' ) );
+			var found = SPEEDS.indexOf( saved );
+			if ( found > -1 ) {
+				speedIndex = found;
+			}
+		} catch ( e ) {}
+
+		video.playbackRate = SPEEDS[ speedIndex ];
+
+		var speed = document.createElement( 'button' );
+		speed.type = 'button';
+		speed.className = 'manacore-btn is-secondary is-small';
+		speed.setAttribute( 'data-player-speed', '1' );
+		speed.setAttribute(
+			'aria-label',
+			( i18n.playbackSpeed || 'سرعت پخش' ) + ': ' + SPEEDS[ speedIndex ] + '×'
+		);
+		speed.innerHTML = '<span aria-hidden="true">⏱</span> ';
+
+		var speedLabel = document.createElement( 'span' );
+		speedLabel.setAttribute( 'data-player-speed-label', '1' );
+		speedLabel.textContent = SPEEDS[ speedIndex ] + '×';
+		speed.appendChild( speedLabel );
+
+		speed.addEventListener( 'click', function () {
+			speedIndex = ( speedIndex + 1 ) % SPEEDS.length;
+			var rate = SPEEDS[ speedIndex ];
+			video.playbackRate = rate;
+			speedLabel.textContent = rate + '×';
+			speed.setAttribute( 'aria-label', ( i18n.playbackSpeed || 'سرعت پخش' ) + ': ' + rate + '×' );
+			try {
+				window.localStorage.setItem( 'manacore-speed', String( rate ) );
+			} catch ( e ) {}
+			toast( ( i18n.playbackSpeed || 'سرعت پخش' ) + ': ' + rate + '×' );
+		} );
+
+		controls.appendChild( speed );
+
+		if ( document.pictureInPictureEnabled && video.requestPictureInPicture ) {
+			var pip = document.createElement( 'button' );
+			pip.type = 'button';
+			pip.className = 'manacore-btn is-secondary is-small';
+			pip.setAttribute( 'data-player-pip', '1' );
+			pip.setAttribute( 'aria-label', i18n.pictureInPicture || 'تصویر در تصویر' );
+			pip.innerHTML = '<span aria-hidden="true">⧉</span> ' + ( i18n.pictureInPicture || 'تصویر در تصویر' );
+			pip.addEventListener( 'click', function () {
+				if ( document.pictureInPictureElement ) {
+					document.exitPictureInPicture();
+					return;
+				}
+				video.requestPictureInPicture().catch( function () {} );
+			} );
+			controls.appendChild( pip );
+		}
+	}
+
+	/*
+	 * کارت «قسمت بعدی» با شمارش معکوس. داده از `data-next-url` و
+	 * `data-next-title` می‌آید که فقط برای قسمت‌های میانی سریال چاپ
+	 * می‌شوند؛ برای فیلم هیچ کارتی ساخته نمی‌شود.
+	 */
+	var NEXT_DELAY = 8;
+
+	function initNextEpisode( root, video ) {
+		var nextUrl = root.getAttribute( 'data-next-url' );
+		var frame = root.querySelector( '[data-player-frame]' );
+
+		if ( ! nextUrl || ! frame || ! video ) {
+			return;
+		}
+
+		var nextTitle = root.getAttribute( 'data-next-title' ) || '';
+		var timer = null;
+
+		function clearCard() {
+			var card = frame.querySelector( '.player-next' );
+			if ( card ) {
+				card.parentNode.removeChild( card );
+			}
+			if ( timer ) {
+				window.clearInterval( timer );
+				timer = null;
+			}
+		}
+
+		video.addEventListener( 'ended', function () {
+			clearCard();
+
+			var card = document.createElement( 'div' );
+			card.className = 'player-next';
+			card.setAttribute( 'role', 'status' );
+			card.setAttribute( 'aria-live', 'polite' );
+
+			var label = document.createElement( 'p' );
+			label.className = 'player-next__label';
+			label.textContent = i18n.nextEpisode || 'قسمت بعدی';
+
+			var title = document.createElement( 'strong' );
+			title.textContent = nextTitle;
+
+			var countdown = document.createElement( 'span' );
+			countdown.className = 'player-next__count';
+			countdown.setAttribute( 'data-player-next-count', '1' );
+
+			var play = document.createElement( 'a' );
+			play.className = 'manacore-btn is-primary is-small';
+			play.setAttribute( 'data-player-next', '1' );
+			play.href = nextUrl;
+			play.textContent = i18n.playNext || 'پخش قسمت بعدی';
+
+			var cancel = document.createElement( 'button' );
+			cancel.type = 'button';
+			cancel.className = 'manacore-btn is-secondary is-small';
+			cancel.textContent = i18n.cancel || 'لغو';
+			cancel.addEventListener( 'click', clearCard );
+
+			card.appendChild( label );
+			card.appendChild( title );
+			card.appendChild( countdown );
+			card.appendChild( play );
+			card.appendChild( cancel );
+			frame.appendChild( card );
+
+			var left = NEXT_DELAY;
+			countdown.textContent = left;
+
+			timer = window.setInterval( function () {
+				left -= 1;
+				countdown.textContent = left;
+
+				if ( left <= 0 ) {
+					window.clearInterval( timer );
+					timer = null;
+					window.location.href = nextUrl;
+				}
+			}, 1000 );
+		} );
+
+		video.addEventListener( 'play', clearCard );
 	}
 
 	/* ---------------- تب فصل‌ها ---------------- */

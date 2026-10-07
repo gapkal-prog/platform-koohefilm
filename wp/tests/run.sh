@@ -16,6 +16,9 @@ fails=0
 PHP_BIN="${PHP_BIN:-php}"
 command -v "$PHP_BIN" >/dev/null 2>&1 || PHP_BIN="/c/xampp/php/php.exe"
 
+# باینری Node برای سوئیت‌های جاوااسکریپتی.
+NODE_BIN="${NODE_BIN:-node}"
+
 echo "=========================================================="
 echo "۱) بررسی نحوی PHP"
 echo "=========================================================="
@@ -29,7 +32,7 @@ echo "۲) بررسی نحوی JavaScript"
 echo "=========================================================="
 js_fail=0
 for f in $( find "$WP/plugins" "$WP/themes" -name '*.js' -not -path '*/node_modules/*' ); do
-  node --check "$f" 2>&1 || { echo "  ✗ $f"; js_fail=1; }
+  "$NODE_BIN" --check "$f" 2>&1 || { echo "  ✗ $f"; js_fail=1; }
 done
 if [ "$js_fail" -eq 0 ]; then
   echo "  ✓ همه‌ی فایل‌های JS بدون خطا ($( find "$WP/plugins" "$WP/themes" -name '*.js' -not -path '*/node_modules/*' | wc -l ) فایل)"
@@ -70,55 +73,61 @@ echo
 echo "=========================================================="
 echo "۸) شبیه‌سازی ویرایشگر بلوک"
 echo "=========================================================="
-node "$DIR/test-editor.cjs" || fails=$(( fails + 1 ))
+"$NODE_BIN" "$DIR/test-editor.cjs" || fails=$(( fails + 1 ))
 
 echo
 echo "=========================================================="
 echo "۹) آزمون حالت تیره/روشن"
 echo "=========================================================="
-node "$DIR/test-color-mode.cjs" || fails=$(( fails + 1 ))
+"$NODE_BIN" "$DIR/test-color-mode.cjs" || fails=$(( fails + 1 ))
 
 echo
 echo "=========================================================="
 echo "۱۰) آزمون سفارشی‌ساز (سربرگ چسبان و گزینه‌ها)"
 echo "=========================================================="
-node "$DIR/test-customize.cjs" || fails=$(( fails + 1 ))
+"$NODE_BIN" "$DIR/test-customize.cjs" || fails=$(( fails + 1 ))
 
 echo
 echo "=========================================================="
 echo "۱۱) آزمون استایل ویرایشگر سایت و ثبت بلوک‌های قالب"
 echo "=========================================================="
-node "$DIR/test-editor-styles.cjs" || fails=$(( fails + 1 ))
+"$NODE_BIN" "$DIR/test-editor-styles.cjs" || fails=$(( fails + 1 ))
 
 echo
 echo "=========================================================="
 echo "۱۲) آزمون فهرست همبرگری موبایل"
 echo "=========================================================="
-node "$DIR/test-mobile-nav.cjs" || fails=$(( fails + 1 ))
+"$NODE_BIN" "$DIR/test-mobile-nav.cjs" || fails=$(( fails + 1 ))
 
 echo
 echo "=========================================================="
 echo "۱۳) آزمون آرشیو، دسته‌بندی و نوار فیلتر"
 echo "=========================================================="
-node "$DIR/test-archive-filter.cjs" || fails=$(( fails + 1 ))
+"$NODE_BIN" "$DIR/test-archive-filter.cjs" || fails=$(( fails + 1 ))
 
 echo
 echo "=========================================================="
 echo "۱۴) آزمون تنوع ظاهری قالب، الگو و بلوک‌ها"
 echo "=========================================================="
-node "$DIR/test-variants.cjs" || fails=$(( fails + 1 ))
+"$NODE_BIN" "$DIR/test-variants.cjs" || fails=$(( fails + 1 ))
 
 echo
 echo "=========================================================="
 echo "۱۵) آزمون ریسپانسیو، دسترس‌پذیری و گزینشگرهای یتیم"
 echo "=========================================================="
-node "$DIR/test-responsive.cjs" || fails=$(( fails + 1 ))
+"$NODE_BIN" "$DIR/test-responsive.cjs" || fails=$(( fails + 1 ))
 
 echo
 echo "=========================================================="
-echo "۱۶) آزمون بومِ ویرایشگر بلوک‌های افزونه"
+echo "۱۶) آزمون پخش‌کننده‌ی حرفه‌ای (HLS، سرعت، قسمت بعدی)"
 echo "=========================================================="
-node "$DIR/test-editor-canvas.cjs" || fails=$(( fails + 1 ))
+"$NODE_BIN" "$DIR/test-player-pro.cjs" || fails=$(( fails + 1 ))
+
+echo
+echo "=========================================================="
+echo "۱۷) آزمون بومِ ویرایشگر بلوک‌های افزونه"
+echo "=========================================================="
+"$NODE_BIN" "$DIR/test-editor-canvas.cjs" || fails=$(( fails + 1 ))
 
 echo
 echo "=========================================================="
