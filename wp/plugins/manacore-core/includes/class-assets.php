@@ -197,6 +197,13 @@ class Assets {
 					'playbackSpeed' => __( 'سرعت پخش', 'manacore' ),
 					'pictureInPicture' => __( 'تصویر در تصویر', 'manacore' ),
 					'nextEpisode'   => __( 'قسمت بعدی', 'manacore' ),
+					/* گزارش خرابی لینک. */
+					'reportTitle'   => __( 'گزارش خرابی لینک', 'manacore' ),
+					'reportWhich'   => __( 'کدام لینک کار نمی‌کند؟', 'manacore' ),
+					'reportReason'  => __( 'توضیح کوتاه (اختیاری)', 'manacore' ),
+					'reportSend'    => __( 'ارسال گزارش', 'manacore' ),
+					'reportGeneric' => __( 'لینک این بخش', 'manacore' ),
+					'reportDone'    => __( 'گزارش ثبت شد. ممنون که اطلاع دادید!', 'manacore' ),
 					'playNext'      => __( 'پخش قسمت بعدی', 'manacore' ),
 					'cancel'        => __( 'لغو', 'manacore' ),
 					/*

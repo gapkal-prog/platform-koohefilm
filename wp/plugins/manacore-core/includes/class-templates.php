@@ -567,6 +567,31 @@ class Templates {
 				</div>
 				<?php $first = false; ?>
 			<?php endforeach; ?>
+
+			<?php
+			/*
+			 * «لینکی خراب است؟» — عمداً **بیرون** جدول و بعد از آن می‌نشیند:
+			 * جدول دانلود عیناً مرجع است و آزمون هم‌سانی هندسه‌ی ردیف‌ها را
+			 * می‌سنجد؛ افزودن ستون یا دکمه در ردیف، آن قرارداد را می‌شکست.
+			 */
+			if ( class_exists( __NAMESPACE__ . '\\Reports' ) ) {
+				$first_group = null;
+				foreach ( $by_season as $season_groups ) {
+					if ( ! empty( $season_groups ) ) {
+						$first_group = $season_groups[0];
+						break;
+					}
+				}
+
+				$report_url = '';
+
+				if ( $first_group && ! empty( $first_group['items'][0]['url'] ) ) {
+					$report_url = (string) $first_group['items'][0]['url'];
+				}
+
+				echo '<div class="download-report">' . Reports::button( $post_id, $report_url, $first_group ? (string) $first_group['quality'] : '' ) . '</div>'; // phpcs:ignore WordPress.Security.EscapeOutput — خروجی Reports::button خودش escape شده است
+			}
+			?>
 		</section>
 		<?php
 		return (string) ob_get_clean();

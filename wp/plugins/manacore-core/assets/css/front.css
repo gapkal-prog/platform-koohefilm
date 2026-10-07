@@ -1044,6 +1044,79 @@ html:not([dir="rtl"]) .manacore-hero-bg::after {
 
 /*
  * ---------------------------------------------------------------------
+ * گزارش خرابی لینک
+ * ---------------------------------------------------------------------
+ * دکمه‌ی «خراب است؟» بعد از جدول دانلود می‌نشیند (بیرون ردیف‌ها، تا هندسه‌ی
+ * جدول عیناً مرجع بماند) و فرم کوچکش با جاوااسکریپت کنار همان دکمه باز
+ * می‌شود. همه‌ی فاصله‌ها منطقی‌اند تا در RTL و LTR یکی باشد.
+ */
+.download-report {
+	margin-top: 14px;
+	text-align: end;
+}
+
+.manacore-report {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	padding: 4px 8px;
+	border: 0;
+	border-radius: 6px;
+	background: transparent;
+	color: var(--mc-text-muted);
+	font-family: inherit;
+	font-size: .6875rem;
+	cursor: pointer;
+}
+
+.manacore-report:hover,
+.manacore-report:focus-visible {
+	color: var(--mc-accent);
+	background: color-mix(in srgb, var(--mc-accent) 10%, transparent);
+}
+
+.manacore-report.is-reported {
+	cursor: default;
+	opacity: .65;
+}
+
+.manacore-report-panel {
+	display: grid;
+	gap: 8px;
+	margin-top: 10px;
+	padding: 12px;
+	border: 1px solid var(--mc-border);
+	border-radius: 9px;
+	background: var(--mc-surface-2, color-mix(in srgb, var(--mc-surface) 92%, transparent));
+	text-align: start;
+}
+
+.manacore-report-panel__title {
+	margin: 0;
+	font-size: .75rem;
+	font-weight: 600;
+	color: var(--mc-accent);
+}
+
+.manacore-report-panel select,
+.manacore-report-panel input {
+	width: 100%;
+	min-height: 34px;
+	padding: 6px 10px;
+	border: 1px solid var(--mc-border);
+	border-radius: 7px;
+	background: var(--mc-surface);
+	color: var(--mc-text);
+	font-family: inherit;
+	font-size: .75rem;
+}
+
+.manacore-report-panel .manacore-btn {
+	justify-self: start;
+}
+
+/*
+ * ---------------------------------------------------------------------
  * افزودنی‌های پلیر حرفه‌ای
  * ---------------------------------------------------------------------
  * دکمه‌های «سرعت پخش» و «تصویر در تصویر» و کارت «قسمت بعدی» را

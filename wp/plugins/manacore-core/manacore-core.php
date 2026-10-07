@@ -77,6 +77,17 @@ function manacore_boot() {
 	 * پیش‌تر این کلاس هرگز boot نمی‌شد و کدش مرده بود.
 	 */
 	ManaCore\Core\Mega_Menu::instance()->hooks();
+
+	/* گزارش خرابی لینک: مسیر REST، کنش‌های پیشخوان و ارتقای پایگاه‌داده. */
+	ManaCore\Core\Reports::instance()->hooks();
+
+	/*
+	 * ارتقای پایگاه‌داده. یک مقایسه‌ی گزینه‌ی خودبارگذاری‌شده در هر درخواست
+	 * است و کار سنگین (CREATE/ALTER) فقط وقتی نسخه اختلاف دارد اجرا
+	 * می‌شود؛ پس سایتی که افزونه را به‌روز می‌کند بدون بازکردن پیشخوان
+	 * هم جدول تازه را می‌گیرد.
+	 */
+	ManaCore\Core\Install::maybe_upgrade();
 }
 add_action( 'plugins_loaded', 'manacore_boot', 5 );
 

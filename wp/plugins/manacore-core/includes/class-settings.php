@@ -257,6 +257,7 @@ class Settings {
 			'mega-ok'       => array( 'success', __( 'فهرست راهبری مگامنو بازسازی شد.', 'manacore' ) ),
 			'cache-ok'      => array( 'success', __( 'کش مگامنو و برگه‌های گذرا پاک شد.', 'manacore' ) ),
 			'rewrite-ok'    => array( 'success', __( 'قواعد پیوندهای یکتا بازسازی شد.', 'manacore' ) ),
+			'report-ok'     => array( 'success', __( 'گزارش به‌روز شد.', 'manacore' ) ),
 			'failed'        => array( 'error', __( 'ابزار اجرا نشد؛ شرایط پیش‌نیاز را ببینید.', 'manacore' ) ),
 		);
 
@@ -322,6 +323,119 @@ class Settings {
 			)
 		);
 		exit;
+	}
+
+	/**
+	 * کارت گزارش‌های خرابی لینک.
+	 *
+	 * گزارش‌های «تازه» اول می‌آیند و مدیر می‌تواند هر ردیف را
+	 * «اصلاح‌شده»، «نادیده‌گرفته‌شده» یا «حذف‌شده» علامت بزند.
+	 *
+	 * @return void
+	 */
+	protected function render_reports() {
+		if ( ! class_exists( __NAMESPACE__ . '\\Reports' ) ) {
+			return;
+		}
+
+		$counts  = Reports::counts();
+		$reports = Reports::query( array( 'status' => 'new', 'per_page' => 20 ) );
+		?>
+		<div class="card" style="grid-column:1 / -1">
+			<h2>
+				<?php esc_html_e( 'گزارش‌های خرابی لینک', 'manacore' ); ?>
+				<?php if ( $counts['new'] ) : ?>
+					<span class="count"><?php echo esc_html( number_format_i18n( $counts['new'] ) ); ?></span>
+				<?php endif; ?>
+			</h2>
+
+			<p class="description">
+				<?php
+				printf(
+					/* translators: 1: تازه، 2: اصلاح‌شده، 3: نادیده‌گرفته‌شده */
+					esc_html__( 'تازه: %1$s — اصلاح‌شده: %2$s — نادیده‌گرفته‌شده: %3$s', 'manacore' ),
+					esc_html( number_format_i18n( $counts['new'] ) ),
+					esc_html( number_format_i18n( $counts['fixed'] ) ),
+					esc_html( number_format_i18n( $counts['ignored'] ) )
+				);
+				?>
+			</p>
+
+			<?php if ( ! $reports ) : ?>
+				<p><?php esc_html_e( 'گزارش تازه‌ای نیست. کاربران وقتی لینکی کار نکند، از زیر جدول دانلود گزارش می‌دهند.', 'manacore' ); ?></p>
+			<?php else : ?>
+				<table class="widefat striped">
+					<thead>
+						<tr>
+							<th><?php esc_html_e( 'اثر', 'manacore' ); ?></th>
+							<th><?php esc_html_e( 'کیفیت', 'manacore' ); ?></th>
+							<th><?php esc_html_e( 'لینک', 'manacore' ); ?></th>
+							<th><?php esc_html_e( 'توضیح', 'manacore' ); ?></th>
+							<th><?php esc_html_e( 'تاریخ', 'manacore' ); ?></th>
+							<th><?php esc_html_e( 'کنش', 'manacore' ); ?></th>
+						</tr>
+					</thead>
+					<tbody>
+						<?php foreach ( $reports as $report ) : ?>
+							<tr>
+								<td>
+									<?php
+									$post_id = (int) $report['post_id'];
+									$edit    = get_edit_post_link( $post_id );
+									$title   = get_the_title( $post_id );
+
+									if ( $edit ) {
+										printf( '<a href="%s">%s</a>', esc_url( $edit ), esc_html( '' !== $title ? $title : '#' . $post_id ) );
+									} else {
+										echo esc_html( '' !== $title ? $title : '#' . $post_id );
+									}
+									?>
+								</td>
+								<td><code><?php echo esc_html( (string) $report['quality'] ); ?></code></td>
+								<td>
+									<a href="<?php echo esc_url( (string) $report['link_url'] ); ?>" target="_blank" rel="noopener noreferrer nofollow">
+										<?php echo esc_html( '' !== (string) $report['link_label'] ? mb_substr( (string) $report['link_label'], 0, 40 ) : __( 'بازکردن لینک', 'manacore' ) ); ?>
+									</a>
+								</td>
+								<td><?php echo esc_html( (string) $report['reason'] ); ?></td>
+								<td><code><?php echo esc_html( (string) $report['created_at'] ); ?></code></td>
+								<td>
+									<?php $this->report_action( (int) $report['id'], 'fixed', __( 'اصلاح شد', 'manacore' ) ); ?>
+									<?php $this->report_action( (int) $report['id'], 'ignored', __( 'نادیده بگیر', 'manacore' ) ); ?>
+									<?php $this->report_action( (int) $report['id'], 'delete', __( 'حذف', 'manacore' ) ); ?>
+								</td>
+							</tr>
+						<?php endforeach; ?>
+					</tbody>
+				</table>
+			<?php endif; ?>
+		</div>
+		<?php
+	}
+
+	/**
+	 * پیوند کنش روی یک گزارش (با نانِس).
+	 *
+	 * @param int    $id     شناسه‌ی گزارش.
+	 * @param string $action کنش.
+	 * @param string $label  برچسب.
+	 * @return void
+	 */
+	protected function report_action( $id, $action, $label ) {
+		$url = add_query_arg(
+			array(
+				'action'        => 'manacore_report_action',
+				'report_id'     => (int) $id,
+				'report_action' => $action,
+			),
+			admin_url( 'admin-post.php' )
+		);
+
+		printf(
+			'<a class="button button-small" href="%s">%s</a> ',
+			esc_url( wp_nonce_url( $url, 'manacore_report_' . (int) $id ) ),
+			esc_html( $label )
+		);
 	}
 
 	/**
@@ -876,6 +990,7 @@ class Settings {
 			<?php
 			$this->render_watch_status();
 			$this->render_mega_status();
+			$this->render_reports();
 			?>
 			<div class="card">
 				<h2><?php esc_html_e( 'کش‌ها و پیوندهای یکتا', 'manacore' ); ?></h2>

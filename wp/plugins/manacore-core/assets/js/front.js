@@ -834,6 +834,129 @@
 		video.addEventListener( 'play', clearCard );
 	}
 
+	/* ---------------- گزارش خرابی لینک ---------------- */
+
+	/*
+	 * کاربر روی «خراب است؟» می‌زند، یک فرم کوچک کنارش باز می‌شود، لینک
+	 * مشکل‌دار را از فهرست همان بخش انتخاب می‌کند و می‌فرستد. فهرست
+	 * گزینه‌ها از خودِ جدول دانلود خوانده می‌شود (نه داده‌ی تکراری در
+	 * مارک‌آپ)، پس هر تغییری در جدول خودکار اینجا هم دیده می‌شود.
+	 */
+	function initReports() {
+		document.querySelectorAll( '[data-manacore-report]' ).forEach( function ( button ) {
+			button.addEventListener( 'click', function () {
+				var section = button.closest( '.download-section' ) || document;
+				var existing = section.querySelector( '.manacore-report-panel' );
+
+				if ( existing ) {
+					existing.parentNode.removeChild( existing );
+					return;
+				}
+
+				var panel = document.createElement( 'form' );
+				panel.className = 'manacore-report-panel';
+				panel.setAttribute( 'aria-label', i18n.reportTitle || 'گزارش خرابی لینک' );
+
+				var title = document.createElement( 'p' );
+				title.className = 'manacore-report-panel__title';
+				title.textContent = i18n.reportTitle || 'گزارش خرابی لینک';
+				panel.appendChild( title );
+
+				var select = document.createElement( 'select' );
+				select.className = 'manacore-report-panel__link';
+				select.setAttribute( 'aria-label', i18n.reportWhich || 'کدام لینک؟' );
+
+				var rows = section.querySelectorAll( '.download-row' );
+				Array.prototype.forEach.call( rows, function ( row ) {
+					var link = row.querySelector( 'a[href]' );
+					var quality = row.querySelector( '.quality-name b' );
+
+					if ( ! link || ! link.getAttribute( 'href' ) ) {
+						return;
+					}
+
+					var option = document.createElement( 'option' );
+					option.value = link.getAttribute( 'href' );
+					option.textContent = ( quality ? quality.textContent.trim() + ' — ' : '' ) + ( link.textContent.trim() || link.getAttribute( 'href' ) );
+					option.setAttribute( 'data-quality', quality ? quality.textContent.trim() : '' );
+					select.appendChild( option );
+				} );
+
+				/* اگر جدولی نبود، همان لینک روی خود دکمه به کار می‌رود. */
+				if ( ! select.options.length ) {
+					var fallback = document.createElement( 'option' );
+					fallback.value = button.getAttribute( 'data-link-url' ) || '';
+					fallback.textContent = i18n.reportGeneric || 'لینک این بخش';
+					select.appendChild( fallback );
+				}
+
+				var reason = document.createElement( 'input' );
+				reason.type = 'text';
+				reason.maxLength = 180;
+				reason.className = 'manacore-report-panel__reason';
+				reason.placeholder = i18n.reportReason || 'توضیح کوتاه (اختیاری)';
+				reason.setAttribute( 'aria-label', reason.placeholder );
+
+				var submit = document.createElement( 'button' );
+				submit.type = 'submit';
+				submit.className = 'manacore-btn is-primary is-small';
+				submit.textContent = i18n.reportSend || 'ارسال گزارش';
+
+				var cancel = document.createElement( 'button' );
+				cancel.type = 'button';
+				cancel.className = 'manacore-btn is-secondary is-small';
+				cancel.textContent = i18n.cancel || 'لغو';
+				cancel.addEventListener( 'click', function () {
+					panel.parentNode.removeChild( panel );
+					button.focus();
+				} );
+
+				panel.appendChild( select );
+				panel.appendChild( reason );
+				panel.appendChild( submit );
+				panel.appendChild( cancel );
+
+				panel.addEventListener( 'submit', function ( event ) {
+					event.preventDefault();
+
+					var option = select.options[ select.selectedIndex ];
+					var url = option ? option.value : '';
+
+					if ( ! url ) {
+						toast( i18n.reportWhich || 'کدام لینک؟', true );
+						return;
+					}
+
+					submit.disabled = true;
+
+					api( 'report-link', {
+						method: 'POST',
+						body: {
+							post_id: parseInt( button.getAttribute( 'data-post-id' ), 10 ) || 0,
+							link_url: url,
+							link_label: option ? option.textContent.trim() : '',
+							quality: option && option.getAttribute( 'data-quality' ) ? option.getAttribute( 'data-quality' ) : button.getAttribute( 'data-quality' ) || '',
+							reason: reason.value,
+						},
+					} )
+						.then( function ( response ) {
+							toast( ( response && response.message ) || i18n.reportDone || 'گزارش ثبت شد. ممنون!', false );
+							panel.parentNode.removeChild( panel );
+							button.setAttribute( 'disabled', 'disabled' );
+							button.classList.add( 'is-reported' );
+						} )
+						.catch( function ( error ) {
+							submit.disabled = false;
+							toast( ( error && error.message ) || i18n.error || 'خطایی رخ داد. دوباره تلاش کنید.', true );
+						} );
+				} );
+
+				button.parentNode.appendChild( panel );
+				select.focus();
+			} );
+		} );
+	}
+
 	/* ---------------- تب فصل‌ها ---------------- */
 	function initSeasonTabs() {
 		document.querySelectorAll( '[data-manacore-downloads]' ).forEach( function ( wrap ) {
@@ -2226,6 +2349,7 @@
 		initSearch();
 		initHero();
 		initDownloadTracking();
+		initReports();
 		initSectionTypeTabs();
 		initFilterForm();
 		initBrowseToolbar();
