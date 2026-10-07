@@ -266,6 +266,37 @@ mc_ok( ! array_diff( array_keys( $map ), $tabs ), 'هر تب نقشه در فه�
 mc_ok( in_array( 'requests_per_page', $plain, true ), 'کلید تب درخواست‌ها در نقشه هست' );
 mc_ok( in_array( 'ads_positions', $plain, true ), 'کلید جایگاه‌های تبلیغاتی در نقشه هست' );
 
+/*
+ * نگهبان «هم‌خوانی پنل و نقشه» — دو خطای بی‌صدای ممکن:
+ *   ۱. نام فیلدی در پنل با کلید نقشه یکی نباشد (تایپ) → ذخیره‌سازی آن
+ *      تنظیم بی‌صدا دور می‌ریزد؛
+ *   ۲. کلیدی در نقشه باشد ولی هیچ‌جا در پنل رندر نشود → گزینه‌ای که مدیر
+ *      هرگز نمی‌بیند.
+ */
+$settings_src = (string) file_get_contents( MANACORE_PATH . 'includes/class-settings.php' );
+$fields       = array();
+
+if ( preg_match_all( '/manacore_settings\[([a-z0-9_]+)\]/', $settings_src, $matches ) ) {
+	$fields = array_values( array_unique( $matches[1] ) );
+}
+
+$unknown_fields = array_values( array_diff( $fields, array_merge( $plain, array( '_tab' ) ) ) );
+mc_ok( array() === $unknown_fields, 'هر نام فیلد پنل یک کلید شناخته‌شده است', implode( ',', $unknown_fields ) );
+
+$unseen = array();
+
+foreach ( $plain as $key ) {
+	if ( false === strpos( $settings_src, "'" . $key . "'" ) ) {
+		$unseen[] = $key;
+	}
+}
+
+mc_ok( array() === $unseen, 'هر کلید نقشه در پنل دیده می‌شود (گزینه‌ی پنهان نداریم)', implode( ',', $unseen ) );
+mc_ok(
+	array( 'general', 'watch', 'requests', 'ads', 'mega', 'analytics', 'tools' ) === $tabs,
+	'نام و ترتیب تب‌های پنل همان ترتیب مستندشده است'
+);
+
 /* ورودی «همه‌ی کلیدها» ساخته می‌شود تا پوشش نقشه با خروجی واقعی سنجیده شود. */
 $sink = array( '_tab' => 'general' );
 
