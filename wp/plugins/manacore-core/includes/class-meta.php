@@ -272,6 +272,37 @@ class Meta {
 						'post_types'  => $all,
 						'description' => __( 'یوتیوب، آپارات یا فایل mp4.', 'manacore' ),
 					),
+					/*
+					 * زیرنویس‌ها به‌صورت تکرارشونده («زبان | برچسب | آدرس
+					 * فایل WebVTT | پیش‌فرض») تعریف می‌شوند تا هر اثر
+					 * بتواند چند زبان داشته باشد و استودیو بتواند فایل
+					 * را روی CDN خودش بگذارد.
+					 */
+					'manacore_subtitles' => array(
+						'label'       => __( 'زیرنویس‌ها', 'manacore' ),
+						'type'        => 'repeater',
+						'post_types'  => $all,
+						'description' => __( 'هر ردیف یک زبان. «کد زبان» استاندارد است (fa، en، ar…) و آدرس باید فایل WebVTT با پسوند .vtt باشد.', 'manacore' ),
+						'subfields'   => array(
+							'lang'    => array(
+								'label'       => __( 'کد زبان', 'manacore' ),
+								'type'        => 'text',
+								'description' => __( 'مانند fa یا en-US', 'manacore' ),
+							),
+							'label'   => array(
+								'label' => __( 'برچسب زبان', 'manacore' ),
+								'type'  => 'text',
+							),
+							'url'     => array(
+								'label' => __( 'آدرس فایل .vtt', 'manacore' ),
+								'type'  => 'url',
+							),
+							'default' => array(
+								'label' => __( 'پیش‌فرض باشد', 'manacore' ),
+								'type'  => 'checkbox',
+							),
+						),
+					),
 					'manacore_gallery' => array(
 						'label'      => __( 'گالری تصاویر', 'manacore' ),
 						'type'       => 'gallery',

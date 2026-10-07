@@ -118,7 +118,33 @@ check( /card\.setAttribute\( 'role', 'status' \) && false/.test( frontJs ) || /c
 check( /video && video\.getAttribute\( 'src' \) === null/.test( frontJs ) || /null === video\.getAttribute\( 'src' \)/.test( frontJs ), 'منبع نخست پیش از جابه‌جایی بررسی می‌شود' );
 
 /* ------------------------------------------------------------------
- * د) CSS و رشته‌های ترجمه
+ * د) زیرنویس (WebVTT)
+ * --------------------------------------------------------------- */
+section( 'د) زیرنویس' );
+
+const meta = read( 'wp/plugins/manacore-core/includes/class-meta.php' );
+
+check( /'manacore_subtitles' => array\(/.test( meta ), 'فیلد زیرنویس در طرح متا هست' );
+check( /'type'        => 'repeater',\s*\n\s*'post_types'  => \$all,/.test( meta ), 'زیرنویس برای فیلم/سریال/انیمه/قسمت فعال است' );
+[ 'lang', 'label', 'url', 'default' ].forEach( ( sub ) => {
+	check( new RegExp( "'" + sub + "'\\s*=> array\\(" ).test( meta ), 'زیرفیلد «' + sub + '» تعریف شده است' );
+} );
+
+check( /self::subtitle_tracks\(/.test( blocks ), 'پلیر زیرنویس‌ها را جمع می‌کند' );
+check( /function subtitle_tracks\( \$post_ids \)/.test( blocks ), 'تابع جمع‌آوری زیرنویس با ترتیب اولویت (منبع → اثر نمایش)' );
+check( blocks.includes( "preg_match( '/\\.vtt(\\?|#|$)/i', $url )" ), 'فقط فایل‌های WebVTT پذیرفته می‌شوند' );
+check( /if \( '' === \$lang \) \{\s*\n\s*continue;/.test( blocks ), 'ردیف بی‌کد زبان کنار گذاشته می‌شود' );
+check( /'default' => ! empty\( \$row\['default'\] \)/.test( blocks ), 'نشانه‌ی «پیش‌فرض» از متا خوانده می‌شود' );
+check( /if \( ! \$has_default && isset\( \$tracks\[0\] \) \) \{\s*\n\s*\$tracks\[0\]\['default'\] = true;/.test( blocks ), 'در نبود پیش‌فرض، ردیف نخست پیش‌فرض می‌شود' );
+check( /manacore_player_subtitles/.test( blocks ), 'فهرست زیرنویس فیلترپذیر است' );
+
+check( /<track kind="subtitles"/.test( blocks ), 'عنصر track در مارک‌آپ پلیر چاپ می‌شود' );
+check( blocks.includes( "srclang=\"<?php echo esc_attr( $track['lang'] ); ?>\"" ), 'کد زبان روی track می‌نشیند' );
+check( blocks.includes( "<?php echo $track['default'] ? 'default' : ''; ?>" ), 'ردیف پیش‌فرض نشانه‌ی default می‌گیرد' );
+check( ! /\.srt/.test( blocks ), 'فرمت SRT پشتیبانی نمی‌شود (مرورگر نمی‌فهمد) و ادعا هم نمی‌شود' );
+
+/* ------------------------------------------------------------------
+ * ه) CSS و رشته‌های ترجمه
  * --------------------------------------------------------------- */
 section( 'د) ظاهر و ترجمه' );
 
@@ -135,7 +161,7 @@ check( /'pictureInPicture' => __\( 'تصویر در تصویر', 'manacore' \)/.
 /* ------------------------------------------------------------------
  * ه) کتابخانه‌ی فروشده (vendor)
  * --------------------------------------------------------------- */
-section( 'ه) کتابخانه‌ی فروشده' );
+section( 'و) کتابخانه‌ی فروشده' );
 
 const hlsPath = path.join( vendorDir, 'hls', 'hls.min.js' );
 const licensePath = path.join( vendorDir, 'hls', 'LICENSE' );

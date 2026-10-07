@@ -3389,6 +3389,79 @@ class Blocks {
 	}
 
 	/**
+	 * فهرست زیرنویس‌های قابل‌استفاده برای پلیر.
+	 *
+	 * ردیف‌های ناقص (بی‌آدرس یا بی‌کد زبان) و فایل‌های غیرِ `.vtt` کنار
+	 * گذاشته می‌شوند. اگر هیچ ردیفی «پیش‌فرض» نبود، ردیف نخست پیش‌فرض
+	 * می‌شود تا مرورگر زیرنویس را خودکار روی تصویر بیاورد.
+	 *
+	 * @param array<int,int> $post_ids شناسه‌ها به ترتیب اولویت.
+	 * @return array<int,array{url:string,lang:string,label:string,default:bool}>
+	 */
+	protected static function subtitle_tracks( $post_ids ) {
+		$rows = array();
+
+		foreach ( (array) $post_ids as $post_id ) {
+			$raw = get_post_meta( (int) $post_id, 'manacore_subtitles', true );
+			$raw = is_string( $raw ) ? json_decode( $raw, true ) : $raw;
+
+			if ( is_array( $raw ) && $raw ) {
+				$rows = $raw;
+				break;
+			}
+		}
+
+		$tracks = array();
+
+		foreach ( (array) $rows as $row ) {
+			if ( ! is_array( $row ) || empty( $row['url'] ) ) {
+				continue;
+			}
+
+			$url = (string) $row['url'];
+
+			/* مرورگر فقط WebVTT می‌فهمد؛ پسوند پرس‌وجو هم پذیرفته می‌شود. */
+			if ( ! preg_match( '/\.vtt(\?|#|$)/i', $url ) ) {
+				continue;
+			}
+
+			/* کد زبان BCP-47 است؛ حروف بزرگ/کوچکش باید بماند (en-US). */
+			$lang = trim( preg_replace( '/[^A-Za-z0-9\-]/', '', str_replace( '_', '-', (string) ( isset( $row['lang'] ) ? $row['lang'] : '' ) ) ) );
+
+			if ( '' === $lang ) {
+				continue;
+			}
+
+			$tracks[] = array(
+				'url'     => esc_url_raw( $url ),
+				'lang'    => $lang,
+				'label'   => '' !== trim( (string) ( $row['label'] ?? '' ) ) ? sanitize_text_field( (string) $row['label'] ) : strtoupper( $lang ),
+				'default' => ! empty( $row['default'] ),
+			);
+		}
+
+		$has_default = false;
+		foreach ( $tracks as $track ) {
+			if ( $track['default'] ) {
+				$has_default = true;
+				break;
+			}
+		}
+
+		if ( ! $has_default && isset( $tracks[0] ) ) {
+			$tracks[0]['default'] = true;
+		}
+
+		/**
+		 * فیلتر فهرست زیرنویس‌های پلیر.
+		 *
+		 * @param array $tracks   ردیف‌های آماده.
+		 * @param int   $post_id  شناسه‌ی منبع پخش.
+		 */
+		return (array) apply_filters( 'manacore_player_subtitles', $tracks, (int) ( isset( $post_ids[0] ) ? $post_ids[0] : 0 ) );
+	}
+
+	/**
 	 * رندر تریلر.
 	 *
 	 * @param array $attrs ویژگی‌ها.
@@ -3641,6 +3714,13 @@ class Blocks {
 
 		$is_hls = Player::has_hls( $sources );
 
+		/*
+		 * زیرنویس‌ها: فهرست تکرارشونده‌ی `manacore_subtitles` (JSON) روی
+		 * خودِ منبع، و اگر نداشت روی اثر نمایش. فایل‌های غیرِ WebVTT رد
+		 * می‌شوند — مرورگر فقط `.vtt` را می‌فهمد.
+		 */
+		$subtitles = self::subtitle_tracks( $source_id !== $display_id ? array( $source_id, $display_id ) : array( $display_id ) );
+
 		ob_start();
 		?>
 		<div class="player-page" data-manacore-player-page="<?php echo esc_attr( $source_id ); ?>"
@@ -3713,6 +3793,14 @@ class Blocks {
 								<?php echo '' !== $mime ? 'type="' . esc_attr( $mime ) . '"' : ''; ?>
 								data-src="<?php echo esc_url( $url ); ?>" />
 							<?php $first = false; ?>
+						<?php endforeach; ?>
+						<?php foreach ( $subtitles as $track ) : ?>
+							<track kind="subtitles"
+								src="<?php echo esc_url( $track['url'] ); ?>"
+								srclang="<?php echo esc_attr( $track['lang'] ); ?>"
+								label="<?php echo esc_attr( $track['label'] ); ?>"
+								<?php echo $track['default'] ? 'default' : ''; ?>
+								data-manacore-subtitle />
 						<?php endforeach; ?>
 						<?php esc_html_e( 'مرورگر شما از پخش ویدیو پشتیبانی نمی‌کند.', 'manacore' ); ?>
 					</video>

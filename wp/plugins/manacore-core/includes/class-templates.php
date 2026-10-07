@@ -747,9 +747,17 @@ class Templates {
 			<span class="download-size"><?php echo esc_html( (string) $group['size'] ); ?></span>
 			<div class="download-actions">
 				<?php if ( $locked ) : ?>
+					<?php
+					/* برچسب دکمه‌ی اشتراک از پنل مدیریت می‌آید (خالی = پیش‌فرض). */
+					$subscribe_label = trim( (string) manacore_get_option( 'subscribe_label', '' ) );
+
+					if ( '' === $subscribe_label ) {
+						$subscribe_label = __( 'تهیه اشتراک', 'manacore' );
+					}
+					?>
 					<a class="manacore-btn is-primary is-small"
 						href="<?php echo esc_url( apply_filters( 'manacore_subscribe_url', manacore_get_option( 'subscribe_url', home_url( '/subscribe/' ) ) ) ); ?>">
-						<?php esc_html_e( 'تهیه اشتراک', 'manacore' ); ?>
+						<?php echo esc_html( $subscribe_label ); ?>
 					</a>
 				<?php else : ?>
 					<?php foreach ( $group['items'] as $item ) : ?>
