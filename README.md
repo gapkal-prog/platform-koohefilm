@@ -65,7 +65,7 @@
 
 **آمار کد (به‌روز):** ۴۱٬۷۴۹ خط PHP در ۸۹ فایل افزونه/قالب (به‌علاوه‌ی ۱۲
 اسکریپت آزمون PHP) · ۱۰ فایل JS · ۱۱ فایل CSS ·
-۳۴ قالب HTML + ۶ بخش · ۱۶ الگو · ۴ تنوع استایل · ۲٬۰۶۷ رشته‌ی قابل ترجمه
+۳۴ قالب HTML + ۶ بخش · ۱۶ الگو · ۴ تنوع استایل · ۲٬۰۲۸ رشته‌ی قابل ترجمه
 (۱٬۸۲۳ در `.pot` افزونه‌ها + ۲۴۴ در `.pot` قالب — بازتولید با `php wp/makepot.php`)
 (۱۰ سوئیت آزمون Node + ۸ اسکریپت PHP + ۲۳ بخش run.sh + ۴۵ سوئیت مرورگری — بخشی نیازمند PHP/مرورگر)
 
@@ -158,8 +158,8 @@ php wp/makepot.php      # یا: npm run wp:pot
 
 | خروجی | دامنه‌ی متنی | تعداد رشته |
 |---|---|---|
-| `wp/plugins/manacore-core/languages/manacore.pot` | `manacore` | ۷۹۸ |
-| `wp/themes/koohe-film/languages/koohe-film.pot` | `koohe-film` | ۷۲ |
+| `wp/plugins/manacore-core/languages/manacore.pot` | `manacore` | ۱٬۷۸۴ |
+| `wp/themes/koohe-film/languages/koohe-film.pot` | `koohe-film` | ۲۴۴ |
 
 هر سه افزونه یک دامنه‌ی متنی مشترک (`manacore`) دارند، پس هر سه در یک فایل
 `manacore.pot` استخراج می‌شوند. استخراج‌کننده از توکنایزر خود PHP
@@ -698,6 +698,10 @@ bash wp/tests/run.sh    # یا: npm run wp:test
 
 </div>
 
+همین مجموعه روی GitHub Actions هم قابل اجراست (روی سه نسخه‌ی PHP ۸٫۱ تا
+۸٫۳ و یک نسخه‌ی Node) و پس از سبز شدن، بسته‌ی نصبی ZIP را به‌عنوان artifact
+می‌سازد؛ فایل آماده و توضیح راه‌اندازی در `docs/ci.md` است.
+
 بیست‌و‌سه بخش اجرا می‌شود:
 
 | # | بخش | موضوع |
@@ -790,8 +794,8 @@ RUNTIME: all edit() calls OK (elements built: 6957)
 - همه‌ی ورودی‌ها با `sanitize_*` پاک‌سازی می‌شوند
 - بررسی `nonce` و `current_user_can` در همه‌ی عملیات نوشتن
 - کوئری‌ها با `WP_Query` و `$wpdb->prepare`
-- آماده‌ی ترجمه — همه‌ی رشته‌ها در `__()` با دامنه‌ی متنی درست و
-  فایل‌های `.pot` تولیدشده (۸۷۰ رشته)
+- آماده‌ی ترجمه — ۲٬۰۲۸ رشته در `__()` با دامنه‌ی متنی درست و
+  فایل‌های `.pot` تولیدشده (بازتولید با `php wp/makepot.php`)
 - بدون مرحله‌ی build — JS بدون JSX و بدون وابستگی npm
 
 ---
