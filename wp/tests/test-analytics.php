@@ -70,10 +70,6 @@ function manacore_get_option( $key, $default = '' ) { return $default; }
 function get_posts( $args ) {
 	$type = isset( $args['post_type'] ) ? $args['post_type'] : '';
 
-	if ( 'manacore_ad' === $type ) {
-		return (array) $GLOBALS['mc_ads'];
-	}
-
 	if ( 'manacore_request' === $type ) {
 		return (array) $GLOBALS['mc_requests'];
 	}
@@ -81,7 +77,6 @@ function get_posts( $args ) {
 	return array();
 }
 
-$GLOBALS['mc_ads']      = array( 11, 12 );
 $GLOBALS['mc_requests'] = array();
 
 /**
@@ -141,34 +136,6 @@ class Analytics_Test_Stub {
 	public static $clicks      = 4;
 }
 
-/**
- * پوسته‌ی کلاس تبلیغات: تنها چیزهایی که داشبورد لازم دارد.
- */
-class Ads_Stub {
-	const POST_TYPE = 'manacore_ad';
-
-	public static $data = array();
-
-	public static function stats( $id ) {
-		return isset( self::$data[ $id ] ) ? self::$data[ $id ] : array( 'impressions' => 0, 'clicks' => 0, 'ctr' => 0.0 );
-	}
-
-	public static function state( $id ) {
-		return isset( self::$data[ $id ]['state'] ) ? self::$data[ $id ]['state'] : 'active';
-	}
-}
-
-function analytics_ads_stub_data() {
-	Ads_Stub::$data = array(
-		11 => array( 'impressions' => 90, 'clicks' => 2, 'ctr' => 2.22, 'state' => 'active' ),
-		12 => array( 'impressions' => 10, 'clicks' => 5, 'ctr' => 50.0, 'state' => 'expired' ),
-	);
-}
-
-function ads_stats( $id ) {
-	return Ads_Stub::stats( $id );
-}
-
 /* ---------------------------------------------------------------
  * ۱) جمع آمار
  * ------------------------------------------------------------ */
@@ -216,7 +183,6 @@ mc_ok( 70 === $summary['views_week'], 'تماشا هفته' );
 mc_ok( 300 === $summary['views_month'], 'تماشا ماه' );
 mc_ok( 25 === $summary['downloads_week'], 'دانلود هفته' );
 mc_ok( 4 === $summary['comments_pending'], 'دیدگاه‌های در صف از `wp_count_comments` می‌آید' );
-mc_ok( is_array( $summary['ads'] ), 'بخش تبلیغات همیشه آرایه است (حتی وقتی خالی است)' );
 mc_ok( $first_queries > 0, 'بار نخست پرس‌وجو می‌زند' );
 
 $summary_again = ManaCore\Core\Analytics::summary();
@@ -234,26 +200,10 @@ mc_ok( 6 === $empty_summary['reports_new'], 'شمار گزارش‌های تاز
 mc_ok( 5 === $empty_summary['requests_pending'] && 9 === $empty_summary['requests_publish'], 'شمار درخواست‌ها از ماژول درخواست‌ها می‌آید' );
 
 /* ---------------------------------------------------------------
- * ۳) نرخ کلیک و بهترین بنر
- * ------------------------------------------------------------ */
-
-echo "\n=== ۳) آمار بنرها ===\n";
-
-$GLOBALS['mc_transients'] = array();
-ManaCore\Core\Analytics::instance()->flush();
-$GLOBALS['wpdb']->vars = array( '0', '0', '0', '0' );
-
-/* کلاس واقعی Ads در این آزمون نیست؛ پس منطق تجمیع را با داده‌ی پوسته می‌سنجیم. */
-$ads_summary = ManaCore\Core\Analytics::ads_summary();
-mc_ok( 0 === $ads_summary['impressions'] && 0 === $ads_summary['clicks'], 'بدون ماژول تبلیغات، جمع‌ها صفر است' );
-mc_ok( 0.0 === $ads_summary['ctr'], 'نرخ کلیک صفر می‌شود (تقسیم بر صفر رخ نمی‌دهد)' );
-mc_ok( array() === $ads_summary['best'], '«بهترین بنر» خالی می‌ماند' );
-
-/* ---------------------------------------------------------------
  * ۴) فهرست‌ها
  * ------------------------------------------------------------ */
 
-echo "\n=== ۴) فهرست‌های تحلیلی ===\n";
+echo "\n=== ۳) فهرست‌های تحلیلی ===\n";
 
 $GLOBALS['mc_transients'] = array();
 ManaCore\Core\Analytics::instance()->flush();
@@ -303,10 +253,10 @@ mc_ok( 1 === count( $topx ) && 21 === $topx[0]['id'], 'پررأی‌ترین د�
 mc_ok( 3 === $topx[0]['votes'] && 'publish' === $topx[0]['status'], 'شمار رأی و وضعیت در ردیف می‌آید' );
 
 /* ---------------------------------------------------------------
- * ۵) ویجت پیشخوان
+ * ۴) ویجت پیشخوان
  * ------------------------------------------------------------ */
 
-echo "\n=== ۵) ویجت پیشخوان ===\n";
+echo "\n=== ۴) ویجت پیشخوان ===\n";
 
 $GLOBALS['mc_can']     = false;
 $GLOBALS['mc_widgets'] = array();
@@ -322,7 +272,7 @@ mc_ok( is_callable( $GLOBALS['mc_widgets']['manacore_overview'][1] ), 'ویجت 
  * ۶) اتصال به پنل
  * ------------------------------------------------------------ */
 
-echo "\n=== ۶) اتصال به پنل مدیریت ===\n";
+echo "\n=== ۵) اتصال به پنل مدیریت ===\n";
 
 $settings = file_get_contents( MANACORE_PATH . 'includes/class-settings.php' );
 $boot     = file_get_contents( MANACORE_PATH . 'manacore-core.php' );

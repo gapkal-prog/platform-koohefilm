@@ -3,8 +3,8 @@
  * گزارش خرابی لینک.
  *
  * کاربری که لینک شکسته می‌بیند، از همان ردیف جدول دانلود گزارش می‌دهد؛
- * گزارش در جدول اختصاصی ذخیره و در پیشخوان (تب «وضعیت و ابزارها» ←
- * گزارش‌ها) فهرست می‌شود. مدیر می‌تواند هر گزارش را «اصلاح‌شده»،
+ * گزارش در جدول اختصاصی ذخیره و در پیشخوان، در تب «خرابی لینک‌ها»ی
+ * صفحه‌ی ManaCore فهرست می‌شود. مدیر می‌تواند هر گزارش را «اصلاح‌شده»،
  * «نادیده‌گرفته‌شده» یا حذف‌شده علامت بزند.
  *
  * چرا جدول جداگانه و نه متا یا دیدگاه؟
@@ -384,16 +384,20 @@ class Reports {
 				break;
 		}
 
-		wp_safe_redirect(
-			add_query_arg(
-				array(
-					'page'            => 'manacore',
-					'tab'             => 'tools',
-					'manacore_notice' => 'report-ok',
-				),
-				admin_url( 'admin.php' )
-			)
+		$args = array(
+			'page'            => 'manacore',
+			'tab'             => 'reports',
+			'manacore_notice' => 'report-ok',
 		);
+
+		/* بازگشت به همان نمای فیلترشده‌ی فهرست گزارش‌ها. */
+		$status = isset( $_REQUEST['report_status'] ) ? sanitize_key( wp_unslash( $_REQUEST['report_status'] ) ) : '';
+
+		if ( in_array( $status, self::STATUSES, true ) ) {
+			$args['report_status'] = $status;
+		}
+
+		wp_safe_redirect( add_query_arg( $args, admin_url( 'admin.php' ) ) );
 		exit;
 	}
 

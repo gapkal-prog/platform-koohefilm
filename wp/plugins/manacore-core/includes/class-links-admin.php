@@ -41,8 +41,22 @@ class Links_Admin {
 
 	/**
 	 * اتصال قلاب‌ها.
+	 *
+	 * ثبت خودِ ستون‌ها به `init` سپرده می‌شود و در زمان بارگذاری افزونه
+	 * انجام نمی‌گیرد: فهرست نوع‌های محتوا از `manacore_post_types()`
+	 * می‌آید که برچسب‌هایش ترجمه‌پذیر است و درخواست ترجمه پیش از
+	 * `after_setup_theme` هشدار `_load_textdomain_just_in_time` می‌دهد.
 	 */
 	public function hooks() {
+		add_action( 'init', array( $this, 'register' ), 20 );
+	}
+
+	/**
+	 * ثبت ستون، پالایه و پیوند سریع برای هر نوع محتوا.
+	 *
+	 * @return void
+	 */
+	public function register() {
 		foreach ( self::post_types() as $type ) {
 			add_filter( 'manage_' . $type . '_posts_columns', array( $this, 'columns' ) );
 			add_action( 'manage_' . $type . '_posts_custom_column', array( $this, 'column_content' ), 10, 2 );

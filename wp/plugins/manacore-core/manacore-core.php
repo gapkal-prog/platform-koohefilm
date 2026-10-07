@@ -84,18 +84,12 @@ function manacore_boot() {
 	/* درخواست فیلم/سریال کاربران: نوع محتوا، رأی‌گیری، بازبینی و تخته. */
 	ManaCore\Core\Requests::instance()->hooks();
 
-	/* جایگاه‌های تبلیغاتی بنری با زمان‌بندی و شمار نمایش/کلیک. */
-	ManaCore\Core\Ads::instance()->hooks();
-
 	/* داشبورد تحلیلی: گزارش‌های پیشخوان و ویجت صفحه‌ی نخست مدیریت. */
 	ManaCore\Core\Analytics::instance()->hooks();
 
-	/*
-	 * پشتیبان‌گیری/بازگردانی تنظیمات (JSON) و محتوای نمایشی یک‌کلیکی:
-	 * دو ابزار «تحویل حرفه‌ای» که کار مهاجرت و نمایش قالب به خریدار را
-	 * از چند ساعت به چند دقیقه می‌رسانند.
-	 */
 	/* دانلود امضاشده: مسیر REST زمان‌دار + شمارش سرورسوی دانلود. */
+	ManaCore\Core\Downloads::instance()->hooks();
+
 	/*
 	 * مدیریت لینک‌ها از فهرست پیشخوان (ستون، پالایه و پیوند سریع).
 	 * فقط در پیشخوان قلاب می‌بندد؛ در REST/CLI بی‌اثر است.
@@ -104,8 +98,11 @@ function manacore_boot() {
 		ManaCore\Core\Links_Admin::instance()->hooks();
 	}
 
-	ManaCore\Core\Downloads::instance()->hooks();
-
+	/*
+	 * پشتیبان‌گیری/بازگردانی تنظیمات (JSON) و محتوای نمایشی یک‌کلیکی:
+	 * دو ابزار «تحویل حرفه‌ای» که کار مهاجرت و نمایش قالب به خریدار را
+	 * از چند ساعت به چند دقیقه می‌رسانند.
+	 */
 	ManaCore\Core\Portability::instance()->hooks();
 
 	/* فرمان‌های WP-CLI؛ بیرون از CLI هیچ کاری نمی‌کنند. */
@@ -142,7 +139,6 @@ register_activation_hook(
 		ManaCore\Core\Install::create_tables();
 		ManaCore\Core\Install::default_options();
 		ManaCore\Core\Requests::instance()->register_post_type();
-		ManaCore\Core\Ads::instance()->register_post_type();
 		ManaCore\Core\Player::ensure_page();
 		ManaCore\Core\Account::ensure_page();
 		flush_rewrite_rules();

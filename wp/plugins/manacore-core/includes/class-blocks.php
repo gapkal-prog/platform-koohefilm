@@ -2368,22 +2368,6 @@ class Blocks {
 			),
 
 			/* جایگاه تبلیغاتی دستی: هرجا مدیر بگذاردش، بنر همان جایگاه می‌آید. */
-			'manacore/ad-slot'        => array(
-				'title'       => __( 'جایگاه تبلیغاتی', 'manacore' ),
-				'description' => __( 'نمایش بنر یک جایگاه تبلیغاتی (بالای صفحه، پیش/پس از محتوا، پیش از پلیر).', 'manacore' ),
-				'icon'        => 'megaphone',
-				'attributes'  => array(
-					'position' => array(
-						'type'    => 'string',
-						'default' => 'before-content',
-					),
-					'label'    => array(
-						'type'    => 'string',
-						'default' => '',
-					),
-				),
-				'render'      => array( $this, 'render_ad_slot' ),
-			),
 		);
 
 		/**
@@ -4156,32 +4140,6 @@ class Blocks {
 		return Requests::instance()->render_board( is_array( $attrs ) ? $attrs : array() );
 	}
 
-	/**
-	 * رندر بلوک جایگاه تبلیغاتی.
-	 *
-	 * @param array $attrs ویژگی‌ها.
-	 * @return string
-	 */
-	public function render_ad_slot( $attrs = array() ) {
-		if ( ! class_exists( __NAMESPACE__ . '\\Ads' ) ) {
-			return '';
-		}
-
-		$attrs = wp_parse_args(
-			is_array( $attrs ) ? $attrs : array(),
-			array(
-				'position' => 'before-content',
-				'label'    => '',
-			)
-		);
-
-		return Ads::render(
-			$attrs['position'],
-			array(
-				'label' => '' !== $attrs['label'] ? $attrs['label'] : null,
-			)
-		);
-	}
 
 	public function render_trailer( $attrs = array() ) {
 		if ( ! Block_Support::should_render( $attrs ) ) {

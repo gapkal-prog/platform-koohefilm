@@ -1042,76 +1042,6 @@
 			} );
 	}
 
-	/*
-	 * ---------------- تبلیغات ----------------
-	 *
-	 * شمارش سمت سرور در رندر بی‌معنا بود (کش صفحه)، پس نمایش وقتی ثبت
-	 * می‌شود که بنر واقعاً در دید کاربر بیاید و کلیک هم پیش از رفتن به
-	 * مقصد با `sendBeacon` فرستاده می‌شود تا هرگز جلوی ناوبری گرفته نشود.
-	 */
-	function initAds() {
-		var ads = document.querySelectorAll( '[data-manacore-ad]' );
-
-		if ( ! ads.length ) {
-			return;
-		}
-
-		var send = function ( adId, eventName ) {
-			var url = config.restUrl + 'ad-event';
-			var payload = JSON.stringify( { ad_id: adId, event: eventName } );
-
-			if ( navigator.sendBeacon ) {
-				try {
-					var blob = new Blob( [ payload ], { type: 'application/json' } );
-					var sent = navigator.sendBeacon( url, blob );
-
-					if ( sent ) {
-						return;
-					}
-				} catch ( error ) {
-					/* پشتیبانی ناقص؛ به fetch برمی‌گردیم. */
-				}
-			}
-
-			api( 'ad-event', { method: 'POST', body: { ad_id: adId, event: eventName } } ).catch( function () {} );
-		};
-
-		ads.forEach( function ( ad ) {
-			var adId = parseInt( ad.getAttribute( 'data-ad-id' ), 10 ) || 0;
-
-			if ( ! adId ) {
-				return;
-			}
-
-			var link = ad.querySelector( '[data-manacore-ad-link]' );
-
-			if ( link ) {
-				link.addEventListener( 'click', function () {
-					send( adId, 'click' );
-				} );
-			}
-
-			/* شمارش نمایش: یک بار، وقتی بنر در دید می‌آید. */
-			if ( ! ( 'IntersectionObserver' in window ) ) {
-				send( adId, 'impression' );
-				return;
-			}
-
-			var observer = new IntersectionObserver( function ( entries ) {
-				entries.forEach( function ( entry ) {
-					if ( ! entry.isIntersecting ) {
-						return;
-					}
-
-					send( adId, 'impression' );
-					observer.disconnect();
-				} );
-			}, { threshold: 0.5 } );
-
-			observer.observe( ad );
-		} );
-	}
-
 	function initReports() {
 		document.querySelectorAll( '[data-manacore-report]' ).forEach( function ( button ) {
 			button.addEventListener( 'click', function () {
@@ -2621,7 +2551,6 @@
 		initDownloadTracking();
 		initReports();
 		initRequests();
-		initAds();
 		initSectionTypeTabs();
 		initFilterForm();
 		initBrowseToolbar();

@@ -402,6 +402,15 @@ echo "\n=== ۵) اتصال قلاب‌ها ===\n";
 
 $admin->hooks();
 
+/*
+ * ثبت ستون‌ها به `init` سپرده شده است: `self::post_types()` از فهرست
+ * نوع‌های محتوا می‌آید که برچسب‌هایش ترجمه‌پذیر است و صدا زدن ترجمه پیش
+ * از `after_setup_theme` هشدار `_load_textdomain_just_in_time` می‌دهد.
+ */
+mc_ok( mc_hooked( 'action', 'init' ), 'ثبت قلاب‌ها روی init انجام می‌شود (نه در بارگذاری افزونه)' );
+
+$admin->register();
+
 foreach ( array( 'movie', 'series', 'anime', 'episode' ) as $type ) {
 	mc_ok( mc_hooked( 'filter', 'manage_' . $type . '_posts_columns' ), "ستون فهرست {$type} ثبت می‌شود" );
 	mc_ok( mc_hooked( 'action', 'manage_' . $type . '_posts_custom_column' ), "رندر ستون فهرست {$type} ثبت می‌شود" );

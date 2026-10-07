@@ -47,7 +47,6 @@ class Analytics {
 		/* ذخیره‌ی تنظیمات و تغییر نوع محتوا، گزارش را کهنه می‌کند. */
 		add_action( 'update_option_manacore_settings', array( $this, 'flush' ) );
 		add_action( 'manacore_db_upgraded', array( $this, 'flush' ) );
-		add_action( 'save_post_manacore_ad', array( $this, 'flush' ) );
 		add_action( 'save_post_manacore_request', array( $this, 'flush' ) );
 		add_action( 'manacore_link_reported', array( $this, 'flush' ) );
 		add_action( 'manacore_request_voted', array( $this, 'flush' ) );
@@ -133,7 +132,6 @@ class Analytics {
 				$comments = (array) wp_count_comments();
 				$reports  = class_exists( __NAMESPACE__ . '\\Reports' ) ? Reports::counts() : array( 'new' => 0, 'fixed' => 0, 'ignored' => 0 );
 				$requests = class_exists( __NAMESPACE__ . '\\Requests' ) ? Requests::counts() : array( 'pending' => 0, 'publish' => 0, 'draft' => 0 );
-				$ads      = self::ads_summary();
 
 				return array(
 					'views_today'      => self::total( 'view', 1 ),
@@ -145,65 +143,9 @@ class Analytics {
 					'requests_publish' => isset( $requests['publish'] ) ? (int) $requests['publish'] : 0,
 					'comments_pending' => isset( $comments['moderated'] ) ? (int) $comments['moderated'] : 0,
 					'comments_spam'    => isset( $comments['spam'] ) ? (int) $comments['spam'] : 0,
-					'ads'              => $ads,
 				);
 			}
 		);
-	}
-
-	/**
-	 * جمع آمار بنرها.
-	 *
-	 * @return array<string,mixed>
-	 */
-	public static function ads_summary() {
-		$out = array(
-			'impressions' => 0,
-			'clicks'      => 0,
-			'ctr'         => 0.0,
-			'active'      => 0,
-			'best'        => array(),
-		);
-
-		if ( ! class_exists( __NAMESPACE__ . '\\Ads' ) ) {
-			return $out;
-		}
-
-		$ads = get_posts(
-			array(
-				'post_type'      => Ads::POST_TYPE,
-				'post_status'    => 'publish',
-				'posts_per_page' => 100,
-				'fields'         => 'ids',
-			)
-		);
-
-		$best = array( 'id' => 0, 'title' => '', 'clicks' => -1, 'ctr' => 0.0 );
-
-		foreach ( $ads as $ad_id ) {
-			$stats = Ads::stats( $ad_id );
-
-			$out['impressions'] += (int) $stats['impressions'];
-			$out['clicks']      += (int) $stats['clicks'];
-
-			if ( 'active' === Ads::state( $ad_id ) ) {
-				$out['active']++;
-			}
-
-			if ( (int) $stats['clicks'] > $best['clicks'] ) {
-				$best = array(
-					'id'     => (int) $ad_id,
-					'title'  => (string) get_the_title( $ad_id ),
-					'clicks' => (int) $stats['clicks'],
-					'ctr'    => (float) $stats['ctr'],
-				);
-			}
-		}
-
-		$out['ctr']  = $out['impressions'] > 0 ? round( ( $out['clicks'] / $out['impressions'] ) * 100, 2 ) : 0.0;
-		$out['best'] = $best['id'] ? $best : array();
-
-		return $out;
 	}
 
 	/**

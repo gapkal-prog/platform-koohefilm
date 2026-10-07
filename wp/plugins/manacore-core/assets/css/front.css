@@ -1318,55 +1318,12 @@ html:not([dir="rtl"]) .manacore-hero-bg::after {
  * بنر هرگز چیدمان را نمی‌شکند: عرض کامل، ارتفاع خودکار و برچسب کوچک
  * گوشه‌ی بالا. برچسب عمداً کمرنگ است تا از محتوا دزدیده نشود.
  */
-.manacore-ad-slot {
-	margin: 18px auto;
-	max-width: 100%;
-}
 
-.manacore-ad-slot--top {
-	margin: 0 auto 8px;
-}
 
-.manacore-ad {
-	position: relative;
-	display: block;
-	margin: 0 auto;
-	max-width: 100%;
-	overflow: hidden;
-	border-radius: 12px;
-	text-align: center;
-}
 
-.manacore-ad__link {
-	display: block;
-	line-height: 0;
-}
 
-.manacore-ad img {
-	display: block;
-	width: 100%;
-	height: auto;
-	max-height: 260px;
-	object-fit: contain;
-	border-radius: 12px;
-}
 
-.manacore-ad__label {
-	position: absolute;
-	inset-inline-end: 8px;
-	inset-block-start: 6px;
-	padding: 1px 7px;
-	border-radius: 6px;
-	background: rgba(0, 0, 0, .55);
-	color: #fff;
-	font-size: .625rem;
-	line-height: 1.7;
-	pointer-events: none;
-}
 
-.player-page .manacore-ad-slot--before-player {
-	margin-block: 12px;
-}
 
 /*
  * ---------------------------------------------------------------------

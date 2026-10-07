@@ -1,6 +1,6 @@
 <?php
 /**
- * آزمون «درخواست فیلم/سریال» و «جایگاه‌های تبلیغاتی».
+ * آزمون «درخواست فیلم/سریال» و پنل «درخواست‌های من».
  *
  * هر دو ماژول بدون وردپرس اجرا می‌شوند: پوسته‌های ساختگی همان چیزی را
  * برمی‌گردانند که کوئری/متا می‌دهد و همه‌ی درج/به‌روزرسانی‌ها ثبت می‌شوند
@@ -352,7 +352,6 @@ $GLOBALS['wpdb']                = new MC_Wpdb();
 require_once MANACORE_PATH . 'includes/trait-singleton.php';
 require_once MANACORE_PATH . 'includes/class-install.php';
 require_once MANACORE_PATH . 'includes/class-requests.php';
-require_once MANACORE_PATH . 'includes/class-ads.php';
 
 /* ---------------------------------------------------------------
  * ۱) نوع محتوا و تنظیمات
@@ -361,9 +360,7 @@ require_once MANACORE_PATH . 'includes/class-ads.php';
 echo "\n=== ۱) نوع محتوا و تنظیمات ===\n";
 
 mc_ok( class_exists( 'ManaCore\\Core\\Requests' ), 'کلاس درخواست‌ها بارگذاری شد' );
-mc_ok( class_exists( 'ManaCore\\Core\\Ads' ), 'کلاس تبلیغات بارگذاری شد' );
 mc_ok( 'manacore_request' === ManaCore\Core\Requests::POST_TYPE, 'نوع محتوای درخواست‌ها همان انتظار است' );
-mc_ok( 'manacore_ad' === ManaCore\Core\Ads::POST_TYPE, 'نوع محتوای بنرها همان انتظار است' );
 
 $types = ManaCore\Core\Requests::types();
 mc_ok( array( 'movie', 'series', 'anime' ) === array_keys( $types ), 'انواع درخواست‌شدنی همان انواع اثر است (بدون قسمت)', implode( ',', array_keys( $types ) ) );
@@ -376,8 +373,6 @@ update_option( 'manacore_settings', array( 'requests_per_page' => 500 ) );
 mc_ok( 60 === ManaCore\Core\Requests::settings()['per_page'], 'تعداد بیش از حد به ۶۰ کرانه می‌شود' );
 update_option( 'manacore_settings', array() );
 
-mc_ok( array( 'top', 'before-content', 'after-content', 'before-player' ) === array_keys( ManaCore\Core\Ads::positions() ), 'چهار جایگاه تبلیغاتی تعریف شده است' );
-mc_ok( false === ManaCore\Core\Ads::settings()['enabled'], 'تبلیغات به‌صورت پیش‌فرض خاموش است (نصب‌های موجود بی‌تغییر می‌مانند)' );
 
 /* ---------------------------------------------------------------
  * ۲) یکسان‌سازی عنوان
@@ -643,188 +638,12 @@ mc_ok( 'publish' === $GLOBALS['mc_posts'][730]->post_status, 'درخواست پ�
 mc_ok( 0 === ManaCore\Core\Requests::convert_to_draft( 999999 ), 'تبدیل درخواست ناموجود صفر برمی‌گرداند' );
 
 /* ---------------------------------------------------------------
- * ۹) تبلیغات: انتخاب بنر و زمان‌بندی
+ * ۹) مسیرها و بلوک‌ها
  * ------------------------------------------------------------ */
 
-echo "\n=== ۹) تبلیغات: انتخاب و زمان‌بندی ===\n";
-
-$GLOBALS['mc_posts'][800] = (object) array(
-	'ID'          => 800,
-	'post_type'   => 'manacore_ad',
-	'post_title'  => 'بنر تستی',
-	'post_status' => 'publish',
-);
-$GLOBALS['mc_meta'][800]['manacore_ad_active']    = '1';
-$GLOBALS['mc_meta'][800]['manacore_ad_positions'] = array( 'top', 'before-content' );
-$GLOBALS['mc_meta'][800]['manacore_ad_image']     = 'https://example.test/banner.png';
-$GLOBALS['mc_meta'][800]['manacore_ad_url']       = 'https://advertiser.test/';
-$GLOBALS['mc_meta'][800]['manacore_ad_target']    = '_blank';
-$GLOBALS['mc_meta'][800]['manacore_ad_alt']       = 'تبلیغ تستی';
-
-mc_ok( 'active' === ManaCore\Core\Ads::state( 800 ), 'بنر بی‌تاریخ، فعال است' );
-
-$GLOBALS['mc_queries'] = array();
-ManaCore\Core\Ads::active_ads( 'top' );
-$q = end( $GLOBALS['mc_queries'] );
-
-/* شرط‌های زنجیره‌ای متا را با کلیدشان پیدا می‌کنیم، نه با جست‌وجوی متن. */
-$clauses = array();
-
-foreach ( $q['meta_query'] as $clause ) {
-	if ( isset( $clause['key'] ) ) {
-		$clauses[ $clause['key'] ] = $clause;
-	}
-}
-
-mc_ok( isset( $clauses['manacore_ad_active'] ) && '1' === $clauses['manacore_ad_active']['value'], 'کوئری فقط بنرهای روشن را می‌آورد' );
-mc_ok( '"top"' === $clauses[ ManaCore\Core\Ads::POSITIONS_META ]['value'], 'جایگاه با نقل‌قول جست‌وجو می‌شود (متای سریالایز‌شده)' );
-mc_ok( 'LIKE' === $clauses[ ManaCore\Core\Ads::POSITIONS_META ]['compare'], 'سنجش جایگاه از نوع LIKE است' );
-/*
- * شرط‌های تاریخ داخل گروه‌های OR تودرتو هستند، پس باید تا عمق یک سطح
- * پایین برویم و همه‌ی شرط‌های هم‌کلید را جمع کنیم (نه فقط آخری را).
- * درست‌بودن منطق مهم است: «تاریخ نیست» OR «تاریخ <= امروز».
- */
-$nested = array();
-
-foreach ( $q['meta_query'] as $clause ) {
-	if ( ! is_array( $clause ) || ! isset( $clause['relation'] ) ) {
-		continue;
-	}
-
-	foreach ( $clause as $inner ) {
-		if ( is_array( $inner ) && isset( $inner['key'] ) ) {
-			$nested[ $inner['key'] ][] = $inner;
-		}
-	}
-}
-
-$has_missing = static function ( $clauses, $key, $operator ) {
-	foreach ( $clauses as $clause ) {
-		if ( $key === $clause['key'] && $operator === $clause['compare'] ) {
-			return true;
-		}
-	}
-
-	return false;
-};
-
-mc_ok(
-	! empty( $nested['manacore_ad_start'] ) && ! empty( $nested['manacore_ad_end'] ),
-	'شرط‌های تاریخ در گروه‌های جدا بسته شده‌اند'
-);
-mc_ok(
-	$has_missing( $nested['manacore_ad_start'], 'manacore_ad_start', 'NOT EXISTS' )
-		&& $has_missing( $nested['manacore_ad_start'], 'manacore_ad_start', '<=' ),
-	'بنر بی‌تاریخ شروع هم پذیرفته می‌شود (NOT EXISTS یا <= امروز)'
-);
-mc_ok(
-	$has_missing( $nested['manacore_ad_end'], 'manacore_ad_end', 'NOT EXISTS' )
-		&& $has_missing( $nested['manacore_ad_end'], 'manacore_ad_end', '>=' ),
-	'بنر بی‌تاریخ پایان هم پذیرفته می‌شود (NOT EXISTS یا >= امروز)'
-);
-mc_ok(
-	'DATE' === $nested['manacore_ad_start'][1]['type'],
-	'مقایسه‌ی تاریخ با نوع DATE انجام می‌شود'
-);
-
-/* زمان‌بندی */
-$GLOBALS['mc_meta'][800]['manacore_ad_start'] = '2099-01-01';
-mc_ok( 'scheduled' === ManaCore\Core\Ads::state( 800 ), 'بنر با شروع آینده «زمان‌بندی‌شده» است' );
-unset( $GLOBALS['mc_meta'][800]['manacore_ad_start'] );
-
-$GLOBALS['mc_meta'][800]['manacore_ad_end'] = '2000-01-01';
-mc_ok( 'expired' === ManaCore\Core\Ads::state( 800 ), 'بنر با پایان گذشته «پایان‌یافته» است' );
-unset( $GLOBALS['mc_meta'][800]['manacore_ad_end'] );
-
-$GLOBALS['mc_meta'][800]['manacore_ad_active'] = '0';
-mc_ok( 'paused' === ManaCore\Core\Ads::state( 800 ), 'بنر خاموش «paused» است' );
-$GLOBALS['mc_meta'][800]['manacore_ad_active'] = '1';
-
-/* رندر */
-update_option( 'manacore_settings', array( 'ads_enabled' => 1, 'ads_label' => 'تبلیغ', 'ads_positions' => array( 'top', 'before-content', 'after-content', 'before-player' ) ) );
-
-$GLOBALS['mc_query'] = array(
-	'posts' => array( 800 ),
-	'found' => 1,
-);
-$html = ManaCore\Core\Ads::render( 'top' );
-
-mc_ok( false !== strpos( $html, 'manacore-ad-slot--top' ), 'جایگاه بالا رندر می‌شود' );
-mc_ok( false !== strpos( $html, 'data-manacore-ad' ), 'قلاب شمارش روی بنر هست' );
-mc_ok( false !== strpos( $html, 'data-ad-id="800"' ), 'شناسه‌ی بنر در مارک‌آپ می‌آید' );
-mc_ok( false !== strpos( $html, 'rel="noopener noreferrer nofollow sponsored"' ), 'پیوند تبلیغ با rel درست و sponsored می‌آید' );
-mc_ok( false !== strpos( $html, 'target="_blank"' ), 'مقصد در پنجره‌ی تازه باز می‌شود' );
-mc_ok( false !== strpos( $html, 'manacore-ad__label' ), 'برچسب «تبلیغ» رندر می‌شود' );
-mc_ok( false !== strpos( $html, 'loading="lazy"' ), 'تصویر بنر تنبل بارگذاری می‌شود' );
-mc_ok( false !== strpos( $html, 'alt="تبلیغ تستی"' ), 'متن جانشین (alt) می‌آید' );
-
-/* بنر بی‌تصویر رندر نمی‌شود */
-$GLOBALS['mc_meta'][801] = array( 'manacore_ad_active' => '1', 'manacore_ad_url' => 'https://x.test/' );
-$GLOBALS['mc_posts'][801] = (object) array( 'ID' => 801, 'post_type' => 'manacore_ad', 'post_title' => 'بی‌تصویر', 'post_status' => 'publish' );
-$GLOBALS['mc_query'] = array( 'posts' => array( 801 ), 'found' => 1 );
-mc_ok( '' === ManaCore\Core\Ads::render( 'top' ), 'بنر بی‌تصویر جای خالی نمی‌سازد' );
-
-/* خاموش‌بودن و پنهان‌سازی از اعضا */
-update_option( 'manacore_settings', array( 'ads_enabled' => 0 ) );
-mc_ok( '' === ManaCore\Core\Ads::render( 'top' ), 'با خاموش بودن ماژول، هیچ بنری رندر نمی‌شود' );
-
-update_option( 'manacore_settings', array( 'ads_enabled' => 1, 'ads_hide_members' => 1, 'ads_positions' => array( 'top' ) ) );
-$GLOBALS['mc_user'] = 5;
-$GLOBALS['mc_query'] = array( 'posts' => array( 800 ), 'found' => 1 );
-mc_ok( '' === ManaCore\Core\Ads::render( 'top' ), 'با «پنهان از اعضا»، کاربر وارد‌شده بنر نمی‌بیند' );
-$GLOBALS['mc_user'] = 0;
-
-update_option( 'manacore_settings', array( 'ads_enabled' => 1, 'ads_positions' => array( 'top' ) ) );
-mc_ok( '' === ManaCore\Core\Ads::render( 'before-content' ), 'جایگاه خاموش در تنظیمات رندر نمی‌شود' );
-
-/* ---------------------------------------------------------------
- * ۱۰) تبلیغات: شمارش
- * ------------------------------------------------------------ */
-
-echo "\n=== ۱۰) شمارش نمایش و کلیک ===\n";
-
-update_option( 'manacore_settings', array( 'ads_enabled' => 1, 'ads_counters' => 1, 'ads_positions' => array( 'top' ) ) );
-$GLOBALS['mc_transients'] = array();
-$GLOBALS['mc_meta'][800]['manacore_ad_impressions'] = 10;
-$GLOBALS['mc_meta'][800]['manacore_ad_clicks']      = 2;
-
-$event = ManaCore\Core\Ads::record_event( 800, 'impression' );
-mc_ok( is_array( $event ) && true === $event['counted'], 'نمایش تازه شمرده می‌شود' );
-mc_ok( 11 === (int) get_post_meta( 800, 'manacore_ad_impressions', true ), 'شمار نمایش یکی بالا می‌رود' );
-
-$repeat = ManaCore\Core\Ads::record_event( 800, 'impression' );
-mc_ok( false === $repeat['counted'], 'نمایش پشت‌سرهم از یک بازدیدکننده دوباره شمرده نمی‌شود' );
-
-$GLOBALS['mc_transients'] = array();
-ManaCore\Core\Ads::record_event( 800, 'click' );
-mc_ok( 3 === (int) get_post_meta( 800, 'manacore_ad_clicks', true ), 'کلیک شمرده می‌شود' );
-
-$bad = ManaCore\Core\Ads::record_event( 800, 'hack' );
-mc_ok( is_wp_error( $bad ) && 'manacore_ad_event' === $bad->get_error_code(), 'رویداد ناشناخته رد می‌شود' );
-
-$gone = ManaCore\Core\Ads::record_event( 999999, 'click' );
-mc_ok( is_wp_error( $gone ) && 'manacore_ad_missing' === $gone->get_error_code(), 'رویداد روی بنر ناموجود رد می‌شود' );
-
-update_option( 'manacore_settings', array( 'ads_enabled' => 1, 'ads_counters' => 0 ) );
-$off = ManaCore\Core\Ads::record_event( 800, 'click' );
-mc_ok( is_wp_error( $off ) && 'manacore_ad_off' === $off->get_error_code(), 'با خاموش بودن شمارش، رویداد ثبت نمی‌شود' );
-
-update_option( 'manacore_settings', array( 'ads_enabled' => 1, 'ads_counters' => 1 ) );
-$stats = ManaCore\Core\Ads::stats( 800 );
-mc_ok( 11 === $stats['impressions'] && 3 === $stats['clicks'], 'آمار تجمیعی درست است' );
-mc_ok( 27.27 === $stats['ctr'], 'نرخ کلیک حساب می‌شود', (string) $stats['ctr'] );
-
-$GLOBALS['mc_meta'][802] = array();
-mc_ok( 0.0 === ManaCore\Core\Ads::stats( 802 )['ctr'], 'بنر بی‌نمایش نرخ صفر می‌دهد (تقسیم بر صفر نمی‌شود)' );
-
-/* ---------------------------------------------------------------
- * ۱۱) مسیرها و بلوک‌ها
- * ------------------------------------------------------------ */
-
-echo "\n=== ۱۱) مسیرها و بلوک‌ها ===\n";
+echo "\n=== ۹) مسیرها و بلوک‌ها ===\n";
 
 $requests = file_get_contents( MANACORE_PATH . 'includes/class-requests.php' );
-$ads      = file_get_contents( MANACORE_PATH . 'includes/class-ads.php' );
 $blocks   = file_get_contents( MANACORE_PATH . 'includes/class-blocks.php' );
 $boot     = file_get_contents( MANACORE_PATH . 'manacore-core.php' );
 
@@ -832,16 +651,19 @@ mc_ok( false !== strpos( $requests, "'/request'" ), 'مسیر ثبت درخوا�
 mc_ok( false !== strpos( $requests, "'/request-vote'" ), 'مسیر رأی ثبت شده است' );
 mc_ok( false !== strpos( $requests, "'/requests'" ), 'مسیر فهرست درخواست‌ها ثبت شده است' );
 mc_ok( 2 === substr_count( $requests, 'verify_public_write' ), 'هر دو مسیر نوشتنِ درخواست پشت دروازه‌بان نانِس‌اند' );
-mc_ok( false !== strpos( $ads, "'/ad-event'" ), 'مسیر رویداد تبلیغاتی ثبت شده است' );
-mc_ok( false !== strpos( $ads, 'verify_public_write' ), 'مسیر رویداد هم پشت دروازه‌بان نانِس است' );
-
 mc_ok( false !== strpos( $blocks, 'manacore/request-form' ), 'بلوک فرم درخواست تعریف شده است' );
 mc_ok( false !== strpos( $blocks, 'manacore/requests' ), 'بلوک تخته‌ی درخواست‌ها تعریف شده است' );
-mc_ok( false !== strpos( $blocks, 'manacore/ad-slot' ), 'بلوک جایگاه تبلیغاتی تعریف شده است' );
 mc_ok( false !== strpos( $blocks, "do_action( 'manacore_before_player'" ), 'قلاب «پیش از پلیر» در رندر پلیر صدا زده می‌شود' );
 
 mc_ok( false !== strpos( $boot, 'Requests::instance()->hooks();' ), 'ماژول درخواست‌ها در راه‌اندازی ثبت شده است' );
-mc_ok( false !== strpos( $boot, 'Ads::instance()->hooks();' ), 'ماژول تبلیغات در راه‌اندازی ثبت شده است' );
+/*
+ * نگهبان حذف: ماژول بنر/تبلیغات به‌خواست کاربر از محصول برداشته شد؛
+ * اگر روزی ناخواسته برگردد (یا فایل مرده بماند) این‌جا لو می‌رود.
+ */
+mc_ok( ! file_exists( MANACORE_PATH . 'includes/class-ads.php' ), 'کلاس تبلیغات از پروژه حذف شده است' );
+mc_ok( false === strpos( $blocks, 'manacore/ad-slot' ), 'بلوک جایگاه تبلیغاتی حذف شده است' );
+mc_ok( false === strpos( $boot, 'Ads::' ), 'هیچ اشاره‌ای به ماژول تبلیغات در راه‌اندازی نمانده است' );
+mc_ok( false === strpos( $requests . $blocks, 'ad-event' ), 'مسیر REST تبلیغات حذف شده است' );
 
 $install = file_get_contents( MANACORE_PATH . 'includes/class-install.php' );
 mc_ok( false !== strpos( $install, 'request_votes_table' ), 'جدول رأی‌ها در نصب‌کننده هست' );
@@ -850,16 +672,16 @@ mc_ok( false !== strpos( $install, 'UNIQUE KEY unique_vote (request_id, voter_ha
 
 $settings = file_get_contents( MANACORE_PATH . 'includes/class-settings.php' );
 mc_ok(
-	(bool) preg_match( "/'requests'\s*=>/", $settings ) && (bool) preg_match( "/'ads'\s*=>/", $settings ),
-	'هر دو تب در فهرست تب‌ها هستند'
+	(bool) preg_match( "/'requests'\s*=>/", $settings ) && (bool) preg_match( "/'reports'\s*=>/", $settings ),
+	'تب‌های «درخواست‌ها» و «گزارش‌ها» در فهرست تب‌ها هستند'
 );
 mc_ok( false !== strpos( $settings, "case 'request-page':" ), 'ابزار ساخت برگه‌ی درخواست‌ها ثبت شده است' );
 
 /* ---------------------------------------------------------------
- * ۱۲) درخواست‌های من (پنل کاربری)
+ * ۱۰) درخواست‌های من (پنل کاربری)
  * ------------------------------------------------------------ */
 
-echo "\n=== ۱۲) درخواست‌های من (پنل کاربری) ===\n";
+echo "\n=== ۱۰) درخواست‌های من (پنل کاربری) ===\n";
 
 /*
  * کوئری: کاربر واردشده فقط درخواست‌های خودش را می‌گیرد — با هر سه

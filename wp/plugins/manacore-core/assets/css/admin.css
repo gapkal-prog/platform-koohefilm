@@ -571,3 +571,348 @@ body:not(.rtl) .manacore-switch input:checked + .manacore-switch-track .manacore
 .manacore-links-edit {
 	font-size: 11px;
 }
+
+/* ---------------------------------------------------------------------------
+ * صفحه‌ی تنظیمات ManaCore (تب‌های پیشخوان).
+ *
+ * همه‌ی بخش‌ها — فرم تنظیمات و کارت وضعیت — یک قالب مشترک «پنل» دارند؛
+ * هیچ استایلی درون‌خطی تزریق نمی‌شود تا ظاهر صفحه یک‌دست بماند.
+ * ------------------------------------------------------------------------ */
+
+.manacore-settings {
+	--mc-radius: 10px;
+	--mc-border: #dcdcde;
+	--mc-accent: #2b6cb0;
+	--mc-muted: #646970;
+	--mc-soft: #f6f7f7;
+	max-width: 1100px;
+}
+
+.manacore-settings-header {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	margin: 16px 0 4px;
+}
+
+.manacore-settings-header h1 {
+	margin: 0;
+	padding: 0;
+	font-size: 1.35rem;
+	line-height: 1.6;
+}
+
+.manacore-settings-header p {
+	margin: 2px 0 0;
+	color: var(--mc-muted);
+	font-size: 13px;
+}
+
+.manacore-brand-mark {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	flex: 0 0 auto;
+	width: 40px;
+	height: 40px;
+	border-radius: var(--mc-radius);
+	background: #1d2327;
+	color: #fff;
+	font-weight: 700;
+	letter-spacing: .5px;
+}
+
+.manacore-settings .nav-tab-wrapper {
+	margin: 12px 0 0;
+	padding: 0;
+	border-bottom: 1px solid var(--mc-border);
+}
+
+.manacore-settings .nav-tab {
+	font-size: 13px;
+}
+
+/* ---------- بخش‌ها ---------- */
+.manacore-panel {
+	background: #fff;
+	border: 1px solid var(--mc-border);
+	border-radius: var(--mc-radius);
+	padding: 4px 20px 18px;
+	margin: 16px 0 0;
+}
+
+.manacore-panel__title {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	margin: 16px 0 0;
+	padding: 0;
+	font-size: 1rem;
+	line-height: 1.6;
+}
+
+.manacore-panel__title .manacore-badge {
+	font-weight: 600;
+}
+
+.manacore-panel__hint {
+	margin: 6px 0 0;
+	color: var(--mc-muted);
+	font-size: 13px;
+	max-width: 80ch;
+}
+
+/* جدول فرم درون پنل: بدون پدینگ زیگزاگی پیش‌فرض وردپرس. */
+.manacore-panel .form-table {
+	margin-top: 2px;
+}
+
+.manacore-panel .form-table th {
+	width: 220px;
+	padding: 14px 16px 14px 0;
+	font-weight: 600;
+}
+
+.manacore-panel .form-table td {
+	padding: 14px 0;
+}
+
+.manacore-panel .form-table td > label {
+	display: inline-block;
+	margin-bottom: 2px;
+}
+
+.manacore-panel .description {
+	margin: 6px 0 0;
+	max-width: 80ch;
+}
+
+/* ---------- قرص‌های شمارنده و دکمه‌ها ---------- */
+.manacore-stats {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+	margin: 14px 0 0;
+	padding: 0;
+	list-style: none;
+}
+
+.manacore-stats li {
+	display: flex;
+	align-items: baseline;
+	gap: 6px;
+	padding: 6px 12px;
+	border: 1px solid var(--mc-border);
+	border-radius: 999px;
+	background: var(--mc-soft);
+	font-size: 12px;
+	color: var(--mc-muted);
+}
+
+.manacore-stats b {
+	font-size: 14px;
+	color: #1d2327;
+}
+
+.manacore-actions {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+	margin: 14px 0 0;
+}
+
+.manacore-status {
+	display: flex;
+	align-items: flex-start;
+	gap: 6px;
+	margin: 12px 0 0;
+	font-size: 13px;
+}
+
+.manacore-status .dashicons {
+	font-size: 18px;
+	width: 18px;
+	height: 18px;
+	line-height: 1;
+	flex: 0 0 auto;
+}
+
+.manacore-status.is-ok .dashicons {
+	color: #008a20;
+}
+
+.manacore-status.is-warn .dashicons {
+	color: #dba617;
+}
+
+/* ---------- ردیف ابزارها ---------- */
+.manacore-tool {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 20px;
+	padding: 14px 0;
+	border-top: 1px solid #f0f0f1;
+}
+
+.manacore-panel__hint + .manacore-tool {
+	margin-top: 12px;
+}
+
+.manacore-tool__text {
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+	max-width: 70ch;
+}
+
+.manacore-tool__text strong {
+	font-weight: 600;
+}
+
+.manacore-tool__text span {
+	color: var(--mc-muted);
+	font-size: 12px;
+}
+
+.manacore-tool__form {
+	flex: 0 0 auto;
+	margin: 0;
+}
+
+/* ---------- کارت‌های شمار تحلیل ---------- */
+.manacore-stat-grid {
+	display: grid;
+	gap: 12px;
+	grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+	margin: 14px 0 0;
+}
+
+.manacore-stat {
+	padding: 14px;
+	border: 1px solid var(--mc-border);
+	border-radius: var(--mc-radius);
+	background: var(--mc-soft);
+}
+
+.manacore-stat b {
+	display: block;
+	font-size: 1.5rem;
+	line-height: 1.4;
+}
+
+.manacore-stat span {
+	color: var(--mc-muted);
+	font-size: 12px;
+}
+
+.manacore-stat em {
+	display: block;
+	color: var(--mc-muted);
+	font-size: 11px;
+	font-style: normal;
+}
+
+.manacore-analytics-cols {
+	display: grid;
+	gap: 16px;
+	grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+	margin-top: 16px;
+}
+
+.manacore-analytics-cols .manacore-panel {
+	margin-top: 0;
+}
+
+/* ---------- فهرست شورت‌کدها ---------- */
+.manacore-codes {
+	margin: 12px 0 0;
+	padding: 0;
+	list-style: none;
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+	font-size: 13px;
+}
+
+.manacore-codes code {
+	background: var(--mc-soft);
+}
+
+/* ---------- جدول گزارش‌های خرابی لینک ---------- */
+.manacore-panel .subsubsub {
+	margin: 12px 0 0;
+	color: var(--mc-muted);
+}
+
+.manacore-panel .manacore-empty {
+	margin: 14px 0 0;
+}
+
+.manacore-reports {
+	margin-top: 8px;
+}
+
+.manacore-reports th,
+.manacore-reports td {
+	vertical-align: middle;
+}
+
+.manacore-reports .column-reason {
+	max-width: 320px;
+	word-break: break-word;
+}
+
+.manacore-reports .column-actions {
+	width: 210px;
+	white-space: nowrap;
+}
+
+.manacore-reports .column-link {
+	max-width: 260px;
+	word-break: break-word;
+}
+
+.manacore-reports code {
+	background: var(--mc-soft);
+}
+
+.manacore-panel .tablenav {
+	margin: 14px 0 0;
+}
+
+/* ---------- پشتیبان‌گیری ---------- */
+.manacore-backup {
+	margin: 14px 0 0;
+}
+
+.manacore-backup hr {
+	margin: 18px 0;
+}
+
+/* ---------- موبایل ---------- */
+@media screen and (max-width: 782px) {
+	.manacore-panel {
+		padding: 2px 14px 14px;
+	}
+
+	.manacore-panel .form-table th {
+		width: auto;
+		padding: 12px 0 4px;
+	}
+
+	.manacore-panel .form-table td {
+		padding: 0 0 12px;
+	}
+
+	.manacore-tool {
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 10px;
+	}
+
+	.manacore-reports .column-actions {
+		width: auto;
+		white-space: normal;
+	}
+}

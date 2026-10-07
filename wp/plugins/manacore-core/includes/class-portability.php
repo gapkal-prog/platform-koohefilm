@@ -89,16 +89,9 @@ class Portability {
 	public static function summary() {
 		$settings = get_option( self::OPTION, array() );
 		$keys     = is_array( $settings ) ? count( $settings ) : 0;
-		$ads      = 0;
-
-		if ( post_type_exists( 'manacore_ad' ) ) {
-			$counts = wp_count_posts( 'manacore_ad' );
-			$ads    = (int) ( $counts->publish ?? 0 ) + (int) ( $counts->draft ?? 0 ) + (int) ( $counts->pending ?? 0 );
-		}
 
 		return array(
 			'keys' => $keys,
-			'ads'  => $ads,
 			'have' => $keys ? 1 : 0,
 		);
 	}

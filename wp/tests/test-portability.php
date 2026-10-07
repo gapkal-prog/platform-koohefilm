@@ -264,7 +264,7 @@ $plain = Settings::option_keys();
 mc_ok( $plain === array_values( array_unique( $plain ) ), 'هیچ کلیدی در دو تب تکرار نشده است' );
 mc_ok( ! array_diff( array_keys( $map ), $tabs ), 'هر تب نقشه در فهرست تب‌ها هست' );
 mc_ok( in_array( 'requests_per_page', $plain, true ), 'کلید تب درخواست‌ها در نقشه هست' );
-mc_ok( in_array( 'ads_positions', $plain, true ), 'کلید جایگاه‌های تبلیغاتی در نقشه هست' );
+mc_ok( in_array( 'download_signing', $plain, true ), 'کلید امضای دانلود در نقشه هست' );
 
 /*
  * نگهبان «هم‌خوانی پنل و نقشه» — دو خطای بی‌صدای ممکن:
@@ -293,7 +293,7 @@ foreach ( $plain as $key ) {
 
 mc_ok( array() === $unseen, 'هر کلید نقشه در پنل دیده می‌شود (گزینه‌ی پنهان نداریم)', implode( ',', $unseen ) );
 mc_ok(
-	array( 'general', 'watch', 'requests', 'ads', 'mega', 'analytics', 'tools' ) === $tabs,
+	array( 'general', 'watch', 'requests', 'reports', 'mega', 'analytics', 'tools' ) === $tabs,
 	'نام و ترتیب تب‌های پنل همان ترتیب مستندشده است'
 );
 
@@ -301,9 +301,7 @@ mc_ok(
 $sink = array( '_tab' => 'general' );
 
 foreach ( $plain as $key ) {
-	if ( 'ads_positions' === $key ) {
-		$sink[ $key ] = array( 'top' );
-	} elseif ( in_array( $key, array( 'items_per_page', 'requests_per_page', 'ads_per_position', 'mega_terms', 'mega_columns', 'mega_featured_id' ), true ) ) {
+	if ( in_array( $key, array( 'items_per_page', 'requests_per_page', 'mega_terms', 'mega_columns', 'mega_featured_id' ), true ) ) {
 		$sink[ $key ] = 2;
 	} elseif ( in_array( $key, array( 'slug_movie', 'slug_series', 'slug_anime', 'slug_episode', 'slug_person', 'slug_collection' ), true ) ) {
 		$sink[ $key ] = 'film';
@@ -432,7 +430,7 @@ list( $code2 ) = Portability::notice_for( array( 'errors' => array(), 'applied' 
 mc_ok( 'import-dry' === $code2, 'حالت آزمایشی کد پیام جدا دارد' );
 
 $summary = Portability::summary();
-mc_ok( isset( $summary['keys'], $summary['ads'] ), 'خلاصه‌ی کارت پنل کلیدهای لازم را دارد' );
+mc_ok( isset( $summary['keys'], $summary['have'] ), 'خلاصه‌ی کارت پنل کلیدهای لازم را دارد' );
 
 /* ---------------------------------------------------------------
  * ۵) محتوای نمایشی
@@ -580,6 +578,128 @@ mc_ok( (bool) preg_grep( '/DELETE s FROM wp_manacore_stats/', $GLOBALS['wpdb']->
 WP_CLI::$lines = array();
 Cli::register();
 mc_ok( ! in_array( 'COMMAND manacore', WP_CLI::$lines, true ), 'بی WP_CLI هیچ فرمانی ثبت نمی‌شود' );
+
+/* ---------------------------------------------------------------
+ * ۷) نگهبان «ترجمه‌ی زودهنگام»
+ *
+ * وردپرس ۶٫۷ به بعد اگر `__()` پیش از `after_setup_theme` اجرا شود،
+ * هشدار `_load_textdomain_just_in_time` می‌دهد. قلاب `plugins_loaded`
+ * (که افزونه‌ها با آن boot می‌شوند) پیش از آن اجرا می‌شود، پس هیچ متد
+ * `hooks()` نباید در همان لحظه ترجمه بخواهد. این بخش همان ریشه را
+ * می‌سنجد: بدنه‌ی `hooks()` همه‌ی کلاس‌ها + مسیر نوع‌های محتوا.
+ * ------------------------------------------------------------ */
+
+echo "\n=== ۷) نگهبان ترجمه‌ی زودهنگام ===\n";
+
+/**
+ * بدنه‌ی یک متد را با تطبیق آکولاد برمی‌گرداند.
+ *
+ * @param string $src  متن فایل.
+ * @param string $name نام متد.
+ * @return string
+ */
+function mc_method_body( $src, $name ) {
+	if ( ! preg_match( '/\bfunction\s+' . preg_quote( $name, '/' ) . '\s*\([^)]*\)\s*\{/', $src, $m ) ) {
+		return '';
+	}
+
+	$open  = strpos( $src, '{', $m[0] ? strpos( $src, $m[0] ) : 0 );
+	$depth = 0;
+	$len   = strlen( $src );
+
+	for ( $i = (int) $open; $i < $len; $i++ ) {
+		if ( '{' === $src[ $i ] ) {
+			$depth++;
+		} elseif ( '}' === $src[ $i ] ) {
+			$depth--;
+
+			if ( 0 === $depth ) {
+				return substr( $src, (int) $open, $i - (int) $open + 1 );
+			}
+		}
+	}
+
+	return '';
+}
+
+$translation_call = '/\b(__|_e|_x|_n|_nx|esc_html__|esc_attr__|esc_html_e|esc_attr_e)\s*\(/';
+
+$plugin_dirs = array(
+	MANACORE_PATH,
+	dirname( dirname( MANACORE_PATH ) ) . '/manacore-sources/',
+	dirname( dirname( MANACORE_PATH ) ) . '/manacore-subscriptions/',
+);
+
+$early = array();
+
+foreach ( $plugin_dirs as $dir ) {
+	foreach ( (array) glob( $dir . 'includes/*.php' ) as $file ) {
+		$src  = (string) file_get_contents( $file );
+		$body = mc_method_body( $src, 'hooks' );
+
+		if ( '' !== $body && preg_match( $translation_call, $body ) ) {
+			$early[] = basename( $file );
+		}
+	}
+}
+
+mc_ok( array() === $early, 'هیچ hooks()‌ای در لحظه‌ی بارگذاری افزونه ترجمه صدا نمی‌زند', implode( ',', $early ) );
+
+/* مسیر خطرناک مشخص: فهرست نوع‌های محتوا برچسب ترجمه‌پذیر دارد. */
+$links_src = (string) file_get_contents( MANACORE_PATH . 'includes/class-links-admin.php' );
+mc_ok( '' !== mc_method_body( $links_src, 'register' ), 'Links_Admin متد register() برای ثبت مؤخر دارد' );
+mc_ok( '' !== mc_method_body( $links_src, 'hooks' ), 'بدنه‌ی hooks() برای بررسی پیدا می‌شود' );
+mc_ok(
+	false === strpos( mc_method_body( $links_src, 'hooks' ), 'post_types()' ),
+	'Links_Admin در hooks() فهرست نوع‌های محتوا (ترجمه‌پذیر) را نمی‌خواند'
+);
+mc_ok(
+	false !== strpos( mc_method_body( $links_src, 'hooks' ), "'init'" ),
+	'ثبت ستون‌های لینک به init سپرده شده است'
+);
+
+/* بارگذاری فایل ترجمه فقط زیر init: پیش از آن هشدار می‌دهد. */
+$boot_files = array(
+	dirname( MANACORE_PATH ) . '/manacore-core.php',
+	dirname( dirname( MANACORE_PATH ) ) . '/manacore-sources/manacore-sources.php',
+	dirname( dirname( MANACORE_PATH ) ) . '/manacore-subscriptions/manacore-subscriptions.php',
+);
+
+foreach ( $boot_files as $file ) {
+	if ( ! is_file( $file ) ) {
+		continue;
+	}
+
+	$src   = (string) file_get_contents( $file );
+	$name  = basename( dirname( $file ) );
+	$ok    = true;
+	$pos   = 0;
+
+	while ( false !== ( $pos = strpos( $src, 'load_plugin_textdomain(', $pos ) ) ) {
+		$before = substr( $src, 0, $pos );
+
+		if ( ! preg_match( "/add_action\(\s*'init'/", substr( $before, -400 ) ) ) {
+			$ok = false;
+		}
+
+		$pos += 21;
+	}
+
+	mc_ok( $ok, "بارگذاری ترجمه‌ی {$name} زیر قلاب init است" );
+}
+
+/* هیچ رشته‌ی تبلیغاتی/بنری در کد نمانده باشد. */
+$leftover = array();
+
+foreach ( array_merge( (array) glob( MANACORE_PATH . 'includes/*.php' ), (array) glob( MANACORE_PATH . 'assets/js/*.js' ) ) as $file ) {
+	$src = (string) file_get_contents( $file );
+
+	if ( false !== strpos( $src, 'manacore_ad' ) || false !== strpos( $src, 'ad-event' ) || false !== strpos( $src, 'manacore/ad-slot' ) ) {
+		$leftover[] = basename( $file );
+	}
+}
+
+mc_ok( array() === $leftover, 'هیچ ردی از ماژول بنر/تبلیغات در کد نمانده است', implode( ',', $leftover ) );
 
 /* ---------------------------------------------------------------
  * پایان
