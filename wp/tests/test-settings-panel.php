@@ -402,9 +402,15 @@ use ManaCore\Core\Settings;
 
 echo "\n=== ۱) تب‌ها و ناوبری ===\n";
 
-$expected = array( 'general', 'watch', 'requests', 'reports', 'mega', 'analytics', 'tools' );
+/*
+ * شش تب، به همین ترتیب. تب «تحلیل و آمار» عمداً نیست: داده‌ی اساسی‌اش در
+ * کارت «نگاه کلی» تب عمومی آمده و بقیه به تب‌های مرتبط خودش رفته است.
+ */
+$expected = array( 'general', 'watch', 'requests', 'reports', 'mega', 'tools' );
 mc_ok( $expected === array_keys( Settings::tabs() ), 'ترتیب تب‌ها همان ترتیب مستندشده است', implode( ',', array_keys( Settings::tabs() ) ) );
 mc_ok( ! in_array( 'ads', array_keys( Settings::tabs() ), true ), 'تب تبلیغات از پنل برداشته شده است' );
+mc_ok( ! in_array( 'analytics', array_keys( Settings::tabs() ), true ), 'تب تحلیل و آمار از پنل برداشته شده است' );
+
 
 $src = (string) file_get_contents( MANACORE_PATH . 'includes/class-settings.php' );
 
@@ -445,6 +451,13 @@ foreach ( $tabs as $key => $label ) {
 	mc_ok( false !== strpos( $html, 'nav-tab-wrapper' ), "نوار تب در «{$key}» هست" );
 	mc_ok( false !== strpos( $html, 'manacore-panel' ), "تب «{$key}» دست‌کم یک بخش پنل دارد" );
 }
+
+/*
+ * کارت «نگاه کلی»: جای تب تحلیل را گرفته و بیرون از فرم تنظیمات است.
+ */
+mc_ok( false !== strpos( $panels['general'], 'نگاه کلی' ), 'کارت «نگاه کلی» در تب عمومی هست' );
+mc_ok( false !== strpos( $panels['general'], 'manacore-stats' ), 'شمارنده‌های نگاه کلی رندر می‌شوند' );
+mc_ok( false !== strpos( $panels['general'], 'تماشا ۷ روز' ) && false !== strpos( $panels['general'], 'دانلود ۷ روز' ), 'عددهای واقعی تماشا و دانلود می‌آیند' );
 
 /* ---------------------------------------------------------------
  * ۲) فرم‌ها و تب ابزارها
@@ -547,7 +560,8 @@ Settings::instance()->render();
 $reports_html = (string) ob_get_clean();
 
 mc_ok( false !== strpos( $reports_html, 'گزارش‌های خرابی لینک' ), 'عنوان بخش گزارش‌ها در تب هست' );
-mc_ok( false !== strpos( $reports_html, 'class="subsubsub"' ), 'فیلتر وضعیت‌ها بالای جدول هست' );
+mc_ok( false !== strpos( $reports_html, 'class="manacore-filters"' ), 'فیلتر وضعیت‌ها بالای جدول هست' );
+mc_ok( false !== strpos( $reports_html, 'manacore-filter__count' ), 'شمار هر وضعیت روی چیپ فیلتر می‌آید' );
 mc_ok( false !== strpos( $reports_html, 'class="widefat striped manacore-reports"' ), 'جدول گزارش‌ها با کلاس اختصاصی رندر می‌شود' );
 mc_ok( false !== strpos( $reports_html, 'فیلم تستی' ) && false !== strpos( $reports_html, 'سریال تستی' ), 'هر دو گزارش فهرست شده‌اند' );
 mc_ok( false !== strpos( $reports_html, 'لینک باز نمی‌شود' ), 'توضیح کاربر در ستون خودش می‌آید' );
@@ -564,7 +578,8 @@ $fixed_html = (string) ob_get_clean();
 
 mc_ok( false !== strpos( $fixed_html, 'سریال تستی' ), 'با فیلتر «اصلاح‌شده» گزارش همان وضعیت می‌آید' );
 mc_ok( false === strpos( $fixed_html, 'فیلم تستی' ), 'گزارش وضعیت دیگر در نمای فیلترشده نمی‌آید' );
-mc_ok( false !== strpos( $fixed_html, 'class="current"' ), 'فیلتر فعال نشانه‌گذاری می‌شود' );
+mc_ok( false !== strpos( $fixed_html, 'manacore-filter is-active' ), 'فیلتر فعال نشانه‌گذاری می‌شود' );
+mc_ok( false !== strpos( $fixed_html, 'aria-current="page"' ), 'فیلتر فعال برای صفحه‌خوان هم نشانه‌گذاری شده است' );
 mc_ok( false !== strpos( $fixed_html, 'report_status=fixed' ), 'کنش‌ها وضعیت فیلتر را برای بازگشت نگه می‌دارند' );
 
 unset( $_GET['report_status'] );

@@ -278,9 +278,18 @@ $settings = file_get_contents( MANACORE_PATH . 'includes/class-settings.php' );
 $boot     = file_get_contents( MANACORE_PATH . 'manacore-core.php' );
 $analytics = file_get_contents( MANACORE_PATH . 'includes/class-analytics.php' );
 
-mc_ok( false !== strpos( $settings, "'analytics' =>" ), 'تب «تحلیل و آمار» در فهرست تب‌ها هست' );
-mc_ok( false !== strpos( $settings, "case 'analytics':" ), 'تب در جابه‌جایی تب‌ها هست' );
-mc_ok( false !== strpos( $settings, 'render_analytics_tab' ), 'تابع رندر تب تعریف شده است' );
+/*
+ * تب جداگانه‌ی «تحلیل و آمار» برداشته شد (درخواست کارفرما: پنل تنظیمات
+ * یک‌دست باشد)؛ داده‌ی اساسی‌اش داخل تب «عمومی» آمده است. این سه گزاره
+ * نگهبان همان تصمیم‌اند تا تب حذف‌شده دوباره سر بر نزند.
+ */
+mc_ok( false === strpos( $settings, "'analytics' =>" ), 'تب «تحلیل و آمار» از پنل برداشته شده است' );
+mc_ok( false === strpos( $settings, "case 'analytics':" ), 'جابه‌جایی به تب تحلیل نمانده است' );
+mc_ok( false === strpos( $settings, 'render_analytics_tab' ), 'تابع رندر تب تحلیل پاک شده است' );
+mc_ok( false !== strpos( $settings, 'overview_panel' ), 'کارت «نگاه کلی» جای تب تحلیل را گرفته است' );
+mc_ok( false !== strpos( $settings, 'Analytics::summary()' ) && false !== strpos( $settings, 'Analytics::top_reported(' ) && false !== strpos( $settings, 'Analytics::top_requests(' ), 'داده‌های تحلیل در تب‌های مرتبط پخش شده‌اند' );
+mc_ok( false !== strpos( $analytics, 'Analytics::top' ) || false !== strpos( $analytics, "self::top( 'view'" ), 'فهرست‌های برترین‌ها در ویجت پیشخوان استفاده می‌شوند' );
+mc_ok( false === strpos( $analytics, 'style="' ), 'ویجت پیشخوان استایل درون‌خطی ندارد (کلاس‌های admin.css)' );
 mc_ok( false !== strpos( $settings, 'Analytics::instance()->flush();' ), 'ابزار «پاک‌کردن کش» کش تحلیل را هم پاک می‌کند' );
 mc_ok( false !== strpos( $boot, 'Analytics::instance()->hooks();' ), 'ماژول تحلیل در راه‌اندازی ثبت شده است' );
 mc_ok( false !== strpos( $analytics, "'update_option_manacore_settings'" ), 'تغییر تنظیمات، کش گزارش را پاک می‌کند' );

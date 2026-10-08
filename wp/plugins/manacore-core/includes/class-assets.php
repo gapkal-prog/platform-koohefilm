@@ -48,7 +48,13 @@ class Assets {
 		$post_types = array_merge( manacore_title_post_types(), array( 'episode' ) );
 		$is_editor  = $screen && in_array( $screen->post_type, $post_types, true )
 			&& in_array( $hook, array( 'post.php', 'post-new.php' ), true );
-		$is_settings = $screen && false !== strpos( (string) $screen->id, 'manacore' );
+
+		/*
+		 * صفحه‌های ManaCore و همچنین پیشخوان: ویجت «نگاه یک‌صفحه‌ای سایت»
+		 * کارت‌هایش را با کلاس‌های manacore-* می‌سازد و پیش‌تر روی پیشخوان
+		 * بی‌استایل (و ناخوانا) دیده می‌شد.
+		 */
+		$is_settings = $screen && ( false !== strpos( (string) $screen->id, 'manacore' ) || 'dashboard' === $screen->id );
 
 		if ( ! $is_editor && ! $is_settings ) {
 			return;

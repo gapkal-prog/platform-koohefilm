@@ -293,7 +293,7 @@ foreach ( $plain as $key ) {
 
 mc_ok( array() === $unseen, 'هر کلید نقشه در پنل دیده می‌شود (گزینه‌ی پنهان نداریم)', implode( ',', $unseen ) );
 mc_ok(
-	array( 'general', 'watch', 'requests', 'reports', 'mega', 'analytics', 'tools' ) === $tabs,
+	array( 'general', 'watch', 'requests', 'reports', 'mega', 'tools' ) === $tabs,
 	'نام و ترتیب تب‌های پنل همان ترتیب مستندشده است'
 );
 

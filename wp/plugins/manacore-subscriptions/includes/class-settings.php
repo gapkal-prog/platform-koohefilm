@@ -53,10 +53,15 @@ class Settings {
 			return;
 		}
 
+		/*
+		 * وابستگی به `manacore-admin` (استایل مشترک ManaCore) تا ظاهر
+		 * سرصفحه/کارت‌ها یکی باشد و ترتیب بارگذاری هم تضمین شود. اگر
+		 * افزونه‌ی هسته فعال نباشد، وردپرس این وابستگی را نادیده می‌گیرد.
+		 */
 		wp_enqueue_style(
 			'manacore-subs-admin',
 			MANACORE_SUBS_URL . 'assets/admin.css',
-			array(),
+			array( 'manacore-admin' ),
 			MANACORE_SUBS_VERSION
 		);
 	}
@@ -369,8 +374,11 @@ class Settings {
 		?>
 		<div class="wrap manacore-settings-wrap">
 			<div class="manacore-settings-header">
-				<span class="manacore-brand-mark">ManaCore</span>
-				<h1><?php esc_html_e( 'اشتراک‌ها', 'manacore' ); ?></h1>
+				<span class="manacore-brand-mark">MC</span>
+				<div>
+					<h1><?php esc_html_e( 'اشتراک‌ها', 'manacore' ); ?></h1>
+					<p><?php esc_html_e( 'سطح‌های دسترسی، اتصال به ووکامرس و نمایش محتوای ویژه.', 'manacore' ); ?></p>
+				</div>
 			</div>
 
 			<?php $this->render_levels(); ?>

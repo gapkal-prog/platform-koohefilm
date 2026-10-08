@@ -37,13 +37,12 @@ class Settings {
 	 */
 	public static function tabs() {
 		return array(
-			'general'   => __( 'تنظیمات عمومی', 'manacore' ),
-			'watch'     => __( 'پخش و دانلود', 'manacore' ),
-			'requests'  => __( 'درخواست‌ها', 'manacore' ),
-			'reports'   => __( 'گزارش خرابی لینک', 'manacore' ),
-			'mega'      => __( 'مگامنو', 'manacore' ),
-			'analytics' => __( 'تحلیل و آمار', 'manacore' ),
-			'tools'     => __( 'وضعیت و ابزارها', 'manacore' ),
+			'general'  => __( 'عمومی', 'manacore' ),
+			'watch'    => __( 'پخش و دانلود', 'manacore' ),
+			'requests' => __( 'درخواست‌ها', 'manacore' ),
+			'reports'  => __( 'خرابی لینک', 'manacore' ),
+			'mega'     => __( 'مگامنو', 'manacore' ),
+			'tools'    => __( 'ابزارها و نگه‌داری', 'manacore' ),
 		);
 	}
 
@@ -356,7 +355,7 @@ class Settings {
 			'import-error'  => array( 'error', __( 'بازگردانی تنظیمات انجام نشد.', 'manacore' ) ),
 			'failed'        => array( 'error', __( 'ابزار اجرا نشد؛ شرایط پیش‌نیاز را ببینید.', 'manacore' ) ),
 			'link-tool-ok'  => array( 'success', __( 'ابزار لینک اجرا شد؛ نتیجه پایین همین صفحه آمده است.', 'manacore' ) ),
-			'links-check-ok'   => array( 'success', __( 'بررسی لینک‌ها انجام شد؛ نتیجه در کارت «سلامت لینک‌ها» و گزارش‌ها در تب «گزارش خرابی لینک» است.', 'manacore' ) ),
+			'links-check-ok'   => array( 'success', __( 'بررسی لینک‌ها انجام شد؛ نتیجه در کارت «سلامت لینک‌ها» و گزارش‌ها در تب «خرابی لینک» است.', 'manacore' ) ),
 			'links-check-none' => array( 'warning', __( 'نشانی سنجیدنی‌ای پیدا نشد؛ نشانی‌های همین سایت، دامنه‌های خصوصی و لینک‌های «مگنت» سنجیده نمی‌شوند.', 'manacore' ) ),
 		);
 
@@ -544,15 +543,15 @@ class Settings {
 			<div class="manacore-settings-header">
 				<span class="manacore-brand-mark">MC</span>
 				<div>
-					<h1><?php esc_html_e( 'ManaCore — هسته‌ی سایت فیلم و سریال', 'manacore' ); ?></h1>
-					<p><?php esc_html_e( 'پخش و دانلود، درخواست‌ها، گزارش‌های خرابی لینک، مگامنو و تحلیل آمار.', 'manacore' ); ?></p>
+					<h1><?php esc_html_e( 'ManaCore', 'manacore' ); ?></h1>
+					<p><?php esc_html_e( 'پخش و دانلود، درخواست‌های کاربران، خرابی لینک‌ها، مگامنو و ابزارهای نگه‌داری.', 'manacore' ); ?></p>
 				</div>
 			</div>
 
-			<nav class="nav-tab-wrapper">
+			<nav class="nav-tab-wrapper" aria-label="<?php esc_attr_e( 'تب‌های ManaCore', 'manacore' ); ?>">
 				<?php foreach ( $tabs as $key => $label ) : ?>
 					<a class="nav-tab<?php echo $key === $tab ? ' nav-tab-active' : ''; ?>"
-						href="<?php echo esc_url( self::tab_url( $key ) ); ?>">
+						href="<?php echo esc_url( self::tab_url( $key ) ); ?>"<?php echo $key === $tab ? ' aria-current="page"' : ''; ?>>
 						<?php echo esc_html( $label ); ?>
 					</a>
 				<?php endforeach; ?>
@@ -574,10 +573,6 @@ class Settings {
 
 				case 'mega':
 					$this->render_mega_tab();
-					break;
-
-				case 'analytics':
-					$this->render_analytics_tab();
 					break;
 
 				case 'tools':
@@ -639,10 +634,13 @@ class Settings {
 	/**
 	 * نشانی یک تب از صفحه‌ی تنظیمات.
 	 *
+	 * `public` است تا ماژول‌های دیگر (مثل ویجت پیشخوان `Analytics`) هم
+	 * بتوانند بدون بازسازی دستیِ نشانی، به تب درست پیوند بدهند.
+	 *
 	 * @param string $tab کلید تب.
 	 * @return string
 	 */
-	protected static function tab_url( $tab ) {
+	public static function tab_url( $tab ) {
 		return add_query_arg(
 			array(
 				'page' => 'manacore',
@@ -795,6 +793,12 @@ class Settings {
 	 * @return void
 	 */
 	protected function render_general_tab() {
+		/*
+		 * کارت وضعیت پیش از فرم می‌آید (بیرون فرم، مثل کارت‌های وضعیت تب‌های
+		 * دیگر) تا مدیر وضعیت واقعی سایت را ببیند و بعد تنظیم کند.
+		 */
+		$this->overview_panel();
+
 		$this->tab_form(
 			'general',
 			function () {
@@ -1183,6 +1187,11 @@ class Settings {
 		);
 
 		$this->requests_status_panel();
+
+		/* رتبه‌بندی کوتاه: کدام درخواست‌ها بیشترین رأی را گرفته‌اند. */
+		if ( class_exists( __NAMESPACE__ . '\\Analytics' ) ) {
+			$this->rank_table( __( 'پررأی‌ترین درخواست‌ها', 'manacore' ), Analytics::top_requests( 5 ), __( 'رأی', 'manacore' ), 'status', true );
+		}
 	}
 
 	/**
@@ -1219,6 +1228,11 @@ class Settings {
 
 		$this->action_links( $links );
 
+		printf(
+			'<p class="description">%s</p>',
+			esc_html__( 'برای گذاشتن فرم و تخته در برگه‌ای از خودتان، شورت‌کدهای درخواست‌ها در تب «ابزارها و نگه‌داری» فهرست شده‌اند.', 'manacore' )
+		);
+
 		if ( ! $page ) {
 			$this->tool_row(
 				'request-page',
@@ -1231,16 +1245,6 @@ class Settings {
 		}
 
 		$this->panel_close();
-
-		$this->panel_open( __( 'نمایش در قالب دلخواه', 'manacore' ), __( 'اگر برگه‌ی درخواست‌ها را خودتان می‌سازید، این شورت‌کدها را در آن بگذارید.', 'manacore' ) );
-		?>
-		<ul class="manacore-codes">
-			<li><code>[manacore_request_form]</code> — <?php esc_html_e( 'فرم ثبت درخواست', 'manacore' ); ?></li>
-			<li><code>[manacore_requests orderby="votes"]</code> — <?php esc_html_e( 'تخته‌ی درخواست‌ها با رأی‌گیری', 'manacore' ); ?></li>
-			<li><code>[manacore_my_requests]</code> — <?php esc_html_e( 'پنل «درخواست‌های من» برای کاربر واردشده', 'manacore' ); ?></li>
-		</ul>
-		<?php
-		$this->panel_close();
 	}
 
 	/**
@@ -1250,6 +1254,12 @@ class Settings {
 	 */
 	protected function render_reports_tab() {
 		$this->open_work_panel();
+
+		/* رتبه‌بندی کوتاه: کدام اثرها بیشترین گزارش را گرفته‌اند. */
+		if ( class_exists( __NAMESPACE__ . '\\Analytics' ) ) {
+			$this->rank_table( __( 'بیشترین گزارش خرابی لینک', 'manacore' ), Analytics::top_reported( 5 ), __( 'گزارش', 'manacore' ), 'open' );
+		}
+
 		$this->reports_panel();
 	}
 
@@ -1346,22 +1356,28 @@ class Settings {
 			);
 		}
 		?>
-		<ul class="subsubsub">
-			<?php foreach ( $filters as $index => $filter ) : ?>
+		<ul class="manacore-filters">
+			<?php foreach ( $filters as $filter ) : ?>
 				<li>
-					<a href="<?php echo esc_url( $filter['url'] ); ?>"<?php echo $filter['active'] ? ' class="current" aria-current="page"' : ''; ?>>
+					<a class="manacore-filter<?php echo $filter['active'] ? ' is-active' : ''; ?>"
+						href="<?php echo esc_url( $filter['url'] ); ?>"<?php echo $filter['active'] ? ' aria-current="page"' : ''; ?>>
 						<?php echo esc_html( $filter['label'] ); ?>
-						<span class="count">(<?php echo esc_html( manacore_fa_digits( number_format_i18n( (int) $filter['count'] ) ) ); ?>)</span>
+						<span class="manacore-filter__count"><?php echo esc_html( manacore_fa_digits( number_format_i18n( (int) $filter['count'] ) ) ); ?></span>
 					</a>
-					<?php echo $index < count( $filters ) - 1 ? ' |' : ''; ?>
 				</li>
 			<?php endforeach; ?>
 		</ul>
 
-		<div class="clear"></div>
-
 		<?php if ( ! $reports ) : ?>
-			<p class="manacore-empty"><?php esc_html_e( 'گزارشی با این وضعیت نیست.', 'manacore' ); ?></p>
+			<p class="manacore-empty">
+				<?php
+				if ( $total ) {
+					esc_html_e( 'با این وضعیت گزارشی ثبت نشده است؛ «همه» را ببینید.', 'manacore' );
+				} else {
+					esc_html_e( 'هنوز گزارشی ثبت نشده است. کاربران از ردیف جدول دانلود، خرابی هر لینک را گزارش می‌کنند.', 'manacore' );
+				}
+				?>
+			</p>
 		<?php else : ?>
 			<table class="widefat striped manacore-reports">
 				<thead>
@@ -1403,11 +1419,13 @@ class Settings {
 							<td class="column-reason"><?php echo esc_html( (string) $report['reason'] ); ?></td>
 							<td><time datetime="<?php echo esc_attr( (string) $report['created_at'] ); ?>"><?php echo esc_html( (string) $report['created_at'] ); ?></time></td>
 							<td class="column-actions">
-								<?php
-								$this->report_action( (int) $report['id'], 'fixed', __( 'اصلاح شد', 'manacore' ), $status );
-								$this->report_action( (int) $report['id'], 'ignored', __( 'نادیده بگیر', 'manacore' ), $status );
-								$this->report_action( (int) $report['id'], 'delete', __( 'حذف', 'manacore' ), $status );
-								?>
+								<div class="manacore-row-actions">
+									<?php
+									$this->report_action( (int) $report['id'], 'fixed', __( 'اصلاح شد', 'manacore' ), $status );
+									$this->report_action( (int) $report['id'], 'ignored', __( 'نادیده بگیر', 'manacore' ), $status );
+									$this->report_action( (int) $report['id'], 'delete', __( 'حذف', 'manacore' ), $status );
+									?>
+								</div>
 							</td>
 						</tr>
 					<?php endforeach; ?>
@@ -1639,11 +1657,16 @@ class Settings {
 	}
 
 	/**
-	 * تب «تحلیل و آمار»: شمار کلی و جدول‌های برترین‌ها.
+	 * بخش «نگاه کلی» — داده‌های اساسی داشبورد، درون تب عمومی.
+	 *
+	 * جای تب جداگانه‌ی «تحلیل و آمار» را گرفته است: مدیر بدون ترک صفحه‌ی
+	 * تنظیمات، وضعیت واقعی سایت را می‌بیند. هیچ عددی این‌جا ساخته یا تخمین
+	 * زده نمی‌شود؛ همه از `Analytics::summary()` می‌آید که خودش رویدادهای
+	 * واقعی (شروع پخش، گذر از مسیر دانلود، امتیازها) را می‌شمارد.
 	 *
 	 * @return void
 	 */
-	protected function render_analytics_tab() {
+	protected function overview_panel() {
 		if ( ! class_exists( __NAMESPACE__ . '\\Analytics' ) ) {
 			return;
 		}
@@ -1651,34 +1674,34 @@ class Settings {
 		$summary = Analytics::summary();
 		$ratings = Analytics::ratings_summary();
 
-		$cards = array(
-			array( __( 'تماشا امروز', 'manacore' ), $summary['views_today'], '' ),
-			array( __( 'تماشا ۷ روز', 'manacore' ), $summary['views_week'], '' ),
-			array( __( 'بازدید ۳۰ روز', 'manacore' ), $summary['views_month'], '' ),
-			array( __( 'دانلود ۷ روز', 'manacore' ), $summary['downloads_week'], '' ),
-			array( __( 'امتیاز میانگین', 'manacore' ), number_format_i18n( $ratings['average'], 2 ), sprintf( __( '%s رأی', 'manacore' ), number_format_i18n( $ratings['total'] ) ) ),
-			array( __( 'گزارش خرابی تازه', 'manacore' ), $summary['reports_new'], '' ),
-			array( __( 'درخواست در انتظار', 'manacore' ), $summary['requests_pending'], sprintf( __( '%s تأییدشده', 'manacore' ), number_format_i18n( $summary['requests_publish'] ) ) ),
-			array( __( 'دیدگاه در صف', 'manacore' ), $summary['comments_pending'], '' ),
-		);
+		$queue = (int) $summary['reports_new'] + (int) $summary['requests_pending'] + (int) $summary['comments_pending'];
 
 		$this->panel_open(
-			__( 'شمار کلی', 'manacore' ),
-			__( 'عددها هر ۵ دقیقه یک‌بار تازه می‌شوند (کش) تا بازکردن پیشخوان روی سایت بزرگ کند نشود.', 'manacore' )
+			__( 'نگاه کلی', 'manacore' ),
+			__( 'تماشا با شروع واقعی پخش و دانلود با گذر از مسیر دانلود شمرده می‌شود؛ بازکردن صفحه یا تازه‌کردن آن عددی اضافه نمی‌کند.', 'manacore' )
 		);
-		?>
-		<div class="manacore-stat-grid">
-			<?php foreach ( $cards as $card ) : ?>
-				<div class="manacore-stat">
-					<b><?php echo esc_html( manacore_fa_digits( (string) $card[1] ) ); ?></b>
-					<span><?php echo esc_html( $card[0] ); ?></span>
-					<?php if ( '' !== $card[2] ) : ?>
-						<em><?php echo esc_html( manacore_fa_digits( (string) $card[2] ) ); ?></em>
-					<?php endif; ?>
-				</div>
-			<?php endforeach; ?>
-		</div>
-		<?php
+
+		$this->stat_list(
+			array(
+				array( __( 'تماشا امروز', 'manacore' ), number_format_i18n( (int) $summary['views_today'] ) ),
+				array( __( 'تماشا ۷ روز', 'manacore' ), number_format_i18n( (int) $summary['views_week'] ) ),
+				array( __( 'دانلود ۷ روز', 'manacore' ), number_format_i18n( (int) $summary['downloads_week'] ) ),
+				array( __( 'امتیاز میانگین', 'manacore' ), number_format_i18n( (float) $ratings['average'], 2 ) ),
+				array( __( 'در صف بازبینی', 'manacore' ), number_format_i18n( $queue ) ),
+			)
+		);
+
+		printf(
+			'<p class="description">%s</p>',
+			esc_html(
+				sprintf(
+					/* translators: %s: تعداد رأی‌های ثبت‌شده */
+					__( 'مجموع رأی‌های ثبت‌شده: %s', 'manacore' ),
+					manacore_fa_digits( number_format_i18n( (int) $ratings['total'] ) )
+				)
+			)
+		);
+
 		$this->action_links(
 			array(
 				array( __( 'گزارش‌های خرابی لینک', 'manacore' ), self::tab_url( 'reports' ) ),
@@ -1686,64 +1709,28 @@ class Settings {
 				array( __( 'دیدگاه‌های در صف', 'manacore' ), add_query_arg( 'post_status', 'pending', admin_url( 'edit-comments.php' ) ) ),
 			)
 		);
+
 		$this->panel_close();
-		?>
-		<div class="manacore-analytics-cols">
-			<?php
-			$this->analytics_table(
-				__( 'پربازدیدترین‌های ۷ روز', 'manacore' ),
-				Analytics::top( 'view', 7, 10 ),
-				__( 'بازدید', 'manacore' )
-			);
-
-			$this->analytics_table(
-				__( 'پربارگیری‌شده‌ترین‌های ۷ روز', 'manacore' ),
-				Analytics::top( 'download', 7, 10 ),
-				__( 'دانلود', 'manacore' )
-			);
-
-			$this->analytics_table(
-				__( 'بیشترین گزارش خرابی لینک', 'manacore' ),
-				Analytics::top_reported( 10 ),
-				__( 'گزارش', 'manacore' ),
-				'open'
-			);
-
-			$this->analytics_table(
-				__( 'پررأی‌ترین درخواست‌ها', 'manacore' ),
-				Analytics::top_requests( 10 ),
-				__( 'رأی', 'manacore' ),
-				'votes',
-				true
-			);
-			?>
-		</div>
-		<?php
 	}
 
 	/**
-	 * جدول کوچک یک گزارش تحلیلی.
+	 * جدول کوچک یک گزارش رتبه‌ای (برترین‌ها).
 	 *
-	 * @param string $title     عنوان.
-	 * @param array  $rows      ردیف‌ها.
+	 * @param string $title     عنوان بخش.
+	 * @param array  $rows      ردیف‌های آماده از `Analytics`.
 	 * @param string $value     برچسب ستون شمار.
-	 * @param string $extra_key کلید ستون جانبی (اختیاری).
-	 * @param bool   $pending   نمایش نشان «در انتظار» برای وضعیت pending.
+	 * @param string $extra_key کلید ستون جانبی (`open` یا `status`).
+	 * @param bool   $pending   نشان «در انتظار تأیید» برای درخواست‌ها.
 	 * @return void
 	 */
-	protected function analytics_table( $title, $rows, $value, $extra_key = '', $pending = false ) {
-		$this->panel_open( $title );
-
+	protected function rank_table( $title, $rows, $value, $extra_key = '', $pending = false ) {
 		if ( ! $rows ) {
-			?>
-			<p class="description"><?php esc_html_e( 'داده‌ای در این بازه ثبت نشده است.', 'manacore' ); ?></p>
-			<?php
-			$this->panel_close();
-
 			return;
 		}
+
+		$this->panel_open( $title );
 		?>
-		<table class="widefat striped">
+		<table class="widefat striped manacore-rank">
 			<thead>
 				<tr>
 					<th scope="col"><?php esc_html_e( 'اثر', 'manacore' ); ?></th>
@@ -1768,7 +1755,7 @@ class Settings {
 							<?php endif; ?>
 
 							<?php if ( $pending && isset( $row['status'] ) && 'publish' !== $row['status'] ) : ?>
-								<em><?php esc_html_e( '— در انتظار تأیید', 'manacore' ); ?></em>
+								<em class="manacore-rank__flag"><?php esc_html_e( 'در انتظار تأیید', 'manacore' ); ?></em>
 							<?php endif; ?>
 						</td>
 						<td><?php echo esc_html( manacore_fa_digits( number_format_i18n( (int) $amount ) ) ); ?></td>
@@ -2012,7 +1999,7 @@ class Settings {
 			'check-links',
 			__( 'بررسی کن', 'manacore' ),
 			__( 'سنجش چند نشانی', 'manacore' ),
-			__( 'نتیجه در کارت «آخرین بررسی» و گزارش‌ها در تب «گزارش خرابی لینک» دیده می‌شوند.', 'manacore' ),
+			__( 'نتیجه در کارت «آخرین بررسی» و گزارش‌ها در تب «خرابی لینک» دیده می‌شوند.', 'manacore' ),
 			'',
 			true
 		);

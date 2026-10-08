@@ -160,7 +160,7 @@ class Metaboxes {
 			</select>
 
 			<?php if ( ! empty( $linked ) ) : ?>
-				<p class="description" style="margin-top:10px">
+				<p class="description manacore-desc">
 					<?php
 					printf(
 						/* translators: %d: تعداد آثار */

@@ -3,7 +3,7 @@
  * داشبورد تحلیلی مدیر.
  *
  * همه‌ی داده‌ی این گزارش‌ها از پیش در سایت هست (جدول `manacore_stats` برای
- * تماشا/دانلود، امتیازها، گزارش‌های خرابی لینک، درخواست‌ها، بنرها و
+ * تماشا/دانلود، امتیازها، گزارش‌های خرابی لینک، درخواست‌ها و
  * دیدگاه‌ها)؛ چیزی که کم بود «یک جا دیدنشان» بود. این کلاس فقط می‌خواند و
  * هیچ‌وقت داده‌ی تازه‌ای نمی‌سازد.
  *
@@ -351,33 +351,81 @@ class Analytics {
 	}
 
 	/**
-	 * رندر ویجت پیشخوان (خلاصه‌ی کوتاه).
+	 * رندر ویجت پیشخوان.
+	 *
+	 * این ویجت «داشبورد» واقعی افزونه است: عددهای کلیدی و دو فهرست کوتاه
+	 * برترین‌های هفته. استایل از `assets/css/admin.css` می‌آید (همان فایل
+	 * صفحه‌ی تنظیمات) و هیچ استایلی درون‌خطی تزریق نمی‌شود.
+	 *
+	 * @return void
 	 */
 	public function render_widget() {
 		$summary = self::summary();
+		$ratings = self::ratings_summary();
 
 		$cells = array(
-			__( 'تماشا امروز', 'manacore' )  => $summary['views_today'],
-			__( 'تماشا ۷ روز', 'manacore' )  => $summary['views_week'],
-			__( 'دانلود ۷ روز', 'manacore' )  => $summary['downloads_week'],
-			__( 'گزارش تازه', 'manacore' )    => $summary['reports_new'],
-			__( 'درخواست باز', 'manacore' )   => $summary['requests_pending'],
-			__( 'دیدگاه در صف', 'manacore' )  => $summary['comments_pending'],
+			__( 'تماشا امروز', 'manacore' )  => number_format_i18n( (int) $summary['views_today'] ),
+			__( 'تماشا ۷ روز', 'manacore' )  => number_format_i18n( (int) $summary['views_week'] ),
+			__( 'دانلود ۷ روز', 'manacore' )  => number_format_i18n( (int) $summary['downloads_week'] ),
+			__( 'امتیاز میانگین', 'manacore' ) => number_format_i18n( (float) $ratings['average'], 2 ),
+			__( 'گزارش تازه', 'manacore' )    => number_format_i18n( (int) $summary['reports_new'] ),
+			__( 'درخواست باز', 'manacore' )   => number_format_i18n( (int) $summary['requests_pending'] ),
 		);
 		?>
-		<div class="manacore-widget-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin:8px 0 12px">
+		<ul class="manacore-widget-grid">
 			<?php foreach ( $cells as $label => $value ) : ?>
-				<span style="padding:10px;border:1px solid #dcdcde;border-radius:8px;background:#f6f7f7">
-					<b style="display:block;font-size:1.25rem"><?php echo esc_html( number_format_i18n( (int) $value ) ); ?></b>
-					<?php echo esc_html( $label ); ?>
-				</span>
+				<li>
+					<b><?php echo esc_html( manacore_fa_digits( (string) $value ) ); ?></b>
+					<span><?php echo esc_html( $label ); ?></span>
+				</li>
 			<?php endforeach; ?>
-		</div>
-		<p>
-			<a class="button button-primary" href="<?php echo esc_url( add_query_arg( array( 'page' => 'manacore', 'tab' => 'analytics' ), admin_url( 'admin.php' ) ) ); ?>">
-				<?php esc_html_e( 'داشبورد کامل تحلیلی', 'manacore' ); ?>
-			</a>
+		</ul>
+		<?php
+
+		$this->widget_list( __( 'پربازدیدترین‌های ۷ روز', 'manacore' ), self::top( 'view', 7, 5 ), __( 'بازدید', 'manacore' ) );
+		$this->widget_list( __( 'پربارگیری‌شده‌ترین‌های ۷ روز', 'manacore' ), self::top( 'download', 7, 5 ), __( 'دانلود', 'manacore' ) );
+		?>
+		<p class="manacore-widget-actions">
+			<a class="button" href="<?php echo esc_url( Settings::tab_url( 'reports' ) ); ?>"><?php esc_html_e( 'گزارش‌های خرابی لینک', 'manacore' ); ?></a>
+			<a class="button" href="<?php echo esc_url( Settings::tab_url( 'general' ) ); ?>"><?php esc_html_e( 'تنظیمات ManaCore', 'manacore' ); ?></a>
 		</p>
+		<?php
+	}
+
+	/**
+	 * فهرست کوتاه رتبه‌ای در ویجت پیشخوان.
+	 *
+	 * @param string $title عنوان فهرست.
+	 * @param array  $rows  ردیف‌های آماده از `self::top()`.
+	 * @param string $value برچسب ستون شمار.
+	 * @return void
+	 */
+	protected function widget_list( $title, $rows, $value ) {
+		if ( ! $rows ) {
+			return;
+		}
+		?>
+		<div class="manacore-widget-list">
+			<h3>
+				<?php echo esc_html( $title ); ?>
+				<span><?php echo esc_html( $value ); ?></span>
+			</h3>
+			<ol>
+				<?php foreach ( $rows as $row ) : ?>
+					<?php
+					$edit = current_user_can( 'edit_post', (int) $row['id'] ) ? get_edit_post_link( (int) $row['id'] ) : '';
+					?>
+					<li>
+						<?php if ( $edit ) : ?>
+							<a href="<?php echo esc_url( $edit ); ?>"><?php echo esc_html( $row['title'] ); ?></a>
+						<?php else : ?>
+							<span><?php echo esc_html( $row['title'] ); ?></span>
+						<?php endif; ?>
+						<b><?php echo esc_html( manacore_fa_digits( number_format_i18n( isset( $row['total'] ) ? (int) $row['total'] : 0 ) ) ); ?></b>
+					</li>
+				<?php endforeach; ?>
+			</ol>
+		</div>
 		<?php
 	}
 }
