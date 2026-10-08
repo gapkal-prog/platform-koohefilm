@@ -252,28 +252,6 @@
 }
 
 
-.manacore-chip {
-	display: inline-flex;
-	align-items: center;
-	gap: 5px;
-	padding: 4px 11px;
-	border: 1px solid var(--mc-border);
-	border-radius: var(--mc-radius-pill);
-	background: var(--mc-surface-2);
-	color: var(--mc-text-muted);
-	font-size: .75rem;
-	line-height: 1.6;
-	text-decoration: none;
-	transition: all var(--mc-transition);
-}
-
-.manacore-chip:hover,
-.manacore-chip:focus-visible,
-.manacore-chip.is-active {
-	background: var(--mc-accent);
-	border-color: var(--mc-accent);
-	color: var(--mc-accent-contrast);
-}
 
 .manacore-empty-state {
 	padding: 40px 20px;
@@ -573,30 +551,39 @@
 }
 
 /* -------------------------------------------------------------------------
- * 4. Hero slider
+ * 4. Hero slider — هم‌شکل `hero` مرجع `cinora/index.html`
+ *
+ * اجزای این بخش یک‌به‌یک از مرجع گرفته شده‌اند: کادر گرد سینمایی، تصویر
+ * عریض با پرده‌ی گرادیانی، ستون محتوا روی سمت شروع (راست در RTL)، نشان
+ * کیفیت، واترمارک لاتین، نوار کنترل (فلش + نقطه + شمارنده) و یادداشت
+ * پایین. رنگ پرده با متغیر `--mc-hero-scrim` قابل بازنویسی است.
+ *
+ * جای‌گیری‌ها با ویژگی‌های منطقی نوشته می‌شوند تا در قالب LTR هم ترکیب
+ * بندی آینه‌ای شود (محتوا سمت شروع، نشان‌ها سمت پایان).
  * ---------------------------------------------------------------------- */
 
 .manacore-hero {
+	/*
+	 * ارتفاع‌ها از مرجع گرفته شده‌اند، نه از vh:
+	 * پایه ۴۱۹px، ≤۹۸۰px برابر ۴۰۲px، ≤۷۶۸px برابر ۴۴۹px، ≥۹۸۱px برابر
+	 * ۳۹۰px و ≥۱۶۰۰px برابر ۴۲۵px.
+	 */
+	--mc-hero-h: 419px;
+	/* پرده‌ی تاریک روی تصویر (سه‌گانه‌ی RGB تا شفافیت‌ها قابل تنظیم بماند). */
+	--mc-hero-scrim: 18, 24, 31;
+	/* چرخش ملایم کادر با حرکت ماوس؛ مقدار را front.js می‌نویسد. */
+	--mc-hero-tilt: 0deg;
+
 	position: relative;
+	isolation: isolate;
 	border-radius: 14px;
 	border: 1px solid var(--mc-border);
 	overflow: hidden;
-	background: var(--mc-surface-2);
-	isolation: isolate;
+	background: rgb(var(--mc-hero-scrim));
 	box-shadow: 0 15px 35px rgba(0, 0, 0, .08);
-}
-
-/*
- * ارتفاع‌ها از مرجع (`hero` سینورا) گرفته شده‌اند، نه از vh:
- * پایه ۴۱۹px، ≤۹۸۰px برابر ۴۰۲px، ≤۷۶۸px برابر ۴۴۹px، ≥۹۸۱px برابر
- * ۳۹۰px و ≥۱۶۰۰px برابر ۴۲۵px.
- *
- * پیش‌تر ارتفاع ۶۰vh بود؛ در پنجره‌ی ۱۴۴۰×۱۰۰۰ یعنی ۶۰۰px و بوم نهایی
- * ۷۲۰px رندر می‌شد، در حالی که مرجع ۳۹۰px است. تنوع کوتاه/متوسط/بلند هم
- * حول همان عدد پایه بازتنظیم شد تا انتخاب‌ها معنادار بمانند.
- */
-.manacore-hero {
-	--mc-hero-h: 419px;
+	color: #f1f3f5;
+	transform: perspective(1800px) rotateY(var(--mc-hero-tilt));
+	transition: transform var(--mc-transition);
 }
 
 .manacore-hero.is-height-small { --mc-hero-h: 340px; }
@@ -609,7 +596,7 @@
  * پله‌های واکنش‌گرا برای هر سه حالت، با همان اولویت انتخاب‌گر (کلاسِ
  * حالت + کلاس پایه) تا قاعده‌ی رسانه‌ای روی مقدار حالت سوار شود.
  */
-@media (max-width: 768px) {
+@media (max-width: 781px) {
 	.manacore-hero,
 	.manacore-hero.is-height-medium { --mc-hero-h: 449px; }
 
@@ -618,7 +605,7 @@
 	.manacore-hero.is-height-large { --mc-hero-h: 520px; }
 }
 
-@media (min-width: 769px) and (max-width: 980px) {
+@media (min-width: 782px) and (max-width: 980px) {
 	.manacore-hero,
 	.manacore-hero.is-height-medium { --mc-hero-h: 402px; }
 
@@ -659,8 +646,6 @@
 .manacore-hero-slide {
 	position: absolute;
 	inset: 0;
-	display: flex;
-	align-items: flex-end;
 	opacity: 0;
 	visibility: hidden;
 	transition: opacity .6s ease;
@@ -671,101 +656,117 @@
 	visibility: visible;
 }
 
-/* اندازه‌های درونی مطابق مرجع در دسکتاپ (`@media(min-width:981px)`). */
-@media (min-width: 981px) {
-	.manacore-hero-content {
-		padding-top: 28px;
-	}
-
-	.manacore-hero-title {
-		font-size: 2.5625rem;
-		line-height: 1.55;
-	}
-
-	.manacore-hero-meta {
-		gap: 13px;
-		margin-top: 15px;
-		font-size: .6875rem;
-	}
-
-	.manacore-hero-excerpt {
-		margin-top: 14px;
-		font-size: .75rem;
-		line-height: 2.05;
-	}
-
-	.manacore-hero-actions {
-		margin-top: 18px;
-	}
-
-	.manacore-hero-actions .manacore-btn {
-		font-size: .75rem;
-	}
+/*
+ * لایه‌ی تصویر.
+ *
+ * `z-index: -2` تصویر را پشت محتوا می‌برد ولی روی پس‌زمینه‌ی خود کادر
+ * می‌نشاند (چون `.manacore-hero` با isolation یک بافت پشته می‌سازد).
+ */
+.manacore-hero-image {
+	position: absolute;
+	inset: 0;
+	z-index: -2;
+	overflow: hidden;
+	animation: manacore-hero-fade .7s ease;
 }
 
 /*
- * تصویر هیرو.
- *
- * نکته: در این بلوک، کلاس `manacore-hero-bg` روی خودِ تگ `<img>` است، نه
- * روی یک ظرف؛ پس قاعده‌ی `.manacore-hero-bg img` هرگز به آن نمی‌رسید.
- * عنصر جانشین‌شده (replaced) با `inset: 0` و `width/height: auto` کشیده
- * نمی‌شود و با اندازه‌ی ذاتی‌اش (سنجیده‌شده: ۱۲۸۰×۷۲۰ در نوار ۱۳۲۸×۳۹۰)
- * رندر می‌شد و از کادر بیرون می‌زد. با عرض/ارتفاع صریح، تصویر کل نوار را
- * پر می‌کند و `object-fit: cover` برش درست را می‌دهد.
+ * تصویر هیرو ۷۹٪ عرض را می‌گیرد و از سمت پایان کادر می‌چسبد (مرجع:
+ * `left:0;width:79%`)، پس سمت محتوا روشن و سمت متن تیره می‌شود.
  */
 .manacore-hero-bg {
 	position: absolute;
-	inset: 0;
-	width: 100%;
+	inset-block: 0;
+	inset-inline-end: 0;
+	width: 79%;
 	height: 100%;
 	object-fit: cover;
-	display: block;
-	z-index: -1;
-}
-
-.manacore-hero-bg img {
-	width: 100%;
-	height: 100%;
-	object-fit: cover;
+	object-position: 50% 25%;
 	display: block;
 }
 
 /*
- * پوشش تصویر. جهت گرادیان افقی پیش‌تر از --mc-hero-dir خوانده می‌شد
- * ولی این متغیر هیچ‌جا تعیین نمی‌شد و همیشه روی «left» می‌ماند؛ یعنی
- * در RTL محتوا روی بخش روشن تصویر می‌افتاد. اکنون مقدار پیش‌فرض برای
- * RTL درست است و برای LTR جداگانه بازنویسی می‌شود.
+ * پرده‌ی گرادیانی روی تصویر.
+ *
+ * پیش‌تر این پرده با `.manacore-hero-bg::after` ساخته می‌شد؛ شبه‌عنصر روی
+ * عنصر جانشین‌شده (`<img>`) رندر نمی‌شود، پس تصویر هیچ سایه‌ای نمی‌گرفت و
+ * متن روی بخش روشن تصویر می‌افتاد. اکنون یک عنصر واقعی است.
+ *
+ * جهت افقی فیزیکی نوشته می‌شود (logical در گرادیان معتبر نیست) و برای
+ * LTR جداگانه بازنویسی می‌شود.
  */
-.manacore-hero-bg::after {
-	content: "";
+.manacore-hero-gradient {
 	position: absolute;
 	inset: 0;
-	/*
-	 * «to left» یعنی توقفِ ۰٪ (تیره‌ترین) در سمت راست است. محتوای اسلاید
-	 * هم در RTL از راست آغاز می‌شود، پس تیرگی درست زیر متن می‌افتد.
-	 */
-	background:
-		linear-gradient(0deg, rgba(0, 0, 0, .92) 0%, rgba(0, 0, 0, .35) 55%, rgba(0, 0, 0, .15) 100%),
-		linear-gradient(to left, rgba(0, 0, 0, .8) 0%, transparent 70%);
+	background-image:
+		linear-gradient(to left,
+			rgba(var(--mc-hero-scrim), 1) 4%,
+			rgba(var(--mc-hero-scrim), .96) 24%,
+			rgba(var(--mc-hero-scrim), .81) 39%,
+			rgba(var(--mc-hero-scrim), .27) 55%,
+			rgba(var(--mc-hero-scrim), 0) 75%),
+		linear-gradient(to top, rgba(var(--mc-hero-scrim), .92) 0%, rgba(var(--mc-hero-scrim), 0) 26%);
 }
 
-[dir="ltr"] .manacore-hero-bg::after,
-html:not([dir="rtl"]) .manacore-hero-bg::after {
-	background:
-		linear-gradient(0deg, rgba(0, 0, 0, .92) 0%, rgba(0, 0, 0, .35) 55%, rgba(0, 0, 0, .15) 100%),
-		linear-gradient(to right, rgba(0, 0, 0, .8) 0%, transparent 70%);
+[dir="ltr"] .manacore-hero-gradient,
+html:not([dir="rtl"]) .manacore-hero-gradient {
+	background-image:
+		linear-gradient(to right,
+			rgba(var(--mc-hero-scrim), 1) 4%,
+			rgba(var(--mc-hero-scrim), .96) 24%,
+			rgba(var(--mc-hero-scrim), .81) 39%,
+			rgba(var(--mc-hero-scrim), .27) 55%,
+			rgba(var(--mc-hero-scrim), 0) 75%),
+		linear-gradient(to top, rgba(var(--mc-hero-scrim), .92) 0%, rgba(var(--mc-hero-scrim), 0) 26%);
 }
 
+/* دانه‌ی ریز روی تصویر (مرجع: .hero-grain). */
+.manacore-hero-grain {
+	position: absolute;
+	inset: 0;
+	z-index: -1;
+	opacity: .025;
+	pointer-events: none;
+	background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' opacity='.8' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* نشان کیفیت گوشه‌ی بالای کادر (سمت پایان؛ در RTL یعنی چپ). */
+.manacore-hero-quality {
+	position: absolute;
+	z-index: 2;
+	top: 21px;
+	inset-inline-end: 24px;
+	display: inline-flex;
+	align-items: center;
+	gap: 5px;
+	padding: 7px 9px;
+	border: 1px solid rgba(255, 255, 255, .14);
+	border-radius: 4px;
+	background: rgba(20, 25, 35, .62);
+	backdrop-filter: blur(15px);
+	font-family: Arial, sans-serif;
+	direction: ltr;
+	color: #cdd3da;
+}
+
+.manacore-hero-quality > svg { color: var(--mc-accent); }
+.manacore-hero-quality > b { font-size: .6875rem; font-weight: 700; color: #eef1f4; }
+.manacore-hero-quality > span { font-size: .4375rem; letter-spacing: 1px; }
+
+/* ستون محتوا روی سمت شروع کادر. */
 .manacore-hero-content {
-	position: relative;
+	position: absolute;
+	inset: 0;
 	z-index: 1;
-	width: 53%;
-	max-width: 675px;
-	padding: 34px 39px 35px 0;
-	color: #fff;
 	display: flex;
 	flex-direction: column;
-	gap: 12px;
+	width: 53%;
+	max-width: 675px;
+	padding-block: 34px 35px;
+	padding-inline: 39px 0;
+	color: #fff;
+	/* ورود نرم ستون متن (مرجع: `@keyframes copyIn`). */
+	animation: manacore-hero-copy-in .6s ease;
 }
 
 .manacore-hero-logo {
@@ -773,12 +774,40 @@ html:not([dir="rtl"]) .manacore-hero-bg::after {
 	height: auto;
 }
 
+/* نشان ویژه + خط معرفی (مرجع: .hero-eyebrow). */
+.manacore-hero-eyebrow {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	font-size: .5625rem;
+	color: rgba(255, 255, 255, .62);
+}
+
+.manacore-hero-eyebrow > span {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	padding: 6px 9px;
+	border: 1px solid color-mix(in srgb, var(--mc-accent) 24%, transparent);
+	border-radius: 4px;
+	background: color-mix(in srgb, var(--mc-accent) 8%, transparent);
+	color: var(--mc-accent);
+	font-size: .5625rem;
+}
+
+.manacore-hero-eyebrow > i {
+	width: 3px;
+	height: 3px;
+	border-radius: 50%;
+	background: rgba(255, 255, 255, .45);
+}
+
 .manacore-hero-title {
-	font-size: clamp(1.75rem, 4.5vw, 2.5625rem);
+	margin: 10px 0 0;
+	font-size: 2.5625rem;
 	font-weight: 800;
 	line-height: 1.7;
 	letter-spacing: -1.4px;
-	margin: 0;
 	color: #fff;
 }
 
@@ -787,54 +816,240 @@ html:not([dir="rtl"]) .manacore-hero-bg::after {
 	text-decoration: none;
 }
 
+.manacore-hero-title a:hover {
+	color: color-mix(in srgb, #fff 80%, var(--mc-accent));
+}
+
+/* عنوان لاتین اثر (مرجع: .hero-original). */
+.manacore-hero-original {
+	margin: 5px 0 0;
+	font-size: .6875rem;
+	font-weight: 400;
+	letter-spacing: 3.2px;
+	text-transform: uppercase;
+	color: rgba(255, 255, 255, .64);
+}
+
 .manacore-hero-meta {
 	display: flex;
 	flex-wrap: wrap;
 	align-items: center;
-	gap: 8px 14px;
-	font-size: .82rem;
-	color: rgba(255, 255, 255, .82);
+	gap: 13px;
+	margin-top: 18px;
+	font-size: .625rem;
+	color: rgba(255, 255, 255, .7);
+}
+
+.manacore-hero-meta > i {
+	width: 3px;
+	height: 3px;
+	border-radius: 50%;
+	background: rgba(255, 255, 255, .4);
 }
 
 .manacore-hero-meta .manacore-badge {
-	background: rgba(255, 255, 255, .16);
+	background: rgba(255, 255, 255, .14);
 	color: #fff;
 }
 
-.manacore-hero-excerpt {
+/* جعبه‌ی امتیاز (مرجع: .imdb-rating). */
+.manacore-hero-rating {
+	display: inline-flex;
+	align-items: center;
+	gap: 7px;
+}
+
+.manacore-hero-rating > b {
+	font-family: Arial, sans-serif;
+	font-size: .625rem;
+	font-weight: 700;
+	letter-spacing: .5px;
+	color: var(--mc-accent);
+}
+
+.manacore-hero-rating > strong {
+	color: #fff;
+	font-size: .8125rem;
+	font-weight: 700;
+}
+
+.manacore-hero-rating > svg { color: var(--mc-accent); }
+
+/* برچسب رده‌ی سنی (مرجع: .age-tag). */
+.manacore-hero-age {
+	display: inline-flex;
+	align-items: center;
+	padding: 2px 5px;
+	border: 1px solid rgba(255, 255, 255, .24);
+	border-radius: 3px;
+	font-size: .5625rem;
+	color: rgba(255, 255, 255, .72);
+}
+
+.manacore-hero-description {
 	max-width: 445px;
+	margin: 17px 0 0;
 	font-size: .6875rem;
 	line-height: 2.2;
 	color: rgba(255, 255, 255, .72);
-	margin: 0;
 	display: -webkit-box;
 	-webkit-line-clamp: 2;
 	-webkit-box-orient: vertical;
 	overflow: hidden;
 }
 
+/* برچسب‌های زبان و ژانر (مرجع: .hero-tags). */
+.manacore-hero-tags {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 10px;
+	margin-top: 17px;
+	font-size: .5625rem;
+	color: rgba(255, 255, 255, .78);
+}
+
+.manacore-hero-tags > span.is-first {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	color: var(--mc-accent);
+}
+
+.manacore-hero-tags > a {
+	padding: 3px 8px;
+	border: 1px solid rgba(255, 255, 255, .16);
+	border-radius: 4px;
+	font-size: .5rem;
+	color: inherit;
+	text-decoration: none;
+	transition: border-color var(--mc-transition), color var(--mc-transition);
+}
+
+.manacore-hero-tags > a:hover,
+.manacore-hero-tags > a:focus-visible {
+	border-color: color-mix(in srgb, var(--mc-accent) 40%, transparent);
+	color: var(--mc-accent);
+}
+
 .manacore-hero-actions {
 	display: flex;
 	flex-wrap: wrap;
+	align-items: center;
 	gap: 10px;
-	margin-top: 6px;
+	margin-top: 22px;
 }
 
+.manacore-hero-actions .manacore-btn {
+	min-height: 43px;
+	padding: 11px 21px;
+	font-size: .6875rem;
+}
+
+.manacore-hero-actions .manacore-btn.is-glass,
 .manacore-hero-actions .manacore-btn:not(.is-primary) {
-	background: rgba(255, 255, 255, .14);
-	border-color: rgba(255, 255, 255, .24);
-	color: #fff;
+	border: 1px solid rgba(255, 255, 255, .22);
+	background: rgba(255, 255, 255, .07);
+	color: #eef1f3;
+	backdrop-filter: blur(12px);
 }
 
+.manacore-hero-actions .manacore-btn.is-glass:hover,
 .manacore-hero-actions .manacore-btn:not(.is-primary):hover {
-	background: rgba(255, 255, 255, .24);
+	background: rgba(255, 255, 255, .16);
+}
+
+/* دکمه‌ی لیست تماشا (مرجع: .hero-save). */
+.manacore-hero-save {
+	width: 43px;
+	height: 43px;
+	display: grid;
+	place-items: center;
+	border: 1px solid rgba(255, 255, 255, .24);
+	border-radius: 7px;
+	background: rgba(255, 255, 255, .05);
+	color: #dfe2e6;
+	cursor: pointer;
+	transition: background var(--mc-transition), color var(--mc-transition), border-color var(--mc-transition);
+}
+
+.manacore-hero-save:hover {
+	background: rgba(255, 255, 255, .14);
+}
+
+.manacore-hero-save.is-active {
+	border-color: color-mix(in srgb, var(--mc-accent) 45%, transparent);
+	background: color-mix(in srgb, var(--mc-accent) 12%, transparent);
+	color: var(--mc-accent);
+}
+
+/* واترمارک لاتین (مرجع: .hero-wordmark). */
+.manacore-hero-wordmark {
+	position: absolute;
+	z-index: 1;
+	bottom: 76px;
+	inset-inline-end: 47px;
+	display: flex;
+	max-width: 42%;
+	flex-direction: column;
+	align-items: center;
+	color: color-mix(in srgb, #fff 84%, var(--mc-accent));
+	text-shadow: 0 3px 20px rgba(0, 0, 0, .5);
+	pointer-events: none;
+}
+
+.manacore-hero-wordmark > span {
+	font-family: Arial, sans-serif;
+	font-size: 3.1875rem;
+	font-weight: 300;
+	line-height: 1;
+	letter-spacing: 3px;
+}
+
+.manacore-hero-wordmark > small {
+	margin-top: 16px;
+	font-family: Arial, sans-serif;
+	font-size: .5rem;
+	letter-spacing: 4px;
+	color: rgba(255, 255, 255, .68);
+}
+
+/* نوار کنترل: فلش قبلی، نقطه‌ها، شمارنده، فلش بعدی (مرجع: .hero-slider-controls). */
+.manacore-hero-controls {
+	position: absolute;
+	z-index: 3;
+	bottom: 21px;
+	inset-inline-end: 24px;
+	display: flex;
+	align-items: center;
+	gap: 13px;
+	direction: ltr;
+}
+
+.manacore-hero-arrow {
+	position: static;
+	width: 27px;
+	height: 27px;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	padding: 0;
+	border: 1px solid rgba(255, 255, 255, .2);
+	border-radius: 50%;
+	background: rgba(19, 27, 32, .5);
+	color: #e3e7ea;
+	cursor: pointer;
+	transition: background var(--mc-transition), color var(--mc-transition), border-color var(--mc-transition);
+}
+
+.manacore-hero-arrow:hover,
+.manacore-hero-arrow:focus-visible {
+	border-color: var(--mc-accent);
+	background: var(--mc-accent);
+	color: var(--mc-accent-contrast);
 }
 
 .manacore-hero-dots {
-	position: absolute;
-	z-index: 3;
-	inset-block-end: 21px;
-	inset-inline-start: 24px;
 	display: flex;
 	align-items: center;
 	gap: 5px;
@@ -853,31 +1068,370 @@ html:not([dir="rtl"]) .manacore-hero-bg::after {
 	transition: width .2s;
 }
 
-.manacore-hero-dot::before {
-	content: "";
+.manacore-hero-dot > span {
 	width: 100%;
 	height: 2px;
 	border-radius: 2px;
-	background: rgba(255, 255, 255, .28);
+	background: rgba(255, 255, 255, .3);
 }
 
 .manacore-hero-dot.is-active {
 	width: 32px;
 }
 
-.manacore-hero-dot.is-active::before {
+.manacore-hero-dot.is-active > span {
 	background: var(--mc-accent);
 }
 
+.manacore-hero-counter {
+	font-family: Arial, sans-serif;
+	font-size: .5rem;
+	letter-spacing: 1px;
+	color: rgba(255, 255, 255, .55);
+}
+
+.manacore-hero-counter > b {
+	font-size: .625rem;
+	font-weight: 400;
+	color: #edf0f4;
+}
+
+/* یادداشت پایین کادر (مرجع: .hero-bottom-note). */
+.manacore-hero-note {
+	position: absolute;
+	z-index: 2;
+	bottom: 24px;
+	inset-inline-start: 39px;
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	font-size: .5rem;
+	color: rgba(255, 255, 255, .52);
+}
+
+.manacore-hero-note > span {
+	width: 18px;
+	height: 1px;
+	background: color-mix(in srgb, var(--mc-accent) 45%, transparent);
+}
+
+/* اندازه‌های درونی مطابق مرجع در دسکتاپ (`@media(min-width:981px)`). */
+@media (min-width: 981px) {
+	.manacore-hero-content {
+		padding-top: 28px;
+	}
+
+	.manacore-hero-title {
+		font-size: 2.5625rem;
+		line-height: 1.55;
+	}
+
+	.manacore-hero-original {
+		font-size: .75rem;
+		letter-spacing: 2.6px;
+	}
+
+	.manacore-hero-meta {
+		gap: 13px;
+		margin-top: 15px;
+		font-size: .6875rem;
+	}
+
+	.manacore-hero-description {
+		margin-top: 14px;
+		font-size: .75rem;
+		line-height: 2.05;
+	}
+
+	.manacore-hero-tags {
+		margin-top: 14px;
+		font-size: .5625rem;
+	}
+
+	.manacore-hero-actions {
+		margin-top: 18px;
+	}
+
+	.manacore-hero-actions .manacore-btn {
+		font-size: .75rem;
+	}
+
+	.manacore-hero-eyebrow {
+		font-size: .625rem;
+	}
+
+	/*
+	 * مرجع در دسکتاپ یادداشت پایین کادر را پنهان می‌کند (جای دکمه‌ها
+	 * تنگ می‌شود)؛ کلید «یادداشت پایین کادر» در پله‌های زیر ۹۸۱px اثر دارد.
+	 */
+	.manacore-hero-note {
+		display: none;
+	}
+
+	.manacore-hero-wordmark {
+		bottom: 71px;
+	}
+}
+
+@media (min-width: 1600px) {
+	.manacore-hero-content {
+		padding-top: 40px;
+	}
+
+	.manacore-hero-title {
+		font-size: 2.8125rem;
+	}
+
+	.manacore-hero-description {
+		font-size: .8125rem;
+	}
+
+	.manacore-hero-tags {
+		margin-top: 20px;
+	}
+
+	.manacore-hero-actions {
+		margin-top: 27px;
+	}
+}
+
+@media (max-width: 1300px) {
+	.manacore-hero-content {
+		width: 55%;
+		padding-inline: 34px 0;
+	}
+
+	.manacore-hero-title {
+		font-size: 2.3125rem;
+	}
+
+	.manacore-hero-description {
+		max-width: 410px;
+	}
+
+	.manacore-hero-wordmark {
+		inset-inline-end: 35px;
+	}
+}
+
+@media (max-width: 1100px) {
+	.manacore-hero-content {
+		width: 58%;
+		padding-inline: 30px 0;
+	}
+
+	.manacore-hero-title {
+		font-size: 2.1875rem;
+	}
+
+	.manacore-hero-description {
+		font-size: .625rem;
+		max-width: 370px;
+	}
+
+	.manacore-hero-wordmark > span {
+		font-size: 2.4375rem;
+	}
+
+	.manacore-hero-wordmark > small {
+		font-size: .4375rem;
+		letter-spacing: 2px;
+	}
+}
+
+@media (max-width: 980px) {
+	.manacore-hero-content {
+		width: 59%;
+		padding-top: 30px;
+		padding-inline: 28px 0;
+	}
+
+	.manacore-hero-title {
+		font-size: 1.875rem;
+	}
+
+	.manacore-hero-eyebrow {
+		font-size: .5rem;
+	}
+
+	.manacore-hero-description {
+		max-width: 330px;
+	}
+
+	.manacore-hero-tags {
+		gap: 7px;
+	}
+
+	.manacore-hero-actions .manacore-btn {
+		font-size: .625rem;
+		padding: 10px 14px;
+	}
+
+	.manacore-hero-wordmark {
+		inset-inline-end: 25px;
+	}
+
+	.manacore-hero-note {
+		inset-inline-start: 28px;
+	}
+}
+
+/*
+ * موبایل (مرجع: `@media(max-width:768px)`).
+ *
+ * محتوا تمام‌عرض می‌شود و از پایین می‌آید، پرده از پایین تیره می‌کند،
+ * خلاصه/واترمارک/یادداشت پنهان می‌شوند تا کادر شلوغ نشود.
+ *
+ * آستانه ۷۸۱px است تا با بقیه‌ی قالب یکدست بماند (مرجع ۷۶۸px دارد).
+ */
 @media (max-width: 781px) {
 	.manacore-hero-content {
 		width: 100%;
+		max-width: none;
+		justify-content: flex-end;
+		padding: 178px 24px 30px;
 	}
 
-	.manacore-hero-excerpt {
-		-webkit-line-clamp: 2;
+	.manacore-hero-bg {
+		inset: 0;
+		width: 100%;
+		object-position: 50% 12%;
+	}
+
+	.manacore-hero-gradient {
+		background-image:
+			linear-gradient(to top,
+				rgba(var(--mc-hero-scrim), 1) 4%,
+				rgba(var(--mc-hero-scrim), .96) 32%,
+				rgba(var(--mc-hero-scrim), .58) 60%,
+				rgba(var(--mc-hero-scrim), 0) 100%);
+	}
+
+	/* در موبایل پرده‌ی افقی جایی ندارد؛ فقط گرادیان عمودی می‌ماند. */
+	[dir="ltr"] .manacore-hero-gradient,
+	html:not([dir="rtl"]) .manacore-hero-gradient {
+		background-image:
+			linear-gradient(to top,
+				rgba(var(--mc-hero-scrim), 1) 4%,
+				rgba(var(--mc-hero-scrim), .96) 32%,
+				rgba(var(--mc-hero-scrim), .58) 60%,
+				rgba(var(--mc-hero-scrim), 0) 100%);
+	}
+
+	.manacore-hero-eyebrow {
+		position: absolute;
+		top: 22px;
+		inset-inline-start: 22px;
+		/* متن معرفی جمع می‌شود و فقط نشان می‌ماند (مرجع: `font-size:0`). */
+		font-size: 0;
+	}
+
+	.manacore-hero-eyebrow > span {
+		padding: 5px 8px;
+		font-size: .5rem;
+	}
+
+	.manacore-hero-eyebrow > i {
+		display: none;
+	}
+
+	.manacore-hero-title {
+		margin-top: 0;
+		font-size: 1.9375rem;
+		letter-spacing: -.6px;
+	}
+
+	.manacore-hero-original {
+		font-size: .5625rem;
+		letter-spacing: 2px;
+	}
+
+	.manacore-hero-meta {
+		margin-top: 15px;
+		font-size: .5625rem;
+		gap: 12px;
+	}
+
+	.manacore-hero-description {
+		display: none;
+	}
+
+	.manacore-hero-tags {
+		margin-top: 15px;
+		font-size: .5rem;
+		gap: 9px;
+	}
+
+	.manacore-hero-tags > a {
+		padding: 2px 6px;
+		font-size: .4375rem;
+	}
+
+	.manacore-hero-actions {
+		margin-top: 19px;
+		gap: 8px;
+	}
+
+	.manacore-hero-wordmark,
+	.manacore-hero-note {
+		display: none;
+	}
+
+	.manacore-hero-controls {
+		bottom: 18px;
+		inset-inline-end: 22px;
+		gap: 11px;
+	}
+
+}
+
+@media (max-width: 480px) {
+	.manacore-hero-content {
+		padding: 183px 20px 20px;
+	}
+
+	.manacore-hero-title {
+		font-size: 1.75rem;
+	}
+
+	.manacore-hero-tags {
+		gap: 7px;
+	}
+
+	.manacore-hero-actions {
+		gap: 7px;
+	}
+
+	.manacore-hero-actions .manacore-btn {
+		padding: 10px 13px;
+		font-size: .5625rem;
+	}
+
+	.manacore-hero-eyebrow {
+		inset-inline-start: 19px;
+	}
+
+	.manacore-hero-quality {
+		inset-inline-end: 19px;
 	}
 }
+
+@media (max-width: 360px) {
+	.manacore-hero-title {
+		font-size: 1.625rem;
+	}
+}
+
+@keyframes manacore-hero-fade {
+	from { opacity: .3; }
+	to { opacity: 1; }
+}
+
+@keyframes manacore-hero-copy-in {
+	from { opacity: 0; transform: translateY(8px); }
+	to { opacity: 1; transform: translateY(0); }
+}
+
 
 /* -------------------------------------------------------------------------
  * 5. Download links
@@ -3623,45 +4177,6 @@ body.manacore-modal-open {
 
 /* 12.8 فلش‌های اسلایدر ------------------------------------------------- */
 
-.manacore-hero-arrow {
-	position: absolute;
-	top: 50%;
-	transform: translateY(-50%);
-	z-index: 3;
-	display: inline-flex;
-	align-items: center;
-	justify-content: center;
-	width: 40px;
-	height: 40px;
-	border: 0;
-	border-radius: 50%;
-	cursor: pointer;
-	color: #fff;
-	background: rgba(0, 0, 0, .45);
-	backdrop-filter: blur(4px);
-	transition: background var(--mc-transition), transform var(--mc-transition);
-}
-
-.manacore-hero-arrow:hover,
-.manacore-hero-arrow:focus-visible {
-	background: rgba(0, 0, 0, .7);
-}
-
-.manacore-hero-arrow.is-prev {
-	inset-inline-start: 12px;
-}
-
-.manacore-hero-arrow.is-next {
-	inset-inline-end: 12px;
-}
-
-@media (max-width: 599px) {
-	.manacore-hero-arrow {
-		width: 32px;
-		height: 32px;
-	}
-}
-
 /* 12.9 چیدمان‌های فرم فیلتر -------------------------------------------- */
 
 .manacore-filter-form.is-layout-inline {
@@ -5028,7 +5543,7 @@ body.manacore-modal-open {
 /* 13.3 سبک‌های اسلایدر ویژه ---------------------------------------------- */
 
 /* پوشش تصویر با شدت قابل تنظیم از ویرایشگر. */
-.manacore-hero[style*="--mc-hero-overlay"] .manacore-hero-bg::after {
+.manacore-hero[style*="--mc-hero-overlay"] .manacore-hero-gradient {
 	opacity: var(--mc-hero-overlay);
 }
 
@@ -5056,12 +5571,12 @@ body.manacore-modal-open {
 	 * جهت گرادیان منطقی‌ساز ندارد (to inline-end در CSS معتبر نیست و
 	 * مرورگر کل اعلان را دور می‌اندازد)، پس هر جهت جداگانه نوشته می‌شود.
 	 */
-	.manacore-hero.is-slider-split .manacore-hero-bg::after {
+	.manacore-hero.is-slider-split .manacore-hero-gradient {
 		background: linear-gradient(to left, var(--mc-surface-2), transparent 65%);
 	}
 
-	[dir="ltr"] .manacore-hero.is-slider-split .manacore-hero-bg::after,
-	html:not([dir="rtl"]) .manacore-hero.is-slider-split .manacore-hero-bg::after {
+	[dir="ltr"] .manacore-hero.is-slider-split .manacore-hero-gradient,
+	html:not([dir="rtl"]) .manacore-hero.is-slider-split .manacore-hero-gradient {
 		background: linear-gradient(to right, var(--mc-surface-2), transparent 65%);
 	}
 
@@ -5076,14 +5591,14 @@ body.manacore-modal-open {
 		text-shadow: none;
 	}
 
-	.manacore-hero.is-slider-split .manacore-hero-excerpt,
+	.manacore-hero.is-slider-split .manacore-hero-description,
 	.manacore-hero.is-slider-split .manacore-hero-meta {
 		color: var(--mc-text-muted);
 	}
 }
 
 /* مینیمال: بدون پوشش تیره‌ی سنگین و بدون سایه‌ی متن. */
-.manacore-hero.is-slider-minimal .manacore-hero-bg::after {
+.manacore-hero.is-slider-minimal .manacore-hero-gradient {
 	background: linear-gradient(to top, rgba(0, 0, 0, .72), transparent 62%);
 }
 
@@ -5111,7 +5626,7 @@ body.manacore-modal-open {
 		overflow: hidden;
 	}
 
-	.manacore-hero.is-slider-poster .manacore-hero-bg::after {
+	.manacore-hero.is-slider-poster .manacore-hero-gradient {
 		background: none;
 	}
 
@@ -5129,7 +5644,7 @@ body.manacore-modal-open {
 		text-shadow: none;
 	}
 
-	.manacore-hero.is-slider-poster .manacore-hero-excerpt,
+	.manacore-hero.is-slider-poster .manacore-hero-description,
 	.manacore-hero.is-slider-poster .manacore-hero-meta {
 		color: var(--mc-text-muted);
 	}
@@ -5199,10 +5714,6 @@ body.manacore-modal-open {
 /* 13.6 سبک‌های جعبه‌ی دانلود --------------------------------------------- */
 
 /* جدولی: هر آیتم یک سطر با ستون‌های هم‌تراز. */
-
-.manacore-hero-arrow {
-	min-width: 32px;
-}
 
 .manacore-filter-chip,
 .manacore-season-tab {
@@ -5379,7 +5890,7 @@ body.manacore-modal-open {
 		gap: 6px;
 	}
 
-	.manacore-hero-excerpt {
+	.manacore-hero-description {
 		display: none;
 	}
 }

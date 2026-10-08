@@ -141,7 +141,7 @@ class Blocks {
 						),
 						'showArrows'   => array(
 							'type'    => 'boolean',
-							'default' => false,
+							'default' => true,
 						),
 						'showLogo'     => array(
 							'type'    => 'boolean',
@@ -178,6 +178,56 @@ class Blocks {
 						'trailerLabel' => array(
 							'type'    => 'string',
 							'default' => '',
+						),
+						/*
+						 * اجزای تازه‌ی هم‌شکل مرجع `cinora/index.html`: نشان ویژه،
+						 * عنوان لاتین، نشان کیفیت، برچسب زبان، واترمارک، شمارنده و
+						 * یادداشت پایین اسلایدر. هر کدام کلید خاموش/روشن خودش را
+						 * دارد و متن‌های دلخواه هم از همان‌جا می‌آید.
+						 */
+						'showEyebrow'   => array(
+							'type'    => 'boolean',
+							'default' => true,
+						),
+						'eyebrowLabel' => array(
+							'type'    => 'string',
+							'default' => '',
+						),
+						'eyebrowTagline' => array(
+							'type'    => 'string',
+							'default' => '',
+						),
+						'showOriginal' => array(
+							'type'    => 'boolean',
+							'default' => true,
+						),
+						'showQuality'  => array(
+							'type'    => 'boolean',
+							'default' => true,
+						),
+						'showLanguages' => array(
+							'type'    => 'boolean',
+							'default' => true,
+						),
+						'showWordmark' => array(
+							'type'    => 'boolean',
+							'default' => true,
+						),
+						'showCounter'  => array(
+							'type'    => 'boolean',
+							'default' => true,
+						),
+						'showNote'     => array(
+							'type'    => 'boolean',
+							'default' => true,
+						),
+						'noteText'     => array(
+							'type'    => 'string',
+							'default' => '',
+						),
+						'tilt'         => array(
+							'type'    => 'boolean',
+							'default' => true,
 						),
 					)
 				),
@@ -3014,7 +3064,16 @@ class Blocks {
 	/**
 	 * رندر اسلایدر ویژه.
 	 *
-	 * @param array $attrs ویژگی‌ها.
+	 * چیدمان و اجزای این بلوک هم‌شکل مرجع `cinora/index.html` است: کادر
+	 * گرد سینمایی با تصویر عریض و پوشش گرادیانی، ستون محتوا روی سمت راست
+	 * (نشان ویژه، عنوان، عنوان لاتین، ردیف امتیاز/سال/مدت، خلاصه، برچسب
+	 * زبان و ژانر، دکمه‌ها)، نشان کیفیت در گوشه‌ی بالا، واترمارک لاتین و
+	 * نوار کنترل پایین (فلش‌ها، نقطه‌ها و شمارنده‌ی اسلاید).
+	 *
+	 * هر جزء یک کلید روشن/خاموش در ویرایشگر دارد و همه‌ی داده‌ها از
+	 * فراداده و تاکسونومی‌های خود اثر خوانده می‌شوند، نه از متن ثابت.
+	 *
+	 * @param array $attrs ویژگی‌های بلوک.
 	 * @return string
 	 */
 	public function render_hero_slider( $attrs ) {
@@ -3055,9 +3114,16 @@ class Blocks {
 		$overlay = max( 0, min( 100, (int) $attrs['overlay'] ) );
 		$inline  = $overlay ? sprintf( ' style="--mc-hero-overlay:%s"', esc_attr( $overlay / 100 ) ) : '';
 
+		$show_meta  = ! empty( $attrs['showMeta'] );
+		$show_genre = ! empty( $attrs['showGenres'] );
+		$genre_max  = max( 1, (int) $attrs['genreCount'] );
+		$label      = ! empty( $attrs['primaryLabel'] )
+			? (string) $attrs['primaryLabel']
+			: __( 'مشاهده و دانلود', 'manacore' );
+
 		ob_start();
 		printf(
-			'<div %1$s%5$s data-manacore-hero data-autoplay="%2$s" data-interval="%3$d" data-effect="%4$s">',
+			'<div %1$s%5$s data-manacore-hero data-autoplay="%2$s" data-interval="%3$d" data-effect="%4$s" data-tilt="%6$s">',
 			Block_Support::wrapper( // phpcs:ignore WordPress.Security.EscapeOutput
 				$attrs,
 				array(
@@ -3071,55 +3137,116 @@ class Blocks {
 			$autoplay ? 'true' : 'false',
 			esc_attr( $interval * 1000 ),
 			esc_attr( $effect ),
-			$inline // phpcs:ignore WordPress.Security.EscapeOutput
+			$inline, // phpcs:ignore WordPress.Security.EscapeOutput
+			! empty( $attrs['tilt'] ) ? 'true' : 'false'
 		);
 
 		echo Block_Support::render_header( $attrs ); // phpcs:ignore WordPress.Security.EscapeOutput
 		echo '<div class="manacore-hero-track">';
 
 		foreach ( $posts as $index => $post ) {
-			$backdrop = get_post_meta( $post->ID, 'manacore_backdrop_url', true );
-			$backdrop = $backdrop ? $backdrop : manacore_poster_url( $post->ID, 'full' );
-			$logo     = ! empty( $attrs['showLogo'] ) ? get_post_meta( $post->ID, 'manacore_logo_url', true ) : '';
-			$rating   = Templates::best_rating( $post->ID );
-			$year     = Templates::year( $post->ID );
-			$trailer  = ! empty( $attrs['showTrailer'] ) ? get_post_meta( $post->ID, 'manacore_trailer_url', true ) : '';
+			$post_id = (int) $post->ID;
+
+			$backdrop = manacore_backdrop_url( $post_id, 'full' );
+			$logo     = ! empty( $attrs['showLogo'] ) ? get_post_meta( $post_id, 'manacore_logo_url', true ) : '';
+			$trailer  = ! empty( $attrs['showTrailer'] ) ? get_post_meta( $post_id, 'manacore_trailer_url', true ) : '';
+			$rating   = $show_meta ? Templates::best_rating( $post_id ) : 0;
+			$year     = $show_meta ? Templates::year( $post_id ) : '';
+			$runtime  = $show_meta ? $this->hero_runtime_text( $post_id ) : '';
+			$age      = $show_meta ? $this->hero_age_rating( $post_id ) : '';
+			$original = ! empty( $attrs['showOriginal'] ) ? $this->hero_original_title( $post_id ) : '';
+
+			$badge = array( '', '' );
+			if ( ! empty( $attrs['showQuality'] ) ) {
+				$badge = $this->hero_quality_badge( $post_id );
+			}
+
+			$languages = ! empty( $attrs['showLanguages'] ) ? $this->hero_language_tags( $post_id ) : array();
+			$genres    = array();
+			if ( $show_genre ) {
+				$terms = get_the_terms( $post_id, 'genre' );
+				if ( $terms && ! is_wp_error( $terms ) ) {
+					$genres = array_slice( $terms, 0, $genre_max );
+				}
+			}
+
+			$eyebrow = '';
+			$tagline = '';
+			if ( ! empty( $attrs['showEyebrow'] ) ) {
+				$eyebrow = $this->hero_eyebrow( $post_id, $attrs );
+				$tagline = ! empty( $attrs['eyebrowTagline'] )
+					? (string) $attrs['eyebrowTagline']
+					: trim( (string) get_post_meta( $post_id, 'manacore_tagline', true ) );
+			}
+
+			$wordmark = ! empty( $attrs['showWordmark'] ) ? $this->hero_wordmark( $original ) : array( '', '' );
 			?>
 			<div class="manacore-hero-slide<?php echo 0 === $index ? ' is-active' : ''; ?>" data-hero-slide="<?php echo esc_attr( $index ); ?>">
-				<img class="manacore-hero-bg" src="<?php echo esc_url( $backdrop ); ?>"
-					alt="" loading="<?php echo 0 === $index ? 'eager' : 'lazy'; ?>" decoding="async" />
+				<div class="manacore-hero-image">
+					<img class="manacore-hero-bg" src="<?php echo esc_url( $backdrop ); ?>" alt="" fetchpriority="<?php echo 0 === $index ? 'high' : 'low'; ?>" <?php echo 0 === $index ? '' : 'loading="lazy"'; ?> decoding="async" />
+					<span class="manacore-hero-gradient" aria-hidden="true"></span>
+				</div>
+				<span class="manacore-hero-grain" aria-hidden="true"></span>
+
+				<?php if ( '' !== $badge[0] ) : ?>
+					<span class="manacore-hero-quality">
+						<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 3H5a2 2 0 0 0-2 2v3M16 3h3a2 2 0 0 1 2 2v3M8 21H5a2 2 0 0 1-2-2v-3M16 21h3a2 2 0 0 0 2-2v-3"/></svg>
+						<b><?php echo esc_html( $badge[0] ); ?></b>
+						<?php if ( '' !== $badge[1] ) : ?>
+							<span><?php echo esc_html( $badge[1] ); ?></span>
+						<?php endif; ?>
+					</span>
+				<?php endif; ?>
+
 				<div class="manacore-hero-content">
+					<?php if ( '' !== $eyebrow ) : ?>
+						<div class="manacore-hero-eyebrow">
+							<span>
+								<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 3-1.5 5.5L5 10l5.5 1.5L12 17l1.5-5.5L19 10l-5.5-1.5L12 3z"/></svg>
+								<?php echo esc_html( $eyebrow ); ?>
+							</span>
+							<?php if ( '' !== $tagline ) : ?>
+								<i aria-hidden="true"></i><?php echo esc_html( $tagline ); ?>
+							<?php endif; ?>
+						</div>
+					<?php endif; ?>
+
 					<?php if ( $logo ) : ?>
 						<img class="manacore-hero-logo" src="<?php echo esc_url( $logo ); ?>"
 							alt="<?php echo esc_attr( get_the_title( $post ) ); ?>" loading="lazy" />
 					<?php else : ?>
-						<h2 class="manacore-hero-title"><?php echo esc_html( get_the_title( $post ) ); ?></h2>
+						<h2 class="manacore-hero-title">
+							<a href="<?php echo esc_url( get_permalink( $post ) ); ?>"><?php echo esc_html( get_the_title( $post ) ); ?></a>
+						</h2>
 					<?php endif; ?>
 
-					<?php if ( ! empty( $attrs['showMeta'] ) ) : ?>
+					<?php if ( '' !== $original ) : ?>
+						<p class="manacore-hero-original" dir="ltr"><?php echo esc_html( $original ); ?></p>
+					<?php endif; ?>
+
+					<?php if ( $rating || '' !== $year || '' !== $runtime || '' !== $age ) : ?>
 						<div class="manacore-hero-meta">
 							<?php if ( $rating ) : ?>
-								<span class="manacore-chip is-quality">⭐ <?php echo esc_html( number_format_i18n( $rating, 1 ) ); ?></span>
+								<span class="manacore-hero-rating">
+									<b>IMDb</b>
+									<strong><?php echo esc_html( number_format_i18n( $rating, 1 ) ); ?></strong>
+									<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 2 3.09 6.26L22 9.27l-5 4.87L18.18 21 12 17.77 5.82 21 7 14.14l-5-4.87 6.91-1.01L12 2z"/></svg>
+								</span>
 							<?php endif; ?>
-							<?php if ( $year ) : ?>
-								<span class="manacore-chip"><?php echo esc_html( $year ); ?></span>
+							<?php if ( '' !== $year ) : ?>
+								<span><?php echo esc_html( manacore_fa_digits( $year ) ); ?></span>
 							<?php endif; ?>
-							<?php
-							if ( ! empty( $attrs['showGenres'] ) ) {
-								$genres = get_the_terms( $post->ID, 'genre' );
-								if ( $genres && ! is_wp_error( $genres ) ) {
-									$limit = max( 1, (int) $attrs['genreCount'] );
-									foreach ( array_slice( $genres, 0, $limit ) as $genre ) {
-										echo '<span class="manacore-chip">' . esc_html( $genre->name ) . '</span>';
-									}
-								}
-							}
-							?>
+							<?php if ( '' !== $runtime ) : ?>
+								<i aria-hidden="true"></i><span><?php echo esc_html( $runtime ); ?></span>
+							<?php endif; ?>
+							<?php if ( '' !== $age ) : ?>
+								<span class="manacore-hero-age"><?php echo esc_html( $age ); ?></span>
+							<?php endif; ?>
 						</div>
 					<?php endif; ?>
 
 					<?php if ( ! empty( $attrs['showExcerpt'] ) ) : ?>
-						<p class="manacore-hero-excerpt">
+						<p class="manacore-hero-description">
 							<?php
 							echo esc_html(
 								wp_trim_words(
@@ -3132,18 +3259,24 @@ class Blocks {
 						</p>
 					<?php endif; ?>
 
+					<?php if ( $languages || $genres ) : ?>
+						<div class="manacore-hero-tags">
+							<?php foreach ( $languages as $language_index => $language ) : ?>
+								<span<?php echo 0 === $language_index ? ' class="is-first"' : ''; ?>><?php if ( 0 === $language_index ) : ?><span class="live-dot" aria-hidden="true"></span><?php endif; ?><?php echo esc_html( $language ); ?></span>
+							<?php endforeach; ?>
+							<?php foreach ( $genres as $genre ) : ?>
+								<a href="<?php echo esc_url( (string) get_term_link( $genre ) ); ?>"><?php echo esc_html( $genre->name ); ?></a>
+							<?php endforeach; ?>
+						</div>
+					<?php endif; ?>
+
 					<div class="manacore-hero-actions">
 						<a class="manacore-btn is-primary" href="<?php echo esc_url( get_permalink( $post ) ); ?>">
-							<?php
-							echo esc_html(
-								! empty( $attrs['primaryLabel'] )
-									? $attrs['primaryLabel']
-									: __( 'مشاهده و دانلود', 'manacore' )
-							);
-							?>
+							<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+							<?php echo esc_html( $label ); ?>
 						</a>
 						<?php if ( $trailer ) : ?>
-							<button type="button" class="manacore-btn is-ghost"
+							<button type="button" class="manacore-btn is-glass"
 								data-manacore-play="<?php echo esc_url( $trailer ); ?>"
 								data-title="<?php echo esc_attr( get_the_title( $post ) ); ?>">
 								<?php
@@ -3155,40 +3288,314 @@ class Blocks {
 								?>
 							</button>
 						<?php endif; ?>
+						<?php if ( manacore_get_option( 'enable_watchlist', 1 ) ) : ?>
+							<?php $saved = Watchlist::instance()->has( $post_id ); ?>
+							<button type="button" class="manacore-hero-save<?php echo esc_attr( $saved ? ' is-active' : '' ); ?>"
+								data-manacore-watchlist="<?php echo esc_attr( $post_id ); ?>"
+								aria-pressed="<?php echo esc_attr( $saved ? 'true' : 'false' ); ?>"
+								aria-label="<?php esc_attr_e( 'افزودن به لیست تماشا', 'manacore' ); ?>">
+								<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h12a1 1 0 0 1 1 1v17l-7-4-7 4V4a1 1 0 0 1 1-1z"/></svg>
+							</button>
+						<?php endif; ?>
 					</div>
 				</div>
+
+				<?php if ( '' !== $wordmark[0] ) : ?>
+					<div class="manacore-hero-wordmark" aria-hidden="true">
+						<span><?php echo esc_html( $wordmark[0] ); ?></span>
+						<?php if ( '' !== $wordmark[1] ) : ?>
+							<small><?php echo esc_html( $wordmark[1] ); ?></small>
+						<?php endif; ?>
+					</div>
+				<?php endif; ?>
 			</div>
 			<?php
 		}
 
 		echo '</div>';
 
-		if ( ! empty( $attrs['showArrows'] ) && $total > 1 ) {
-			printf(
-				'<button type="button" class="manacore-hero-arrow is-prev" data-hero-prev aria-label="%s"></button>'
-				. '<button type="button" class="manacore-hero-arrow is-next" data-hero-next aria-label="%s"></button>',
-				esc_attr__( 'اسلاید قبلی', 'manacore' ),
-				esc_attr__( 'اسلاید بعدی', 'manacore' )
-			);
-		}
+		$has_controls = ( ! empty( $attrs['showDots'] ) || ! empty( $attrs['showArrows'] ) || ! empty( $attrs['showCounter'] ) ) && $total > 1;
 
-		if ( ! empty( $attrs['showDots'] ) && $total > 1 ) {
-			echo '<div class="manacore-hero-dots" role="tablist">';
-			foreach ( $posts as $index => $post ) {
+		if ( $has_controls ) {
+			echo '<div class="manacore-hero-controls">';
+
+			if ( ! empty( $attrs['showArrows'] ) ) {
 				printf(
-					'<button type="button" class="manacore-hero-dot%1$s" data-hero-dot="%2$d" role="tab" aria-selected="%3$s" aria-label="%4$s"></button>',
-					0 === $index ? ' is-active' : '',
-					esc_attr( $index ),
-					0 === $index ? 'true' : 'false',
-					esc_attr( get_the_title( $post ) )
+					'<button type="button" class="manacore-hero-arrow is-prev" data-hero-prev aria-label="%s">'
+					. '<svg xmlns="http://www.w3.org/2000/svg" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>'
+					. '</button>',
+					esc_attr__( 'اسلاید قبلی', 'manacore' )
 				);
 			}
+
+			if ( ! empty( $attrs['showDots'] ) ) {
+				echo '<div class="manacore-hero-dots">';
+				foreach ( $posts as $index => $post ) {
+					printf(
+						'<button type="button" class="manacore-hero-dot%1$s" data-hero-dot="%2$d" aria-pressed="%3$s" aria-label="%4$s"><span></span></button>',
+						0 === $index ? ' is-active' : '',
+						esc_attr( $index ),
+						0 === $index ? 'true' : 'false',
+						esc_attr( get_the_title( $post ) )
+					);
+				}
+				echo '</div>';
+			}
+
+			if ( ! empty( $attrs['showCounter'] ) ) {
+				printf(
+					'<span class="manacore-hero-counter" dir="ltr"><b>01</b> / %s</span>',
+					esc_html( str_pad( (string) $total, 2, '0', STR_PAD_LEFT ) )
+				);
+			}
+
+			if ( ! empty( $attrs['showArrows'] ) ) {
+				printf(
+					'<button type="button" class="manacore-hero-arrow is-next" data-hero-next aria-label="%s">'
+					. '<svg xmlns="http://www.w3.org/2000/svg" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg>'
+					. '</button>',
+					esc_attr__( 'اسلاید بعدی', 'manacore' )
+				);
+			}
+
 			echo '</div>';
+		}
+
+		if ( ! empty( $attrs['showNote'] ) ) {
+			$note = ! empty( $attrs['noteText'] )
+				? (string) $attrs['noteText']
+				: __( 'تصویر، صدا، داستان؛ یک تجربه‌ی متفاوت.', 'manacore' );
+
+			printf(
+				'<div class="manacore-hero-note"><span aria-hidden="true"></span>%s</div>',
+				esc_html( $note )
+			);
 		}
 
 		echo '</div>';
 
 		return (string) ob_get_clean();
+	}
+
+	/**
+	 * برچسب نشان ویژه‌ی اسلایدر («انتخاب ویژه»).
+	 *
+	 * اگر نویسنده برچسب دلخواهی در ویرایشگر بگذارد همان می‌آید؛ وگرنه
+	 * اثرِ «نمایش در اسلایدر ویژه» برچسب ویژه می‌گیرد و بقیه پیشنهاد
+	 * عمومی. نتیجه با فیلتر `manacore_hero_eyebrow` قابل تغییر است.
+	 *
+	 * @param int   $post_id شناسه‌ی اثر.
+	 * @param array $attrs   ویژگی‌های بلوک.
+	 * @return string
+	 */
+	protected function hero_eyebrow( $post_id, $attrs ) {
+		if ( ! empty( $attrs['eyebrowLabel'] ) ) {
+			$label = (string) $attrs['eyebrowLabel'];
+		} elseif ( get_post_meta( $post_id, 'manacore_is_featured', true ) ) {
+			$label = __( 'انتخاب ویژه', 'manacore' );
+		} else {
+			$label = __( 'پیشنهاد ویژه', 'manacore' );
+		}
+
+		return (string) apply_filters( 'manacore_hero_eyebrow', $label, $post_id );
+	}
+
+	/**
+	 * عنوان لاتین اثر برای خط زیر عنوان.
+	 *
+	 * @param int $post_id شناسه‌ی اثر.
+	 * @return string
+	 */
+	protected function hero_original_title( $post_id ) {
+		return trim( (string) get_post_meta( $post_id, 'manacore_original_title', true ) );
+	}
+
+	/**
+	 * واترمارک لاتین اسلایدر (هم‌شکل مرجع).
+	 *
+	 * عنوان لاتین به دو خط شکسته می‌شود: بخش اصلی با حروف فاصله‌دار در
+	 * خط اول و ادامه‌ی عنوان (بعد از دونقطه) در خط دوم. اثر بدون عنوان
+	 * لاتین واترمارک نمی‌گیرد، چون متن فارسی در این قالب حروف‌چینی
+	 * لاتین را خراب می‌کند.
+	 *
+	 * @param string $original عنوان لاتین.
+	 * @return array{0:string,1:string} [خط اول، خط دوم]
+	 */
+	protected function hero_wordmark( $original ) {
+		$original = trim( (string) $original );
+
+		if ( '' === $original ) {
+			return array( '', '' );
+		}
+
+		$parts = array_map( 'trim', explode( ':', $original, 2 ) );
+		$lines = array();
+
+		foreach ( $parts as $part ) {
+			$part = preg_replace( '/\s+/u', ' ', (string) $part );
+
+			if ( '' !== $part ) {
+				$lines[] = function_exists( 'mb_strtoupper' )
+					? mb_strtoupper( $part, 'UTF-8' )
+					: strtoupper( $part );
+			}
+		}
+
+		return array( $lines[0] ?? '', $lines[1] ?? '' );
+	}
+
+	/**
+	 * برچسب کیفیت اسلایدر (نشان گوشه‌ی بالا).
+	 *
+	 * ترتیب خواندن: ترم تاکسونومی «کیفیت» → نخستین کیفیتِ غیرخالی در
+	 * گروه‌های لینک اثر. گروه‌ها به ترتیب ویرایشگر خوانده می‌شوند، پس
+	 * مدیر با جابه‌جایی گروه‌ها تعیین می‌کند چه کیفیتی نشان داده شود.
+	 *
+	 * @param int $post_id شناسه‌ی اثر.
+	 * @return array{0:string,1:string} [نشان کوتاه، زیرنویس]
+	 */
+	protected function hero_quality_badge( $post_id ) {
+		$name = '';
+
+		$terms = get_the_terms( $post_id, 'quality' );
+		if ( $terms && ! is_wp_error( $terms ) ) {
+			$name = trim( (string) $terms[0]->name );
+		}
+
+		if ( '' === $name ) {
+			foreach ( manacore_get_links( $post_id ) as $group ) {
+				$key = Links::value( array(), $group, 'quality' );
+
+				if ( '' !== $key ) {
+					$name = Links::quality_label( $key );
+					break;
+				}
+			}
+		}
+
+		if ( '' === $name ) {
+			return array( '', '' );
+		}
+
+		$captions = array(
+			'/(2160|4\s*k)/i'  => array( '4K', 'ULTRA HD' ),
+			'/(1440|2\s*k)/i'  => array( '2K', 'QHD' ),
+			'/1080/i'          => array( '1080p', 'FULL HD' ),
+			'/720/i'           => array( '720p', 'HD' ),
+			'/(480|360|SD)/i'  => array( $name, 'SD' ),
+		);
+
+		foreach ( $captions as $pattern => $pair ) {
+			if ( preg_match( $pattern, $name ) ) {
+				return $pair;
+			}
+		}
+
+		return array( $name, '' );
+	}
+
+	/**
+	 * برچسب‌های زبان اسلایدر.
+	 *
+	 * زبان‌ها از گروه‌های لینک همان اثر خوانده می‌شوند (نه از متن ثابت)
+	 * و ترتیب ویرایشگر حفظ می‌شود؛ «دوبله فارسی» هم اگر فراداده‌ی اثر
+	 * روشن باشد به ابتدای فهرست می‌آید.
+	 *
+	 * @param int $post_id شناسه‌ی اثر.
+	 * @return array<int,string>
+	 */
+	protected function hero_language_tags( $post_id ) {
+		$tags = array();
+
+		if ( get_post_meta( $post_id, 'manacore_dubbed', true ) ) {
+			$tags[] = __( 'دوبله فارسی', 'manacore' );
+		}
+
+		foreach ( manacore_get_links( $post_id ) as $group ) {
+			$key = Links::value( array(), $group, 'language' );
+
+			if ( '' === $key ) {
+				continue;
+			}
+
+			$label = Links::language_label( $key );
+
+			if ( ! in_array( $label, $tags, true ) ) {
+				$tags[] = $label;
+			}
+		}
+
+		return array_slice( (array) apply_filters( 'manacore_hero_languages', $tags, $post_id ), 0, 3 );
+	}
+
+	/**
+	 * رده‌ی سنی اثر از تاکسونومی «رده سنی».
+	 *
+	 * @param int $post_id شناسه‌ی اثر.
+	 * @return string
+	 */
+	protected function hero_age_rating( $post_id ) {
+		$terms = get_the_terms( $post_id, 'age_rating' );
+
+		if ( ! $terms || is_wp_error( $terms ) ) {
+			return '';
+		}
+
+		return trim( (string) $terms[0]->name );
+	}
+
+	/**
+	 * متن مدت اثر: «۲ ساعت و ۴۷ دقیقه» برای فیلم و «۱۲ قسمت» برای سریال.
+	 *
+	 * @param int $post_id شناسه‌ی اثر.
+	 * @return string
+	 */
+	protected function hero_runtime_text( $post_id ) {
+		if ( in_array( get_post_type( $post_id ), manacore_serial_post_types(), true ) ) {
+			$episodes = (int) manacore_series_episodes_count( $post_id );
+
+			if ( $episodes ) {
+				return sprintf(
+					/* translators: %s: تعداد قسمت */
+					__( '%s قسمت', 'manacore' ),
+					manacore_fa_digits( number_format_i18n( $episodes ) )
+				);
+			}
+		}
+
+		$runtime = (int) get_post_meta( $post_id, 'manacore_runtime', true );
+		if ( ! $runtime ) {
+			return '';
+		}
+
+		$hours   = (int) floor( $runtime / 60 );
+		$minutes = $runtime % 60;
+		$format  = static function ( $value ) {
+			return manacore_fa_digits( number_format_i18n( $value ) );
+		};
+
+		if ( $hours && $minutes ) {
+			return sprintf(
+				/* translators: ۱: ساعت ۲: دقیقه */
+				__( '%1$s ساعت و %2$s دقیقه', 'manacore' ),
+				$format( $hours ),
+				$format( $minutes )
+			);
+		}
+
+		if ( $hours ) {
+			return sprintf(
+				/* translators: %s: ساعت */
+				__( '%s ساعت', 'manacore' ),
+				$format( $hours )
+			);
+		}
+
+		return sprintf(
+			/* translators: %s: دقیقه */
+			__( '%s دقیقه', 'manacore' ),
+			$format( $minutes )
+		);
 	}
 
 	/**

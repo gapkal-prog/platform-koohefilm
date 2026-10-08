@@ -598,19 +598,111 @@ assert(
 	frontBare.indexOf( '--mc-hero-dir' ) < 0,
 	'متغیر مرده‌ی --mc-hero-dir حذف شده و جهت پوشش با [dir] تعیین می‌شود'
 );
+/*
+ * پوشش تصویر پیش‌تر با `.manacore-hero-bg::after` ساخته می‌شد؛ شبه‌عنصر
+ * روی عنصر جانشین‌شده (`<img>`) رندر نمی‌شود، پس اسلایدر هیچ پرده‌ای
+ * نداشت و متن روی بخش روشن تصویر می‌افتاد. اکنون پرده یک عنصر واقعی
+ * (`.manacore-hero-gradient`) است و جهت آن برای LTR جدا نوشته می‌شود.
+ */
 assert(
-	/\[dir="ltr"\] \.manacore-hero-bg::after/.test( frontBare ),
+	/\.manacore-hero-gradient/.test( frontBare ) && frontBare.indexOf( '.manacore-hero-bg::after' ) < 0,
+	'پرده‌ی تصویر روی عنصر واقعی است، نه شبه‌عنصر روی <img>'
+);
+assert(
+	/\[dir="ltr"\] \.manacore-hero-gradient/.test( frontBare ),
 	'جهت پوشش اسلایدر برای LTR جداگانه بازنویسی می‌شود'
 );
 
-// حرکت‌کاهی برای هر جلوه‌ی متحرک.
+/* ------------------------------------------------------------------
+ * ذ) اجزای اسلایدر هیرو (هم‌شکل مرجع cinora)
+ * --------------------------------------------------------------- */
+
+console.log( '' );
+console.log( 'ذ) اجزای اسلایدر هیرو' );
+console.log( '----------------------------------------------------------' );
+
+var heroSource = phpBody( blocksCode, 'function render_hero_slider(' );
+
+[
+	[ 'manacore-hero-image', 'لایه‌ی تصویر' ],
+	[ 'manacore-hero-gradient', 'پرده‌ی گرادیانی' ],
+	[ 'manacore-hero-grain', 'دانه‌ی سطح تصویر' ],
+	[ 'manacore-hero-quality', 'نشان کیفیت' ],
+	[ 'manacore-hero-eyebrow', 'نشان ویژه' ],
+	[ 'manacore-hero-original', 'عنوان لاتین' ],
+	[ 'manacore-hero-rating', 'جعبه‌ی امتیاز' ],
+	[ 'manacore-hero-age', 'رده‌ی سنی' ],
+	[ 'manacore-hero-tags', 'برچسب‌های زبان و ژانر' ],
+	[ 'manacore-hero-wordmark', 'واترمارک' ],
+	[ 'manacore-hero-controls', 'نوار کنترل' ],
+	[ 'manacore-hero-counter', 'شمارنده‌ی اسلاید' ],
+	[ 'manacore-hero-note', 'یادداشت پایین' ],
+	[ 'manacore-hero-save', 'دکمه‌ی لیست تماشا' ],
+].forEach( function ( row ) {
+	assert(
+		frontBare.indexOf( '.' + row[ 0 ] ) > -1 && heroSource.indexOf( row[ 0 ] ) > -1,
+		row[ 1 ] + ' هم CSS دارد و هم در رندر بلوک ساخته می‌شود'
+	);
+} );
+
 assert(
-	/@media \(prefers-reduced-motion: reduce\)[\s\S]{0,400}?is-effect-slide/.test( frontBare ),
-	'جلوه‌های اسلایدر با prefers-reduced-motion غیرفعال می‌شوند'
+	/\.manacore-hero-bg[\s\S]{0,240}?width:\s*79%/.test( frontBare ) &&
+		/\.manacore-hero-bg[\s\S]{0,240}?inset-inline-end:\s*0/.test( frontBare ),
+	'تصویر ۷۹٪ عرض را می‌گیرد و از سمت پایان کادر می‌چسبد (هندسه‌ی مرجع)'
 );
 assert(
-	/@media \(prefers-reduced-motion: reduce\)[\s\S]{0,300}?is-style-elevated/.test( frontBare ),
-	'سبک برجسته‌ی کارت با prefers-reduced-motion آرام می‌شود'
+	/\.manacore-hero-content[\s\S]{0,300}?width:\s*53%/.test( frontBare ),
+	'ستون محتوا عرض ۵۳٪ دارد (هندسه‌ی مرجع)'
+);
+assert(
+	/--mc-hero-scrim:\s*[0-9]/.test( frontBare ) && /--mc-hero-tilt:/.test( frontBare ) &&
+		/--mc-hero-overlay/.test( heroSource ) &&
+		/\[style\*="--mc-hero-overlay"\][\s\S]{0,140}?opacity: var\(--mc-hero-overlay\)/.test( frontBare ),
+	'متغیرهای پرده، چرخش و شدت پوشش اسلایدر تعریف شده‌اند و کلید پوشش به CSS می‌رسد'
+);
+assert(
+	/--mc-hero-tilt/.test( frontJsCode ) && /data-tilt/.test( heroSource ) && /attr: 'tilt'/.test( jsCode ),
+	'چرخش ملایم با کلید tilt در ویرایشگر کنترل و در JS به متغیر CSS نوشته می‌شود'
+);
+assert(
+	/data-manacore-watchlist/.test( heroSource ) && /Watchlist::instance\(\)->has/.test( heroSource ),
+	'دکمه‌ی لیست تماشا از همان قرارداد data-manacore-watchlist و وضعیت واقعی کاربر استفاده می‌کند'
+);
+assert(
+	/data-hero-prev/.test( heroSource ) && /data-hero-next/.test( heroSource ) &&
+		/data-hero-dot/.test( heroSource ) && /aria-pressed/.test( heroSource ) &&
+		! /role="tab"/.test( heroSource ) && /aria-pressed/.test( frontJsCode ),
+	'کنترل‌های اسلایدر نشانه‌های data و وضعیت دسترس‌پذیری مرجع (aria-pressed) را دارند'
+);
+assert(
+	/manacore-hero-counter" dir="ltr"/.test( heroSource ),
+	'شمارنده‌ی اسلاید در جهت LTR و با رقم لاتین است (مثل مرجع)'
+);
+assert(
+	/showEyebrow/.test( heroSource ) && /showQuality/.test( heroSource ) && /showLanguages/.test( heroSource ) &&
+		/showWordmark/.test( heroSource ) && /showCounter/.test( heroSource ) && /showNote/.test( heroSource ),
+	'هر جزء اسلایدر کلید روشن/خاموش خودش را دارد'
+);
+assert(
+	/manacore_tagline/.test( heroSource ) && /manacore_original_title/.test( blocksCode ) &&
+		/manacore_is_featured/.test( blocksCode ) && /manacore_dubbed/.test( blocksCode ) &&
+		/age_rating/.test( blocksCode ),
+	'داده‌های اسلایدر از فراداده و تاکسونومی‌های خود اثر خوانده می‌شوند (نه متن ثابت)'
+);
+assert(
+	'' !== phpBody( blocksCode, 'function hero_language_tags(' ) &&
+		'' !== phpBody( blocksCode, 'function hero_quality_badge(' ) &&
+		'' !== phpBody( blocksCode, 'function hero_wordmark(' ) &&
+		'' !== phpBody( blocksCode, 'function hero_runtime_text(' ),
+	'کمک‌تابع‌های اسلایدر (زبان، کیفیت، واترمارک، مدت) جدا و آزمون‌پذیرند'
+);
+assert(
+	/\.manacore-hero-wordmark,\s*\n\s*\.manacore-hero-note\s*\{\s*\n\s*display:\s*none/.test( frontBare ),
+	'در موبایل واترمارک و یادداشت اسلایدر پنهان می‌شوند (مثل مرجع)'
+);
+assert(
+	/@media \(max-width: 781px\)[\s\S]{0,200}?\.manacore-hero-content[\s\S]{0,200}?justify-content:\s*flex-end/.test( frontBare ),
+	'در موبایل محتوا تمام‌عرض و از پایین کادر می‌آید (مثل مرجع)'
 );
 
 /* ------------------------------------------------------------------

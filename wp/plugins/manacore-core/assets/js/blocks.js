@@ -1918,6 +1918,8 @@
 							: null,
 						{ attr: 'showDots', type: 'toggle', label: __( 'نمایش نقطه‌ها', 'manacore' ) },
 						{ attr: 'showArrows', type: 'toggle', label: __( 'نمایش فلش‌ها', 'manacore' ) },
+						{ attr: 'showCounter', type: 'toggle', label: __( 'نمایش شمارنده‌ی اسلاید', 'manacore' ) },
+						{ attr: 'tilt', type: 'toggle', label: __( 'چرخش ملایم با حرکت ماوس', 'manacore' ), help: __( 'روی نمایشگر لمسی و در حالت «حرکت کمتر» خودکار خاموش می‌شود.', 'manacore' ) },
 						{ attr: 'showLogo', type: 'toggle', label: __( 'نمایش لوگوی اثر', 'manacore' ) },
 						{ attr: 'showMeta', type: 'toggle', label: __( 'نمایش مشخصات', 'manacore' ) },
 						{ attr: 'showGenres', type: 'toggle', label: __( 'نمایش ژانرها', 'manacore' ) },
@@ -1943,6 +1945,23 @@
 						{ attr: 'showTrailer', type: 'toggle', label: __( 'دکمه‌ی تریلر', 'manacore' ) },
 						{ attr: 'primaryLabel', label: __( 'برچسب دکمه‌ی اصلی', 'manacore' ) },
 						{ attr: 'trailerLabel', label: __( 'برچسب دکمه‌ی تریلر', 'manacore' ) },
+					] ),
+					optionsPanel( props, __( 'اجزای اسلاید', 'manacore' ), [
+						{ attr: 'showEyebrow', type: 'toggle', label: __( 'نمایش نشان ویژه', 'manacore' ) },
+						a.showEyebrow
+							? { attr: 'eyebrowLabel', label: __( 'متن نشان ویژه', 'manacore' ), help: __( 'خالی = «انتخاب ویژه» برای اثرهای ویژه و «پیشنهاد ویژه» برای بقیه.', 'manacore' ) }
+							: null,
+						a.showEyebrow
+							? { attr: 'eyebrowTagline', label: __( 'خط معرفی کنار نشان', 'manacore' ), help: __( 'خالی = «شعار / خط معرفی» خود اثر.', 'manacore' ) }
+							: null,
+						{ attr: 'showOriginal', type: 'toggle', label: __( 'نمایش عنوان لاتین', 'manacore' ) },
+						{ attr: 'showQuality', type: 'toggle', label: __( 'نشان کیفیت', 'manacore' ), help: __( 'از ترم «کیفیت» اثر یا نخستین گروه لینک خوانده می‌شود.', 'manacore' ) },
+						{ attr: 'showLanguages', type: 'toggle', label: __( 'برچسب‌های زبان', 'manacore' ), help: __( 'از زبان گروه‌های لینک و کلید «دوبله فارسی» اثر ساخته می‌شود.', 'manacore' ) },
+						{ attr: 'showWordmark', type: 'toggle', label: __( 'واترمارک لاتین', 'manacore' ), help: __( 'از عنوان لاتین اثر ساخته می‌شود؛ اثر بدون عنوان لاتین واترمارک نمی‌گیرد.', 'manacore' ) },
+						{ attr: 'showNote', type: 'toggle', label: __( 'یادداشت پایین اسلایدر', 'manacore' ), help: __( 'مثل مرجع فقط زیر ۹۸۱px دیده می‌شود؛ در دسکتاپ جای دکمه‌ها تنگ می‌شود.', 'manacore' ) },
+						a.showNote
+							? { attr: 'noteText', label: __( 'متن یادداشت', 'manacore' ) }
+							: null,
 					] ),
 				];
 

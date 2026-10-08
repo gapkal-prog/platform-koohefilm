@@ -1412,7 +1412,18 @@
 	}
 
 	/* ---------------- اسلایدر ویژه ---------------- */
+	/*
+	 * رفتار اسلایدر هم‌شکل مرجع `cinora/index.html`:
+	 *   • جابه‌جایی با فلش‌ها، نقطه‌ها و کلیدهای جهت‌دار
+	 *   • شمارنده‌ی «۰۱ / ۰۳» با هر تغییر تازه می‌شود
+	 *   • پخش خودکار با توقف روی هاور و فوکوس، و توقف در تب پنهان
+	 *   • چرخش ملایم کادر با حرکت ماوس (اگر کلید tilt روشن باشد)
+	 * همه‌ی این‌ها با احترام به prefers-reduced-motion و بدون هیچ
+	 * اندازه‌گیری/شمارشی که به آمار سایت اضافه کند.
+	 */
 	function initHero() {
+		var finePointer = window.matchMedia( '(pointer: fine)' );
+
 		document.querySelectorAll( '[data-manacore-hero]' ).forEach( function ( hero ) {
 			var slides = Array.prototype.slice.call( hero.querySelectorAll( '[data-hero-slide]' ) );
 			var dots = Array.prototype.slice.call( hero.querySelectorAll( '[data-hero-dot]' ) );
@@ -1422,9 +1433,11 @@
 
 			var current = 0;
 			var timer = null;
+			var paused = false;
 
 			// تنظیمات از ویرایشگر بلوک روی خود عنصر نوشته می‌شود.
 			var autoplay = '0' !== hero.getAttribute( 'data-autoplay' );
+			var tilt = 'true' === hero.getAttribute( 'data-tilt' );
 			var interval = parseInt( hero.getAttribute( 'data-interval' ), 10 );
 			if ( ! interval || interval < 1500 ) {
 				interval = 7000;
@@ -1432,6 +1445,15 @@
 
 			var prevBtn = hero.querySelector( '[data-hero-prev]' );
 			var nextBtn = hero.querySelector( '[data-hero-next]' );
+			var counter = hero.querySelector( '.manacore-hero-counter b' );
+
+			function reduced() {
+				return window.matchMedia( '(prefers-reduced-motion: reduce)' ).matches;
+			}
+
+			function pad( value ) {
+				return value < 10 ? '0' + value : String( value );
+			}
 
 			function show( index ) {
 				current = ( index + slides.length ) % slides.length;
@@ -1440,15 +1462,15 @@
 				} );
 				dots.forEach( function ( dot, i ) {
 					dot.classList.toggle( 'is-active', i === current );
-					dot.setAttribute( 'aria-selected', i === current ? 'true' : 'false' );
+					dot.setAttribute( 'aria-pressed', i === current ? 'true' : 'false' );
 				} );
+				if ( counter ) {
+					counter.textContent = pad( current + 1 );
+				}
 			}
 
 			function start() {
-				if ( ! autoplay ) {
-					return;
-				}
-				if ( window.matchMedia( '(prefers-reduced-motion: reduce)' ).matches ) {
+				if ( ! autoplay || paused || document.hidden || reduced() ) {
 					return;
 				}
 				stop();
@@ -1461,40 +1483,85 @@
 				window.clearInterval( timer );
 			}
 
+			function go( index ) {
+				show( index );
+				start();
+			}
+
 			dots.forEach( function ( dot, index ) {
 				dot.addEventListener( 'click', function () {
-					show( index );
-					start();
+					go( index );
 				} );
 			} );
 
 			if ( prevBtn ) {
 				prevBtn.addEventListener( 'click', function () {
-					show( current - 1 );
-					start();
+					go( current - 1 );
 				} );
 			}
 
 			if ( nextBtn ) {
 				nextBtn.addEventListener( 'click', function () {
-					show( current + 1 );
-					start();
+					go( current + 1 );
 				} );
 			}
 
 			// پیمایش با صفحه‌کلید برای دسترس‌پذیری.
 			hero.addEventListener( 'keydown', function ( event ) {
 				if ( 'ArrowLeft' === event.key ) {
-					show( current + 1 );
-					start();
+					go( current + 1 );
 				} else if ( 'ArrowRight' === event.key ) {
-					show( current - 1 );
+					go( current - 1 );
+				}
+			} );
+
+			hero.addEventListener( 'focusin', function () {
+				paused = true;
+				stop();
+			} );
+
+			hero.addEventListener( 'focusout', function () {
+				paused = false;
+				start();
+			} );
+
+			hero.addEventListener( 'mouseenter', function () {
+				paused = true;
+				stop();
+			} );
+
+			hero.addEventListener( 'mouseleave', function () {
+				paused = false;
+				hero.style.removeProperty( '--mc-hero-tilt' );
+				start();
+			} );
+
+			if ( tilt ) {
+				hero.addEventListener( 'mousemove', function ( event ) {
+					if ( reduced() || ! finePointer.matches ) {
+						return;
+					}
+					var rect = hero.getBoundingClientRect();
+					if ( ! rect.width ) {
+						return;
+					}
+					var angle = ( ( event.clientX - rect.left ) / rect.width - .5 ) * .8;
+					hero.style.setProperty( '--mc-hero-tilt', angle.toFixed( 3 ) + 'deg' );
+				} );
+			}
+
+			/*
+			 * تب پنهان نباید اسلاید عوض کند؛ هم مصرف بی‌دلیل را می‌گیرد و
+			 * هم وقتی کاربر برمی‌گردد اسلاید عوض‌شده غافلگیرش نمی‌کند.
+			 */
+			document.addEventListener( 'visibilitychange', function () {
+				if ( document.hidden ) {
+					stop();
+				} else {
 					start();
 				}
 			} );
 
-			hero.addEventListener( 'mouseenter', stop );
-			hero.addEventListener( 'mouseleave', start );
 			start();
 		} );
 	}
