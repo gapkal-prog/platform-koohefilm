@@ -76,6 +76,8 @@ function koohe_enqueue_front() {
 		true
 	);
 
+	$has_core = function_exists( 'manacore_get_option' );
+
 	wp_localize_script(
 		'koohe-film',
 		'kooheFilm',
@@ -83,15 +85,34 @@ function koohe_enqueue_front() {
 			'restUrl'     => esc_url_raw( rest_url( 'manacore/v1/' ) ),
 			'nonce'       => wp_create_nonce( 'wp_rest' ),
 			'defaultMode' => koohe_default_color_mode(),
-			'hasCore'     => function_exists( 'manacore_get_option' ),
+			'hasCore'     => $has_core,
+
+			/*
+			 * نشانی‌های جستجو.
+			 *
+			 * پیش‌تر `theme.js` نشانی را دستی می‌ساخت (`restUrl` + مسیر
+			 * `wp/v2/search`) و چون `restUrl` فضای‌نام افزونه است، درخواست
+			 * به `…/wp-json/manacore/v1/wp/v2/search` می‌رفت و ۴۰۴ می‌گرفت؛
+			 * خطا هم بلعیده می‌شد و پیام «پیدا نکردیم» نمایش داده می‌شد.
+			 * حالا مسیرها از اینجا می‌آید و اگر افزونه فعال نباشد خالی
+			 * می‌ماند تا جستجوی زنده اجرا نشود و فرم به برگه‌ی جستجو برود.
+			 */
+			'searchUrl'   => $has_core ? esc_url_raw( rest_url( 'manacore/v1/search' ) ) : '',
+			'titlesUrl'   => $has_core ? esc_url_raw( rest_url( 'manacore/v1/titles' ) ) : '',
+			'searchPage'  => esc_url_raw( home_url( '/' ) ),
 			'i18n'        => array(
-				'toDark'   => __( 'حالت تیره', 'koohe-film' ),
-				'toLight'  => __( 'حالت روشن', 'koohe-film' ),
-				'menu'     => __( 'فهرست', 'koohe-film' ),
-				'close'    => __( 'بستن', 'koohe-film' ),
-				'top'      => __( 'بازگشت به بالا', 'koohe-film' ),
-				'loading'  => __( 'در حال بارگذاری…', 'koohe-film' ),
-				'noResult' => __( 'نتیجه‌ای یافت نشد.', 'koohe-film' ),
+				'toDark'    => __( 'حالت تیره', 'koohe-film' ),
+				'toLight'   => __( 'حالت روشن', 'koohe-film' ),
+				'menu'      => __( 'فهرست', 'koohe-film' ),
+				'close'     => __( 'بستن', 'koohe-film' ),
+				'top'       => __( 'بازگشت به بالا', 'koohe-film' ),
+				'loading'   => __( 'در حال بارگذاری…', 'koohe-film' ),
+				'noResult'  => __( 'نتیجه‌ای یافت نشد.', 'koohe-film' ),
+				'searching' => __( 'در حال جستجو…', 'koohe-film' ),
+				'error'     => __( 'جستجو انجام نشد. یک‌بار دیگر تلاش کنید.', 'koohe-film' ),
+				/* translators: %s: شمار نتایج. */
+				'results'   => __( '%s نتیجه پیشنهادی', 'koohe-film' ),
+				'trending'  => __( 'این روزها بیشتر جستجو می‌شوند', 'koohe-film' ),
 			),
 		)
 	);

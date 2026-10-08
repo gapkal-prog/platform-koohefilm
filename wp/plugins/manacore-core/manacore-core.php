@@ -58,6 +58,13 @@ function manacore_boot() {
 	ManaCore\Core\Rest_Api::instance()->hooks();
 	ManaCore\Core\Blocks::instance()->hooks();
 	ManaCore\Core\Query::instance()->hooks();
+
+	/*
+	 * موتور جستجوی یکپارچه: نرمال‌سازی فارسی/چندزبانه و شکل‌های جایگزین
+	 * واژه. بدون آن، «شوگان» با «شوگان» (نویسه‌ی عربی) یا «می‌رود» با
+	 * «میرود» در دیتابیس تطبیق داده نمی‌شد.
+	 */
+	ManaCore\Core\Search::instance()->hooks();
 	ManaCore\Core\Channel::instance()->hooks();
 	ManaCore\Core\Assets::instance()->hooks();
 	ManaCore\Core\Settings::instance()->hooks();

@@ -5329,69 +5329,80 @@ html:not([dir="rtl"]) .koohe-toggle[aria-pressed="true"] .koohe-toggle-thumb {
 
 /* 18.10 اورلی جستجو (⌘K) ------------------------------------------------------ */
 
+/*
+ * معیارها از مرجع گرفته شده‌اند (`cinora/assets/css/style.css`):
+ * پنلِ ۷۸۰px با گوشه‌ی ۱۶px و پدینگ ۳۳px، فرمِ ۹px، فهرست دوستونیِ
+ * کارت‌ها با پوستر ۴۴×۶۵ و «سال · نوع» به رنگ تأکید.
+ */
+
 .koohe-search-overlay {
 	position: fixed;
 	inset: 0;
 	z-index: 1000;
 	display: flex;
-	align-items: flex-start;
+	align-items: center;
 	justify-content: center;
-	padding: 12vh 16px 16px;
+	padding: 25px;
+	animation: koohe-overlay-in .2s;
 }
 
 .koohe-search-overlay__backdrop {
 	position: absolute;
 	inset: 0;
-	background: rgba(5, 8, 12, .78);
-	backdrop-filter: blur(6px);
-	-webkit-backdrop-filter: blur(6px);
+	background: rgba(7, 11, 18, .73);
+	backdrop-filter: blur(10px);
+	-webkit-backdrop-filter: blur(10px);
 }
 
 .koohe-search-overlay__panel {
 	position: relative;
 	z-index: 1;
-	width: min(100%, 640px);
-	max-height: 78vh;
-	overflow: auto;
-	padding: 34px;
+	width: min(100%, 780px);
+	max-height: 91dvh;
+	overflow-y: auto;
+	padding: 33px;
 	border: 1px solid var(--koohe-border);
-	border-radius: 15px;
+	border-radius: 16px;
 	background: var(--koohe-surface-2);
-	box-shadow: 0 30px 90px rgba(0, 0, 0, .5);
-	animation: koohe-overlay-in .22s cubic-bezier(.2, .7, .3, 1);
+	box-shadow: 0 30px 100px rgba(0, 0, 0, .53);
 }
 
 @keyframes koohe-overlay-in {
 	from {
-		opacity: 0;
-		transform: translateY(14px) scale(.98);
-	}
-	to {
-		opacity: 1;
-		transform: none;
+		opacity: .3;
 	}
 }
 
 .koohe-search-overlay__close {
 	position: absolute;
-	top: 18px;
-	inset-inline-end: 18px;
+	top: 14px;
+	inset-inline-end: 15px;
+	z-index: 2;
+	width: 28px;
+	height: 28px;
+}
+
+.koohe-search-overlay__panel > .koohe-eyebrow {
+	margin-top: 20px;
+	text-align: center;
 }
 
 .koohe-search-overlay__title {
-	font-size: 1.4375rem;
+	font-size: 1.5rem;
 	font-weight: 800;
-	line-height: 1.7;
-	margin: 6px 0 18px;
+	line-height: 1.8;
+	margin: 11px 0 0;
+	text-align: center;
 }
 
 .koohe-search-overlay__form {
 	display: flex;
 	align-items: center;
-	gap: 10px;
-	padding: 8px 14px;
+	gap: 12px;
+	margin-top: 26px;
+	padding: 7px 12px;
 	border: 1px solid var(--koohe-border);
-	border-radius: 10px;
+	border-radius: 9px;
 	background: var(--koohe-surface);
 	color: var(--koohe-muted);
 }
@@ -5399,70 +5410,129 @@ html:not([dir="rtl"]) .koohe-toggle[aria-pressed="true"] .koohe-toggle-thumb {
 .koohe-search-overlay__form input {
 	flex: 1 1 auto;
 	min-width: 0;
+	padding: 11px 0;
 	border: 0;
 	background: transparent;
 	color: var(--koohe-text);
 	font: inherit;
-	font-size: .9375rem;
+	font-size: .8125rem;
 	outline: none;
 }
 
+.koohe-search-overlay__form .koohe-btn {
+	min-height: 37px;
+	padding: 9px 14px;
+	font-size: .6875rem;
+}
+
+.koohe-search-overlay__label {
+	font-size: .625rem;
+	color: var(--koohe-muted);
+	margin: 23px 0 15px;
+}
+
 .koohe-search-overlay__results {
-	display: flex;
-	flex-direction: column;
-	gap: 2px;
-	margin-top: 16px;
-	border-top: 1px solid var(--koohe-border);
-	padding-top: 12px;
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap: 12px;
+}
+
+.koohe-search-overlay__status {
+	grid-column: 1 / -1;
+	margin: 0;
+	font-size: .6875rem;
+	color: var(--koohe-muted);
 }
 
 .koohe-search-overlay__results a {
 	display: flex;
 	align-items: center;
 	gap: 12px;
-	padding: 9px 10px;
+	min-width: 0;
+	padding: 11px;
+	border: 1px solid var(--koohe-border);
 	border-radius: 8px;
+	background: var(--koohe-surface);
 	color: var(--koohe-text);
 	text-decoration: none;
-	transition: background var(--koohe-transition);
+	transition: border-color var(--koohe-transition);
 }
 
 .koohe-search-overlay__results a:hover,
 .koohe-search-overlay__results a:focus-visible {
-	background: var(--koohe-surface-3);
+	border-color: var(--koohe-accent);
 }
 
 .koohe-search-overlay__results img {
-	width: 40px;
-	height: 58px;
+	width: 44px;
+	height: 65px;
 	object-fit: cover;
-	border-radius: 6px;
+	border-radius: 4px;
 	background: var(--koohe-surface-3);
+}
+
+.koohe-search-overlay__results a > span {
+	flex: 1;
+	min-width: 0;
 }
 
 .koohe-search-overlay__results strong {
 	display: block;
-	font-size: .875rem;
+	font-size: .6875rem;
 	font-weight: 600;
-	line-height: 1.6;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
 }
 
 .koohe-search-overlay__results small {
 	display: block;
-	font-size: .6875rem;
+	margin-top: 7px;
+	font-size: .5rem;
 	color: var(--koohe-muted);
-	line-height: 1.6;
+}
+
+.koohe-search-overlay__results em {
+	display: block;
+	margin-top: 9px;
+	font-size: .5rem;
+	font-style: normal;
+	color: var(--koohe-accent);
+}
+
+.koohe-search-overlay__results a > svg {
+	flex-shrink: 0;
+	color: var(--koohe-muted);
 }
 
 .koohe-search-overlay .koohe-empty-state {
-	margin-top: 16px;
+	margin-top: 0;
+}
+
+@media (max-width: 768px) {
+
+	.koohe-search-overlay__results {
+		grid-template-columns: 1fr;
+	}
+}
+
+@media (max-width: 480px) {
+
+	.koohe-search-overlay__panel {
+		padding: 27px 20px;
+	}
+
+	.koohe-search-overlay__form .koohe-btn {
+		padding: 9px 10px;
+		font-size: .5625rem;
+	}
 }
 
 body.koohe-search-open {
 	overflow: hidden;
 }
 
-/* 18.10 بارگذاری بیشتر -------------------------------------------------------- */
+/* 18.11 بارگذاری بیشتر -------------------------------------------------------- */
 
 /*
  * ظرف دکمه‌ی «بازدید بیشتر». در نسخه‌ی بدون JS، لینکِ درونش به صفحه‌ی بعدی
@@ -5544,7 +5614,7 @@ body.koohe-search-open {
 	pointer-events: none;
 }
 
-/* 18.11 ریسپانسیو کامپوننت‌ها ------------------------------------------------- */
+/* 18.12 ریسپانسیو کامپوننت‌ها ------------------------------------------------- */
 
 @media (max-width: 768px) {
 	.koohe-section-heading {
@@ -5578,7 +5648,7 @@ body.koohe-search-open {
 	}
 }
 
-/* 18.12 میان‌برهای کشف ------------------------------------------------------- */
+/* 18.13 میان‌برهای کشف ------------------------------------------------------- */
 
 /*
  * ردیف چهارستونه‌ی دسترسی سریع (بازآفرینی discovery-shortcuts سینورا).

@@ -44,6 +44,14 @@ class MC_Fake_Labels {
 class MC_Fake_Type {
 	public $name;
 	public $labels;
+
+	/*
+	 * این دو ویژگی بعداً (در `get_post_type_object`) پر می‌شوند؛ اعلامشان
+	 * لازم است تا روی PHP ۸.۲+ هشدار «ساخت ویژگی پویا» ندهد.
+	 */
+	public $show_in_rest;
+	public $rest_base;
+
 	public function __construct( $n, $s, $p ) { $this->name = $n; $this->labels = new MC_Fake_Labels( $s, $p ); }
 }
 class MC_Fake_Tax {

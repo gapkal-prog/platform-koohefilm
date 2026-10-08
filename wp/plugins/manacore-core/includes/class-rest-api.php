@@ -256,46 +256,55 @@ class Rest_Api {
 	/**
 	 * جستجوی زنده.
 	 *
+	 * بدنه‌ی جستجو در `Search` است تا مسیر REST، کوئری اصلی برگه‌ی جستجو و
+	 * همه‌ی مصرف‌کننده‌های سمت کاربر یک رفتار داشته باشند.
+	 *
 	 * @param \WP_REST_Request $request درخواست.
 	 * @return \WP_REST_Response
 	 */
 	public function search( $request ) {
-		$post_types = manacore_title_post_types();
+		$term     = trim( (string) $request->get_param( 'q' ) );
+		$type     = (string) $request->get_param( 'type' );
+		$per_page = min( 20, max( 1, (int) $request->get_param( 'per_page' ) ) );
 
-		// اگر بلوک جستجو نوع‌های خاصی را تعیین کرده باشد، فقط همان‌ها جستجو می‌شوند.
-		$requested = (string) $request->get_param( 'type' );
-		if ( '' !== $requested ) {
-			$filtered = array_intersect(
-				array_map( 'sanitize_key', preg_split( '/[\s,،]+/', $requested, -1, PREG_SPLIT_NO_EMPTY ) ),
-				$post_types
-			);
-			if ( $filtered ) {
-				$post_types = array_values( $filtered );
-			}
+		/*
+		 * کش کوتاه‌مدت: جستجوی زنده با هر مکثِ تایپ اجرا می‌شود؛ روی سایتی با
+		 * چند هزار اثر، پاسخ تکراریِ چند کاربر در یک بازه‌ی کوتاه نباید دیتابیس
+		 * را دوباره درگیر کند. کلید از هر سه ورودی ساخته می‌شود تا پاسخ
+		 * محدودسازی‌شده با پاسخ عمومی قاطی نشود.
+		 */
+		$cache_key = 'manacore_search_' . md5( $term . '|' . $type . '|' . $per_page );
+		$cached    = get_transient( $cache_key );
+
+		if ( is_array( $cached ) ) {
+			return rest_ensure_response( $cached );
 		}
 
-		$query = new \WP_Query(
+		$query = Search::query(
 			array(
-				'post_type'           => $post_types,
-				'post_status'         => 'publish',
-				's'                   => $request['q'],
-				'posts_per_page'      => min( 20, max( 1, (int) $request['per_page'] ) ),
-				'ignore_sticky_posts' => true,
-				'no_found_rows'       => true,
+				's'        => $term,
+				'type'     => $type,
+				'per_page' => $per_page,
 			)
 		);
 
 		$items = array();
+
 		foreach ( $query->posts as $post ) {
 			$items[] = $this->format_post( $post );
 		}
 
-		return rest_ensure_response(
-			array(
-				'items' => $items,
-				'total' => count( $items ),
-			)
+		$payload = array(
+			'items' => $items,
+			'total' => count( $items ),
+			'query' => $term,
 		);
+
+		if ( '' !== $term ) {
+			set_transient( $cache_key, $payload, 5 * MINUTE_IN_SECONDS );
+		}
+
+		return rest_ensure_response( $payload );
 	}
 
 	/**

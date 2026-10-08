@@ -4,7 +4,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: ManaCore 1.0.0\n"
 "Report-Msgid-Bugs-To: https://manacore.dev\n"
-"POT-Creation-Date: 2026-10-08 07:52+0000\n"
+"POT-Creation-Date: 2026-10-08 08:33+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -2339,7 +2339,7 @@ msgstr ""
 msgid "ابتدا وارد حساب کاربری شوید."
 msgstr ""
 
-#: manacore-core/includes/class-account.php:395 manacore-core/includes/class-ratings.php:59 manacore-core/includes/class-rest-api.php:359 manacore-core/includes/class-watchlist.php:68
+#: manacore-core/includes/class-account.php:395 manacore-core/includes/class-ratings.php:59 manacore-core/includes/class-rest-api.php:368 manacore-core/includes/class-watchlist.php:68
 msgid "محتوا یافت نشد."
 msgstr ""
 
@@ -5630,11 +5630,11 @@ msgstr ""
 msgid "امتیازدهی غیرفعال است."
 msgstr ""
 
-#: manacore-core/includes/class-rest-api.php:363
+#: manacore-core/includes/class-rest-api.php:372
 msgid "ابتدا وارد شوید."
 msgstr ""
 
-#: manacore-core/includes/class-rest-api.php:480
+#: manacore-core/includes/class-rest-api.php:489
 msgid "کانال درخواستی پیدا نشد."
 msgstr ""
 

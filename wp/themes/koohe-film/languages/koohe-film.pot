@@ -4,7 +4,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Koohe Film 1.0.0\n"
 "Report-Msgid-Bugs-To: https://manacore.dev\n"
-"POT-Creation-Date: 2026-10-07 22:44+0000\n"
+"POT-Creation-Date: 2026-10-08 08:33+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -20,32 +20,48 @@ msgstr ""
 msgid "تنظیمات بلوک"
 msgstr ""
 
-#: koohe-film/inc/assets.php:88
+#: koohe-film/inc/assets.php:104
 msgid "حالت تیره"
 msgstr ""
 
-#: koohe-film/inc/assets.php:89
+#: koohe-film/inc/assets.php:105
 msgid "حالت روشن"
 msgstr ""
 
-#: koohe-film/inc/assets.php:90
+#: koohe-film/inc/assets.php:106
 msgid "فهرست"
 msgstr ""
 
-#: koohe-film/inc/assets.php:91
+#: koohe-film/inc/assets.php:107
 msgid "بستن"
 msgstr ""
 
-#: koohe-film/inc/assets.php:92 koohe-film/inc/customize.php:508
+#: koohe-film/inc/assets.php:108 koohe-film/inc/customize.php:508
 msgid "بازگشت به بالا"
 msgstr ""
 
-#: koohe-film/inc/assets.php:93
+#: koohe-film/inc/assets.php:109
 msgid "در حال بارگذاری…"
 msgstr ""
 
-#: koohe-film/inc/assets.php:94
+#: koohe-film/inc/assets.php:110
 msgid "نتیجه‌ای یافت نشد."
+msgstr ""
+
+#: koohe-film/inc/assets.php:111
+msgid "در حال جستجو…"
+msgstr ""
+
+#: koohe-film/inc/assets.php:112
+msgid "جستجو انجام نشد. یک‌بار دیگر تلاش کنید."
+msgstr ""
+
+#: koohe-film/inc/assets.php:114
+msgid "%s نتیجه پیشنهادی"
+msgstr ""
+
+#: koohe-film/inc/assets.php:115
+msgid "این روزها بیشتر جستجو می‌شوند"
 msgstr ""
 
 #: koohe-film/inc/block-styles.php:103
