@@ -53,6 +53,7 @@ $GLOBALS['mc_admin']      = true;
 
 class MC_Wpdb {
 	public $prefix    = 'wp_';
+	public $options   = 'wp_options';
 	public $insert_id = 41;
 	public $rows      = array();
 	public $vars      = array();
@@ -81,6 +82,12 @@ class MC_Wpdb {
 		}
 
 		return $this->var;
+	}
+	public function get_col( $query, $x = 0 ) {
+		$this->queries[] = (string) $query;
+
+		/* فقط ستون نام گزینه‌ها برای پاک‌سازی کش مگامنو خوانده می‌شود. */
+		return array();
 	}
 	public function get_results( $query, $mode = OBJECT ) {
 		$query = (string) $query;
@@ -704,6 +711,48 @@ $error_html = (string) ob_get_clean();
 
 mc_ok( false !== strpos( $error_html, 'معتبر نیست' ), 'دلیل خطای ابزار لینک به فارسی نمایش داده می‌شود' );
 mc_ok( false !== strpos( $error_html, 'is-warn' ), 'خطا با نشان هشدار نمایش داده می‌شود' );
+
+/* ---------------------------------------------------------------
+ * هم‌ترازی کلید‌ها: هر کلیدی که در `keys_by_tab()` ثبت شده باید در
+ * `sanitize()` هم پاک‌سازی شود؛ وگرنه فیلدی در فرم ذخیره نمی‌شود.
+ * ------------------------------------------------------------ */
+
+$tab_keys = Settings::keys_by_tab();
+$all_keys = Settings::option_keys();
+
+mc_ok( count( $all_keys ) === count( array_unique( $all_keys ) ), 'هیچ کلید تنظیماتی دو بار در تب‌ها ثبت نشده است', (string) count( $all_keys ) );
+
+foreach ( $tab_keys as $tab_slug => $keys ) {
+	/* ورودی ساختگی: همه‌ی کلیدهای همان تب با مقدار ۱. */
+	$dummy = array( '_tab' => $tab_slug );
+
+	foreach ( $keys as $key ) {
+		$dummy[ $key ] = '1';
+	}
+
+	$clean = Settings::instance()->sanitize( $dummy );
+
+	$missing = array();
+
+	foreach ( $keys as $key ) {
+		if ( ! array_key_exists( $key, $clean ) ) {
+			$missing[] = $key;
+		}
+	}
+
+	mc_ok( array() === $missing, 'هر کلید تب «' . $tab_slug . '» در sanitize() پاک‌سازی می‌شود', implode( '، ', $missing ) );
+}
+
+/* پاک‌سازی یک تب نباید کلید تب دیگر را بازنویسی کند. */
+$watch_only = Settings::instance()->sanitize(
+	array(
+		'_tab'               => 'watch',
+		'download_notice_text' => 'یادداشت',
+		'items_per_page'     => '99',
+	)
+);
+
+mc_ok( ! array_key_exists( 'items_per_page', $watch_only ), 'ذخیره‌ی یک تب، تنظیمات تب دیگر را بازنویسی نمی‌کند' );
 
 /* ---------------------------------------------------------------
  * جمع‌بندی

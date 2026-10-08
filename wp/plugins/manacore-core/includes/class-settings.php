@@ -357,6 +357,8 @@ class Settings {
 			'link-tool-ok'  => array( 'success', __( 'ابزار لینک اجرا شد؛ نتیجه پایین همین صفحه آمده است.', 'manacore' ) ),
 			'links-check-ok'   => array( 'success', __( 'بررسی لینک‌ها انجام شد؛ نتیجه در کارت «سلامت لینک‌ها» و گزارش‌ها در تب «خرابی لینک» است.', 'manacore' ) ),
 			'links-check-none' => array( 'warning', __( 'نشانی سنجیدنی‌ای پیدا نشد؛ نشانی‌های همین سایت، دامنه‌های خصوصی و لینک‌های «مگنت» سنجیده نمی‌شوند.', 'manacore' ) ),
+			'update-ok'        => array( 'success', __( 'اطلاعات نسخه‌ی تازه از سرور به‌روزرسانی خوانده شد؛ اگر نسخه‌ی تازه‌تری باشد در فهرست افزونه‌ها دیده می‌شود.', 'manacore' ) ),
+			'update-none'      => array( 'warning', __( 'نشانی به‌روزرسانی تعریف نشده یا پاسخ نداد؛ بررسی نسخه انجام نشد.', 'manacore' ) ),
 		);
 
 		if ( ! isset( $map[ $notice ] ) ) {
@@ -494,6 +496,14 @@ class Settings {
 			case 'flush-rewrite':
 				flush_rewrite_rules( false );
 				$notice = 'rewrite-ok';
+				break;
+
+			case 'check-update':
+				Updater::flush();
+
+				$info = Updater::remote( true );
+
+				$notice = ( '' !== Updater::endpoint() && '' !== $info['version'] ) ? 'update-ok' : 'update-none';
 				break;
 
 			case 'check-links':
@@ -1788,6 +1798,7 @@ class Settings {
 	 */
 	protected function render_tools_tab() {
 		$this->panel_open( __( 'نگه‌داری', 'manacore' ), __( 'کارهای دوره‌ای سایت. این دکمه‌ها چیزی را حذف نمی‌کنند.', 'manacore' ) );
+
 		$this->tool_row(
 			'flush-cache',
 			__( 'پاک‌کردن کش', 'manacore' ),
@@ -1801,6 +1812,8 @@ class Settings {
 			__( 'پس از تغییر نشانی‌های یکتا (Slug) در تب عمومی لازم است.', 'manacore' )
 		);
 		$this->panel_close();
+
+		$this->render_update_panel();
 
 		$this->panel_open( __( 'شورت‌کدها', 'manacore' ), __( 'برای قالب‌هایی که الگوهای کوهه را ندارند.', 'manacore' ) );
 		?>
@@ -1818,6 +1831,49 @@ class Settings {
 		$this->render_link_tools_panel();
 		$this->render_health_panel();
 		$this->render_backup_panel();
+	}
+
+	/**
+	 * بخش «به‌روزرسانی»: وضعیت نسخه و بررسی دستی.
+	 *
+	 * نقطه‌ی پایانی به‌روزرسانی عمداً خالی است تا نصب‌های داخلی/آفلاین
+	 * بی‌عارض بمانند؛ وقتی تعریف نشده باشد این کارت فقط توضیح می‌دهد که
+	 * سازوکار آماده است و جایی صدا زده نمی‌شود.
+	 *
+	 * @return void
+	 */
+	protected function render_update_panel() {
+		if ( ! class_exists( __NAMESPACE__ . '\\Updater' ) || ! defined( 'MANACORE_VERSION' ) ) {
+			return;
+		}
+
+		$status = Updater::status();
+
+		$this->panel_open( __( 'به‌روزرسانی', 'manacore' ), __( 'نسخه‌ی تازه افزونه از سرور فروش خوانده می‌شود؛ بررسی شش‌ساعته کش می‌شود.', 'manacore' ) );
+
+		$this->stat_list(
+			array(
+				array( __( 'نسخه‌ی نصب‌شده', 'manacore' ), $status['current'] ),
+				array( __( 'نسخه‌ی موجود', 'manacore' ), '' !== $status['remote'] ? $status['remote'] : __( 'خوانده نشد', 'manacore' ) ),
+			)
+		);
+
+		if ( ! $status['endpoint'] ) {
+			$this->status_line( false, __( 'نشانی به‌روزرسانی تعریف نشده است؛ برای فعال‌کردن، ثابت MANACORE_UPDATE_ENDPOINT یا فیلتر manacore_update_endpoint را تنظیم کنید.', 'manacore' ) );
+		} elseif ( $status['available'] ) {
+			$this->status_line( false, sprintf( /* translators: %s: شماره نسخه. */ __( 'نسخه‌ی %s منتشر شده است؛ از فهرست افزونه‌ها به‌روزرسانی کنید.', 'manacore' ), $status['remote'] ) );
+		} else {
+			$this->status_line( true, __( 'افزونه به‌روز است.', 'manacore' ) );
+		}
+
+		$this->tool_row(
+			'check-update',
+			__( 'بررسی به‌روزرسانی', 'manacore' ),
+			__( 'بررسی به‌روزرسانی', 'manacore' ),
+			__( 'کش نسخه پاک و همین حالا از سرور خوانده می‌شود.', 'manacore' )
+		);
+
+		$this->panel_close();
 	}
 
 	/**
