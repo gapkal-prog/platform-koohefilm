@@ -51,7 +51,7 @@ function esc_html( $v ) { return htmlspecialchars( (string) $v, ENT_QUOTES ); }
 function esc_attr( $v ) { return htmlspecialchars( (string) $v, ENT_QUOTES ); }
 function esc_url( $v ) { return (string) $v; }
 function esc_url_raw( $v ) { return filter_var( (string) $v, FILTER_SANITIZE_URL ); }
-function home_url( $p = '' ) { return 'http://example.test' . $p; }
+function home_url( $p = '' ) { return 'http://example.test' . ( '' === (string) $p ? '/' : '/' . ltrim( (string) $p, '/' ) ); }
 function rest_url( $p = '' ) { return 'http://example.test/wp-json/' . ltrim( (string) $p, '/' ); }
 function apply_filters( $tag, $value ) {
 	/* فیلتر دسترسی افزونه‌ی اشتراک: در آزمون قابل کنترل است. */
@@ -140,6 +140,35 @@ class MC_Request implements ArrayAccess {
  * بارگذاری کلاس‌های واقعی
  * ------------------------------------------------------------ */
 
+/* ---------------------------------------------------------------
+ * پوسته‌ی برگه‌ی «پل دانلود»
+ * ------------------------------------------------------------ */
+
+$GLOBALS['mc_rewrites']   = array();
+$GLOBALS['mc_query_vars'] = array();
+$GLOBALS['mc_headers']    = array();
+$GLOBALS['mc_styles']     = array();
+$GLOBALS['mc_query']      = array();
+
+function user_trailingslashit( $url ) { return rtrim( (string) $url, '/' ) . '/'; }
+function add_rewrite_rule( $regex, $query, $after = 'bottom' ) { $GLOBALS['mc_rewrites'][] = array( $regex, $query, $after ); return true; }
+function flush_rewrite_rules( $hard = true ) { $GLOBALS['mc_flush'] = ( $GLOBALS['mc_flush'] ?? 0 ) + 1; }
+function get_query_var( $key, $default = '' ) { return $GLOBALS['mc_query'][ $key ] ?? $default; }
+function is_admin() { return false; }
+function status_header( $code ) { $GLOBALS['mc_headers'][] = array( 'status', (int) $code ); }
+function nocache_headers() { $GLOBALS['mc_headers'][] = array( 'nocache', 1 ); }
+function wp_enqueue_style( $handle, $src = '', $deps = array(), $ver = false ) { $GLOBALS['mc_styles'][ $handle ] = $src; return true; }
+function language_attributes( $doctype = 'html' ) { echo 'lang="fa-IR" dir="rtl"'; }
+function bloginfo( $key = '' ) { echo 'name' === $key ? 'سایت نمونه' : 'UTF-8'; }
+function get_bloginfo( $key = '' ) { return 'name' === $key ? 'سایت نمونه' : 'UTF-8'; }
+function wp_head() { echo '<meta name="generator" content="stub" />'; }
+function wp_footer() { echo '<!-- footer -->'; }
+function body_class( $class = '' ) { echo 'class="' . esc_attr( is_array( $class ) ? implode( ' ', $class ) : $class ) . '"'; }
+function get_the_post_thumbnail( $id = 0, $size = '', $attrs = array() ) { return '<img src="http://example.test/poster.jpg" alt="" />'; }
+function get_the_title( $id = 0 ) { return $GLOBALS['mc_titles'][ (int) $id ] ?? ( 'اثر ' . (int) $id ); }
+function is_user_logged_in() { return (bool) $GLOBALS['mc_user']; }
+function wp_login_url( $redirect = '' ) { return 'http://example.test/wp-login.php'; }
+
 require_once MANACORE_PATH . 'includes/functions.php';
 require_once MANACORE_PATH . 'includes/trait-singleton.php';
 require_once MANACORE_PATH . 'includes/class-settings.php';
@@ -203,6 +232,11 @@ mc_ok(
 	in_array( 'download_signing', $tab_keys['watch'], true ) && in_array( 'download_ttl', $tab_keys['watch'], true ),
 	'هر دو کلید در تب «پخش و دانلود» ثبت شده‌اند'
 );
+mc_ok(
+	in_array( 'download_bridge', $tab_keys['watch'], true ) && in_array( 'bridge_notice_text', $tab_keys['watch'], true ),
+	'کلیدهای «پل دانلود» هم در تب «پخش و دانلود» ثبت شده‌اند'
+);
+mc_ok( false === Downloads::bridge_enabled(), 'پل دانلود بدون امضای روشن، فعال نمی‌شود' );
 
 $GLOBALS['mc_options']['manacore_settings'] = array( 'download_signing' => 1 );
 
@@ -251,6 +285,9 @@ mc_ok( false !== strpos( $fixed, 'sig=' . Downloads::signature( 7, 'lnk_direct',
  * ------------------------------------------------------------ */
 
 echo "\n=== ۴) انتخاب نشانی (url_for) ===\n";
+
+/* با پل خاموش، مسیر امضاشده‌ی REST همان چیزی است که کاربر می‌بیند. */
+$GLOBALS['mc_options']['manacore_settings'] = array( 'download_signing' => 1, 'download_bridge' => 0 );
 
 $signed_now = Downloads::url_for( 7, 'https://cdn.example/movie-1080.mp4', 'direct' );
 mc_ok( false === strpos( $signed_now, 'cdn.example' ), 'با امضای روشن، نشانی خام فایل جایش را به مسیر داخلی می‌دهد', $signed_now );
@@ -341,12 +378,22 @@ echo "\n=== ۶) مارک‌آپ باکس دانلود ===\n";
 
 $group = Links::get( 7 )[0];
 
+/* نخست با «پل دانلود» خاموش: دکمه باید مستقیم به مسیر امضاشده برود. */
+$GLOBALS['mc_options']['manacore_settings'] = array( 'download_signing' => 1, 'download_bridge' => 0 );
+
 $row_signed = Templates::link_row( $group, true, 7 );
 mc_ok( false !== strpos( $row_signed, 'class="download-row"' ), 'ردیف دانلود همان ساختار مرجع را دارد' );
 mc_ok( false !== strpos( $row_signed, 'data-manacore-download="7"' ), 'قلاب شمارش سمت کاربر سرجایش هست' );
 mc_ok( false !== strpos( $row_signed, '/manacore/v1/download/7' ), 'دکمه‌ی دانلود با امضا به مسیر داخلی می‌رود' );
 mc_ok( false === strpos( $row_signed, 'https://cdn.example/movie-1080.mp4' ), 'نشانی خام فایل در صفحه لو نمی‌رود' );
 mc_ok( false !== strpos( $row_signed, 'play.m3u8' ) || false !== strpos( $row_signed, 'پخش' ), 'دکمه‌ی پخش دست‌نخورده است' );
+
+/* حالت «پل دانلود»: دکمه به گام میانی می‌رود، نه مستقیم به مسیر فایل. */
+$GLOBALS['mc_options']['manacore_settings'] = array( 'download_signing' => 1, 'download_bridge' => 1 );
+$row_bridge = Templates::link_row( $group, true, 7 );
+
+mc_ok( false !== strpos( $row_bridge, '/manacore-download/7/lnk_direct' ), 'با روشن‌بودن پل، دکمه به برگه‌ی «آماده‌ی دانلود» می‌رود' );
+mc_ok( false === strpos( $row_bridge, 'https://cdn.example/movie-1080.mp4' ), 'در حالت پل هم نشانی خام لو نمی‌رود' );
 
 $GLOBALS['mc_options']['manacore_settings'] = array( 'download_signing' => 0 );
 $row_plain = Templates::link_row( $group, true, 7 );
@@ -357,6 +404,160 @@ mc_ok( substr_count( $row_plain, '<span' ) + substr_count( $row_plain, '<div' ) 
 $locked_row = Templates::link_row( Links::get( 7 )[1], false, 7 );
 mc_ok( false !== strpos( $locked_row, 'manacore-btn is-primary is-small' ), 'گروه ویژه‌ی بدون دسترسی دکمه‌ی اشتراک می‌گیرد' );
 mc_ok( false === strpos( $locked_row, 'movie-4k.mp4' ), 'لینک ویژه هرگز برای کاربر بی‌دسترسی چاپ نمی‌شود' );
+
+
+/* ---------------------------------------------------------------
+ * ۷) پل دانلود
+ * ------------------------------------------------------------ */
+
+echo "\n=== ۷) پل دانلود ===\n";
+
+$GLOBALS['mc_options']['manacore_settings'] = array(
+	'download_signing'   => 1,
+	'download_bridge'    => 1,
+	'bridge_notice_text' => '',
+);
+
+mc_ok( Downloads::bridge_enabled(), 'با امضا و تیک، پل فعال است' );
+mc_ok( 'manacore-download' === Downloads::bridge_slug(), 'پیشوند پیش‌فرض پل همان مقدار مستندشده است' );
+
+$bridge = Downloads::bridge_url( 7, 'lnk_direct' );
+
+mc_ok( false !== strpos( $bridge, '/manacore-download/7/lnk_direct' ), 'نشانی پل از پیشوند و شناسه‌ی اثر و لینک ساخته می‌شود', $bridge );
+mc_ok( (bool) preg_match( '/exp=(\d+)/', $bridge, $bm ) && (int) $bm[1] > time(), 'پل زمان انقضا دارد' );
+mc_ok( (bool) preg_match( '/sig=[a-f0-9]{64}/', $bridge ), 'پل امضای HMAC دارد' );
+mc_ok( false === strpos( $bridge, 'cdn.example' ), 'نشانی فایل هرگز در آدرس پل نمی‌آید' );
+
+/* همان امضای مسیر بازفرست: پل درِ پشتی امضا نیست. */
+mc_ok(
+	'ok' === Downloads::verify( 7, 'lnk_direct', (int) $bm[1], Downloads::signature( 7, 'lnk_direct', (int) $bm[1] ) ),
+	'امضای پل با همان تابع مسیر بازفرست ساخته می‌شود'
+);
+
+/* دروازه‌های خطا */
+$GLOBALS['mc_query'] = array( 'manacore_download' => 7, 'manacore_download_item' => 'lnk_missing' );
+$_GET                = array();
+
+$doc = Downloads::instance()->bridge_document( array( 'status' => 404, 'title' => 'x', 'text' => 'y' ) );
+mc_ok( false !== strpos( $doc, 'x' ) && false !== strpos( $doc, '<!DOCTYPE html>' ), 'سند پل کامل و با ساختار HTML است' );
+mc_ok( false !== strpos( $doc, 'data-manacore-bridge="404"' ), 'کد وضعیت در سند پل دیده می‌شود' );
+mc_ok( false !== strpos( $doc, 'content="noindex, nofollow"' ), 'سند پل برای موتورهای جست‌وجو بسته است' );
+mc_ok( isset( $GLOBALS['mc_styles']['manacore-bridge'] ), 'شیوه‌نامه‌ی پل صف می‌شود' );
+
+/* اصل نمایش: کارت «چه چیزی دانلود می‌کنم؟» */
+$GLOBALS['mc_headers'] = array();
+$item                  = Downloads::item( 7, 'lnk_direct' );
+$card                  = Downloads::instance()->bridge_document(
+	array(
+		'status' => 200,
+		'post'   => 7,
+		'item'   => $item,
+		'locked' => false,
+		'url'    => Downloads::signed_url( 7, 'lnk_direct' ),
+	)
+);
+
+mc_ok( false !== strpos( $card, '1080p' ), 'کیفیت در کارت پل دیده می‌شود' );
+mc_ok( false !== strpos( $card, '1.2GB' ), 'حجم در کارت پل دیده می‌شود' );
+mc_ok( false !== strpos( $card, 'آماده‌ی دانلود' ), 'سرتیتر کارت پل هست' );
+mc_ok( false !== strpos( $card, '/manacore/v1/download/7' ), 'دکمه‌ی «شروع دانلود» همان مسیر امضاشده است' );
+mc_ok( false === strpos( $card, 'cdn.example' ), 'نشانی خام در کارت پل چاپ نمی‌شود' );
+mc_ok( false === strpos( $card, 'noindex' ) || false !== strpos( $card, 'noindex, nofollow' ), 'متای noindex در سند پل هست' );
+mc_ok( false === strpos( $card, 'این لینک ویژه' ), 'لینک آزاد، یادآوری اشتراک نمی‌گیرد' );
+mc_ok( false !== strpos( $card, 'پیش از دانلود' ), 'یادداشت پیش‌فرض پل دیده می‌شود' );
+
+/* یادداشت مدیر + جای‌نگهدارها */
+$GLOBALS['mc_options']['manacore_settings']['bridge_notice_text'] = 'کیفیت {quality} و حجم {size} — «{title}»';
+$notice                                                           = Downloads::bridge_notice( 7, Downloads::item( 7, 'lnk_direct' ) );
+
+mc_ok( false === strpos( $notice, '{quality}' ) && false !== strpos( $notice, '1080p' ), 'جای‌نگهدار کیفیت پر می‌شود' );
+mc_ok( false !== strpos( $notice, '1.2GB' ), 'جای‌نگهدار حجم پر می‌شود' );
+mc_ok( false !== strpos( $notice, get_the_title( 7 ) ), 'جای‌نگهدار عنوان پر می‌شود' );
+
+/* حالت قفل: یادآوری نرم اشتراک */
+$GLOBALS['mc_options']['manacore_settings']['subscribe_url']   = 'http://example.test/subscribe';
+$GLOBALS['mc_options']['manacore_settings']['subscribe_label'] = 'تهیه اشتراک';
+
+$GLOBALS['mc_can_access'] = false;
+$premium                  = Downloads::item( 7, 'lnk_premium' );
+$locked_card              = Downloads::instance()->bridge_document(
+	array(
+		'status' => 403,
+		'post'   => 7,
+		'item'   => $premium,
+		'locked' => true,
+		'url'    => '',
+	)
+);
+
+mc_ok( false !== strpos( $locked_card, 'این لینک ویژه‌ی اعضای اشتراکی است' ), 'حالت قفل، یادآوری اشتراک نشان می‌دهد' );
+mc_ok( false !== strpos( $locked_card, 'http://example.test/subscribe' ), 'پیوند اشتراک از تنظیمات می‌آید' );
+mc_ok( false === strpos( $locked_card, 'shart' ) && false === strpos( $locked_card, 'مانacore/v1/download' ), 'در حالت قفل، دکمه‌ی دانلود چاپ نمی‌شود' );
+mc_ok( false === strpos( $locked_card, 'movie-4k.mp4' ), 'نشانی فایل ویژه هرگز چاپ نمی‌شود' );
+
+$GLOBALS['mc_can_access'] = true;
+
+/* قاعده‌ی بازنویسی و کوئری‌وارها */
+$downloads = Downloads::instance();
+$downloads->register_rewrite();
+
+mc_ok( count( $GLOBALS['mc_rewrites'] ) >= 1, 'قاعده‌ی بازنویسی پل ثبت می‌شود' );
+mc_ok( false !== strpos( $GLOBALS['mc_rewrites'][0][0], 'manacore\\-download' ), 'الگوی قاعده پیشوند پل را دارد', $GLOBALS['mc_rewrites'][0][0] );
+mc_ok( false !== strpos( $GLOBALS['mc_rewrites'][0][1], 'manacore_download=' ), 'قاعده به کوئری‌وار پل نگاشت می‌شود' );
+mc_ok( 'top' === $GLOBALS['mc_rewrites'][0][2], 'قاعده پیش از قواعد برگه‌ها می‌نشیند' );
+
+$vars = $downloads->query_vars( array( 'p' ) );
+mc_ok( in_array( 'manacore_download', $vars, true ) && in_array( 'manacore_download_item', $vars, true ), 'هر دو کوئری‌وار پل مجاز شده‌اند' );
+
+/* با خاموش‌بودن پل، قاعده‌ای ثبت نمی‌شود (هیچ ردی از تغییر در سایت نمی‌ماند) */
+$GLOBALS['mc_rewrites']                     = array();
+$GLOBALS['mc_options']['manacore_settings'] = array( 'download_signing' => 1, 'download_bridge' => 0 );
+$downloads->register_rewrite();
+
+mc_ok( array() === $GLOBALS['mc_rewrites'], 'با خاموش‌بودن پل، قاعده‌ای ثبت نمی‌شود' );
+mc_ok( false === Downloads::bridge_enabled(), 'و پل خاموش گزارش می‌شود' );
+
+/* هم‌گام‌سازی قواعد: یک‌بار و فقط با تغییر مهر */
+$GLOBALS['mc_options']['manacore_settings'] = array( 'download_signing' => 1, 'download_bridge' => 1 );
+$GLOBALS['mc_options'][ Downloads::REWRITE_STAMP ] = '';
+
+$downloads->sync_rewrite();
+$stamp = $GLOBALS['mc_options'][ Downloads::REWRITE_STAMP ] ?? '';
+
+mc_ok( '' !== $stamp && false !== strpos( $stamp, 'manacore-download' ), 'مهر قواعد بازنویسی با پیشوند پل ذخیره می‌شود', $stamp );
+
+$GLOBALS['mc_options'][ Downloads::REWRITE_STAMP ] = $stamp;
+$before                                            = $stamp;
+$downloads->sync_rewrite();
+
+mc_ok( $before === ( $GLOBALS['mc_options'][ Downloads::REWRITE_STAMP ] ?? '' ), 'اجرای دوباره، مهر را دست‌نخورده می‌گذارد' );
+$GLOBALS['mc_flush'] = 0;
+$downloads->sync_rewrite();
+
+mc_ok( 0 === (int) ( $GLOBALS['mc_flush'] ?? 0 ), 'مهر یکسان یعنی هیچ بازسازی تازه‌ای رخ نمی‌دهد' );
+
+$GLOBALS['mc_options'][ Downloads::REWRITE_STAMP ] = '';
+$downloads->sync_rewrite();
+
+mc_ok( 1 === (int) ( $GLOBALS['mc_flush'] ?? 0 ), 'تغییر مهر فقط یک‌بار قواعد را بازسازی می‌کند' );
+
+/* item() حالا ردیف کامل با متن گروه برمی‌گرداند. */
+$full = Downloads::item( 7, 'lnk_direct' );
+
+mc_ok( isset( $full['group_title'], $full['label'], $full['size'] ), 'item() ردیف کامل با متن گروه می‌دهد' );
+mc_ok( '1080p' === $full['quality'] && 'sub_fa' === $full['language'], 'کیفیت و زبان از ردیف/گروه می‌آید' );
+
+$premium_item = Downloads::item( 7, 'lnk_premium' );
+mc_ok( true === $premium_item['premium'], 'پرچم ویژه در ردیف کامل هم هست' );
+
+/* Links::find و ارث‌بری از گروه */
+$full_direct = Links::find( 7, 'lnk_direct' );
+
+mc_ok( '1080p' === $full_direct['quality'] && '1.2GB' === $full_direct['size'], 'ردیف بی‌کیفیت، کیفیت و حجم گروه را ارث می‌برد' );
+mc_ok( '' !== Links::value( array( 'quality' => '' ), array( 'quality' => '1080p' ), 'quality' ), 'value() از گروه می‌خواند' );
+mc_ok( '720p' === Links::value( array( 'quality' => '720p' ), array( 'quality' => '1080p' ), 'quality' ), 'value() مقدار خود ردیف را بر گروه مقدم می‌دارد' );
+mc_ok( null === Links::find( 7, 'lnk_nope' ), 'شناسه‌ی ناموجود null می‌دهد' );
+mc_ok( null === Links::find( 7, '' ), 'شناسه‌ی خالی null می‌دهد' );
 
 /* ---------------------------------------------------------------
  * پایان

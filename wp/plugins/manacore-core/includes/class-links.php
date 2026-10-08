@@ -132,6 +132,79 @@ class Links {
 	}
 
 	/**
+	 * یافتن یک ردیف لینک با متن گروهش.
+	 *
+	 * مقصدهایی مثل پل دانلود و مسیر امضاشده فقط «شناسه‌ی لینک» را
+	 * می‌شناسند؛ برای نمایش کارت (کیفیت، حجم، زبان) به همان ردیف و
+	 * تنظیم‌های گروهش با هم نیاز دارند. این متد تنها نقطه‌ی جست‌وجو
+	 * است تا معنای «یک لینک» همه‌جا یکی بماند.
+	 *
+	 * @param int    $post_id شناسه‌ی نوشته.
+	 * @param string $item_id شناسه‌ی ردیف لینک.
+	 * @return array|null کلیدها: id، url، type، label، episode، size، quality،
+	 *                    language، note و متن گروه (group_id، group_title،
+	 *                    season، premium).
+	 */
+	public static function find( $post_id, $item_id ) {
+		$item_id = sanitize_key( (string) $item_id );
+
+		if ( '' === $item_id ) {
+			return null;
+		}
+
+		foreach ( self::get( $post_id ) as $group ) {
+			foreach ( (array) ( $group['items'] ?? array() ) as $item ) {
+				if ( ! is_array( $item ) || (string) ( $item['id'] ?? '' ) !== $item_id ) {
+					continue;
+				}
+
+				$url = trim( (string) ( $item['url'] ?? '' ) );
+
+				if ( '' === $url ) {
+					return null;
+				}
+
+				return array(
+					'id'          => (string) $item['id'],
+					'url'         => $url,
+					'type'        => (string) self::value( $item, $group, 'type' ),
+					'label'       => trim( (string) ( $item['label'] ?? '' ) ),
+					'episode'     => trim( (string) ( $item['episode'] ?? '' ) ),
+					'note'        => trim( (string) ( $item['note'] ?? '' ) ),
+					'group_id'    => (string) ( $group['id'] ?? '' ),
+					'group_title' => trim( (string) ( $group['title'] ?? '' ) ),
+					'season'      => trim( (string) ( $group['season'] ?? '' ) ),
+					'premium'     => ! empty( $group['premium'] ),
+					/* ردیف بر گروه مقدم است؛ خالی‌بودن ردیف یعنی «مثل گروه». */
+					'quality'     => self::value( $item, $group, 'quality' ),
+					'language'    => self::value( $item, $group, 'language' ),
+					'size'        => self::value( $item, $group, 'size' ),
+					'encoder'     => self::value( $item, $group, 'encoder' ),
+				);
+			}
+		}
+
+		return null;
+	}
+
+	/**
+	 * مقدار یک صفت، با افتادن به مقدار همان صفت در گروه.
+	 *
+	 * ردیف‌های لینک عمداً می‌توانند «کیفیت» و «حجم» را خالی بگذارند تا
+	 * از گروه ارث ببرند؛ این متد همان قاعده را در یک جا نگه می‌دارد.
+	 *
+	 * @param array  $item  ردیف لینک.
+	 * @param array  $group گروه لینک.
+	 * @param string $key   نام صفت.
+	 * @return string
+	 */
+	public static function value( $item, $group, $key ) {
+		$value = trim( (string) ( $item[ $key ] ?? '' ) );
+
+		return '' !== $value ? $value : trim( (string) ( $group[ $key ] ?? '' ) );
+	}
+
+	/**
 	 * پاک‌سازی امن داده‌های ورودی.
 	 *
 	 * @param mixed $groups گروه‌ها.

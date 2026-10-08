@@ -653,7 +653,12 @@ mc_ok( false !== strpos( $requests, "'/requests'" ), 'مسیر فهرست درخ
 mc_ok( 2 === substr_count( $requests, 'verify_public_write' ), 'هر دو مسیر نوشتنِ درخواست پشت دروازه‌بان نانِس‌اند' );
 mc_ok( false !== strpos( $blocks, 'manacore/request-form' ), 'بلوک فرم درخواست تعریف شده است' );
 mc_ok( false !== strpos( $blocks, 'manacore/requests' ), 'بلوک تخته‌ی درخواست‌ها تعریف شده است' );
-mc_ok( false !== strpos( $blocks, "do_action( 'manacore_before_player'" ), 'قلاب «پیش از پلیر» در رندر پلیر صدا زده می‌شود' );
+/*
+ * نگهبان حذف باقی‌مانده‌ی تبلیغات: جایگاه «پیش از پلیر» هم برداشته شد
+ * (به‌خواست کارفرما ماژول بنر/تبلیغات در محصول نیست) و نباید قلاب یا
+ * استایل بی‌مصرفی از آن جا بماند.
+ */
+mc_ok( false === strpos( $blocks, 'manacore_before_player' ) && false === strpos( $blocks, 'before_player' ), 'هیچ قلاب/متغیر تبلیغاتی در رندر پلیر نمانده است' );
 
 mc_ok( false !== strpos( $boot, 'Requests::instance()->hooks();' ), 'ماژول درخواست‌ها در راه‌اندازی ثبت شده است' );
 /*

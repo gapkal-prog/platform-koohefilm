@@ -2367,7 +2367,6 @@ class Blocks {
 				'render'      => array( $this, 'render_requests_board' ),
 			),
 
-			/* جایگاه تبلیغاتی دستی: هرجا مدیر بگذاردش، بنر همان جایگاه می‌آید. */
 		);
 
 		/**
@@ -3626,17 +3625,6 @@ class Blocks {
 			return Block_Support::render_empty( $attrs, 'manacore-player-page' );
 		}
 
-		/*
-		 * جایگاه تبلیغاتی «پیش از پخش‌کننده». این قلاب هم برای ماژول
-		 * تبلیغات داخلی است و هم در دسترس افزونه‌های دیگر تا نیازی به
-		 * دست‌کاری مارک‌آپ پلیر نباشد.
-		 *
-		 * @param int $display_id شناسه‌ی اثر در حال پخش.
-		 */
-		ob_start();
-		do_action( 'manacore_before_player', (int) $display_id );
-		$before_player = (string) ob_get_clean();
-
 		// فصل/قسمت درخواستی (از پیوندهای «پخش» جدول دانلود).
 		$req_season  = isset( $_GET['season'] ) ? absint( wp_unslash( $_GET['season'] ) ) : 0; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 		$req_episode = isset( $_GET['episode'] ) ? absint( wp_unslash( $_GET['episode'] ) ) : 0; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
@@ -3857,7 +3845,6 @@ class Blocks {
 		?>
 		<div class="player-page" data-manacore-player-page="<?php echo esc_attr( $source_id ); ?>"
 			<?php echo '' !== $next_url ? 'data-next-url="' . esc_url( $next_url ) . '" data-next-title="' . esc_attr( $next_title ) . '"' : ''; ?>>
-			<?php echo $before_player; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- مارک‌آپ جایگاه تبلیغاتی، از پیش امن‌سازی‌شده. ?>
 			<div class="player-top">
 				<a class="text-link" href="<?php echo esc_url( (string) get_permalink( $display_id ) ); ?>">
 					<?php echo esc_html( '← ' . $back_label ); ?>

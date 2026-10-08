@@ -61,7 +61,7 @@ class Settings {
 	public static function keys_by_tab() {
 		return array(
 			'general'  => array( 'slug_movie', 'slug_series', 'slug_anime', 'slug_episode', 'slug_person', 'slug_collection', 'enable_ratings', 'enable_watchlist', 'enable_views', 'links_login_only', 'items_per_page', 'default_color_mode', 'custom_qualities' ),
-			'watch'    => array( 'download_notice_text', 'player_notice_text', 'subscribe_label', 'subscribe_url', 'download_signing', 'download_ttl' ),
+			'watch'    => array( 'download_notice_text', 'player_notice_text', 'subscribe_label', 'subscribe_url', 'download_signing', 'download_ttl', 'download_bridge', 'bridge_notice_text' ),
 			'requests' => array( 'requests_enabled', 'requests_guests', 'requests_show_pending', 'requests_heading', 'requests_board_title', 'requests_button', 'requests_intro', 'requests_thanks', 'requests_per_page' ),
 			'mega'     => array( 'mega_enabled', 'mega_show_korean', 'mega_show_cast', 'mega_eyebrow', 'mega_title', 'mega_quick_label', 'mega_feature_label', 'mega_cta_label', 'mega_rating_label', 'mega_newest_label', 'mega_korean_label', 'mega_cast_label', 'mega_taxonomy', 'mega_terms', 'mega_columns', 'mega_hub_url', 'mega_featured_id' ),
 			'tools'    => array( 'links_check_interval', 'links_check_batch', 'links_check_timeout' ),
@@ -223,6 +223,10 @@ class Settings {
 
 			/* امضای لینک دانلود و اعتبار آن (دقیقه، با کرانه‌گذاری). */
 			$clean['download_signing'] = empty( $input['download_signing'] ) ? 0 : 1;
+
+			/* گام میانی «پل دانلود» و یادداشتش. */
+			$clean['download_bridge']    = empty( $input['download_bridge'] ) ? 0 : 1;
+			$clean['bridge_notice_text'] = isset( $input['bridge_notice_text'] ) ? sanitize_textarea_field( $input['bridge_notice_text'] ) : '';
 			$clean['download_ttl']     = isset( $input['download_ttl'] )
 				? max( Downloads::MIN_TTL, min( Downloads::MAX_TTL, (int) $input['download_ttl'] ) )
 				: 1440;
@@ -989,7 +993,10 @@ class Settings {
 				<?php
 				$this->panel_close();
 
-				$this->panel_open( __( 'لینک دانلود امضاشده', 'manacore' ) );
+				$this->panel_open(
+			__( 'لینک دانلود امضاشده', 'manacore' ),
+			__( 'نشانی خام فایل روی صفحه نمی‌آید؛ جایش یک مسیر داخلی زمان‌دار می‌نشیند.', 'manacore' )
+		);
 				?>
 				<table class="form-table" role="presentation">
 					<tr>
@@ -1000,6 +1007,23 @@ class Settings {
 								<?php esc_html_e( 'دکمه‌های دانلود با نشانی امضاشده و زمان‌دار کار کنند', 'manacore' ); ?>
 							</label>
 							<p class="description"><?php esc_html_e( 'با روشن‌کردن این گزینه، نشانی خام فایل روی صفحه نمی‌آید و هر دانلود از یک مسیر داخلی می‌گذرد؛ پس اگر لینک را کسی جای دیگر بگذارد، پس از پایان اعتبار کار نمی‌کند. لینک‌های «پخش» و فایل‌های ضمیمه دست‌نخورده می‌مانند.', 'manacore' ); ?></p>
+						</td>
+					</tr>
+					<tr>
+						<th scope="row"><?php esc_html_e( 'پل دانلود', 'manacore' ); ?></th>
+						<td>
+							<label>
+								<input type="checkbox" name="manacore_settings[download_bridge]" value="1" <?php checked( 1, (int) manacore_get_option( 'download_bridge', 1 ) ); ?> />
+								<?php esc_html_e( 'پیش از فایل، برگه‌ی «آماده‌ی دانلود» نشان داده شود', 'manacore' ); ?>
+							</label>
+							<p class="description"><?php esc_html_e( 'کاربر پیش از رسیدن به فایل، کیفیت و حجم و زبان را می‌بیند و بعد با یک کلیک دانلود می‌کند. این برگه هم امضاشده و زمان‌دار است و فقط با روشن‌بودن «امضای لینک» کار می‌کند.', 'manacore' ); ?></p>
+						</td>
+					</tr>
+					<tr>
+						<th scope="row"><label for="bridge_notice_text"><?php esc_html_e( 'یادداشت پل دانلود', 'manacore' ); ?></label></th>
+						<td>
+							<textarea id="bridge_notice_text" name="manacore_settings[bridge_notice_text]" rows="3" class="large-text"><?php echo esc_textarea( manacore_get_option( 'bridge_notice_text', '' ) ); ?></textarea>
+							<p class="description"><?php esc_html_e( 'خالی = متن پیش‌فرض افزونه. جای‌نگهدارها: {title}، {quality}، {size}.', 'manacore' ); ?></p>
 						</td>
 					</tr>
 					<tr>
