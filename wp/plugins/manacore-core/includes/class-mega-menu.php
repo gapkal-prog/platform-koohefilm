@@ -63,6 +63,7 @@ class Mega_Menu {
 			'hub_url'        => (string) manacore_get_option( 'mega_hub_url', '' ),
 			'eyebrow'        => (string) manacore_get_option( 'mega_eyebrow', __( 'یک دنیا انتخاب', 'manacore' ) ),
 			'title'          => (string) manacore_get_option( 'mega_title', __( 'حال‌وهوای امشبت چیه؟', 'manacore' ) ),
+			'genre_label'    => (string) manacore_get_option( 'mega_genre_label', __( 'ژانرها', 'manacore' ) ),
 			'quick_label'    => (string) manacore_get_option( 'mega_quick_label', __( 'به انتخاب سینورا', 'manacore' ) ),
 			'feature_label'  => (string) manacore_get_option( 'mega_feature_label', __( 'انتخاب ویژه این هفته', 'manacore' ) ),
 			'cta_label'      => (string) manacore_get_option( 'mega_cta_label', __( 'کشف داستان', 'manacore' ) ),
@@ -71,6 +72,9 @@ class Mega_Menu {
 			'newest_label'   => (string) manacore_get_option( 'mega_newest_label', __( 'تازه‌های کوهه', 'manacore' ) ),
 			'korean_label'   => (string) manacore_get_option( 'mega_korean_label', __( 'فیلم و سریال کره‌ای', 'manacore' ) ),
 			'cast_label'     => (string) manacore_get_option( 'mega_cast_label', __( 'بازیگران و کارگردان‌ها', 'manacore' ) ),
+			'show_feature'   => (bool) manacore_get_option( 'mega_show_feature', 1 ),
+			'show_rating'    => (bool) manacore_get_option( 'mega_show_rating', 1 ),
+			'show_newest'    => (bool) manacore_get_option( 'mega_show_newest', 1 ),
 			'show_korean'    => (bool) manacore_get_option( 'mega_show_korean', 1 ),
 			'show_cast'      => (bool) manacore_get_option( 'mega_show_cast', 1 ),
 		);
@@ -228,7 +232,7 @@ class Mega_Menu {
 				<?php endforeach; ?>
 			</div>
 
-			<?php if ( $featured_id ) : ?>
+			<?php if ( $featured_id && ! empty( $settings['show_feature'] ) ) : ?>
 				<a class="manacore-mega__feature" href="<?php echo esc_url( get_permalink( $featured_id ) ); ?>">
 					<img src="<?php echo esc_url( $backdrop ); ?>" alt="<?php echo esc_attr( get_the_title( $featured_id ) ); ?>" loading="lazy" decoding="async" />
 					<span>
@@ -333,20 +337,26 @@ class Mega_Menu {
 		$browse_base = get_post_type_archive_link( 'movie' );
 		$browse_base = $browse_base ? $browse_base : home_url( '/' );
 
-		$links = array(
-			array(
+		$links = array();
+
+		/* هر ردیف دسترسی سریع با کلید تنظیمات خودش روشن/خاموش می‌شود. */
+		if ( ! empty( $settings['show_rating'] ) ) {
+			$links[] = array(
 				'key'   => 'rating',
 				'url'   => add_query_arg( 'mc_sort', 'rating', $browse_base ),
 				'label' => (string) $settings['rating_label'],
 				'icon'  => '<path d="m12 3-1.5 5.5L5 10l5.5 1.5L12 17l1.5-5.5L19 10l-5.5-1.5L12 3z"/>',
-			),
-			array(
+			);
+		}
+
+		if ( ! empty( $settings['show_newest'] ) ) {
+			$links[] = array(
 				'key'   => 'newest',
 				'url'   => add_query_arg( 'mc_sort', 'newest', $browse_base ),
 				'label' => (string) $settings['newest_label'],
 				'icon'  => '<path d="m4 4 16 0M3 8h18M5 4l2 4M10 4l2 4M15 4l2 4M4 8v12h16V8"/>',
-			),
-		);
+			);
+		}
 
 		/*
 		 * «فیلم و سریال کره‌ای» تنها وقتی می‌آید که کشور متناظری در

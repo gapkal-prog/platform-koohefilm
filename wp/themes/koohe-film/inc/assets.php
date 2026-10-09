@@ -124,6 +124,53 @@ function koohe_enqueue_front() {
 add_action( 'wp_enqueue_scripts', 'koohe_enqueue_front' );
 
 /**
+	 * CSS متغیرهای ظاهر سفارشی‌ساز.
+	 *
+	 * رنگ تأکید، عرض چیدمان و مقیاس شعاع گوشه‌ها از پنل «کوه فیلم» می‌آیند و
+	 * به‌صورت متغیرهای CSS روی `html:root` بازنویسی می‌شوند.
+	 * خاص‌بودن برگزیننده (html:root) و قرارگرفتن این قواعد بعد از
+	 * شیوه‌نامه‌ی theme.json تضمین می‌کند که همیشه بر مقدار پیش‌فرض غلبه کنند؛
+	 * theme.css همان متغیرها را با var() می‌خواند.
+	 *
+	 * نکته: هیچ استایل درون‌خطی دیگری در صفحه تزریق نمی‌شود.
+	 */
+function koohe_appearance_inline_css() {
+	$rules = array();
+
+	$accent = sanitize_hex_color( get_theme_mod( 'koohe_accent_color', '' ) );
+	if ( $accent && function_exists( 'koohe_accent_contrast' ) ) {
+		$rules[] = '--wp--preset--color--accent:' . $accent;
+		$rules[] = '--wp--preset--color--accent-contrast:' . koohe_accent_contrast( $accent );
+	}
+
+	if ( function_exists( 'koohe_layout_width_choices' ) ) {
+		$widths = koohe_layout_width_choices();
+		$width  = get_theme_mod( 'koohe_layout_width', 'standard' );
+		if ( isset( $widths[ $width ] ) ) {
+			$rules[] = '--wp--style--global--content-size:' . $widths[ $width ]['content'];
+			$rules[] = '--wp--style--global--wide-size:' . $widths[ $width ]['wide'];
+		}
+	}
+
+	if ( function_exists( 'koohe_radius_scale_choices' ) ) {
+		$scales = koohe_radius_scale_choices();
+		$scale  = get_theme_mod( 'koohe_radius_scale', 'standard' );
+		if ( isset( $scales[ $scale ] ) ) {
+			$rules[] = '--wp--custom--radius--sm:' . $scales[ $scale ]['sm'];
+			$rules[] = '--wp--custom--radius--base:' . $scales[ $scale ]['base'];
+			$rules[] = '--wp--custom--radius--lg:' . $scales[ $scale ]['lg'];
+		}
+	}
+
+	if ( ! $rules ) {
+		return;
+	}
+
+	wp_add_inline_style( 'koohe-film', 'html:root{' . implode( ';', $rules ) . '}' );
+}
+add_action( 'wp_enqueue_scripts', 'koohe_appearance_inline_css', 20 );
+
+/**
  * استایل ویرایشگر بلوک.
  */
 function koohe_enqueue_editor() {

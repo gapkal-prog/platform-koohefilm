@@ -55,6 +55,15 @@ class Blocks {
 	 * @return array
 	 */
 	public function definitions() {
+		/*
+		 * پیش‌فرض‌های «پخش خودکار»، «فاصله» و «جلوه» از تب «ظاهر و استایل»
+		 * (hero_autoplay/hero_interval/hero_effect) می‌آیند. چون ثبت ویرایشگر
+		 * هم از همین تعریف می‌آید، ویرایشگر و خروجی رندرشده یک پیش‌فرض مشترک
+		 * می‌بینند؛ مقداری که در ویرایشگر برای هر بلوک می‌گذارید (و در محتوای
+		 * ذخیره‌شده می‌نشیند) اولویت دارد.
+		 */
+		$hero_defaults = self::hero_defaults();
+
 		$blocks = array(
 
 			'manacore/titles-grid'    => array(
@@ -113,7 +122,7 @@ class Blocks {
 						),
 						'effect'       => array(
 							'type'    => 'string',
-							'default' => 'fade',
+							'default' => $hero_defaults['effect'],
 						),
 						'contentAlign' => array(
 							'type'    => 'string',
@@ -129,11 +138,11 @@ class Blocks {
 						),
 						'autoplay'     => array(
 							'type'    => 'boolean',
-							'default' => true,
+							'default' => $hero_defaults['autoplay'],
 						),
 						'interval'     => array(
 							'type'    => 'number',
-							'default' => 7,
+							'default' => $hero_defaults['interval'],
 						),
 						'showDots'     => array(
 							'type'    => 'boolean',
@@ -2425,6 +2434,36 @@ class Blocks {
 		 * @param array $blocks تعریف‌ها.
 		 */
 		return (array) apply_filters( 'manacore_block_definitions', $blocks );
+	}
+
+	/**
+	 * پیش‌فرض‌های اسلایدر خانه از تب «ظاهر و استایل».
+	 *
+	 * این مقادیر پیش‌فرض ویژگی‌های بلوک `manacore/hero-slider` می‌شوند
+	 * (یعنی هم در ویرایشگر و هم در رندر سرور). مقداری که مدیر در ویرایشگر
+	 * برای یک بلوک می‌گذارد در محتوای ذخیره‌شده می‌نشیند و بر پیش‌فرض
+	 * سایت غلبه می‌کند. کرانه‌ها در پاک‌سازی همان تب اعمال می‌شوند؛ این‌جا
+	 * دوباره اعمال می‌شوند تا فراخوانی دستی هم ایمن بماند.
+	 *
+	 * @return array{autoplay:bool,interval:int,effect:string}
+	 */
+	public static function hero_defaults() {
+		$effects  = array_keys( Block_Data::slider_effects() );
+		$effect   = (string) manacore_get_option( 'hero_effect', 'fade' );
+		$interval = (int) manacore_get_option( 'hero_interval', 7 );
+
+		$defaults = array(
+			'autoplay' => (bool) manacore_get_option( 'hero_autoplay', 1 ),
+			'interval' => max( 3, min( 15, $interval ) ),
+			'effect'   => in_array( $effect, $effects, true ) ? $effect : 'fade',
+		);
+
+		/**
+		 * فیلتر پیش‌فرض‌های اسلایدر خانه.
+		 *
+		 * @param array $defaults پیش‌فرض‌ها.
+		 */
+		return (array) apply_filters( 'manacore_hero_defaults', $defaults );
 	}
 
 	/**

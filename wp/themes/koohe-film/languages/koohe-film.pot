@@ -36,7 +36,7 @@ msgstr ""
 msgid "بستن"
 msgstr ""
 
-#: koohe-film/inc/assets.php:108 koohe-film/inc/customize.php:508
+#: koohe-film/inc/assets.php:108 koohe-film/inc/customize.php:700
 msgid "بازگشت به بالا"
 msgstr ""
 
@@ -148,32 +148,32 @@ msgstr ""
 msgid "ویترین (اولی بزرگ)"
 msgstr ""
 
-#: koohe-film/inc/blocks.php:1018
-msgid "بالاترین امتیازها"
-msgstr ""
-
-#: koohe-film/inc/blocks.php:1019
-msgid "تازه‌های کوهه"
-msgstr ""
-
-#: koohe-film/inc/blocks.php:1025 koohe-film/patterns/discovery-shortcuts.php:38
-msgid "بازیگران و کارگردان‌ها"
-msgstr ""
-
-#: koohe-film/inc/blocks.php:1036
-msgid "برترین‌های کوهه"
+#: koohe-film/inc/blocks.php:1003 koohe-film/patterns/collections-row.php:15
+msgid "همه دسته‌بندی‌ها"
 msgstr ""
 
 #: koohe-film/inc/blocks.php:106
 msgid "دکمه‌ی لیست تماشا (کوه فیلم)"
 msgstr ""
 
+#: koohe-film/inc/blocks.php:1067
+msgid "بالاترین امتیازها"
+msgstr ""
+
+#: koohe-film/inc/blocks.php:1068
+msgid "تازه‌های کوهه"
+msgstr ""
+
 #: koohe-film/inc/blocks.php:107
 msgid "افزودن/حذف اثر جاری از لیست تماشای کاربر."
 msgstr ""
 
-#: koohe-film/inc/blocks.php:1076
-msgid "ژانرها"
+#: koohe-film/inc/blocks.php:1074 koohe-film/patterns/discovery-shortcuts.php:38
+msgid "بازیگران و کارگردان‌ها"
+msgstr ""
+
+#: koohe-film/inc/blocks.php:1085
+msgid "برترین‌های کوهه"
 msgstr ""
 
 #: koohe-film/inc/blocks.php:109 koohe-film/inc/template-tags.php:376 koohe-film/patterns/title-hero.php:166
@@ -184,19 +184,19 @@ msgstr ""
 msgid "نشان‌شده"
 msgstr ""
 
-#: koohe-film/inc/blocks.php:1097
+#: koohe-film/inc/blocks.php:1155 koohe-film/inc/blocks.php:1158
 msgid "دسته‌بندی‌ها"
 msgstr ""
 
-#: koohe-film/inc/blocks.php:1107
+#: koohe-film/inc/blocks.php:1171
 msgid "درباره ما"
 msgstr ""
 
-#: koohe-film/inc/blocks.php:1108
+#: koohe-film/inc/blocks.php:1172
 msgid "تماس با ما"
 msgstr ""
 
-#: koohe-film/inc/blocks.php:1135 koohe-film/inc/setup.php:55
+#: koohe-film/inc/blocks.php:1199 koohe-film/inc/setup.php:55
 msgid "فهرست اصلی"
 msgstr ""
 
@@ -332,11 +332,11 @@ msgstr ""
 msgid "نمایش میان‌بر ⌘K"
 msgstr ""
 
-#: koohe-film/inc/blocks.php:28 koohe-film/inc/customize.php:168
+#: koohe-film/inc/blocks.php:28 koohe-film/inc/customize.php:173
 msgid "تیره"
 msgstr ""
 
-#: koohe-film/inc/blocks.php:28 koohe-film/inc/customize.php:169
+#: koohe-film/inc/blocks.php:28 koohe-film/inc/customize.php:174
 msgid "روشن"
 msgstr ""
 
@@ -420,7 +420,7 @@ msgstr ""
 msgid "نمایش دکمه‌ی ورود یا نام کاربر و سطح اشتراک."
 msgstr ""
 
-#: koohe-film/inc/blocks.php:60 koohe-film/inc/blocks.php:902
+#: koohe-film/inc/blocks.php:60 koohe-film/inc/blocks.php:948
 msgid "اشتراک"
 msgstr ""
 
@@ -436,7 +436,7 @@ msgstr ""
 msgid "حق نشر (کوه فیلم)"
 msgstr ""
 
-#: koohe-film/inc/blocks.php:733 koohe-film/inc/blocks.php:921
+#: koohe-film/inc/blocks.php:733 koohe-film/inc/blocks.php:969
 msgid "کشف داستان"
 msgstr ""
 
@@ -448,7 +448,7 @@ msgstr ""
 msgid "حق نشر"
 msgstr ""
 
-#: koohe-film/inc/blocks.php:76 koohe-film/inc/customize.php:107 koohe-film/inc/setup.php:99
+#: koohe-film/inc/blocks.php:76 koohe-film/inc/customize.php:112 koohe-film/inc/setup.php:99
 msgid "پابرگ"
 msgstr ""
 
@@ -456,32 +456,32 @@ msgstr ""
 msgid "تماشای %s"
 msgstr ""
 
-#: koohe-film/inc/blocks.php:891 koohe-film/patterns/title-hero.php:61
+#: koohe-film/inc/blocks.php:937 koohe-film/patterns/title-hero.php:61
 msgid "خانه"
 msgstr ""
 
-#: koohe-film/inc/blocks.php:901
+#: koohe-film/inc/blocks.php:947
 msgid "برنامه پخش"
 msgstr ""
 
-#: koohe-film/inc/blocks.php:917
+#: koohe-film/inc/blocks.php:964
 msgid "یک دنیا انتخاب"
 msgstr ""
 
-#: koohe-film/inc/blocks.php:918
+#: koohe-film/inc/blocks.php:965
 msgid "حال‌وهوای امشبت چیه؟"
 msgstr ""
 
-#: koohe-film/inc/blocks.php:919
+#: koohe-film/inc/blocks.php:966
+msgid "ژانرها"
+msgstr ""
+
+#: koohe-film/inc/blocks.php:967
 msgid "به انتخاب سینورا"
 msgstr ""
 
-#: koohe-film/inc/blocks.php:920
+#: koohe-film/inc/blocks.php:968
 msgid "انتخاب ویژه این هفته"
-msgstr ""
-
-#: koohe-film/inc/blocks.php:954 koohe-film/patterns/collections-row.php:15
-msgid "همه دسته‌بندی‌ها"
 msgstr ""
 
 #: koohe-film/inc/compat.php:169 koohe-film/inc/template-tags.php:48 koohe-film/inc/template-tags.php:90 koohe-film/inc/template-tags.php:107
@@ -493,135 +493,187 @@ msgid "پرش به محتوای اصلی"
 msgstr ""
 
 #: koohe-film/inc/customize.php:102
-msgid "خوانش و پیمایش"
+msgid "آرشیو و کارت‌ها"
 msgstr ""
 
 #: koohe-film/inc/customize.php:103
-msgid "کمک‌ابزارهای پیمایش صفحه."
+msgid "نمایش پوستر و افکت کارت‌های فهرست آثار."
+msgstr ""
+
+#: koohe-film/inc/customize.php:107
+msgid "خوانش و پیمایش"
 msgstr ""
 
 #: koohe-film/inc/customize.php:108
+msgid "کمک‌ابزارهای پیمایش صفحه."
+msgstr ""
+
+#: koohe-film/inc/customize.php:113
 msgid "متن حق نشر و اعتبار طراح."
 msgstr ""
 
-#: koohe-film/inc/customize.php:126
+#: koohe-film/inc/customize.php:131
 msgid "سربرگ چسبان"
 msgstr ""
 
-#: koohe-film/inc/customize.php:127
+#: koohe-film/inc/customize.php:132
 msgid "سربرگ هنگام پیمایش در بالای صفحه ثابت می‌ماند."
 msgstr ""
 
-#: koohe-film/inc/customize.php:135
+#: koohe-film/inc/customize.php:140
 msgid "کوچک‌شدن سربرگ هنگام پیمایش"
 msgstr ""
 
-#: koohe-film/inc/customize.php:136
+#: koohe-film/inc/customize.php:141
 msgid "تنها زمانی اثر دارد که «سربرگ چسبان» فعال باشد."
 msgstr ""
 
-#: koohe-film/inc/customize.php:144
+#: koohe-film/inc/customize.php:149
 msgid "نمایش کلید تیره/روشن"
 msgstr ""
 
-#: koohe-film/inc/customize.php:145
+#: koohe-film/inc/customize.php:150
 msgid "با خاموش‌کردن، کلید تغییر حالت رنگ از سربرگ حذف می‌شود."
 msgstr ""
 
-#: koohe-film/inc/customize.php:163
+#: koohe-film/inc/customize.php:168
 msgid "حالت رنگ پیش‌فرض"
 msgstr ""
 
-#: koohe-film/inc/customize.php:164
+#: koohe-film/inc/customize.php:169
 msgid "اگر افزونه‌ی ManaCore فعال باشد، تنظیم آن اولویت دارد. انتخاب کاربر در مرورگر خودش ذخیره می‌شود."
 msgstr ""
 
-#: koohe-film/inc/customize.php:170
+#: koohe-film/inc/customize.php:175
 msgid "بر پایه‌ی تنظیم سیستم"
 msgstr ""
 
-#: koohe-film/inc/customize.php:190
+#: koohe-film/inc/customize.php:198
+msgid "رنگ تأکید سایت"
+msgstr ""
+
+#: koohe-film/inc/customize.php:199
+msgid "رنگ دکمه‌ها، لینک‌ها و نشانه‌های اصلی. خالی بگذارید تا رنگ پیش‌فرض قالب (theme.json) به کار رود."
+msgstr ""
+
+#: koohe-film/inc/customize.php:220
+msgid "عرض چیدمان"
+msgstr ""
+
+#: koohe-film/inc/customize.php:221
+msgid "حداکثر پهنای محتوای متنی و فهرست‌ها."
+msgstr ""
+
+#: koohe-film/inc/customize.php:239
+msgid "شعاع گوشه‌ها"
+msgstr ""
+
+#: koohe-film/inc/customize.php:240
+msgid "گردی گوشه‌ی کارت‌ها، دکمه‌ها و تصاویر."
+msgstr ""
+
+#: koohe-film/inc/customize.php:262
 msgid "نسبت پوستر"
 msgstr ""
 
-#: koohe-film/inc/customize.php:191
+#: koohe-film/inc/customize.php:263
 msgid "نسبت ابعاد تصویر شاخص در کارت‌های آرشیو."
 msgstr ""
 
-#: koohe-film/inc/customize.php:203
+#: koohe-film/inc/customize.php:275
 msgid "بزرگ‌نمایی پوستر با نشانگر"
 msgstr ""
 
-#: koohe-film/inc/customize.php:204
+#: koohe-film/inc/customize.php:276
 msgid "در حالت «کاهش حرکت» مرورگر به‌طور خودکار غیرفعال می‌شود."
 msgstr ""
 
-#: koohe-film/inc/customize.php:212
+#: koohe-film/inc/customize.php:284
 msgid "گوشه‌های گرد برای تصاویر"
 msgstr ""
 
-#: koohe-film/inc/customize.php:224
+#: koohe-film/inc/customize.php:296
 msgid "نمایش دکمه‌ی بازگشت به بالا"
 msgstr ""
 
-#: koohe-film/inc/customize.php:232
+#: koohe-film/inc/customize.php:304
 msgid "نوار کنش پایین صفحه در موبایل"
 msgstr ""
 
-#: koohe-film/inc/customize.php:233
+#: koohe-film/inc/customize.php:305
 msgid "در صفحه‌ی اثر، دکمه‌های دانلود و تریلر را در دسترس شست نگه می‌دارد."
 msgstr ""
 
-#: koohe-film/inc/customize.php:241
+#: koohe-film/inc/customize.php:313
 msgid "نوار پیشرفت خوانش"
 msgstr ""
 
-#: koohe-film/inc/customize.php:242
+#: koohe-film/inc/customize.php:314
 msgid "تنها در برگه‌ها و نوشته‌های تک‌صفحه‌ای نمایش داده می‌شود."
 msgstr ""
 
-#: koohe-film/inc/customize.php:260
+#: koohe-film/inc/customize.php:332
 msgid "متن حق نشر پابرگ"
 msgstr ""
 
-#: koohe-film/inc/customize.php:261
+#: koohe-film/inc/customize.php:333
 msgid "شناسه‌های {year} و {site} جایگزین می‌شوند. خالی بگذارید تا متن پیش‌فرض به کار رود. برای نمایش، بلوک «حق نشر (کوه فیلم)» را در پابرگ قرار دهید."
 msgstr ""
 
-#: koohe-film/inc/customize.php:272
+#: koohe-film/inc/customize.php:344
 msgid "نمایش اعتبار طراح (ManaCore)"
 msgstr ""
 
-#: koohe-film/inc/customize.php:328
+#: koohe-film/inc/customize.php:400
 msgid "۲ به ۳ (پوستر سینمایی)"
 msgstr ""
 
-#: koohe-film/inc/customize.php:329
+#: koohe-film/inc/customize.php:401
 msgid "۳ به ۴"
 msgstr ""
 
-#: koohe-film/inc/customize.php:330
+#: koohe-film/inc/customize.php:402
 msgid "مربع"
 msgstr ""
 
-#: koohe-film/inc/customize.php:331
+#: koohe-film/inc/customize.php:403
 msgid "۱۶ به ۹ (عریض)"
 msgstr ""
 
-#: koohe-film/inc/customize.php:437
+#: koohe-film/inc/customize.php:462
+msgid "استاندارد (۸۲۰px)"
+msgstr ""
+
+#: koohe-film/inc/customize.php:467
+msgid "عریض (۱۱۰۰px)"
+msgstr ""
+
+#: koohe-film/inc/customize.php:472
+msgid "تنگ (۷۲۰px)"
+msgstr ""
+
+#: koohe-film/inc/customize.php:501
+msgid "استاندارد"
+msgstr ""
+
+#: koohe-film/inc/customize.php:507
+msgid "فشرده (گوشه‌های تیز)"
+msgstr ""
+
+#: koohe-film/inc/customize.php:513
+msgid "گرد (گوشه‌های نرم)"
+msgstr ""
+
+#: koohe-film/inc/customize.php:629
 msgid "© %1$s %2$s — همه‌ی حقوق محفوظ است."
 msgstr ""
 
-#: koohe-film/inc/customize.php:559
+#: koohe-film/inc/customize.php:751
 msgid "دانلود و پخش"
 msgstr ""
 
-#: koohe-film/inc/customize.php:568
+#: koohe-film/inc/customize.php:760
 msgid "تریلر"
-msgstr ""
-
-#: koohe-film/inc/customize.php:611
-msgid "کنش‌های سریع این اثر"
 msgstr ""
 
 #: koohe-film/inc/customize.php:79 koohe-film/inc/patterns.php:20
@@ -630,6 +682,10 @@ msgstr ""
 
 #: koohe-film/inc/customize.php:80
 msgid "گزینه‌های نمایشی قالب کوه فیلم (طراحی: ManaCore). رنگ‌ها و تایپوگرافی در «ویرایشگر سایت» تنظیم می‌شوند."
+msgstr ""
+
+#: koohe-film/inc/customize.php:803
+msgid "کنش‌های سریع این اثر"
 msgstr ""
 
 #: koohe-film/inc/customize.php:87
@@ -641,19 +697,19 @@ msgid "رفتار نوار بالای سایت."
 msgstr ""
 
 #: koohe-film/inc/customize.php:92
-msgid "حالت رنگ"
+msgid "رنگ و حالت"
 msgstr ""
 
 #: koohe-film/inc/customize.php:93
-msgid "حالت پیش‌فرض تیره یا روشن برای بازدیدکننده‌ی تازه."
+msgid "حالت پیش‌فرض تیره یا روشن و رنگ تأکید سایت."
 msgstr ""
 
 #: koohe-film/inc/customize.php:97
-msgid "آرشیو و کارت‌ها"
+msgid "چیدمان و گوشه‌ها"
 msgstr ""
 
 #: koohe-film/inc/customize.php:98
-msgid "نمایش پوستر و افکت کارت‌های فهرست آثار."
+msgid "عرض محتوای چیدمان و شعاع گوشه‌ی اجزا."
 msgstr ""
 
 #: koohe-film/inc/mobile-drawer.php:263

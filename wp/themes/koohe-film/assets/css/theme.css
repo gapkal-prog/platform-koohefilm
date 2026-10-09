@@ -76,6 +76,21 @@
 }
 
 /*
+ * [hidden] باید واقعاً پنهان باشد.
+ *
+ * قاعده‌ی پیش‌فرض مرورگر برای [hidden] همان display:none است، ولی هر
+ * اعلان display در شیوه‌نامه‌ی نویسنده بر آن غلبه می‌کند. پیامد واقعی
+ * سنجیده‌شده: `.koohe-search-overlay` و `.koohe-empty-state` (هر دو
+ * display:flex) با وجود صفت hidden همیشه روی صفحه می‌ماندند و پیام
+ * «این داستان را هنوز پیدا نکردیم» هیچ‌گاه پنهان نمی‌شد — همین علت
+ * باگ «جستجوی اورلی» بود. این قاعده، همتای همان قانون در `front.css`
+ * افزونه است؛ این‌جا نسخه‌ی قالب است تا هر جزء پنهان، واقعاً پنهان باشد.
+ */
+[hidden] {
+	display: none !important;
+}
+
+/*
  * ریست اندازه‌ی جعبه.
  *
  * بدون این قاعده، `box-sizing` روی مقدار پیش‌فرض مرورگر (content-box) می‌ماند
@@ -1015,6 +1030,8 @@ table {
  * ---------------------------------------------------------------------- */
 
 .koohe-nav .wp-block-navigation-item.koohe-mega-group.koohe-mega-genres {
+	/* پیش‌فرض ستون‌ها؛ تنظیم «تعداد ستون‌ها» از فیلتر رندر روی همین عنصر می‌نشیند. */
+	--koohe-mega-columns: 3;
 	display: block;
 	align-self: stretch;
 }
@@ -1030,10 +1047,15 @@ table {
  * گروه‌های پنل «منو» نیستند؛ محتوای همیشه‌بازند، پس همان قاعده با
  * ویژگی بالاتر خنثی می‌شود.
  */
+/*
+ * تعداد ستون‌ها از متغیر `--koohe-mega-columns` می‌آید که فیلتر رندر قالب
+ * (koohe_mega_columns_var) با مقدار تنظیم «تعداد ستون‌های شبکه‌ی ژانرها»
+ * روی <li> گروه می‌گذارد؛ پیش‌فرض ۳ است.
+ */
 .koohe-nav .wp-block-navigation-item.koohe-mega > .wp-block-navigation__submenu-container ul.koohe-mega-group.koohe-mega-genres {
 	position: static;
 	display: grid;
-	grid-template-columns: repeat(3, minmax(0, 1fr));
+	grid-template-columns: repeat(var(--koohe-mega-columns, 3), minmax(0, 1fr));
 	gap: 7px;
 	width: auto;
 	height: auto;

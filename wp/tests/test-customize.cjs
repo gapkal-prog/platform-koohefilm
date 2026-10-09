@@ -61,6 +61,7 @@ const cssBody   = stripCss( themeCss );
 const themeJs   = read( 'assets/js/theme.js' );
 const tags      = read( 'inc/template-tags.php' );
 const footer    = read( 'parts/footer.html' );
+const assets    = read( 'inc/assets.php' );
 
 /* =====================================================================
  * الف) ریشه‌ی باگ سربرگ چسبان
@@ -183,6 +184,10 @@ const consumers = {
 		&& /koohe-has-actionbar/.test( cssBody ),
 	koohe_copyright: () => /koohe_render_copyright_block/.test( tags ) && /koohe\/copyright/.test( footer ),
 	koohe_footer_credit: () => /koohe_footer_credit/.test( tags ),
+	/* رنگ تأکید و چیدمان/شعاع: متغیرهای html:root از inc/assets.php می‌آیند. */
+	koohe_accent_color: () => /koohe_appearance_inline_css/.test( assets ) && /--wp--preset--color--accent:/.test( assets ),
+	koohe_layout_width: () => /--wp--style--global--content-size/.test( assets ) && /koohe_layout_width_choices/.test( customize ),
+	koohe_radius_scale: () => /--wp--custom--radius--base/.test( assets ) && /koohe_radius_scale_choices/.test( customize ),
 };
 
 registered.forEach( ( option ) => {

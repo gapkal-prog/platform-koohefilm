@@ -803,6 +803,52 @@ function koohe_mega_feature_card( $block_content, $block ) {
 add_filter( 'render_block', 'koohe_mega_feature_card', 10, 2 );
 
 /**
+ * متغیر تعداد ستون‌های شبکه‌ی ژانرها در مگامنو.
+ *
+ * تنظیم «تعداد ستون‌های شبکه‌ی ژانرها» (تب مگامنو) پیش‌تر فقط در شورت‌کد
+ * اثر داشت و فهرست راهبری قالب همیشه سه‌ستونه می‌ماند. این فیلتر متغیر
+ * `--koohe-mega-columns` را روی `<li>` گروه می‌گذارد؛ شبکه‌ی CSS
+ * (`grid-template-columns`) آن را می‌خواند (متغیرهای سفارشی ارث‌بری می‌شوند).
+ *
+ * @param string $block_content محتوای رندرشده‌ی بلوک.
+ * @param array  $block         داده‌ی بلوک.
+ * @return string
+ */
+function koohe_mega_columns_var( $block_content, $block ) {
+	if ( ! is_string( $block_content ) || false === strpos( $block_content, 'koohe-mega-genres' ) ) {
+		return $block_content;
+	}
+
+	if ( ! class_exists( '\\ManaCore\\Core\\Mega_Menu' ) ) {
+		return $block_content;
+	}
+
+	$settings = \ManaCore\Core\Mega_Menu::settings();
+	$columns  = isset( $settings['columns'] ) ? max( 2, min( 4, (int) $settings['columns'] ) ) : 3;
+	$var      = '--koohe-mega-columns:' . $columns;
+
+	$content = preg_replace_callback(
+		'/(<li\b[^>]*class="[^"]*koohe-mega-genres[^"]*"[^>]*>)/',
+		static function ( $matches ) use ( $var ) {
+			$tag = (string) $matches[1];
+
+			if ( false !== strpos( $tag, 'style="' ) ) {
+				/* ویژگی style موجود است؛ متغیر به‌صورت الحاقی اضافه می‌شود. */
+				$tag = (string) preg_replace( '/style="([^"]*)"/', 'style="$1;' . $var . '"', $tag, 1 );
+			} else {
+				$tag = str_replace( '>', ' style="' . $var . '">', $tag );
+			}
+
+			return $tag;
+		},
+		$block_content
+	);
+
+	return is_string( $content ) ? $content : $block_content;
+}
+add_filter( 'render_block', 'koohe_mega_columns_var', 10, 2 );
+
+/**
  * نقطه‌ی کنار آیتم «برنامه پخش» در ناوبری.
  *
  * مرجع این نقطه را داخل خودِ لنگر گذاشته است:
@@ -911,15 +957,18 @@ function koohe_primary_navigation_markup() {
 	$mega = class_exists( '\ManaCore\Core\Mega_Menu' )
 		? \ManaCore\Core\Mega_Menu::settings()
 		: array(
+			'enabled'       => true,
 			'taxonomy'      => 'genre',
 			'number'        => 12,
 			'hub_url'       => '',
 			'eyebrow'       => __( 'یک دنیا انتخاب', 'koohe-film' ),
 			'title'         => __( 'حال‌وهوای امشبت چیه؟', 'koohe-film' ),
+			'genre_label'   => __( 'ژانرها', 'koohe-film' ),
 			'quick_label'   => __( 'به انتخاب سینورا', 'koohe-film' ),
 			'feature_label' => __( 'انتخاب ویژه این هفته', 'koohe-film' ),
 			'cta_label'     => __( 'کشف داستان', 'koohe-film' ),
 			'featured_id'   => 0,
+			'show_feature'  => true,
 		);
 
 	$hub = class_exists( '\ManaCore\Core\Mega_Menu' )
@@ -1073,14 +1122,21 @@ function koohe_primary_navigation_markup() {
 	$submenu = array(
 		$link( (string) $mega['eyebrow'], $hub, 'custom', '', 0, 'koohe-mega-eyebrow' ),
 		$link( (string) $mega['title'], $hub, 'custom', '', 0, 'koohe-mega-title' ),
-		$group( __( 'ژانرها', 'koohe-film' ), $hub, 'koohe-mega-genres', $genre_links ),
+		$group( (string) $mega['genre_label'], $hub, 'koohe-mega-genres', $genre_links ),
 		$group( (string) $mega['quick_label'], $hub, 'koohe-mega-quick', $quick_links ),
+	);
+
+	/*
+	 * کارت ویژه (ستون سوم) فقط وقتی «نمایش کارت ویژه» در تنظیمات روشن باشد
+	 * ساخته می‌شود؛ در غیر این صورت ستون سوم به‌کلی حذف می‌شود.
+	 */
+	if ( ! isset( $mega['show_feature'] ) || ! empty( $mega['show_feature'] ) ) {
 		/*
 		 * برچسب = نام اثر (`.mega-feature strong` مرجع) و توضیح = سطر
 		 * ریز بالا؛ سطر سوم («تماشای …» + شِوران) را فیلتر رندر تزریق
 		 * می‌کند، چون آیتم راهبری فرزند نمی‌پذیرد.
 		 */
-		$link(
+		$submenu[] = $link(
 			$feature_title,
 			$feature_url,
 			'custom',
@@ -1088,11 +1144,16 @@ function koohe_primary_navigation_markup() {
 			0,
 			'koohe-mega-feature',
 			(string) $mega['feature_label']
-		),
-	);
+		);
+	}
 
-	$content = implode( '', $before_mega )
-		. '<!-- wp:navigation-submenu ' . wp_json_encode(
+	/*
+	 * با خاموش‌کردن «پنل مگامنو» در تنظیمات، آیتم «دسته‌بندی‌ها» یک
+	 * پیوند ساده به مرکز دسته‌بندی‌ها می‌شود (بدون زیرمنو).
+	 */
+	$mega_item = isset( $mega['enabled'] ) && empty( $mega['enabled'] )
+		? $link( __( 'دسته‌بندی‌ها', 'koohe-film' ), $hub )
+		: '<!-- wp:navigation-submenu ' . wp_json_encode(
 			array(
 				'label'     => __( 'دسته‌بندی‌ها', 'koohe-film' ),
 				'url'       => $hub,
@@ -1102,7 +1163,10 @@ function koohe_primary_navigation_markup() {
 			JSON_UNESCAPED_UNICODE
 		) . ' -->'
 		. implode( '', $submenu )
-		. '<!-- /wp:navigation-submenu -->'
+		. '<!-- /wp:navigation-submenu -->';
+
+	$content = implode( '', $before_mega )
+		. $mega_item
 		. implode( '', $after_mega )
 		. $link( __( 'درباره ما', 'koohe-film' ), home_url( '/about/' ) )
 		. $link( __( 'تماس با ما', 'koohe-film' ), home_url( '/contact/' ) );
@@ -1283,11 +1347,14 @@ function koohe_nav_settings_fingerprint() {
 	$settings = \ManaCore\Core\Mega_Menu::settings();
 
 	$relevant = array(
+		'enabled',
 		'taxonomy',
 		'number',
+		'columns',
 		'hub_url',
 		'eyebrow',
 		'title',
+		'genre_label',
 		'quick_label',
 		'feature_label',
 		'featured_id',
@@ -1295,6 +1362,9 @@ function koohe_nav_settings_fingerprint() {
 		'newest_label',
 		'korean_label',
 		'cast_label',
+		'show_feature',
+		'show_rating',
+		'show_newest',
 		'show_korean',
 		'show_cast',
 	);

@@ -413,7 +413,7 @@ echo "\n=== ۱) تب‌ها و ناوبری ===\n";
  * شش تب، به همین ترتیب. تب «تحلیل و آمار» عمداً نیست: داده‌ی اساسی‌اش در
  * کارت «نگاه کلی» تب عمومی آمده و بقیه به تب‌های مرتبط خودش رفته است.
  */
-$expected = array( 'general', 'watch', 'requests', 'reports', 'mega', 'tools' );
+$expected = array( 'general', 'appearance', 'watch', 'requests', 'reports', 'mega', 'tools' );
 mc_ok( $expected === array_keys( Settings::tabs() ), 'ترتیب تب‌ها همان ترتیب مستندشده است', implode( ',', array_keys( Settings::tabs() ) ) );
 mc_ok( ! in_array( 'ads', array_keys( Settings::tabs() ), true ), 'تب تبلیغات از پنل برداشته شده است' );
 mc_ok( ! in_array( 'analytics', array_keys( Settings::tabs() ), true ), 'تب تحلیل و آمار از پنل برداشته شده است' );

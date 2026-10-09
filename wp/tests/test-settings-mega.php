@@ -363,7 +363,7 @@ mc_ok( 30 === $num( 999, 3, 30 ), 'عدد بزرگ به بیشینه می‌رس
 mc_ok( 2 === $num( 0, 2, 4 ), 'ستون صفر به کمینه‌ی ۲ می‌رسد' );
 
 mc_ok(
-	(bool) preg_match( "/\$clean\[ 'mega_enabled' \]\s*=/", $settings_code ) || (bool) preg_match( '/\$clean\[\s*.mega_enabled.\s*\]\s*=/', $settings_code ),
+	(bool) preg_match( '/\$mega_bools\s*=\s*array\([^)]*.mega_enabled./', $settings_code ) && (bool) preg_match( '/foreach\s*\(\s*\$mega_bools/', $settings_code ),
 	'کلید فعال‌بودن مگامنو در پاک‌سازی هست'
 );
 

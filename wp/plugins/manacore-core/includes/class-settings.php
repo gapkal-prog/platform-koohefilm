@@ -37,12 +37,13 @@ class Settings {
 	 */
 	public static function tabs() {
 		return array(
-			'general'  => __( 'عمومی', 'manacore' ),
-			'watch'    => __( 'پخش و دانلود', 'manacore' ),
-			'requests' => __( 'درخواست‌ها', 'manacore' ),
-			'reports'  => __( 'خرابی لینک', 'manacore' ),
-			'mega'     => __( 'مگامنو', 'manacore' ),
-			'tools'    => __( 'ابزارها و نگه‌داری', 'manacore' ),
+			'general'    => __( 'عمومی', 'manacore' ),
+			'appearance' => __( 'ظاهر و استایل', 'manacore' ),
+			'watch'      => __( 'پخش و دانلود', 'manacore' ),
+			'requests'   => __( 'درخواست‌ها', 'manacore' ),
+			'reports'    => __( 'خرابی لینک', 'manacore' ),
+			'mega'       => __( 'مگامنو', 'manacore' ),
+			'tools'      => __( 'ابزارها و نگه‌داری', 'manacore' ),
 		);
 	}
 
@@ -59,11 +60,12 @@ class Settings {
 	 */
 	public static function keys_by_tab() {
 		return array(
-			'general'  => array( 'slug_movie', 'slug_series', 'slug_anime', 'slug_episode', 'slug_person', 'slug_collection', 'enable_ratings', 'enable_watchlist', 'enable_views', 'links_login_only', 'items_per_page', 'default_color_mode', 'custom_qualities' ),
-			'watch'    => array( 'download_notice_text', 'player_notice_text', 'subscribe_label', 'subscribe_url', 'download_signing', 'download_ttl', 'download_bridge', 'bridge_notice_text' ),
-			'requests' => array( 'requests_enabled', 'requests_guests', 'requests_show_pending', 'requests_heading', 'requests_board_title', 'requests_button', 'requests_intro', 'requests_thanks', 'requests_per_page' ),
-			'mega'     => array( 'mega_enabled', 'mega_show_korean', 'mega_show_cast', 'mega_eyebrow', 'mega_title', 'mega_quick_label', 'mega_feature_label', 'mega_cta_label', 'mega_rating_label', 'mega_newest_label', 'mega_korean_label', 'mega_cast_label', 'mega_taxonomy', 'mega_terms', 'mega_columns', 'mega_hub_url', 'mega_featured_id' ),
-			'tools'    => array( 'links_check_interval', 'links_check_batch', 'links_check_timeout' ),
+			'general'    => array( 'slug_movie', 'slug_series', 'slug_anime', 'slug_episode', 'slug_person', 'slug_collection', 'slug_channel', 'enable_ratings', 'enable_watchlist', 'enable_views', 'links_login_only', 'items_per_page', 'custom_qualities' ),
+			'appearance' => array( 'default_color_mode', 'hero_autoplay', 'hero_interval', 'hero_effect' ),
+			'watch'      => array( 'download_notice_text', 'player_notice_text', 'subscribe_label', 'subscribe_url', 'download_signing', 'download_ttl', 'download_bridge', 'bridge_notice_text' ),
+			'requests'   => array( 'requests_enabled', 'requests_guests', 'requests_show_pending', 'requests_heading', 'requests_board_title', 'requests_button', 'requests_intro', 'requests_thanks', 'requests_per_page' ),
+			'mega'       => array( 'mega_enabled', 'mega_show_korean', 'mega_show_cast', 'mega_show_feature', 'mega_show_rating', 'mega_show_newest', 'mega_eyebrow', 'mega_title', 'mega_genre_label', 'mega_quick_label', 'mega_feature_label', 'mega_cta_label', 'mega_rating_label', 'mega_newest_label', 'mega_korean_label', 'mega_cast_label', 'mega_taxonomy', 'mega_terms', 'mega_columns', 'mega_hub_url', 'mega_featured_id' ),
+			'tools'      => array( 'links_check_interval', 'links_check_batch', 'links_check_timeout' ),
 		);
 	}
 
@@ -189,7 +191,7 @@ class Settings {
 
 		/* ---------------- تب عمومی ---------------- */
 		if ( $do( 'general' ) ) {
-			$slug_keys = array( 'slug_movie', 'slug_series', 'slug_anime', 'slug_episode', 'slug_person', 'slug_collection' );
+			$slug_keys = array( 'slug_movie', 'slug_series', 'slug_anime', 'slug_episode', 'slug_person', 'slug_collection', 'slug_channel' );
 			foreach ( $slug_keys as $key ) {
 				if ( isset( $input[ $key ] ) ) {
 					$clean[ $key ] = sanitize_title( $input[ $key ] );
@@ -203,13 +205,25 @@ class Settings {
 
 			$clean['items_per_page'] = isset( $input['items_per_page'] ) ? max( 1, min( 100, (int) $input['items_per_page'] ) ) : 24;
 
+			$clean['custom_qualities'] = isset( $input['custom_qualities'] )
+				? sanitize_textarea_field( $input['custom_qualities'] )
+				: '';
+		}
+
+		/* ---------------- تب ظاهر و استایل ---------------- */
+		if ( $do( 'appearance' ) ) {
 			$clean['default_color_mode'] = isset( $input['default_color_mode'] ) && in_array( $input['default_color_mode'], array( 'dark', 'light', 'auto' ), true )
 				? $input['default_color_mode']
 				: 'dark';
 
-			$clean['custom_qualities'] = isset( $input['custom_qualities'] )
-				? sanitize_textarea_field( $input['custom_qualities'] )
-				: '';
+			$clean['hero_autoplay'] = empty( $input['hero_autoplay'] ) ? 0 : 1;
+
+			$clean['hero_interval'] = isset( $input['hero_interval'] ) ? max( 3, min( 15, (int) $input['hero_interval'] ) ) : 7;
+
+			$effects = class_exists( __NAMESPACE__ . '\\Block_Data' ) ? array_keys( Block_Data::slider_effects() ) : array( 'fade', 'slide', 'zoom', 'none' );
+			$effect  = isset( $input['hero_effect'] ) ? sanitize_key( $input['hero_effect'] ) : 'fade';
+
+			$clean['hero_effect'] = in_array( $effect, $effects, true ) ? $effect : 'fade';
 		}
 
 		/* ---------------- تب پخش و دانلود ---------------- */
@@ -252,11 +266,12 @@ class Settings {
 
 		/* ---------------- تب مگامنو ---------------- */
 		if ( $do( 'mega' ) ) {
-			$clean['mega_enabled']     = empty( $input['mega_enabled'] ) ? 0 : 1;
-			$clean['mega_show_korean'] = empty( $input['mega_show_korean'] ) ? 0 : 1;
-			$clean['mega_show_cast']   = empty( $input['mega_show_cast'] ) ? 0 : 1;
+			$mega_bools = array( 'mega_enabled', 'mega_show_korean', 'mega_show_cast', 'mega_show_feature', 'mega_show_rating', 'mega_show_newest' );
+			foreach ( $mega_bools as $key ) {
+				$clean[ $key ] = empty( $input[ $key ] ) ? 0 : 1;
+			}
 
-			foreach ( array( 'mega_eyebrow', 'mega_title', 'mega_quick_label', 'mega_feature_label', 'mega_cta_label', 'mega_rating_label', 'mega_newest_label', 'mega_korean_label', 'mega_cast_label' ) as $key ) {
+			foreach ( array( 'mega_eyebrow', 'mega_title', 'mega_genre_label', 'mega_quick_label', 'mega_feature_label', 'mega_cta_label', 'mega_rating_label', 'mega_newest_label', 'mega_korean_label', 'mega_cast_label' ) as $key ) {
 				if ( isset( $input[ $key ] ) ) {
 					$clean[ $key ] = sanitize_text_field( $input[ $key ] );
 				}
@@ -569,9 +584,13 @@ class Settings {
 
 			<?php
 			switch ( $tab ) {
-				case 'watch':
-					$this->render_watch_tab();
-					break;
+			case 'appearance':
+				$this->render_appearance_tab();
+				break;
+
+			case 'watch':
+				$this->render_watch_tab();
+				break;
 
 				case 'requests':
 					$this->render_requests_tab();
@@ -824,6 +843,7 @@ class Settings {
 					'slug_episode'    => __( 'قسمت', 'manacore' ),
 					'slug_person'     => __( 'عوامل', 'manacore' ),
 					'slug_collection' => __( 'مجموعه', 'manacore' ),
+					'slug_channel'    => __( 'کانال پخش زنده', 'manacore' ),
 				);
 				?>
 				<table class="form-table" role="presentation">
@@ -885,25 +905,6 @@ class Settings {
 								value="<?php echo esc_attr( manacore_get_option( 'items_per_page', 24 ) ); ?>" class="small-text" />
 						</td>
 					</tr>
-					<tr>
-						<th scope="row"><label for="default_color_mode"><?php esc_html_e( 'حالت رنگی پیش‌فرض', 'manacore' ); ?></label></th>
-						<td>
-							<select id="default_color_mode" name="manacore_settings[default_color_mode]">
-								<?php
-								$modes = array(
-									'dark'  => __( 'تیره', 'manacore' ),
-									'light' => __( 'روشن', 'manacore' ),
-									'auto'  => __( 'خودکار (بر اساس سیستم)', 'manacore' ),
-								);
-								foreach ( $modes as $key => $label ) :
-									?>
-									<option value="<?php echo esc_attr( $key ); ?>" <?php selected( manacore_get_option( 'default_color_mode', 'dark' ), $key ); ?>>
-										<?php echo esc_html( $label ); ?>
-									</option>
-								<?php endforeach; ?>
-							</select>
-						</td>
-					</tr>
 				</table>
 				<?php
 				$this->panel_close();
@@ -921,6 +922,112 @@ class Settings {
 					</tr>
 				</table>
 				<?php
+				$this->panel_close();
+			}
+		);
+	}
+
+	/**
+	 * تب «ظاهر و استایل»: تنظیم‌های ظاهری سمت افزونه.
+	 *
+	 * این تب ظاهر «سمت افزونه» را یک‌جا جمع می‌کند: حالت رنگی پیش‌فرض و
+	 * پیش‌فرض‌های اسلایدر خانه (بلوکی که خود افزونه رندر می‌کند).
+	 * رنگ‌ها، چیدمان و گوشه‌های قالب «کوه فیلم» در سفارشی‌ساز وردپرس
+	 * (ظاهر → سفارشی‌سازی → پنل «کوه فیلم») تنظیم می‌شوند؛ کارت آخر همین
+	 * صفحه هر دو جا را به‌هم پیوند می‌دهد تا تنظیمات پراکنده نشوند.
+	 *
+	 * @return void
+	 */
+	protected function render_appearance_tab() {
+		$this->tab_form(
+			'appearance',
+			function () {
+				$this->panel_open(
+					__( 'حالت رنگ', 'manacore' ),
+					__( 'حالت پیش‌فرض برای بازدیدکننده‌ی تازه؛ انتخاب خود کاربر در مرورگر خودش ذخیره می‌شود و اولویت دارد.', 'manacore' )
+				);
+				?>
+				<table class="form-table" role="presentation">
+					<tr>
+						<th scope="row"><label for="default_color_mode"><?php esc_html_e( 'حالت رنگی پیش‌فرض', 'manacore' ); ?></label></th>
+						<td>
+							<select id="default_color_mode" name="manacore_settings[default_color_mode]">
+								<?php
+								$modes = array(
+									'dark'  => __( 'تیره', 'manacore' ),
+									'light' => __( 'روشن', 'manacore' ),
+									'auto'  => __( 'خودکار (بر اساس سیستم)', 'manacore' ),
+								);
+								foreach ( $modes as $key => $label ) :
+									?>
+									<option value="<?php echo esc_attr( $key ); ?>" <?php selected( manacore_get_option( 'default_color_mode', 'dark' ), $key ); ?>>
+										<?php echo esc_html( $label ); ?>
+									</option>
+								<?php endforeach; ?>
+							</select>
+							<p class="description"><?php esc_html_e( 'این مقدار نسبت به تنظیم «حالت رنگ» در سفارشی‌ساز قالب اولویت دارد.', 'manacore' ); ?></p>
+						</td>
+					</tr>
+				</table>
+				<?php
+				$this->panel_close();
+
+				$effects = class_exists( __NAMESPACE__ . '\\Block_Data' ) ? Block_Data::slider_effects() : array(
+					'fade'  => __( 'محو شدن', 'manacore' ),
+					'slide' => __( 'لغزش افقی', 'manacore' ),
+					'zoom'  => __( 'بزرگ‌نمایی آرام', 'manacore' ),
+					'none'  => __( 'بدون جلوه', 'manacore' ),
+				);
+
+				$this->panel_open(
+					__( 'اسلایدر خانه', 'manacore' ),
+					__( 'پیش‌فرض «اسلایدر ویژه» برای بلوک‌هایی که در ویرایشگر مقدار جداگانه‌ای ندارند؛ مقداری که در ویرایشگر برای هر بلوک می‌گذارید، اولویت دارد.', 'manacore' )
+				);
+				?>
+				<table class="form-table" role="presentation">
+					<tr>
+						<th scope="row"><?php esc_html_e( 'پخش خودکار', 'manacore' ); ?></th>
+						<td>
+							<label>
+								<input type="checkbox" name="manacore_settings[hero_autoplay]" value="1" <?php checked( 1, (int) manacore_get_option( 'hero_autoplay', 1 ) ); ?> />
+								<?php esc_html_e( 'اسلایدها خودبه‌خود ورق بخورند', 'manacore' ); ?>
+							</label>
+						</td>
+					</tr>
+					<tr>
+						<th scope="row"><label for="hero_interval"><?php esc_html_e( 'فاصله‌ی تعویض اسلاید', 'manacore' ); ?></label></th>
+						<td>
+							<input type="number" id="hero_interval" name="manacore_settings[hero_interval]" min="3" max="15" step="1"
+								value="<?php echo esc_attr( (int) manacore_get_option( 'hero_interval', 7 ) ); ?>" class="small-text" />
+							<?php esc_html_e( 'ثانیه (۳ تا ۱۵)', 'manacore' ); ?>
+						</td>
+					</tr>
+					<tr>
+						<th scope="row"><label for="hero_effect"><?php esc_html_e( 'جلوه‌ی تعویض', 'manacore' ); ?></label></th>
+						<td>
+							<select id="hero_effect" name="manacore_settings[hero_effect]">
+								<?php foreach ( $effects as $key => $label ) : ?>
+									<option value="<?php echo esc_attr( $key ); ?>" <?php selected( manacore_get_option( 'hero_effect', 'fade' ), $key ); ?>>
+										<?php echo esc_html( $label ); ?>
+									</option>
+								<?php endforeach; ?>
+							</select>
+						</td>
+					</tr>
+				</table>
+				<?php
+				$this->panel_close();
+
+				$this->panel_open(
+					__( 'رنگ و چیدمان سایت', 'manacore' ),
+					__( 'رنگ تأکید، عرض چیدمان، شعاع گوشه‌ها، سربرگ و پابرگ قالب در سفارشی‌ساز وردپرس تنظیم می‌شوند؛ فهرست راهبری (که مگامنو از آن می‌آید) در «ظاهر → فهرست‌ها» قابل ویرایش است.', 'manacore' )
+				);
+				$this->action_links(
+					array(
+						array( __( 'سفارشی‌سازی ظاهر سایت (رنگ، چیدمان، گوشه‌ها)', 'manacore' ), admin_url( 'customize.php' ) ),
+						array( __( 'ویرایش فهرست راهبری', 'manacore' ), admin_url( 'nav-menus.php' ) ),
+					)
+				);
 				$this->panel_close();
 			}
 		);
@@ -1551,14 +1658,22 @@ class Settings {
 							</select>
 						</td>
 					</tr>
-					<tr>
-						<th scope="row"><label for="mega_terms"><?php esc_html_e( 'تعداد ژانرها', 'manacore' ); ?></label></th>
-						<td>
-							<input type="number" id="mega_terms" name="manacore_settings[mega_terms]" min="3" max="30"
-								value="<?php echo esc_attr( (int) manacore_get_option( 'mega_terms', 12 ) ); ?>" class="small-text" />
-							<p class="description"><?php esc_html_e( 'ترم‌ها به ترتیب بیشترین محتوا انتخاب می‌شوند.', 'manacore' ); ?></p>
-						</td>
-					</tr>
+						<tr>
+							<th scope="row"><label for="mega_terms"><?php esc_html_e( 'تعداد ژانرها', 'manacore' ); ?></label></th>
+							<td>
+								<input type="number" id="mega_terms" name="manacore_settings[mega_terms]" min="3" max="30"
+									value="<?php echo esc_attr( (int) manacore_get_option( 'mega_terms', 12 ) ); ?>" class="small-text" />
+								<p class="description"><?php esc_html_e( 'ترم‌ها به ترتیب بیشترین محتوا انتخاب می‌شوند.', 'manacore' ); ?></p>
+							</td>
+						</tr>
+						<tr>
+							<th scope="row"><label for="mega_columns"><?php esc_html_e( 'تعداد ستون‌های شبکه‌ی ژانرها', 'manacore' ); ?></label></th>
+							<td>
+								<input type="number" id="mega_columns" name="manacore_settings[mega_columns]" min="2" max="4"
+									value="<?php echo esc_attr( (int) manacore_get_option( 'mega_columns', 3 ) ); ?>" class="small-text" />
+								<p class="description"><?php esc_html_e( '۲ تا ۴ ستون در پنل دسکتاپ.', 'manacore' ); ?></p>
+							</td>
+						</tr>
 					<tr>
 						<th scope="row"><label for="mega_hub_url"><?php esc_html_e( 'نشانی «مرکز دسته‌بندی‌ها»', 'manacore' ); ?></label></th>
 						<td>
@@ -1585,6 +1700,7 @@ class Settings {
 				$texts = array(
 					'mega_eyebrow'       => array( __( 'سرستون پنل', 'manacore' ), __( 'یک دنیا انتخاب', 'manacore' ) ),
 					'mega_title'         => array( __( 'تیتر پنل', 'manacore' ), __( 'حال‌وهوای امشبت چیه؟', 'manacore' ) ),
+					'mega_genre_label'   => array( __( 'سرستون ستون ژانرها', 'manacore' ), __( 'ژانرها', 'manacore' ) ),
 					'mega_quick_label'   => array( __( 'سرستون ستون دسترسی سریع', 'manacore' ), __( 'به انتخاب سینورا', 'manacore' ) ),
 					'mega_rating_label'  => array( __( 'ردیف «بالاترین امتیازها»', 'manacore' ), '' ),
 					'mega_newest_label'  => array( __( 'ردیف «تازه‌ها»', 'manacore' ), '' ),
@@ -1606,8 +1722,23 @@ class Settings {
 						</tr>
 					<?php endforeach; ?>
 					<tr>
-						<th scope="row"><?php esc_html_e( 'ردیف‌های اختیاری', 'manacore' ); ?></th>
+						<th scope="row"><?php esc_html_e( 'ستون‌ها و ردیف‌های اختیاری', 'manacore' ); ?></th>
 						<td>
+							<label>
+								<input type="checkbox" name="manacore_settings[mega_show_feature]" value="1" <?php checked( 1, (int) manacore_get_option( 'mega_show_feature', 1 ) ); ?> />
+								<?php esc_html_e( 'کارت ویژه (ستون سوم)', 'manacore' ); ?>
+							</label>
+							<br />
+							<label>
+								<input type="checkbox" name="manacore_settings[mega_show_rating]" value="1" <?php checked( 1, (int) manacore_get_option( 'mega_show_rating', 1 ) ); ?> />
+								<?php esc_html_e( 'ردیف «بالاترین امتیازها»', 'manacore' ); ?>
+							</label>
+							<br />
+							<label>
+								<input type="checkbox" name="manacore_settings[mega_show_newest]" value="1" <?php checked( 1, (int) manacore_get_option( 'mega_show_newest', 1 ) ); ?> />
+								<?php esc_html_e( 'ردیف «تازه‌های کوهه»', 'manacore' ); ?>
+							</label>
+							<br />
 							<label>
 								<input type="checkbox" name="manacore_settings[mega_show_korean]" value="1" <?php checked( 1, (int) manacore_get_option( 'mega_show_korean', 1 ) ); ?> />
 								<?php esc_html_e( 'ردیف «فیلم و سریال کره‌ای» (نیازمند ترم کشور کره)', 'manacore' ); ?>

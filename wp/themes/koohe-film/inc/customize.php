@@ -89,9 +89,14 @@ function koohe_customize_register( $wp_customize ) {
 			'priority'    => 10,
 		),
 		'koohe_colors'  => array(
-			'title'       => __( 'حالت رنگ', 'koohe-film' ),
-			'description' => __( 'حالت پیش‌فرض تیره یا روشن برای بازدیدکننده‌ی تازه.', 'koohe-film' ),
+			'title'       => __( 'رنگ و حالت', 'koohe-film' ),
+			'description' => __( 'حالت پیش‌فرض تیره یا روشن و رنگ تأکید سایت.', 'koohe-film' ),
 			'priority'    => 20,
+		),
+		'koohe_layout'  => array(
+			'title'       => __( 'چیدمان و گوشه‌ها', 'koohe-film' ),
+			'description' => __( 'عرض محتوای چیدمان و شعاع گوشه‌ی اجزا.', 'koohe-film' ),
+			'priority'    => 25,
 		),
 		'koohe_archive' => array(
 			'title'       => __( 'آرشیو و کارت‌ها', 'koohe-film' ),
@@ -169,6 +174,73 @@ function koohe_customize_register( $wp_customize ) {
 				'light' => __( 'روشن', 'koohe-film' ),
 				'auto'  => __( 'بر پایه‌ی تنظیم سیستم', 'koohe-film' ),
 			),
+		)
+	);
+
+	/*
+	 * رنگ تأکید: متغیرهای --wp--preset--color--accent و
+	 * --wp--preset--color--accent-contrast theme.json بازنویسی می‌شوند
+	 * (بخش koohe_appearance_css در inc/assets.php). خالی = مقدار پیش‌فرض theme.json.
+	 */
+	$wp_customize->add_setting(
+		'koohe_accent_color',
+		array(
+			'default'           => '',
+			'transport'         => 'refresh',
+			'sanitize_callback' => 'koohe_sanitize_hex_color_or_empty',
+		)
+	);
+	$wp_customize->add_control(
+		new \WP_Customize_Color_Control(
+			$wp_customize,
+			'koohe_accent_color',
+			array(
+				'label'       => __( 'رنگ تأکید سایت', 'koohe-film' ),
+				'description' => __( 'رنگ دکمه‌ها، لینک‌ها و نشانه‌های اصلی. خالی بگذارید تا رنگ پیش‌فرض قالب (theme.json) به کار رود.', 'koohe-film' ),
+				'section'     => 'koohe_colors',
+			)
+		)
+	);
+
+	/* ---------------------------------------------------------------------
+	 * ۲.۵ چیدمان و گوشه‌ها
+	 * ------------------------------------------------------------------ */
+
+	$wp_customize->add_setting(
+		'koohe_layout_width',
+		array(
+			'default'           => 'standard',
+			'transport'         => 'refresh',
+			'sanitize_callback' => 'koohe_sanitize_layout_width',
+		)
+	);
+	$wp_customize->add_control(
+		'koohe_layout_width',
+		array(
+			'label'       => __( 'عرض چیدمان', 'koohe-film' ),
+			'description' => __( 'حداکثر پهنای محتوای متنی و فهرست‌ها.', 'koohe-film' ),
+			'section'     => 'koohe_layout',
+			'type'        => 'select',
+			'choices'     => koohe_layout_width_choices(),
+		)
+	);
+
+	$wp_customize->add_setting(
+		'koohe_radius_scale',
+		array(
+			'default'           => 'standard',
+			'transport'         => 'refresh',
+			'sanitize_callback' => 'koohe_sanitize_radius_scale',
+		)
+	);
+	$wp_customize->add_control(
+		'koohe_radius_scale',
+		array(
+			'label'       => __( 'شعاع گوشه‌ها', 'koohe-film' ),
+			'description' => __( 'گردی گوشه‌ی کارت‌ها، دکمه‌ها و تصاویر.', 'koohe-film' ),
+			'section'     => 'koohe_layout',
+			'type'        => 'select',
+			'choices'     => koohe_radius_scale_choices(),
 		)
 	);
 
@@ -362,6 +434,126 @@ function koohe_sanitize_poster_ratio( $value ) {
  */
 function koohe_sanitize_checkbox( $value ) {
 	return wp_validate_boolean( $value ) ? '1' : '';
+}
+
+/**
+ * پاکسازی رنگ هگز؛ رشته‌ی خالی (حذف رنگ) مجاز است.
+ *
+ * @param mixed $value مقدار خام.
+ * @return string
+ */
+function koohe_sanitize_hex_color_or_empty( $value ) {
+	$value = sanitize_hex_color( $value );
+
+	return $value ? $value : '';
+}
+
+/**
+ * گزینه‌های عرض چیدمان.
+ *
+ * مقدار «استاندارد» همان contentSize/wideSize در theme.json است تا
+ * پیش‌فرض فعلی سایت دست‌نخورده بماند.
+ *
+ * @return array<string,array{label:string,content:string,wide:string}>
+ */
+function koohe_layout_width_choices() {
+	return array(
+		'standard' => array(
+			'label'   => __( 'استاندارد (۸۲۰px)', 'koohe-film' ),
+			'content' => '820px',
+			'wide'    => '1440px',
+		),
+		'wide'     => array(
+			'label'   => __( 'عریض (۱۱۰۰px)', 'koohe-film' ),
+			'content' => '1100px',
+			'wide'    => '1720px',
+		),
+		'narrow'   => array(
+			'label'   => __( 'تنگ (۷۲۰px)', 'koohe-film' ),
+			'content' => '720px',
+			'wide'    => '1000px',
+		),
+	);
+}
+
+/**
+ * پاکسازی عرض چیدمان.
+ *
+ * @param mixed $value مقدار خام.
+ * @return string
+ */
+function koohe_sanitize_layout_width( $value ) {
+	$choices = koohe_layout_width_choices();
+
+	return isset( $choices[ $value ] ) ? $value : 'standard';
+}
+
+/**
+ * گزینه‌های مقیاس شعاع گوشه‌ها.
+ *
+ * «استاندارد» همان مقادیر custom.radius در theme.json است.
+ *
+ * @return array<string,array{label:string,sm:string,base:string,lg:string}>
+ */
+function koohe_radius_scale_choices() {
+	return array(
+		'standard' => array(
+			'label' => __( 'استاندارد', 'koohe-film' ),
+			'sm'    => '6px',
+			'base'  => '10px',
+			'lg'    => '14px',
+		),
+		'compact'  => array(
+			'label' => __( 'فشرده (گوشه‌های تیز)', 'koohe-film' ),
+			'sm'    => '4px',
+			'base'  => '8px',
+			'lg'    => '10px',
+		),
+		'round'    => array(
+			'label' => __( 'گرد (گوشه‌های نرم)', 'koohe-film' ),
+			'sm'    => '10px',
+			'base'  => '16px',
+			'lg'    => '22px',
+		),
+	);
+}
+
+/**
+ * پاکسازی مقیاس شعاع گوشه‌ها.
+ *
+ * @param mixed $value مقدار خام.
+ * @return string
+ */
+function koohe_sanitize_radius_scale( $value ) {
+	$choices = koohe_radius_scale_choices();
+
+	return isset( $choices[ $value ] ) ? $value : 'standard';
+}
+
+/**
+ * رنگ متن متناسب با رنگ تأکید (بر اساس روشنایی نسبی).
+ *
+ * رنگ‌های روشن، متن تیره می‌گیرند (همان accent-contrast در theme.json)
+	 * و رنگ‌های تیره، متن روشن؛ کنتراست متن با پس‌زمینه همیشه کافی می‌ماند.
+ *
+ * @param string $hex رنگ هگز (مثل #c6ed7b).
+ * @return string رنگ هگز متناسب.
+ */
+function koohe_accent_contrast( $hex ) {
+	$hex = sanitize_hex_color( $hex );
+
+	if ( ! $hex ) {
+		return '#1b2712';
+	}
+
+	$red   = hexdec( substr( $hex, 1, 2 ) );
+	$green = hexdec( substr( $hex, 3, 2 ) );
+	$blue  = hexdec( substr( $hex, 5, 2 ) );
+
+	/* روشنایی نسبی (WCAG) روی مقیاس ۰ تا ۲۵۵. */
+	$luminance = ( 0.2126 * $red + 0.7152 * $green + 0.0722 * $blue ) / 255;
+
+	return $luminance > 0.45 ? '#1b2712' : '#eef1f3';
 }
 
 /**
