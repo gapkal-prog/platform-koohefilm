@@ -2432,6 +2432,11 @@ html:not([dir="rtl"]) .manacore-hero-gradient {
 	gap: 11px;
 }
 
+/* بسته‌ی کامل فصل بالای کارت‌های همان فصل می‌نشیند؛ فاصله‌ی یکسان با کارت‌ها. */
+.download-section .manacore-season-panel > .download-packs {
+	margin-bottom: 11px;
+}
+
 .download-section .episode-card {
 	border: 1px solid var(--mc-border);
 	border-radius: 9px;

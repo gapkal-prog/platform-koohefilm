@@ -67,6 +67,7 @@ function __( $t, $d = '' ) { return $t; }
 function esc_html__( $t, $d = '' ) { return $t; }
 function esc_attr__( $t, $d = '' ) { return $t; }
 function esc_html_e( $t, $d = '' ) { echo $t; }
+function esc_attr_e( $t, $d = '' ) { echo htmlspecialchars( (string) $t, ENT_QUOTES ); }
 function _n( $s, $p, $n, $d = '' ) { return 1 === (int) $n ? $s : $p; }
 function apply_filters( $tag, $value ) { return $value; }
 function add_filter() {}
@@ -542,7 +543,7 @@ mc_ok( false !== strpos( $pack_only, 'بسته‌ی کامل فصل' ), 'بست�
 /* ۶.۶ ادغام بسته‌ها و لینک قسمت‌ها در یک جدول */
 $merged = \ManaCore\Core\Templates::links( 14 );
 mc_ok( 3 === substr_count( $merged, 'class="download-row"' ), 'باکس سریال، دو بسته‌ی فصل و یک ردیف قسمت را کنار هم می‌آورد', 'ردیف‌ها: ' . substr_count( $merged, 'class="download-row"' ) );
-mc_ok( 2 === substr_count( $merged, 'data-season-tab=' ), 'برای هر فصل یک تب ساخته می‌شود' );
+mc_ok( 2 === substr_count( $merged, 'data-season="' ), 'برای هر فصل یک تب ساخته می‌شود' );
 mc_ok( 2 === substr_count( $merged, 'data-season-panel=' ), 'هر تب پنل خودش را دارد' );
 mc_ok( false !== strpos( $merged, 'بسته‌ی کامل فصل' ) && false !== strpos( $merged, 'قسمت ۱' ), 'نشان بسته و نشان قسمت هر دو در یک جدول‌اند' );
 mc_ok( 3 === substr_count( $merged, 'data-manacore-download=' ), 'هر ردیفِ دانلود (دو بسته + یک قسمت) کنش خودش را دارد', 'کنش‌ها: ' . substr_count( $merged, 'data-manacore-download=' ) );
@@ -551,6 +552,80 @@ mc_ok( 3 === substr_count( $merged, 'data-manacore-download=' ), 'هر ردیف�
 mc_ok( '' === \ManaCore\Core\Templates::links( 10, array( 'types' => array( 'direct' ) ) ), 'فیلتری که هیچ لینکی از قسمت نمی‌ماند، باکس را خالی می‌کند' );
 $only_stream = \ManaCore\Core\Templates::links( 10, array( 'types' => array( 'stream' ) ) );
 mc_ok( false !== strpos( $only_stream, 'is-secondary' ), 'با فیلتر «فقط پخش»، کنش پخش در ردیف قسمت می‌ماند' );
+
+/* ۶.۸·الف قسمت‌های شماره‌دار روی خودِ سریال (ورود گروهی/متاباکس) */
+$GLOBALS['mc_can_edit'] = false;
+$GLOBALS['mc_is_admin'] = false;
+
+$numbered_links = array(
+	array(
+		'id'      => 'nb1',
+		'title'   => 'فصل ۱',
+		'season'  => 1,
+		'quality' => '1080p',
+		'size'    => '4GB',
+		'items'   => array(
+			array( 'id' => 'nb1a', 'label' => 'دانلود کامل فصل', 'url' => 'https://example.test/nb-pack.zip', 'type' => 'direct' ),
+			array( 'id' => 'nb1b', 'label' => 'قسمت ۱', 'url' => 'https://example.test/nb-s1e1.mp4', 'type' => 'direct', 'episode' => 1, 'quality' => '720p', 'size' => '350MB' ),
+			array( 'id' => 'nb1c', 'label' => 'قسمت ۲', 'url' => 'https://example.test/nb-s1e2.mp4', 'type' => 'stream', 'episode' => 2 ),
+		),
+	),
+	array(
+		'id'      => 'nb2',
+		'title'   => 'فصل ۲',
+		'season'  => 2,
+		'quality' => '720p',
+		'size'    => '2GB',
+		'items'   => array(
+			array( 'id' => 'nb2a', 'label' => 'قسمت ۱', 'url' => 'https://example.test/nb-s2e1.mp4', 'type' => 'direct', 'episode' => 1 ),
+		),
+	),
+);
+
+mc_post( 16, 'series', array( 'manacore_links' => mc_links( $numbered_links ) ) );
+/* قسمت ۱ فصل ۱ خودِ پست قسمت لینک دارد؛ پس ردیف شماره‌دار سریال برایش تکرار نمی‌شود. */
+mc_post( 18, 'episode', array(
+	'manacore_parent_title'   => 16,
+	'manacore_season_number'  => 1,
+	'manacore_episode_number' => 1,
+	'manacore_links'          => mc_links( array( array(
+		'id'      => 'nb18',
+		'title'   => 'قسمت یک',
+		'season'  => 1,
+		'quality' => '1080p',
+		'items'   => array( array( 'id' => 'nb18a', 'label' => 'دانلود', 'url' => 'https://example.test/nb18.mp4', 'type' => 'direct' ) ),
+	) ) ),
+) );
+
+$own_numbered = \ManaCore\Core\Links::numbered_groups( 16 );
+mc_ok( 2 === count( $own_numbered[1] ) && 1 === count( $own_numbered[2] ), 'هر آیتم شماره‌دار یک ردیف قسمت می‌شود (فصل ۱: ۲، فصل ۲: ۱)' );
+mc_ok( 16 === (int) $own_numbered[1][0]['owner'] && 1 === (int) $own_numbered[1][0]['episode'], 'مالک ردیف شماره‌دار خودِ سریال است و شماره روی ردیف می‌آید' );
+mc_ok( '720p' === $own_numbered[1][0]['quality'] && '350MB' === $own_numbered[1][0]['size'], 'کیفیت و حجم خودِ آیتم بر مقادیر گروه مقدم‌اند' );
+mc_ok( '4GB' === $own_numbered[1][1]['size'] && '1080p' === $own_numbered[1][1]['quality'], 'آیتم بدون کیفیت/حجم، از گروهش ارث می‌برد' );
+mc_ok( '2GB' === $own_numbered[2][0]['size'], 'ارث‌بری حجم از گروه فصل ۲' );
+
+$packs_16 = \ManaCore\Core\Links::season_packs( 16 );
+mc_ok( 1 === count( $packs_16[1] ) && 1 === count( $packs_16[1][0]['items'] ), 'بسته‌ی فصل فقط آیتم‌های بی‌شماره را نگه می‌دارد' );
+mc_ok( ! isset( $packs_16[2] ), 'گروهی که همه‌اش شماره‌دار است، از فهرست بسته‌ها کنار می‌رود' );
+
+$both_html = \ManaCore\Core\Templates::links( 16, array( 'source' => 'both' ) );
+mc_ok( 3 === substr_count( $both_html, 'class="episode-card' ), 'منبع both: قسمت ۱ فصل ۱ از پست قسمت، قسمت ۲ فصل ۱ و قسمت ۱ فصل ۲ از سریال', 'کارت‌ها: ' . substr_count( $both_html, 'class="episode-card' ) );
+mc_ok( 2 === substr_count( $both_html, 'class="episode-card expanded"' ), 'اولین قسمت هر فصل به‌صورت پیش‌فرض باز است' );
+mc_ok( false !== strpos( $both_html, 'data-manacore-episodes="16"' ), 'جعبه‌ی سریال به رفتار آکاردئون مرجع وصل می‌شود' );
+mc_ok( false !== strpos( $both_html, 'class="episode-toggle"' ) && false !== strpos( $both_html, 'aria-expanded="true"' ), 'دکمه‌ی باز/بسته‌شدن با aria-expanded' );
+mc_ok( 2 === substr_count( $both_html, 'data-season="' ), 'برای هر فصل یک تب' );
+
+$post_html = \ManaCore\Core\Templates::links( 16, array( 'source' => 'post' ) );
+mc_ok( 2 === substr_count( $post_html, 'class="episode-card' ), 'منبع post: ردیف قسمتی که لینکش روی پست قسمت است، تکرار نمی‌شود', 'کارت‌ها: ' . substr_count( $post_html, 'class="episode-card' ) );
+mc_ok( false !== strpos( $post_html, 'بسته‌ی کامل فصل' ), 'بسته‌ی فصل کنار کارت‌های قسمت می‌آید' );
+
+$s2_html = \ManaCore\Core\Templates::links( 16, array( 'source' => 'both', 'season' => 2 ) );
+mc_ok( false !== strpos( $s2_html, 'data-season-panel="2"' ) && false === strpos( $s2_html, 'data-season-panel="1"' ), 'فیلتر فصل فقط همان فصل را نشان می‌دهد' );
+mc_ok( '' === \ManaCore\Core\Templates::links( 16, array( 'source' => 'both', 'season' => 9 ) ), 'فصلی که داده ندارد، باکس با فصل‌های دیگر پر نمی‌شود' );
+mc_ok( false !== strpos( $both_html, 'download-size">2GB<' ) && false !== strpos( $both_html, 'download-size">4GB<' ), 'حجم هر قسمت در جدول کیفیتش می‌آید (ارث‌بری از گروه وقتی آیتم حجم ندارد)' );
+
+$movie_again = \ManaCore\Core\Templates::links( 4 );
+mc_ok( false === strpos( $movie_again, 'episode-card' ) && false === strpos( $movie_again, 'is-series' ), 'فیلم هیچ کارت قسمتی نمی‌گیرد' );
 
 /* ۶.۸ راهنمای مدیر در باکس خالی (تنها در بافت مدیریت/پیش‌نمایش) */
 $GLOBALS['mc_can_edit'] = true;

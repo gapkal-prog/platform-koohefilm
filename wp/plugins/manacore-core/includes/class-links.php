@@ -305,6 +305,101 @@ class Links {
 	}
 
 	/**
+	 * بسته‌های کامل فصل یک سریال، به تفکیک فصل.
+	 *
+	 * فقط آیتم‌های «بی‌شماره» می‌مانند؛ آیتمی که شماره‌ی قسمت دارد، ردیف
+	 * قسمت است و در `numbered_groups()` می‌آید. گروهی که همه‌ی آیتم‌هایش
+	 * شماره‌دار باشد، از فهرست بسته‌ها کنار می‌رود تا دوبار نشان داده نشود.
+	 *
+	 * @param int $post_id شناسه‌ی سریال/انیمه.
+	 * @return array<int,array>
+	 */
+	public static function season_packs( $post_id ) {
+		$out = array();
+
+		foreach ( self::get( $post_id ) as $group ) {
+			$items = array_values(
+				array_filter(
+					(array) $group['items'],
+					static function ( $item ) {
+						return (int) ( $item['episode'] ?? 0 ) <= 0;
+					}
+				)
+			);
+
+			if ( ! $items ) {
+				continue;
+			}
+
+			$group['items'] = $items;
+			$season         = '' === $group['season'] ? 0 : (int) $group['season'];
+			$out[ $season ][] = $group;
+		}
+
+		ksort( $out );
+
+		return $out;
+	}
+
+	/**
+	 * ردیف‌های قسمتِ ثبت‌شده روی خودِ پست سریال، به تفکیک فصل.
+	 *
+	 * مدیر در متاباکس «لینک‌های دانلود و پخش» برای هر آیتم می‌تواند شماره‌ی
+	 * قسمت بدهد (و ورود گروهی هم همین را ثبت می‌کند). هر آیتمِ شماره‌دار به
+	 * یک گروه مجازی تبدیل می‌شود که فقط همان یک آیتم را دارد؛ مالک آن خودِ
+	 * سریال است (امضا و پخش روی همان می‌نشیند). کیفیت، حجم و زبانِ خودِ
+	 * آیتم بر مقادیر گروه مقدم‌اند؛ نبودنشان یعنی ارث‌بری از گروه.
+	 *
+	 * @param int $post_id شناسه‌ی سریال/انیمه.
+	 * @return array<int,array>
+	 */
+	public static function numbered_groups( $post_id ) {
+		$post_id = (int) $post_id;
+		$out     = array();
+
+		if ( ! $post_id ) {
+			return $out;
+		}
+
+		foreach ( self::get( $post_id ) as $group ) {
+			$season = '' === $group['season'] ? 0 : (int) $group['season'];
+
+			foreach ( (array) $group['items'] as $item ) {
+				$number = (int) ( $item['episode'] ?? 0 );
+
+				if ( $number <= 0 ) {
+					continue;
+				}
+
+				$row             = $group;
+				$row['items']    = array( $item );
+				$row['quality']  = '' !== trim( (string) $item['quality'] ) ? (string) $item['quality'] : (string) $group['quality'];
+				$row['size']     = '' !== trim( (string) $item['size'] ) ? (string) $item['size'] : (string) $group['size'];
+				$row['language'] = '' !== trim( (string) $item['language'] ) ? (string) $item['language'] : (string) $group['language'];
+				$row['owner']    = $post_id;
+				$row['episode']  = $number;
+				$row['episode_label'] = '';
+
+				$out[ $season ][] = $row;
+			}
+		}
+
+		foreach ( $out as $season => $rows ) {
+			usort(
+				$rows,
+				static function ( $a, $b ) {
+					return $a['episode'] - $b['episode'];
+				}
+			);
+			$out[ $season ] = $rows;
+		}
+
+		ksort( $out );
+
+		return $out;
+	}
+
+	/**
 	 * شمارش کل لینک‌های یک پست.
 	 *
 	 * @param int $post_id شناسه‌ی پست.

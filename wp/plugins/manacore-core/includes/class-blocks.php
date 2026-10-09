@@ -8128,7 +8128,8 @@ class Blocks {
 		 * است (مثلاً «دانلود کامل فصل ۱ با کیفیت ۱۰۸۰»). پیش‌تر این داده
 		 * هیچ‌جا رندر نمی‌شد، چون فقط لینک‌های قسمت‌ها نمایش داده می‌شدند.
 		 */
-		$packs = ! empty( $attrs['showPackList'] ) ? Links::by_season( $parent ) : array();
+		// فقط بسته‌های بی‌شماره؛ ردیف‌های شماره‌دار را جعبه‌ی دانلود قسمت‌به‌قسمت نشان می‌دهد.
+		$packs = ! empty( $attrs['showPackList'] ) ? Links::season_packs( $parent ) : array();
 
 		$season_index = 0;
 		$is_multi     = count( $by_season ) > 1;

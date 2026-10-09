@@ -363,7 +363,7 @@ class Templates {
 	 * گونه‌ی محتوا ساخته شود:
 	 *   • `auto`   → بر پایه‌ی نوع پست (سریال/انیمه → `series`، بقیه → `movie`)
 	 *   • `movie`  → جدول کیفیت‌ها (مرجع `detail.html` سینورا)
-	 *   • `series` → جدول فصل‌به‌فصل: بسته‌های کامل فصل + لینک قسمت‌ها
+	 *   • `series` → فصل‌به‌فصل: بسته‌های کامل فصل + کارت هر قسمت (آکاردئون)
 	 *   • `episode`→ جدول کیفیت‌های یک قسمت
 	 *
 	 * منبع داده (`source`) برای سریال‌ها تعیین می‌کند ردیف‌ها از کجا
@@ -384,18 +384,18 @@ class Templates {
 		$args = wp_parse_args(
 			$args,
 			array(
-				'box_style'    => 'cards',
-				'heading'      => '',
-				'subtitle'     => '',
-				'heading_tag'  => 'h2',
-				'show_heading' => true,
-				'show_icon'    => true,
-				'show_count'   => true,
-				'show_notice'  => true,
-				'show_tabs'    => true,
-				'mode'         => 'auto',
-				'pack_label'   => '',
-				'size_label'   => '',
+				'box_style'     => 'cards',
+				'heading'       => '',
+				'subtitle'      => '',
+				'heading_tag'   => 'h2',
+				'show_heading'  => true,
+				'show_icon'     => true,
+				'show_count'    => true,
+				'show_notice'   => true,
+				'show_tabs'     => true,
+				'mode'          => 'auto',
+				'pack_label'    => '',
+				'size_label'    => '',
 				'types'         => array(),
 				'qualities'     => array(),
 				'season'        => 0,
@@ -406,25 +406,50 @@ class Templates {
 
 		$args['mode'] = self::resolve_mode( $args['mode'], $post_id );
 		$source       = self::resolve_source( $args['source'], $post_id, $args['mode'] );
+		$is_series    = 'series' === $args['mode'];
 
 		if ( get_post_meta( $post_id, 'manacore_disable_links', true ) ) {
 			return '';
 		}
 
-		$groups = Links::get( $post_id );
+		$groups        = Links::get( $post_id );
+		$season_filter = max( 0, (int) $args['season'] );
 
 		/*
-		 * لینک‌های قسمت‌ها: در سریال‌ها روش متعارف این است که لینک هر قسمت
-		 * روی پست همان قسمت ثبت شود؛ باکس سریالی باید آن‌ها را هم بیاورد،
-		 * وگرنه برای سریالی که لینک روی خودش ندارد هیچ باکسی ساخته نمی‌شد.
+		 * لینک‌های قسمت‌های فرزند (پست‌های CPT قسمت). در سریال، هر قسمتی که
+		 * لینک خودش را دارد، «مالکِ» آن شماره است؛ پس ردیف شماره‌دارِ همان
+		 * شماره روی پست سریال تکرار نمی‌شود.
 		 */
-		$season_filter = (int) $args['season'];
+		$child_groups = Links::episode_groups( $post_id, array( 'season' => $season_filter ) );
+		$episode_rows = in_array( $source, array( 'episodes', 'both' ), true ) ? $child_groups : array();
 
-		$episode_rows = in_array( $source, array( 'episodes', 'both' ), true )
-			? Links::episode_groups( $post_id, array( 'season' => $season_filter ) )
-			: array();
+		$own_episodes = array();
 
-		if ( empty( $groups ) && empty( $episode_rows ) ) {
+		if ( $is_series && in_array( $source, array( 'post', 'both' ), true ) ) {
+			$taken = array();
+
+			foreach ( $child_groups as $child_season => $season_groups ) {
+				foreach ( $season_groups as $child ) {
+					$taken[ (int) $child_season ][ (int) $child['episode'] ] = true;
+				}
+			}
+
+			foreach ( Links::numbered_groups( $post_id ) as $own_season => $season_groups ) {
+				if ( $season_filter && $season_filter !== (int) $own_season ) {
+					continue;
+				}
+
+				foreach ( $season_groups as $own ) {
+					if ( isset( $taken[ (int) $own_season ][ (int) $own['episode'] ] ) ) {
+						continue;
+					}
+
+					$own_episodes[ (int) $own_season ][] = $own;
+				}
+			}
+		}
+
+		if ( empty( $groups ) && empty( $episode_rows ) && empty( $own_episodes ) ) {
 			return self::editor_hint( $post_id, $args['mode'] );
 		}
 
@@ -463,19 +488,26 @@ class Templates {
 		if ( ! $args['show_notice'] ) {
 			$notice = '';
 		}
-		$by_season = Links::by_season( $post_id );
 
-		// فیلتر بر اساس فصل انتخاب‌شده در بلوک.
-		if ( $season_filter && isset( $by_season[ $season_filter ] ) ) {
-			$by_season = array( $season_filter => $by_season[ $season_filter ] );
+		/*
+		 * بسته‌های فصل: در سریال فقط آیتم‌های بی‌شماره؛ در بقیه‌ی حالت‌ها
+		 * همان فهرست گروه‌ها به تفکیک فصل (رفتار پیشین دست‌نخورده).
+		 */
+		$by_season = $is_series ? Links::season_packs( $post_id ) : Links::by_season( $post_id );
+
+		// فیلتر فصل: یا همان فصل، یا هیچ‌چیز (نه همه‌ی فصل‌ها).
+		if ( $season_filter ) {
+			$by_season = array_intersect_key( $by_season, array( $season_filter => true ) );
 		}
 
-		// ادغام «بسته‌های فصل» با ردیف‌های قسمت‌ها؛ هر فصل تب خودش را دارد.
-		foreach ( $episode_rows as $episode_season => $episode_groups ) {
-			$by_season[ $episode_season ] = array_merge(
-				isset( $by_season[ $episode_season ] ) ? (array) $by_season[ $episode_season ] : array(),
-				(array) $episode_groups
-			);
+		// ادغام بسته‌ها با ردیف‌های قسمت‌ها؛ هر فصل تب خودش را دارد.
+		foreach ( array( $episode_rows, $own_episodes ) as $extra ) {
+			foreach ( $extra as $extra_season => $extra_groups ) {
+				$by_season[ $extra_season ] = array_merge(
+					isset( $by_season[ $extra_season ] ) ? (array) $by_season[ $extra_season ] : array(),
+					(array) $extra_groups
+				);
+			}
 		}
 
 		ksort( $by_season );
@@ -507,24 +539,65 @@ class Templates {
 		// سبک ظاهری با فهرست مشترک اعتبارسنجی می‌شود.
 		$box_style = Block_Support::pick( $args['box_style'], Block_Data::download_styles(), 'cards' );
 
+		$labels = array(
+			'mode'    => $args['mode'],
+			'episode' => (string) $args['episode_label'],
+			'pack'    => $pack_label,
+			'size'    => $size_label,
+		);
+
 		/*
-		 * چیدمان این بخش از الگوی مرجع (`detail.html` سینورا) گرفته شده است:
-		 *   `.download-section`  → همین قاب
-		 *   `.demo-notice`       → یادداشت اثر (`manacore_custom_notice`)
-		 *   `.download-table`    → جدول کیفیت/فرمت/حجم/کنش‌ها
-		 * هر گروه لینک، یک ردیف (`.download-row`) می‌شود و دکمه‌های «پخش» و
-		 * «دانلود» به ترتیب به صفحه‌ی پخش و به خود فایل می‌روند.
+		 * هر فصل را یک بار به «بسته‌ها» و «قسمت‌ها» بخش می‌کنیم؛ قسمت‌ها با
+		 * کلید مالک:شماره گروه می‌شوند تا آیتم‌های یک قسمتِ چندکیفیتی یک کارت
+		 * بسازند. ترتیب کارت‌ها بر پایه‌ی شماره‌ی قسمت است.
+		 */
+		$layout = array();
+
+		foreach ( $by_season as $season => $season_groups ) {
+			$packs = array();
+			$cards = array();
+
+			foreach ( (array) $season_groups as $group ) {
+				if ( $is_series && ! empty( $group['owner'] ) ) {
+					$cards[ (int) $group['owner'] . ':' . (int) $group['episode'] ][] = $group;
+				} else {
+					$packs[] = $group;
+				}
+			}
+
+			$cards = array_values( $cards );
+			usort(
+				$cards,
+				static function ( $a, $b ) {
+					return (int) $a[0]['episode'] - (int) $b[0]['episode'];
+				}
+			);
+
+			$layout[ $season ] = array(
+				'packs' => $packs,
+				'cards' => $cards,
+			);
+		}
+
+		/*
+		 * مرجع: `.download-section` → همین قاب؛ `.section-heading` → سرستون با
+		 * شمارش و گزینش فصل؛ `.season-tabs` → نوار فصل‌ها؛ `.demo-notice` →
+		 * یادداشت اثر؛ `.episode-card` → هر قسمت (آکاردئون با جدول کیفیت)؛
+		 * `.download-table` → جدول کیفیت/فرمت/حجم/کنش‌ها. قسمت‌ها و فصل‌ها
+		 * با همان قرارداد بلوک `manacore/episodes-list` کار می‌کنند، پس
+		 * `front.js` (`initEpisodeCards`) بی‌تغییر کار می‌کند.
 		 */
 		ob_start();
 		?>
-		<section class="download-section<?php echo 'cards' === $box_style ? '' : ' is-' . esc_attr( $box_style ); ?><?php echo 'series' === $args['mode'] ? ' is-series' : ''; ?>"
+		<section class="download-section<?php echo 'cards' === $box_style ? '' : ' is-' . esc_attr( $box_style ); ?><?php echo $is_series ? ' is-series' : ''; ?>"
 			id="download" data-manacore-downloads="<?php echo esc_attr( $post_id ); ?>"
+			<?php if ( $is_series ) : ?>data-manacore-episodes="<?php echo esc_attr( $post_id ); ?>"<?php endif; ?>
 			data-mode="<?php echo esc_attr( $args['mode'] ); ?>">
 			<div class="section-heading">
 				<div class="heading-title">
 					<?php if ( $args['show_icon'] ) : ?>
 						<?php /* نشانه‌ی بخش، مثل مرجع یک نویسه‌ی متنی است (`detail.html`). */ ?>
-						<span class="section-icon" aria-hidden="true">⇩</span>
+						<span class="section-icon" aria-hidden="true"><?php echo $is_series ? '▤' : '⇩'; ?></span>
 					<?php endif; ?>
 					<<?php echo esc_html( $heading_tag ); ?>><?php echo esc_html( $heading ); ?></<?php echo esc_html( $heading_tag ); ?>>
 				</div>
@@ -538,6 +611,18 @@ class Templates {
 						);
 						?>
 					</span>
+				<?php endif; ?>
+				<?php if ( $multi ) : ?>
+					<label class="manacore-season-select">
+						<span class="screen-reader-text"><?php esc_html_e( 'انتخاب فصل', 'manacore' ); ?></span>
+						<select data-season-select aria-label="<?php esc_attr_e( 'انتخاب فصل', 'manacore' ); ?>">
+							<?php $first = true; ?>
+							<?php foreach ( array_keys( $by_season ) as $season ) : ?>
+								<option value="<?php echo esc_attr( $season ); ?>"<?php echo $first ? ' selected' : ''; ?>><?php echo esc_html( self::season_label( $season ) ); ?></option>
+								<?php $first = false; ?>
+							<?php endforeach; ?>
+						</select>
+					</label>
 				<?php endif; ?>
 			</div>
 
@@ -555,18 +640,17 @@ class Templates {
 			<?php endif; ?>
 
 			<?php if ( $multi ) : ?>
-				<div class="manacore-season-tabs" role="tablist">
+				<div class="season-tabs manacore-season-tabs" role="tablist" aria-label="<?php esc_attr_e( 'فصل‌ها', 'manacore' ); ?>">
 					<?php $first = true; ?>
-					<?php foreach ( array_keys( $by_season ) as $season ) : ?>
-						<button type="button" class="manacore-season-tab<?php echo $first ? ' is-active' : ''; ?>"
-							data-season-tab="<?php echo esc_attr( $season ); ?>" role="tab"
-							aria-selected="<?php echo $first ? 'true' : 'false'; ?>">
-							<?php
-							echo $season
-								/* translators: %s: شماره فصل */
-								? esc_html( sprintf( __( 'فصل %s', 'manacore' ), number_format_i18n( $season ) ) )
-								: esc_html__( 'عمومی', 'manacore' );
-							?>
+					<?php foreach ( $layout as $season => $parts ) : ?>
+						<button type="button" role="tab" class="<?php echo $first ? 'active' : ''; ?>"
+							data-season="<?php echo esc_attr( $season ); ?>"
+							aria-selected="<?php echo $first ? 'true' : 'false'; ?>"
+							aria-controls="<?php echo esc_attr( self::season_panel_id( $post_id, $season ) ); ?>">
+							<?php echo esc_html( self::season_label( $season ) ); ?>
+							<?php if ( $args['show_count'] && ! empty( $parts['cards'] ) ) : ?>
+								<small><?php echo esc_html( sprintf( /* translators: %s: تعداد قسمت */ __( '%s قسمت', 'manacore' ), manacore_fa_digits( number_format_i18n( count( $parts['cards'] ) ) ) ) ); ?></small>
+							<?php endif; ?>
 						</button>
 						<?php $first = false; ?>
 					<?php endforeach; ?>
@@ -574,41 +658,44 @@ class Templates {
 			<?php endif; ?>
 
 			<?php $first = true; ?>
-			<?php foreach ( $by_season as $season => $season_groups ) : ?>
+			<?php foreach ( $layout as $season => $parts ) : ?>
 				<div class="manacore-season-panel<?php echo ( ! $multi || $first ) ? ' is-active' : ''; ?>"
-					data-season-panel="<?php echo esc_attr( $season ); ?>">
-					<div class="download-table">
-						<div class="download-table-header">
-							<span><?php esc_html_e( 'کیفیت تصویر', 'manacore' ); ?></span>
-							<span><?php esc_html_e( 'فرمت', 'manacore' ); ?></span>
-							<span><?php echo esc_html( $size_label ); ?></span>
-							<span><?php esc_html_e( 'پخش و دانلود', 'manacore' ); ?></span>
-						</div>
-						<?php foreach ( $season_groups as $group ) : ?>
+					id="<?php echo esc_attr( self::season_panel_id( $post_id, $season ) ); ?>"
+					data-season-panel="<?php echo esc_attr( $season ); ?>"<?php echo ( $multi && ! $first ) ? ' hidden' : ''; ?>>
+					<?php if ( $parts['packs'] ) : ?>
+						<div class="download-table download-packs" data-season-packs="<?php echo esc_attr( $season ); ?>">
+							<div class="download-table-header">
+								<span><?php esc_html_e( 'کیفیت تصویر', 'manacore' ); ?></span>
+								<span><?php esc_html_e( 'فرمت', 'manacore' ); ?></span>
+								<span><?php echo esc_html( $size_label ); ?></span>
+								<span><?php esc_html_e( 'پخش و دانلود', 'manacore' ); ?></span>
+							</div>
 							<?php
-							/*
-							 * در حالت سریال، هر گروه «بسته‌ی کامل فصل» است؛
-							 * نشان ریزِ زیر کیفیت همین را به کاربر می‌گوید
-							 * (در حالت فیلم/قسمت، همان برچسب زبان می‌ماند).
-							 *
-							 * ردیف‌های قسمت‌ها مالک جدا دارند: امضای دانلود
-							 * و شمارش باید روی شناسه‌ی خودِ قسمت انجام شود و
-							 * دکمه‌ی پخش به همان قسمت برود.
-							 */
-							$row_post   = ! empty( $group['owner'] ) ? (int) $group['owner'] : (int) $post_id;
-							$row_access = $row_post === (int) $post_id ? $has_access : manacore_user_can_access( $row_post );
-							$row_play   = '';
-							$row_badge  = 'series' === $args['mode'] ? $pack_label : '';
+							foreach ( $parts['packs'] as $group ) {
+								// ردیف‌های بی‌شماره، ردیف «بسته» هستند؛ مالک آن‌ها خودِ اثر است.
+								$row_post   = ! empty( $group['owner'] ) ? (int) $group['owner'] : (int) $post_id;
+								$row_access = $row_post === (int) $post_id ? $has_access : manacore_user_can_access( $row_post );
+								$row_play   = '';
+								$row_badge  = 'series' === $labels['mode'] ? $labels['pack'] : '';
 
-							if ( ! empty( $group['owner'] ) ) {
-								$row_badge = self::episode_row_badge( $group, $args['episode_label'] );
-								$row_play  = self::episode_play_url( $post_id, (int) $season, $group );
+								if ( ! empty( $group['owner'] ) ) {
+									$row_play  = self::episode_play_url( $post_id, (int) $season, $group );
+									$row_badge = self::episode_row_badge( $group, $labels['episode'] );
+								}
+
+								echo self::link_row( $group, $row_access, $row_post, $row_play, $row_badge ); // phpcs:ignore WordPress.Security.EscapeOutput
 							}
-
-							echo self::link_row( $group, $row_access, $row_post, $row_play, $row_badge ); // phpcs:ignore WordPress.Security.EscapeOutput
 							?>
-						<?php endforeach; ?>
-					</div>
+						</div>
+					<?php endif; ?>
+
+					<?php if ( $parts['cards'] ) : ?>
+						<div class="episode-list">
+							<?php foreach ( $parts['cards'] as $index => $card_groups ) : ?>
+								<?php echo self::episode_card( $card_groups, (int) $season, $post_id, $has_access, 0 === $index, $labels ); // phpcs:ignore WordPress.Security.EscapeOutput ?>
+							<?php endforeach; ?>
+						</div>
+					<?php endif; ?>
 				</div>
 				<?php $first = false; ?>
 			<?php endforeach; ?>
@@ -640,6 +727,150 @@ class Templates {
 		</section>
 		<?php
 		return (string) ob_get_clean();
+	}
+
+	/**
+	 * کارت یک قسمت (`.episode-card` مرجع): سرِ کلیک‌خور با شماره، عنوان،
+	 * زیرنویس و فلش، دکمه‌ی پخش گرد، و جدول کیفیت‌های همان قسمت.
+	 *
+	 * جدول‌ها از سمت سرور ساخته می‌شوند تا جست‌وجو و خزش‌گرها همه‌ی لینک‌ها
+	 * را ببینند؛ `front.js` فقط باز/بسته‌کردن را به عهده دارد.
+	 *
+	 * @param array  $groups   گروه‌های یک قسمت (هم‌مالک و هم‌شماره).
+	 * @param int    $season   شماره‌ی فصل (۰ = عمومی).
+	 * @param int    $post_id  شناسه‌ی سریال.
+	 * @param bool   $has_access دسترسی کاربر به سریال.
+	 * @param bool   $expanded  آیا کارت باز باشد.
+	 * @param array  $labels    برچسب‌های قسمت، بسته و حجم.
+	 * @return string
+	 */
+	protected static function episode_card( $groups, $season, $post_id, $has_access, $expanded, $labels ) {
+		$first    = $groups[0];
+		$number   = max( 0, (int) $first['episode'] );
+		$owner    = (int) ( $first['owner'] ?? $post_id );
+		$body_id  = 'episode-download-' . $owner . '-' . (int) $season . '-' . $number;
+		$title    = trim( (string) ( $first['episode_label'] ?? '' ) );
+		$row_access = $owner === (int) $post_id ? $has_access : manacore_user_can_access( $owner );
+		$play_url = self::episode_play_url( $post_id, (int) $season, $first );
+		$number_fa = manacore_fa_digits( number_format_i18n( $number ) );
+		$play_label = sprintf(
+			/* translators: %s: شماره قسمت */
+			__( 'پخش قسمت %s', 'manacore' ),
+			$number_fa
+		);
+
+		$language = '';
+		foreach ( $groups as $group ) {
+			if ( ! empty( $group['language'] ) ) {
+				$language = Links::language_label( $group['language'] );
+				break;
+			}
+		}
+
+		$meta = array();
+		if ( (int) $season > 0 ) {
+			$meta[] = self::season_label( $season );
+		}
+		if ( '' !== $title ) {
+			$meta[] = $title;
+		}
+		$small = implode( ' · ', $meta );
+
+		ob_start();
+		?>
+		<article class="episode-card<?php echo $expanded ? ' expanded' : ''; ?>">
+			<div class="episode-heading">
+				<button type="button" class="episode-toggle" data-episode="<?php echo esc_attr( $number ); ?>"
+					aria-controls="<?php echo esc_attr( $body_id ); ?>"
+					aria-expanded="<?php echo $expanded ? 'true' : 'false'; ?>">
+					<span class="episode-number"><?php echo esc_html( manacore_fa_digits( str_pad( (string) $number, 2, '0', STR_PAD_LEFT ) ) ); ?></span>
+					<span>
+						<strong><?php echo esc_html( self::episode_number_label( $number, $labels['episode'] ) ); ?></strong>
+						<?php if ( '' !== $small ) : ?>
+							<small><?php echo esc_html( $small ); ?></small>
+						<?php endif; ?>
+					</span>
+					<?php if ( '' !== $language ) : ?>
+						<span class="episode-subtitle"><?php echo esc_html( $language ); ?></span>
+					<?php endif; ?>
+					<span class="episode-chevron" aria-hidden="true">
+						<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+					</span>
+				</button>
+				<?php if ( '' !== $play_url ) : ?>
+					<a class="episode-play" href="<?php echo esc_url( $play_url ); ?>"
+						title="<?php echo esc_attr( $play_label ); ?>" aria-label="<?php echo esc_attr( $play_label ); ?>">
+						<svg viewBox="0 0 24 24" width="17" height="17" fill="currentColor" aria-hidden="true"><path d="m8 5 11 7-11 7V5Z"/></svg>
+					</a>
+				<?php endif; ?>
+			</div>
+			<div class="download-table episode-download" id="<?php echo esc_attr( $body_id ); ?>"<?php echo $expanded ? '' : ' hidden'; ?>>
+				<div class="download-table-header">
+					<span><?php esc_html_e( 'کیفیت تصویر', 'manacore' ); ?></span>
+					<span><?php esc_html_e( 'فرمت', 'manacore' ); ?></span>
+					<span><?php echo esc_html( $labels['size'] ); ?></span>
+					<span><?php esc_html_e( 'پخش و دانلود', 'manacore' ); ?></span>
+				</div>
+				<?php
+				foreach ( $groups as $group ) {
+					// بدون نشان ریز: شماره و عنوان قسمت همین بالای کارت آمده‌اند.
+					echo self::link_row( $group, $row_access, $owner, $play_url, '' ); // phpcs:ignore WordPress.Security.EscapeOutput
+				}
+				?>
+			</div>
+		</article>
+		<?php
+		return (string) ob_get_clean();
+	}
+
+	/**
+	 * شناسه‌ی پایدار پنل یک فصل (برای `aria-controls` تب‌ها).
+	 *
+	 * @param int $post_id شناسه‌ی پست.
+	 * @param int $season  شماره‌ی فصل.
+	 * @return string
+	 */
+	protected static function season_panel_id( $post_id, $season ) {
+		return 'manacore-season-' . (int) $post_id . '-' . (int) $season;
+	}
+
+	/**
+	 * برچسب فصل (۰ = «عمومی»).
+	 *
+	 * @param int $season شماره‌ی فصل.
+	 * @return string
+	 */
+	protected static function season_label( $season ) {
+		if ( (int) $season <= 0 ) {
+			return __( 'عمومی', 'manacore' );
+		}
+
+		return sprintf(
+			/* translators: %s: شماره فصل */
+			__( 'فصل %s', 'manacore' ),
+			manacore_fa_digits( number_format_i18n( (int) $season ) )
+		);
+	}
+
+	/**
+	 * برچسب شماره‌ی قسمت؛ الگوی مدیر می‌تواند `%s` داشته باشد.
+	 *
+	 * @param int    $number   شماره‌ی قسمت.
+	 * @param string $template الگوی دلخواه (خالی = پیش‌فرض).
+	 * @return string
+	 */
+	protected static function episode_number_label( $number, $template = '' ) {
+		$template = trim( (string) $template );
+
+		if ( '' === $template ) {
+			$template = __( 'قسمت %s', 'manacore' );
+		}
+
+		$digits = manacore_fa_digits( number_format_i18n( max( 0, (int) $number ) ) );
+
+		return false === strpos( $template, '%' )
+			? trim( $template . ' ' . $digits )
+			: str_replace( array( '%s', '%d' ), $digits, $template );
 	}
 
 	/**
@@ -713,17 +944,7 @@ class Templates {
 	 * @return string
 	 */
 	protected static function episode_row_badge( $group, $label = '' ) {
-		$template = trim( (string) $label );
-
-		if ( '' === $template ) {
-			$template = __( 'قسمت %s', 'manacore' );
-		}
-
-		$number = manacore_fa_digits( number_format_i18n( max( 0, (int) ( $group['episode'] ?? 0 ) ) ) );
-
-		$badge = false === strpos( $template, '%' )
-			? trim( $template . ' ' . $number )
-			: str_replace( array( '%s', '%d' ), $number, $template );
+		$badge = self::episode_number_label( (int) ( $group['episode'] ?? 0 ), $label );
 
 		if ( ! empty( $group['language'] ) ) {
 			$badge .= ' · ' . Links::language_label( $group['language'] );
