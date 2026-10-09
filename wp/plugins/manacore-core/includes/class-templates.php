@@ -1408,6 +1408,16 @@ class Templates {
 		}
 
 		switch ( $field ) {
+			case 'director':
+			case 'writer':
+			case 'producer':
+			case 'composer':
+				$crew = Crew::html( $post_id, $field );
+				return '' !== $crew ? array(
+					'label' => $label,
+					'value' => $crew,
+				) : null;
+
 			case 'year':
 				$year = self::year( $post_id );
 				return $year ? array(

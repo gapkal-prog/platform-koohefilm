@@ -1152,3 +1152,228 @@ body:not(.rtl) .manacore-switch input:checked + .manacore-switch-track .manacore
 		align-self: flex-start;
 	}
 }
+
+/* ---------- عوامل: برچسب‌ها، جست‌وجو و پیوند بازیگر ---------- */
+
+.manacore-people {
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+}
+
+.manacore-people-chips {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 6px;
+}
+
+.manacore-people-chips:empty {
+	display: none;
+}
+
+.manacore-chip {
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
+	max-width: 100%;
+	padding: 3px 4px 3px 10px;
+	border: 1px solid #c3d4ea;
+	border-radius: 999px;
+	background: #eef4fb;
+	color: #1d3f63;
+	font-size: 13px;
+	line-height: 1.6;
+}
+
+.manacore-chip.is-linked {
+	border-color: #9fc7a6;
+	background: #eef8f0;
+	color: #1f5130;
+}
+
+.manacore-chip-name {
+	overflow-wrap: anywhere;
+}
+
+.manacore-chip-remove {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 22px;
+	height: 22px;
+	padding: 0;
+	border: 0;
+	border-radius: 999px;
+	background: transparent;
+	color: inherit;
+	cursor: pointer;
+}
+
+.manacore-chip-remove:hover,
+.manacore-chip-remove:focus-visible {
+	background: rgba(0, 0, 0, 0.08);
+	outline: 2px solid var(--mc-accent);
+	outline-offset: 1px;
+}
+
+.manacore-chip-remove .dashicons {
+	width: 14px;
+	height: 14px;
+	font-size: 14px;
+}
+
+.manacore-people-results {
+	display: flex;
+	flex-direction: column;
+	max-height: 260px;
+	overflow-y: auto;
+	border: 1px solid var(--mc-border);
+	border-radius: 8px;
+	background: #fff;
+	box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
+}
+
+.manacore-people-results[hidden] {
+	display: none;
+}
+
+.manacore-people-option {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 2px 8px;
+	width: 100%;
+	padding: 8px 10px;
+	border: 0;
+	border-bottom: 1px solid #f0f0f1;
+	background: transparent;
+	color: #1d2327;
+	font-size: 13px;
+	text-align: start;
+	cursor: pointer;
+}
+
+.manacore-people-option:last-child {
+	border-bottom: 0;
+}
+
+.manacore-people-option:hover,
+.manacore-people-option.is-active {
+	background: #f0f6fc;
+}
+
+.manacore-people-option:focus-visible {
+	outline: 2px solid var(--mc-accent);
+	outline-offset: -2px;
+}
+
+.manacore-people-option.is-free .manacore-people-name {
+	color: var(--mc-accent);
+	font-weight: 600;
+}
+
+.manacore-people-name {
+	font-weight: 600;
+}
+
+.manacore-people-meta {
+	flex: 1 1 100%;
+	color: var(--mc-muted);
+	font-size: 12px;
+	direction: ltr;
+	text-align: start;
+	unicode-bidi: plaintext;
+}
+
+.manacore-people-badge {
+	margin-inline-start: auto;
+	padding: 1px 8px;
+	border-radius: 999px;
+	background: #e7f5ea;
+	color: #1f5130;
+	font-size: 11px;
+}
+
+.manacore-people-empty {
+	margin: 0;
+	padding: 10px;
+	color: var(--mc-muted);
+	font-size: 12px;
+}
+
+.manacore-people-finder {
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+	margin-bottom: 16px;
+	padding: 14px;
+	border: 1px solid #c3d4ea;
+	border-radius: var(--mc-radius);
+	background: #f5f9fd;
+}
+
+.manacore-people-finder-head {
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+}
+
+.manacore-people-finder-row {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) 160px;
+	gap: 8px;
+}
+
+.manacore-people-finder-row select {
+	min-width: 0;
+}
+
+@media (max-width: 782px) {
+	.manacore-people-finder-row {
+		grid-template-columns: 1fr;
+	}
+}
+
+.manacore-sub-picker {
+	position: relative;
+}
+
+.manacore-sub-label {
+	font-size: 12px;
+	color: var(--mc-muted);
+}
+
+.manacore-sub-picker .manacore-people-results {
+	margin-top: 4px;
+}
+
+.manacore-person-badge {
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
+	color: #1f5130;
+	font-size: 12px;
+}
+
+.manacore-person-badge[hidden] {
+	display: none;
+}
+
+.manacore-person-badge .dashicons {
+	width: 16px;
+	height: 16px;
+	font-size: 16px;
+}
+
+.manacore-person-badge .button-link {
+	font-size: 12px;
+}
+
+.manacore-repeater-row .manacore-sub-picker .manacore-person-search {
+	width: 100%;
+	border-radius: 6px;
+	border: 1px solid var(--mc-border);
+	padding: 5px 8px;
+	font-size: 13px;
+}

@@ -220,6 +220,11 @@ class Metaboxes {
 			<?php foreach ( $groups as $key => $group ) : ?>
 				<div class="manacore-tab-panel<?php echo $first ? ' is-active' : ''; ?>"
 					data-panel="<?php echo esc_attr( $key ); ?>" role="tabpanel">
+					<?php
+					if ( 'credits' === $key ) {
+						$this->render_people_finder();
+					}
+					?>
 					<div class="manacore-grid">
 						<?php
 						foreach ( $group['fields'] as $field_key => $field ) {
@@ -320,7 +325,7 @@ class Metaboxes {
 	protected function render_field( $key, $field, $post_id ) {
 		$value = get_post_meta( $post_id, $key, true );
 		$attrs = isset( $field['attrs'] ) ? $field['attrs'] : array();
-		$wide  = in_array( $field['type'], array( 'textarea', 'repeater', 'gallery' ), true );
+		$wide  = in_array( $field['type'], array( 'textarea', 'repeater', 'gallery', 'people' ), true );
 
 		$attr_string = '';
 		foreach ( $attrs as $attr_key => $attr_value ) {
@@ -420,6 +425,10 @@ class Metaboxes {
 					$this->render_repeater( $key, $field, $value );
 					break;
 
+				case 'people':
+					$this->render_people( $key, $field, $value );
+					break;
+
 				default:
 					?>
 					<input type="<?php echo esc_attr( $field['type'] ); ?>"
@@ -446,7 +455,7 @@ class Metaboxes {
 	 */
 	protected function render_repeater( $key, $field, $value ) {
 		$rows = is_string( $value ) ? json_decode( $value, true ) : $value;
-		$rows = is_array( $rows ) ? $rows : array();
+		$rows = is_array( $rows ) ? array_values( array_filter( $rows, 'is_array' ) ) : array();
 		?>
 		<div class="manacore-repeater" data-repeater="<?php echo esc_attr( $key ); ?>">
 			<div class="manacore-repeater-rows">
@@ -454,19 +463,11 @@ class Metaboxes {
 					<div class="manacore-repeater-row">
 						<span class="manacore-drag dashicons dashicons-menu"></span>
 						<div class="manacore-repeater-fields">
-							<?php foreach ( $field['subfields'] as $sub_key => $sub ) : ?>
-								<label class="manacore-sub">
-									<span><?php echo esc_html( $sub['label'] ); ?></span>
-									<?php if ( 'textarea' === $sub['type'] ) : ?>
-										<textarea rows="2"
-											name="<?php echo esc_attr( $key ); ?>[<?php echo esc_attr( $index ); ?>][<?php echo esc_attr( $sub_key ); ?>]"><?php echo esc_textarea( (string) ( $row[ $sub_key ] ?? '' ) ); ?></textarea>
-									<?php else : ?>
-										<input type="<?php echo esc_attr( 'image_url' === $sub['type'] ? 'url' : $sub['type'] ); ?>"
-											name="<?php echo esc_attr( $key ); ?>[<?php echo esc_attr( $index ); ?>][<?php echo esc_attr( $sub_key ); ?>]"
-											value="<?php echo esc_attr( (string) ( $row[ $sub_key ] ?? '' ) ); ?>" />
-									<?php endif; ?>
-								</label>
-							<?php endforeach; ?>
+							<?php
+							foreach ( $field['subfields'] as $sub_key => $sub ) {
+								$this->render_repeater_sub( $key, $index, $sub_key, $sub, $row );
+							}
+							?>
 						</div>
 						<button type="button" class="button-link manacore-repeater-remove" aria-label="<?php esc_attr_e( 'حذف', 'manacore' ); ?>">
 							<span class="dashicons dashicons-trash"></span>
@@ -479,17 +480,11 @@ class Metaboxes {
 				<div class="manacore-repeater-row">
 					<span class="manacore-drag dashicons dashicons-menu"></span>
 					<div class="manacore-repeater-fields">
-						<?php foreach ( $field['subfields'] as $sub_key => $sub ) : ?>
-							<label class="manacore-sub">
-								<span><?php echo esc_html( $sub['label'] ); ?></span>
-								<?php if ( 'textarea' === $sub['type'] ) : ?>
-									<textarea rows="2" name="<?php echo esc_attr( $key ); ?>[__INDEX__][<?php echo esc_attr( $sub_key ); ?>]"></textarea>
-								<?php else : ?>
-									<input type="<?php echo esc_attr( 'image_url' === $sub['type'] ? 'url' : $sub['type'] ); ?>"
-										name="<?php echo esc_attr( $key ); ?>[__INDEX__][<?php echo esc_attr( $sub_key ); ?>]" value="" />
-								<?php endif; ?>
-							</label>
-						<?php endforeach; ?>
+						<?php
+						foreach ( $field['subfields'] as $sub_key => $sub ) {
+							$this->render_repeater_sub( $key, '__INDEX__', $sub_key, $sub, array() );
+						}
+						?>
 					</div>
 					<button type="button" class="button-link manacore-repeater-remove" aria-label="<?php esc_attr_e( 'حذف', 'manacore' ); ?>">
 						<span class="dashicons dashicons-trash"></span>
@@ -501,6 +496,122 @@ class Metaboxes {
 				<span class="dashicons dashicons-plus-alt2"></span>
 				<?php esc_html_e( 'افزودن ردیف', 'manacore' ); ?>
 			</button>
+		</div>
+		<?php
+	}
+
+	/**
+	 * رندر یک زیرفیلد ریپیتر (متن، متن بلند، نشانی، پیکر عامل یا مخفی).
+	 *
+	 * @param string     $key       کلید ریپیتر.
+	 * @param string|int $index     اندیس ردیف یا `__INDEX__` برای الگو.
+	 * @param string     $sub_key   کلید زیرفیلد.
+	 * @param array      $sub       تعریف زیرفیلد.
+	 * @param array      $row       داده‌ی ردیف (خالی برای الگو).
+	 */
+	protected function render_repeater_sub( $key, $index, $sub_key, array $sub, array $row ) {
+		$name  = $key . '[' . $index . '][' . $sub_key . ']';
+		$value = (string) ( $row[ $sub_key ] ?? '' );
+		$type  = (string) ( $sub['type'] ?? 'text' );
+
+		if ( ! empty( $sub['hidden'] ) ) {
+			?>
+			<input type="hidden" name="<?php echo esc_attr( $name ); ?>" value="<?php echo esc_attr( $value ); ?>" />
+			<?php
+			return;
+		}
+
+		if ( ! empty( $sub['picker'] ) ) {
+			$person_id = Crew::valid_person_id( $row['person_id'] ?? 0 );
+			?>
+			<div class="manacore-sub manacore-sub-picker" data-person-picker>
+				<span class="manacore-sub-label"><?php echo esc_html( $sub['label'] ); ?></span>
+				<input type="text" class="manacore-person-search" name="<?php echo esc_attr( $name ); ?>"
+					value="<?php echo esc_attr( $value ); ?>" autocomplete="off"
+					role="combobox" aria-autocomplete="list" aria-expanded="false"
+					aria-label="<?php esc_attr_e( 'نام بازیگر؛ برای پیوند به صفحه‌ی عامل جست‌وجو کنید', 'manacore' ); ?>"
+					placeholder="<?php esc_attr_e( 'جست‌وجوی عامل یا نام آزاد…', 'manacore' ); ?>"
+					data-person-search data-role="cast" />
+				<div class="manacore-people-results" data-people-results role="listbox" hidden></div>
+				<span class="manacore-person-badge" data-person-badge<?php echo $person_id ? '' : ' hidden'; ?>>
+					<span class="dashicons dashicons-yes-alt" aria-hidden="true"></span>
+					<?php esc_html_e( 'به صفحه‌ی عامل پیوند خورده', 'manacore' ); ?>
+					<button type="button" class="button-link" data-person-unlink><?php esc_html_e( 'جدا کردن', 'manacore' ); ?></button>
+				</span>
+			</div>
+			<?php
+			return;
+		}
+		?>
+		<label class="manacore-sub">
+			<span><?php echo esc_html( $sub['label'] ); ?></span>
+			<?php if ( 'textarea' === $type ) : ?>
+				<textarea rows="2" name="<?php echo esc_attr( $name ); ?>"><?php echo esc_textarea( $value ); ?></textarea>
+			<?php else : ?>
+				<input type="<?php echo esc_attr( 'image_url' === $type ? 'url' : $type ); ?>"
+					name="<?php echo esc_attr( $name ); ?>" value="<?php echo esc_attr( $value ); ?>" />
+			<?php endif; ?>
+		</label>
+		<?php
+	}
+
+	/**
+	 * رندر فیلد عوامل به‌صورت برچسب (chip) با جست‌وجوی عوامل ثبت‌شده و نام آزاد.
+	 *
+	 * مقدار واقعی در ورودی مخفی به‌صورت JSON نگه‌داری می‌شود؛ رابط برچسب‌ها در
+	 * admin-people.js ساخته می‌شود.
+	 *
+	 * @param string $key   کلید متا.
+	 * @param array  $field تعریف فیلد.
+	 * @param mixed  $value مقدار ذخیره‌شده (JSON یا متن قدیمی).
+	 */
+	protected function render_people( $key, $field, $value ) {
+		$items = Crew::parse( $value );
+		$role  = (string) ( $field['role'] ?? '' );
+		$label = (string) $field['label'];
+		?>
+		<div class="manacore-people" data-people="<?php echo esc_attr( $role ); ?>">
+			<div class="manacore-people-chips" data-people-chips></div>
+			<input type="search" class="widefat manacore-people-input" autocomplete="off"
+				role="combobox" aria-autocomplete="list" aria-expanded="false"
+				aria-label="<?php echo esc_attr( sprintf( /* translators: %s: نام نقش */ __( 'افزودن %s', 'manacore' ), $label ) ); ?>"
+				placeholder="<?php esc_attr_e( 'نام عامل را جست‌وجو کنید یا نام آزاد را تایپ و Enter بزنید…', 'manacore' ); ?>"
+				data-people-input />
+			<div class="manacore-people-results" data-people-results role="listbox" hidden></div>
+			<input type="hidden" id="<?php echo esc_attr( $key ); ?>" name="<?php echo esc_attr( $key ); ?>"
+				value="<?php echo esc_attr( Crew::encode( $items ) ); ?>" data-people-value />
+		</div>
+		<?php
+	}
+
+	/**
+	 * پنل جست‌وجوی عوامل ثبت‌شده در تب «عوامل»؛ انتخاب هر عامل به نقش انتخابی اضافه می‌شود.
+	 */
+	protected function render_people_finder() {
+		$roles = array(
+			'director' => __( 'کارگردان', 'manacore' ),
+			'writer'   => __( 'نویسنده', 'manacore' ),
+			'producer' => __( 'تهیه‌کننده', 'manacore' ),
+			'composer' => __( 'آهنگساز', 'manacore' ),
+			'cast'     => __( 'بازیگر', 'manacore' ),
+		);
+		?>
+		<div class="manacore-people-finder" data-people-finder>
+			<div class="manacore-people-finder-head">
+				<strong><?php esc_html_e( 'جست‌وجوی عوامل ثبت‌شده', 'manacore' ); ?></strong>
+				<span class="manacore-desc"><?php esc_html_e( 'عامل را پیدا کنید و به نقش موردنظر اضافه کنید. عوامل از بخش «عوامل» خوانده می‌شوند.', 'manacore' ); ?></span>
+			</div>
+			<div class="manacore-people-finder-row">
+				<input type="search" class="widefat" autocomplete="off" data-finder-input
+					aria-label="<?php esc_attr_e( 'جست‌وجوی عامل', 'manacore' ); ?>"
+					placeholder="<?php esc_attr_e( 'نام فارسی، لاتین یا اصلی عامل…', 'manacore' ); ?>" />
+				<select data-finder-role aria-label="<?php esc_attr_e( 'نقش', 'manacore' ); ?>">
+					<?php foreach ( $roles as $role_key => $role_label ) : ?>
+						<option value="<?php echo esc_attr( $role_key ); ?>"><?php echo esc_html( $role_label ); ?></option>
+					<?php endforeach; ?>
+				</select>
+			</div>
+			<div class="manacore-people-results" data-finder-results role="listbox" hidden></div>
 		</div>
 		<?php
 	}
@@ -710,6 +821,8 @@ class Metaboxes {
 				$value = isset( $row[ $sub_key ] ) ? $row[ $sub_key ] : '';
 				if ( 'image_url' === $sub['type'] || 'url' === $sub['type'] ) {
 					$value = esc_url_raw( trim( (string) $value ) );
+				} elseif ( 'person_id' === $sub_key ) {
+					$value = Crew::valid_person_id( $value ) ?: '';
 				} elseif ( 'number' === $sub['type'] ) {
 					$value = '' === trim( (string) $value ) ? '' : (float) $value;
 				} elseif ( 'textarea' === $sub['type'] ) {
@@ -762,6 +875,9 @@ class Metaboxes {
 				return isset( $field['options'][ $val ] ) ? $val : '';
 			case 'post_select':
 				return absint( $raw ) ?: '';
+			case 'people':
+				$items = Crew::sanitize( (string) $raw );
+				return $items ? Crew::encode( $items ) : '';
 			default:
 				return sanitize_text_field( (string) $raw );
 		}

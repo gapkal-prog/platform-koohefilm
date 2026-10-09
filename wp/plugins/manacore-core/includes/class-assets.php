@@ -81,6 +81,14 @@ class Assets {
 			true
 		);
 
+		wp_enqueue_script(
+			'manacore-admin-people',
+			MANACORE_URL . 'assets/js/admin-people.js',
+			array( 'manacore-admin-links' ),
+			MANACORE_VERSION,
+			true
+		);
+
 		wp_localize_script(
 			'manacore-admin-links',
 			'manaCoreAdmin',
@@ -97,6 +105,13 @@ class Assets {
 					'importedGroup' => __( 'گروه وارد شده', 'manacore' ),
 					'noGroups'      => __( 'هنوز گروهی اضافه نشده است. با دکمه‌ی «افزودن گروه لینک» شروع کنید.', 'manacore' ),
 					'untitledGroup' => __( 'گروه بدون عنوان', 'manacore' ),
+					'roleMatch'     => __( 'نقش مطابق', 'manacore' ),
+					'addFree'       => __( 'افزودن «%s» به‌عنوان نام آزاد', 'manacore' ),
+					'noResults'     => __( 'عاملی پیدا نشد.', 'manacore' ),
+					'searchError'   => __( 'خطا در جست‌وجو. دوباره تلاش کنید.', 'manacore' ),
+					'linked'        => __( 'به صفحه‌ی عامل پیوند خورده', 'manacore' ),
+					'removeName'    => __( 'حذف %s', 'manacore' ),
+					'roleMissing'   => __( 'این نقش برای این نوع محتوا فعال نیست.', 'manacore' ),
 					'linkUnit'      => __( 'لینک', 'manacore' ),
 					'toggle'        => __( 'باز/بسته کردن', 'manacore' ),
 					'moveUp'        => __( 'انتقال به بالا', 'manacore' ),

@@ -22,6 +22,33 @@ class Query {
 	public function hooks() {
 		add_action( 'pre_get_posts', array( $this, 'adjust' ) );
 		add_filter( 'posts_search', array( $this, 'search_meta' ), 10, 2 );
+		add_action( 'manacore_after_save_meta', array( $this, 'flush_person_cache' ) );
+		add_action( 'save_post_person', array( $this, 'flush_person_cache' ) );
+	}
+
+	/**
+	 * پاک‌کردن کش «آثار این عامل» پس از تغییر اثر یا عامل.
+	 *
+	 * برای اثر، کش همه‌ی عواملی که در آن آمده‌اند پاک می‌شود؛ برای عامل، کش خودش.
+	 *
+	 * @param int $post_id شناسه‌ی پست.
+	 */
+	public function flush_person_cache( $post_id ) {
+		$post_id = absint( $post_id );
+
+		if ( 'person' === get_post_type( $post_id ) ) {
+			delete_transient( 'manacore_person_works_' . $post_id );
+			return;
+		}
+
+		$roles = array_merge( array_values( Crew::ROLE_FIELDS ), array( 'cast' ) );
+		foreach ( $roles as $role ) {
+			foreach ( Crew::items( $post_id, $role ) as $item ) {
+				if ( ! empty( $item['person_id'] ) ) {
+					delete_transient( 'manacore_person_works_' . absint( $item['person_id'] ) );
+				}
+			}
+		}
 	}
 
 	/**
@@ -507,22 +534,27 @@ class Query {
 		if ( ! is_array( $cached ) ) {
 			global $wpdb;
 
-			$name = get_the_title( $person_id );
-			$like = '%' . $wpdb->esc_like( $name ) . '%';
+			$name = trim( (string) get_the_title( $person_id ) );
 
 			/*
-			 * manacore_cast یک فیلد JSON است (repeater)؛ جست‌وجوی متنی روی
-			 * نام + بازیگر + کارگردان/نویسنده‌ی متنی، هر دو مسیر را پوشش می‌دهد.
+			 * پیوند دقیق با شناسه (person_id در JSON عوامل و بازیگران) و پیوند
+			 * قدیمی با نام (متن ساده‌ی ایمپورتر و داده‌های بی‌شناسه). نام خالی
+			 * نباید به LIKE '%%' تبدیل شود که همه‌ی آثار را برمی‌گرداند.
 			 */
+			$id_like = '%"person_id":' . $person_id . '}%';
+			$like    = '' !== $name ? '%' . $wpdb->esc_like( $name ) . '%' : '';
+			$by_name = '' !== $like ? $like : $id_like;
+
 			$found = array_map(
 				'absint',
 				(array) $wpdb->get_col(
 					$wpdb->prepare(
 						"SELECT DISTINCT post_id FROM {$wpdb->postmeta}
-						 WHERE meta_key IN ('manacore_cast','manacore_director','manacore_writer')
-						 AND meta_value LIKE %s
+						 WHERE meta_key IN ('manacore_cast','manacore_director','manacore_writer','manacore_producer','manacore_composer')
+						 AND (meta_value LIKE %s OR meta_value LIKE %s)
 						 LIMIT 200",
-						$like
+						$by_name,
+						$id_like
 					)
 				)
 			);

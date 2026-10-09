@@ -155,6 +155,35 @@ class Rest_Api {
 			)
 		);
 
+		// جست‌وجوی عوامل برای پیشخوان (فقط ویرایشگران).
+		register_rest_route(
+			self::NS,
+			'/people',
+			array(
+				'methods'             => \WP_REST_Server::READABLE,
+				'callback'            => array( $this, 'people' ),
+				'permission_callback' => array( $this, 'verify_editor' ),
+				'args'                => array(
+					'q'    => array(
+						'type'              => 'string',
+						'default'           => '',
+						'sanitize_callback' => 'sanitize_text_field',
+					),
+					'role' => array(
+						'type'              => 'string',
+						'default'           => '',
+						'sanitize_callback' => 'sanitize_key',
+						'enum'              => array( '', 'director', 'writer', 'producer', 'composer', 'cast' ),
+					),
+					'limit' => array(
+						'type'              => 'integer',
+						'default'           => 10,
+						'sanitize_callback' => 'absint',
+					),
+				),
+			)
+		);
+
 		register_rest_route(
 			self::NS,
 			'/titles',
@@ -305,6 +334,31 @@ class Rest_Api {
 		}
 
 		return rest_ensure_response( $payload );
+	}
+
+	/**
+	 * مجوز ویرایشگر برای مسیرهای پیشخوان.
+	 *
+	 * @return bool
+	 */
+	public function verify_editor() {
+		return current_user_can( 'edit_posts' );
+	}
+
+	/**
+	 * جست‌وجوی عوامل ثبت‌شده (CPT person) برای برچسب‌های پیشخوان.
+	 *
+	 * @param \WP_REST_Request $request درخواست.
+	 * @return \WP_REST_Response
+	 */
+	public function people( $request ) {
+		$items = Crew::search(
+			(string) $request->get_param( 'q' ),
+			(string) $request->get_param( 'role' ),
+			(int) $request->get_param( 'limit' )
+		);
+
+		return rest_ensure_response( array( 'items' => $items ) );
 	}
 
 	/**

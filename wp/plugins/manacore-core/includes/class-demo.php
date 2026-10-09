@@ -419,11 +419,15 @@ class Demo {
 					'post_title'   => $person['name'],
 					'post_name'    => sanitize_title( $person['name'] ),
 					'post_content' => '<!-- wp:paragraph --><p>' . $person['role'] . '</p><!-- /wp:paragraph -->',
-				),
-				array( 'manacore_person_role' => $person['role'] )
+				)
 			);
 
 			if ( $id ) {
+				// نقش عامل ترم تاکسونومی person_role است (همان منبع بلوک و جست‌وجوی عوامل).
+				if ( taxonomy_exists( 'person_role' ) ) {
+					wp_set_object_terms( $id, (string) $person['role'], 'person_role', false );
+				}
+
 				$ids[ $person['name'] ] = $id;
 				$result['ids']['person'][] = $id;
 			}

@@ -318,23 +318,27 @@ class Meta {
 				'fields' => array(
 					'manacore_director' => array(
 						'label'       => __( 'کارگردان', 'manacore' ),
-						'type'        => 'text',
+						'type'        => 'people',
+						'role'        => 'director',
 						'post_types'  => $all,
-						'description' => __( 'نام‌ها را با ویرگول جدا کنید.', 'manacore' ),
+						'description' => __( 'نام عامل را جست‌وجو کنید تا از صفحه‌ی عوامل انتخاب شود، یا نام آزاد را وارد و Enter بزنید.', 'manacore' ),
 					),
 					'manacore_writer' => array(
 						'label'      => __( 'نویسنده', 'manacore' ),
-						'type'       => 'text',
+						'type'       => 'people',
+						'role'       => 'writer',
 						'post_types' => $all,
 					),
 					'manacore_producer' => array(
 						'label'      => __( 'تهیه‌کننده', 'manacore' ),
-						'type'       => 'text',
+						'type'       => 'people',
+						'role'       => 'producer',
 						'post_types' => $titles,
 					),
 					'manacore_composer' => array(
 						'label'      => __( 'آهنگساز', 'manacore' ),
-						'type'       => 'text',
+						'type'       => 'people',
+						'role'       => 'composer',
 						'post_types' => $titles,
 					),
 					'manacore_cast' => array(
@@ -343,8 +347,9 @@ class Meta {
 						'post_types' => $titles,
 						'subfields'  => array(
 							'name'      => array(
-								'label' => __( 'نام', 'manacore' ),
-								'type'  => 'text',
+								'label'  => __( 'نام', 'manacore' ),
+								'type'   => 'text',
+								'picker' => 'person',
 							),
 							'character' => array(
 								'label' => __( 'نقش', 'manacore' ),
@@ -355,8 +360,9 @@ class Meta {
 								'type'  => 'image_url',
 							),
 							'person_id' => array(
-								'label' => __( 'شناسه عامل', 'manacore' ),
-								'type'  => 'number',
+								'label'  => __( 'شناسه عامل', 'manacore' ),
+								'type'   => 'number',
+								'hidden' => true,
 							),
 						),
 					),
@@ -571,10 +577,34 @@ class Meta {
 						'post_types'  => $people,
 						'description' => __( 'زیر نام فارسی و چپ‌چین نمایش داده می‌شود (هم‌ارز `person-english` مرجع).', 'manacore' ),
 					),
+					'manacore_person_original_name' => array(
+						'label'       => __( 'نام اصلی', 'manacore' ),
+						'type'        => 'text',
+						'post_types'  => $people,
+						'description' => __( 'نام به خط و زبان اصلی عامل (مثلاً ژاپنی، کره‌ای، روسی). در جست‌وجوی عوامل هم دیده می‌شود.', 'manacore' ),
+					),
 					'manacore_person_born' => array(
-						'label'      => __( 'زادروز', 'manacore' ),
-						'type'       => 'text',
-						'post_types' => $people,
+						'label'       => __( 'تاریخ تولد (متن آزاد)', 'manacore' ),
+						'type'        => 'text',
+						'post_types'  => $people,
+						'description' => __( 'مثلاً «۲۰ فروردین ۱۳۶۲». برای نمایش عددی از «سال تولد» استفاده کنید.', 'manacore' ),
+					),
+					'manacore_person_birth_year' => array(
+						'label'       => __( 'سال تولد', 'manacore' ),
+						'type'        => 'number',
+						'post_types'  => $people,
+						'attrs'       => array(
+							'min'  => 1800,
+							'max'  => 2100,
+							'step' => 1,
+						),
+						'description' => __( 'عدد چهار رقمی میلادی یا خورشیدی؛ در کارت و صفحه‌ی عامل نمایش داده می‌شود.', 'manacore' ),
+					),
+					'manacore_person_birthplace' => array(
+						'label'       => __( 'اهل کجاست', 'manacore' ),
+						'type'        => 'text',
+						'post_types'  => $people,
+						'description' => __( 'شهر یا منطقه‌ی محل تولد، مثلاً «تهران».', 'manacore' ),
 					),
 					'manacore_country' => array(
 						'label'      => __( 'کشور', 'manacore' ),

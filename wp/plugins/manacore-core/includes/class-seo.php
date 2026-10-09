@@ -130,16 +130,16 @@ class Seo {
 			$data['genre'] = wp_list_pluck( $genres, 'name' );
 		}
 
-		$director = get_post_meta( $post_id, 'manacore_director', true );
-		if ( $director ) {
+		$directors = Crew::names( Crew::items( $post_id, 'director' ) );
+		if ( $directors ) {
 			$data['director'] = array_map(
 				static function ( $name ) {
 					return array(
 						'@type' => 'Person',
-						'name'  => trim( $name ),
+						'name'  => $name,
 					);
 				},
-				explode( ',', (string) $director )
+				$directors
 			);
 		}
 

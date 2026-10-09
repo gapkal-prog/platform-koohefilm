@@ -8552,6 +8552,25 @@ body.manacore-modal-open {
 	text-align: right;
 }
 
+.person-original {
+	margin-top: 4px;
+	color: var(--mc-text-muted);
+	font-size: 14px;
+}
+
+/* نام عامل در فهرست عوامل اثر: لینک به صفحه‌ی عامل، با خط زیر قابل‌دیدن. */
+.manacore-person-link {
+	color: inherit;
+	text-decoration: underline;
+	text-decoration-color: color-mix(in srgb, currentColor 35%, transparent);
+	text-underline-offset: 3px;
+}
+
+.manacore-person-link:hover,
+.manacore-person-link:focus-visible {
+	text-decoration-color: currentColor;
+}
+
 .person-facts {
 	display: flex;
 	flex-wrap: wrap;

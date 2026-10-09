@@ -3901,9 +3901,8 @@ class Blocks {
 			return Block_Support::render_empty( $attrs, 'manacore-cast' );
 		}
 
-		$cast = get_post_meta( $post_id, 'manacore_cast', true );
-		$cast = is_string( $cast ) ? json_decode( $cast, true ) : $cast;
-		if ( ! is_array( $cast ) || empty( $cast ) ) {
+		$cast = Crew::cast( $post_id );
+		if ( empty( $cast ) ) {
 			return Block_Support::render_empty( $attrs, 'manacore-cast' );
 		}
 
@@ -3932,7 +3931,7 @@ class Blocks {
 			if ( empty( $person['name'] ) ) {
 				continue;
 			}
-			$photo = ! empty( $person['photo'] ) ? $person['photo'] : MANACORE_URL . 'assets/avatar.svg';
+			$photo = $person['photo'] ?: Crew::photo( $person['person_id'] ) ?: MANACORE_URL . 'assets/avatar.svg';
 			?>
 			<figure class="manacore-cast-item<?php echo $ratio ? ' is-ratio-' . esc_attr( $ratio ) : ''; ?>">
 				<?php if ( ! empty( $attrs['showPhoto'] ) ) : ?>
@@ -3940,7 +3939,7 @@ class Blocks {
 						loading="lazy" decoding="async" />
 				<?php endif; ?>
 				<figcaption>
-					<strong><?php echo esc_html( $person['name'] ); ?></strong>
+					<strong><?php echo Crew::link_html( $person ); // phpcs:ignore WordPress.Security.EscapeOutput -- نام و نشانی در Crew::link_html escape می‌شوند. ?></strong>
 					<?php if ( ! empty( $attrs['showCharacter'] ) && ! empty( $person['character'] ) ) : ?>
 						<span><?php echo esc_html( $person['character'] ); ?></span>
 					<?php endif; ?>
@@ -8591,9 +8590,20 @@ class Blocks {
 			);
 		}
 
-		$english = trim( (string) get_post_meta( $post_id, 'manacore_person_english', true ) );
-		$born    = trim( (string) get_post_meta( $post_id, 'manacore_person_born', true ) );
-		$country = trim( (string) get_post_meta( $post_id, 'manacore_country', true ) );
+		$english    = trim( (string) get_post_meta( $post_id, 'manacore_person_english', true ) );
+		$original   = trim( (string) get_post_meta( $post_id, 'manacore_person_original_name', true ) );
+		$born       = trim( (string) get_post_meta( $post_id, 'manacore_person_born', true ) );
+		$birth_year = (int) get_post_meta( $post_id, 'manacore_person_birth_year', true );
+		$birthplace = trim( (string) get_post_meta( $post_id, 'manacore_person_birthplace', true ) );
+		$country    = trim( (string) get_post_meta( $post_id, 'manacore_country', true ) );
+
+		// تاریخ متنی آزاد اولویت دارد؛ وگرنه سال عددی (با رقم فارسی).
+		if ( '' === $born && $birth_year > 0 ) {
+			$born = manacore_fa_digits( $birth_year );
+		}
+
+		// «اهل کجاست» کنار کشور: مثلاً «تهران، ایران».
+		$origin = implode( '، ', array_filter( array( $birthplace, $country ) ) );
 
 		$facts = array();
 
@@ -8604,10 +8614,10 @@ class Blocks {
 			);
 		}
 
-		if ( ! empty( $attrs['showCountry'] ) && '' !== $country ) {
+		if ( ! empty( $attrs['showCountry'] ) && '' !== $origin ) {
 			$facts[] = sprintf(
 				'<span><span class="person-fact-icon" aria-hidden="true">◌</span>%s</span>',
-				esc_html( $country )
+				esc_html( $origin )
 			);
 		}
 
@@ -8627,6 +8637,10 @@ class Blocks {
 		$english_html = ( ! empty( $attrs['showEnglish'] ) && '' !== $english )
 			? '<p class="person-english" dir="ltr">' . esc_html( $english ) . '</p>'
 			: '';
+
+		if ( ! empty( $attrs['showEnglish'] ) && '' !== $original ) {
+			$english_html .= '<p class="person-original" dir="auto">' . esc_html( $original ) . '</p>';
+		}
 
 		if ( '' === $english_html && ! $facts ) {
 			return Block_Support::render_empty( $attrs, 'manacore-person-meta' );
