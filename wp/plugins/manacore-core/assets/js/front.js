@@ -1434,13 +1434,15 @@
 			var current = 0;
 			var timer = null;
 			var paused = false;
+			var hovered = false;
+			var focused = false;
 
 			// تنظیمات از ویرایشگر بلوک روی خود عنصر نوشته می‌شود.
 			var autoplay = '0' !== hero.getAttribute( 'data-autoplay' );
 			var tilt = 'true' === hero.getAttribute( 'data-tilt' );
 			var interval = parseInt( hero.getAttribute( 'data-interval' ), 10 );
 			if ( ! interval || interval < 1500 ) {
-				interval = 7000;
+				interval = 10000;
 			}
 
 			var prevBtn = hero.querySelector( '[data-hero-prev]' );
@@ -1515,23 +1517,35 @@
 				}
 			} );
 
-			hero.addEventListener( 'focusin', function () {
-				paused = true;
-				stop();
+			/*
+			 * توقف روی هاور و فوکوس جدا نگه داشته می‌شود: خروج فوکوس وقتی
+			 * ماوس هنوز روی اسلایدر است، پخش را دوباره روشن نمی‌کند.
+			 */
+			// فقط فوکوس صفحه‌کلید پخش را متوقف می‌کند؛ کلیک ماوس روی فلش/نقطه
+			// دکمه را فوکوس می‌کند و نباید پس از خروج ماوس پخش را خاموش نگه دارد.
+			hero.addEventListener( 'focusin', function ( event ) {
+				focused = event.target.matches( ':focus-visible' );
+				if ( focused ) {
+					paused = true;
+					stop();
+				}
 			} );
 
 			hero.addEventListener( 'focusout', function () {
-				paused = false;
+				focused = false;
+				paused = hovered;
 				start();
 			} );
 
 			hero.addEventListener( 'mouseenter', function () {
+				hovered = true;
 				paused = true;
 				stop();
 			} );
 
 			hero.addEventListener( 'mouseleave', function () {
-				paused = false;
+				hovered = false;
+				paused = focused;
 				hero.style.removeProperty( '--mc-hero-tilt' );
 				start();
 			} );

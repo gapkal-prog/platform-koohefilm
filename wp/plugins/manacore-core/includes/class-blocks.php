@@ -2450,7 +2450,7 @@ class Blocks {
 	public static function hero_defaults() {
 		$effects  = array_keys( Block_Data::slider_effects() );
 		$effect   = (string) manacore_get_option( 'hero_effect', 'fade' );
-		$interval = (int) manacore_get_option( 'hero_interval', 7 );
+		$interval = (int) manacore_get_option( 'hero_interval', 10 );
 
 		$defaults = array(
 			'autoplay' => (bool) manacore_get_option( 'hero_autoplay', 1 ),
