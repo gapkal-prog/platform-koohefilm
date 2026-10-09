@@ -516,6 +516,39 @@ class Meta {
 				),
 			),
 
+			/* ---------------- تب: اطلاعات مجموعه ---------------- */
+			'collection' => array(
+				'label'  => __( 'اطلاعات مجموعه', 'manacore' ),
+				'icon'   => 'images-alt2',
+				'fields' => array(
+					'manacore_collection_subtitle' => array(
+						'label'       => __( 'زیرعنوان مجموعه', 'manacore' ),
+						'type'        => 'text',
+						'post_types'  => array( 'collection' ),
+						'description' => __( 'توضیح کوتاه زیر عنوان در کارت و صفحه‌ی مجموعه.', 'manacore' ),
+					),
+					'manacore_collection_cover' => array(
+						'label'       => __( 'تصویر کاور', 'manacore' ),
+						'type'        => 'image_url',
+						'post_types'  => array( 'collection' ),
+						'description' => __( 'اگر خالی باشد، تصویر شاخص مجموعه نمایش داده می‌شود.', 'manacore' ),
+					),
+					'manacore_collection_sort' => array(
+						'label'       => __( 'ترتیب نمایش آثار', 'manacore' ),
+						'type'        => 'select',
+						'post_types'  => array( 'collection' ),
+						'options'     => array(
+							'manual'  => __( 'دستی (ترتیب فهرست آثار)', 'manacore' ),
+							'newest'  => __( 'جدیدترین ابتدا', 'manacore' ),
+							'oldest'  => __( 'قدیمی‌ترین ابتدا', 'manacore' ),
+							'rating'  => __( 'بالاترین امتیاز IMDb', 'manacore' ),
+							'title'   => __( 'عنوان (الفبایی)', 'manacore' ),
+						),
+						'description' => __( 'فقط وقتی فهرست دستی آثار خالی باشد اعمال می‌شود. در ترتیب امتیاز IMDb، آثار بدون امتیاز نمایش داده نمی‌شوند.', 'manacore' ),
+					),
+				),
+			),
+
 			/* ---------------- تب: کانال پخش زنده ---------------- */
 			'channel' => array(
 				'label'  => __( 'کانال', 'manacore' ),
@@ -562,6 +595,18 @@ class Meta {
 						'type'        => 'image_url',
 						'post_types'  => array( 'channel' ),
 						'description' => __( 'اگر تصویر شاخص گذاشته شود، همان اولویت دارد.', 'manacore' ),
+					),
+					'manacore_channel_now' => array(
+						'label'       => __( 'اثر در حال پخش', 'manacore' ),
+						'type'        => 'work_select',
+						'post_types'  => array( 'channel' ),
+						'description' => __( 'اختیاری. با جست‌وجوی عنوان انتخاب کنید؛ در صفحه‌ی پخش زنده به‌عنوان «اثر این کانال» نمایش داده می‌شود.', 'manacore' ),
+					),
+					'manacore_channel_hidden' => array(
+						'label'       => __( 'پنهان از فهرست کانال‌ها', 'manacore' ),
+						'type'        => 'checkbox',
+						'post_types'  => array( 'channel' ),
+						'description' => __( 'وقتی روشن باشد، کانال از فهرست و پخش پیش‌فرض حذف می‌شود؛ نشانی مستقیم آن همچنان کار می‌کند.', 'manacore' ),
 					),
 				),
 			),

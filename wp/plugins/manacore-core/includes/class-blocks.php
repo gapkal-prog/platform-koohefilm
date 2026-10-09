@@ -5708,10 +5708,14 @@ class Blocks {
 				$url   = get_term_link( $item );
 				$image = (string) get_term_meta( $item->term_id, 'manacore_term_image', true );
 			} else {
-				$title = get_the_title( $item );
-				$desc  = wp_strip_all_tags( get_the_excerpt( $item ) );
-				$url   = get_permalink( $item );
-				$image = $this->media_url( $item->ID, 'large' );
+				$title    = get_the_title( $item );
+				$subtitle = (string) get_post_meta( $item->ID, 'manacore_collection_subtitle', true );
+				$desc     = wp_strip_all_tags( '' !== trim( $subtitle ) ? $subtitle : get_the_excerpt( $item ) );
+				$url      = get_permalink( $item );
+				$image    = Collection::cover( $item->ID, 'large' );
+				if ( '' === $image ) {
+					$image = $this->media_url( $item->ID, 'large' );
+				}
 			}
 
 			$url = is_wp_error( $url ) ? '#' : $url;
@@ -9183,6 +9187,12 @@ class Blocks {
 					<h2 id="live-title"><?php echo esc_html( $title ); ?></h2>
 					<?php if ( '' !== $subtitle ) : ?>
 						<p id="live-subtitle"><?php echo esc_html( $subtitle ); ?></p>
+					<?php endif; ?>
+					<?php if ( ! empty( $channel['now'] ) ) : ?>
+						<p class="live-now-work">
+							<span><?php esc_html_e( 'اثر در حال پخش:', 'manacore' ); ?></span>
+							<a href="<?php echo esc_url( $channel['now']['url'] ); ?>"><?php echo esc_html( $channel['now']['title'] ); ?></a>
+						</p>
 					<?php endif; ?>
 				</div>
 				<div class="live-player-actions">

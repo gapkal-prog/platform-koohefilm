@@ -3,21 +3,16 @@
  * عوامل ثبت‌شده (CPT person)، پنل جست‌وجوی تب «عوامل» و پیوند ردیف‌های بازیگران.
  *
  * همه‌ی متن‌های برگرفته از داده با textContent ساخته می‌شوند (بدون innerHTML).
- * وابسته به window.manaCoreAdmin که در class-assets.php محلی‌سازی می‌شود.
+ * وابسته به admin-picker.js (window.ManaCorePicker) که پیش از این فایل بار می‌شود.
  */
 (function () {
 	'use strict';
 
-	var cfg = window.manaCoreAdmin || {};
+	var picker = window.ManaCorePicker;
 	var MAX_ITEMS = 50;
-
-	function t( key, fallback ) {
-		return ( cfg.i18n && cfg.i18n[ key ] ) || fallback;
-	}
-
-	function format( text, value ) {
-		return String( text ).replace( '%s', value );
-	}
+	var t = picker.t;
+	var format = picker.format;
+	var el = picker.el;
 
 	/**
 	 * جست‌وجوی عوامل از REST. خروجی: آرایه‌ی عامل‌ها.
@@ -26,34 +21,9 @@
 	 * @return {Promise<Array>}
 	 */
 	function searchPeople( params ) {
-		var url = new URL( ( cfg.restUrl || '' ) + 'people', window.location.href );
-
-		Object.keys( params ).forEach( function ( key ) {
-			url.searchParams.set( key, params[ key ] );
-		} );
-
-		return fetch( url.toString(), {
-			credentials: 'same-origin',
-			headers: { 'X-WP-Nonce': cfg.nonce || '' },
-		} ).then( function ( response ) {
-			if ( ! response.ok ) {
-				throw new Error( 'HTTP ' + response.status );
-			}
-			return response.json();
-		} ).then( function ( data ) {
+		return picker.api( 'people', params ).then( function ( data ) {
 			return data && Array.isArray( data.items ) ? data.items : [];
 		} );
-	}
-
-	function el( tag, className, text ) {
-		var node = document.createElement( tag );
-		if ( className ) {
-			node.className = className;
-		}
-		if ( undefined !== text ) {
-			node.textContent = text;
-		}
-		return node;
 	}
 
 	/**
@@ -85,7 +55,7 @@
 	}
 
 	/**
-	 * جعبه‌ی پیشنهاد با کیبورد برای یک ورودی.
+	 * جعبه‌ی پیشنهاد عوامل: منبع REST و نمای مخصوص عامل روی combobox مشترک.
 	 *
 	 * @param {HTMLInputElement} input ورودی.
 	 * @param {HTMLElement}      box   جعبه‌ی نتایج.
@@ -93,177 +63,31 @@
 	 * @return {{close: Function}}
 	 */
 	function combobox( input, box, opts ) {
-		var state = { seq: 0, timer: 0, active: -1 };
-
 		function currentRole() {
 			return typeof opts.role === 'function' ? opts.role() : ( opts.role || '' );
 		}
 
-		function open() {
-			box.hidden = false;
-			input.setAttribute( 'aria-expanded', 'true' );
-		}
-
-		function close() {
-			state.active = -1;
-			box.hidden = true;
-			box.textContent = '';
-			input.setAttribute( 'aria-expanded', 'false' );
-		}
-
-		function options() {
-			return Array.prototype.slice.call( box.querySelectorAll( '[role="option"]' ) );
-		}
-
-		function moveActive( step ) {
-			var list = options();
-			if ( ! list.length ) {
-				return;
-			}
-			state.active = ( state.active + step + list.length ) % list.length;
-			list.forEach( function ( node, index ) {
-				var on = index === state.active;
-				node.classList.toggle( 'is-active', on );
-				node.setAttribute( 'aria-selected', on ? 'true' : 'false' );
-			} );
-		}
-
-		function option( label, meta, onChoose ) {
-			var node = el( 'button', 'manacore-people-option' );
-			node.type = 'button';
-			node.setAttribute( 'role', 'option' );
-			node.setAttribute( 'aria-selected', 'false' );
-			node.appendChild( el( 'span', 'manacore-people-name', label ) );
-			if ( meta ) {
-				node.appendChild( el( 'span', 'manacore-people-meta', meta ) );
-			}
-			node.addEventListener( 'mousedown', function ( event ) {
-				// نگه‌داشتن فوکوس تا blur پیش از انتخاب، جعبه را نبندد.
-				event.preventDefault();
-				onChoose();
-			} );
-			return node;
-		}
-
-		function message( text ) {
-			box.appendChild( el( 'p', 'manacore-people-empty', text ) );
-		}
-
-		function render( items, query ) {
-			box.textContent = '';
-			var role = currentRole();
-
-			items.forEach( function ( item ) {
-				var node = option( item.name, metaLine( item ), function () {
-					opts.onPick( item );
-					close();
+		return picker.combobox( input, box, {
+			browse: opts.browse,
+			allowFree: opts.allowFree,
+			onPick: opts.onPick,
+			onFree: opts.onFree,
+			search: function ( query ) {
+				return searchPeople( {
+					q: query,
+					role: currentRole(),
+					limit: 8,
 				} );
-
-				if ( item.role_match && role ) {
-					node.classList.add( 'is-role-match' );
-					node.appendChild( el( 'span', 'manacore-people-badge', t( 'roleMatch', 'نقش مطابق' ) ) );
+			},
+			option: function ( item ) {
+				var data = { label: item.name, meta: metaLine( item ) };
+				if ( item.role_match && currentRole() ) {
+					data.badge = t( 'roleMatch', 'نقش مطابق' );
+					data.className = 'is-role-match';
 				}
-
-				box.appendChild( node );
-			} );
-
-			var exact = items.some( function ( item ) {
-				return item.name.toLowerCase() === query.toLowerCase();
-			} );
-
-			if ( query && opts.allowFree && ! exact ) {
-				var free = option(
-					format( t( 'addFree', 'افزودن «%s» به‌عنوان نام آزاد' ), query ),
-					'',
-					function () {
-						opts.onFree( query );
-						close();
-					}
-				);
-				free.classList.add( 'is-free' );
-				box.appendChild( free );
-			}
-
-			if ( ! items.length && ! ( query && opts.allowFree ) ) {
-				message( t( 'noResults', 'عاملی پیدا نشد.' ) );
-			}
-
-			state.active = -1;
-			open();
-		}
-
-		function load( query ) {
-			var seq = ++state.seq;
-
-			searchPeople( {
-				q: query,
-				role: currentRole(),
-				limit: 8,
-			} ).then( function ( items ) {
-				if ( seq === state.seq ) {
-					render( items, query );
-				}
-			} ).catch( function () {
-				if ( seq === state.seq ) {
-					box.textContent = '';
-					message( t( 'searchError', 'خطا در جست‌وجو. دوباره تلاش کنید.' ) );
-					open();
-				}
-			} );
-		}
-
-		input.addEventListener( 'input', function () {
-			var query = input.value.trim();
-			window.clearTimeout( state.timer );
-
-			if ( ! query && ! opts.browse ) {
-				close();
-				return;
-			}
-
-			state.timer = window.setTimeout( function () {
-				load( query );
-			}, 200 );
+				return data;
+			},
 		} );
-
-		input.addEventListener( 'focus', function () {
-			if ( opts.browse && ! input.value.trim() ) {
-				load( '' );
-			}
-		} );
-
-		input.addEventListener( 'keydown', function ( event ) {
-			var list = options();
-
-			if ( 'ArrowDown' === event.key ) {
-				event.preventDefault();
-				if ( box.hidden ) {
-					load( input.value.trim() );
-				} else {
-					moveActive( 1 );
-				}
-			} else if ( 'ArrowUp' === event.key ) {
-				event.preventDefault();
-				moveActive( -1 );
-			} else if ( 'Enter' === event.key ) {
-				// Enter هرگز فرم پست را ارسال نکند.
-				event.preventDefault();
-				if ( state.active >= 0 && list[ state.active ] ) {
-					list[ state.active ].dispatchEvent( new MouseEvent( 'mousedown' ) );
-				} else if ( input.value.trim() && opts.allowFree ) {
-					opts.onFree( input.value.trim() );
-					close();
-				}
-			} else if ( 'Escape' === event.key ) {
-				close();
-			}
-		} );
-
-		input.addEventListener( 'blur', function () {
-			window.setTimeout( close, 150 );
-		} );
-
-		return { close: close };
 	}
 
 	/**
@@ -466,7 +290,7 @@
 			var field = document.querySelector( '[data-people="' + role + '"]' );
 			if ( ! field || ! field.manaCorePeople ) {
 				box.textContent = '';
-				box.appendChild( el( 'p', 'manacore-people-empty', t( 'roleMissing', 'این نقش برای این نوع محتوا فعال نیست.' ) ) );
+				box.appendChild( el( 'p', 'manacore-picker-empty', t( 'roleMissing', 'این نقش برای این نوع محتوا فعال نیست.' ) ) );
 				box.hidden = false;
 				return;
 			}

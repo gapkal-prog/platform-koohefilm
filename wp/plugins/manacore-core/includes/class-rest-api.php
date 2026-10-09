@@ -155,6 +155,39 @@ class Rest_Api {
 			)
 		);
 
+		// جست‌وجوی آثار برای انتخابگرهای پیشخوان (مجموعه و کانال).
+		register_rest_route(
+			self::NS,
+			'/works',
+			array(
+				'methods'             => \WP_REST_Server::READABLE,
+				'callback'            => array( $this, 'works' ),
+				'permission_callback' => array( $this, 'verify_editor' ),
+				'args'                => array(
+					'q'       => array(
+						'type'              => 'string',
+						'default'           => '',
+						'sanitize_callback' => 'sanitize_text_field',
+					),
+					'type'    => array(
+						'type'              => 'string',
+						'default'           => '',
+						'sanitize_callback' => 'sanitize_key',
+					),
+					'limit'   => array(
+						'type'              => 'integer',
+						'default'           => 15,
+						'sanitize_callback' => 'absint',
+					),
+					'exclude' => array(
+						'type'              => 'string',
+						'default'           => '',
+						'sanitize_callback' => 'sanitize_text_field',
+					),
+				),
+			)
+		);
+
 		// جست‌وجوی عوامل برای پیشخوان (فقط ویرایشگران).
 		register_rest_route(
 			self::NS,
@@ -356,6 +389,24 @@ class Rest_Api {
 			(string) $request->get_param( 'q' ),
 			(string) $request->get_param( 'role' ),
 			(int) $request->get_param( 'limit' )
+		);
+
+		return rest_ensure_response( array( 'items' => $items ) );
+	}
+
+	/**
+	 * جست‌وجوی آثار برای انتخابگرهای پیشخوان.
+	 *
+	 * @param \WP_REST_Request $request درخواست.
+	 * @return \WP_REST_Response
+	 */
+	public function works( $request ) {
+		$exclude = array_filter( array_map( 'absint', explode( ',', (string) $request->get_param( 'exclude' ) ) ) );
+		$items   = Picker::works(
+			(string) $request->get_param( 'q' ),
+			(string) $request->get_param( 'type' ),
+			(int) $request->get_param( 'limit' ),
+			$exclude
 		);
 
 		return rest_ensure_response( array( 'items' => $items ) );

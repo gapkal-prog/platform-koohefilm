@@ -45,7 +45,7 @@ class Assets {
 	 */
 	public function admin( $hook ) {
 		$screen     = get_current_screen();
-		$post_types = array_merge( manacore_title_post_types(), array( 'episode' ) );
+		$post_types = array_merge( manacore_title_post_types(), array( 'episode', 'collection', 'channel' ) );
 		$is_editor  = $screen && in_array( $screen->post_type, $post_types, true )
 			&& in_array( $hook, array( 'post.php', 'post-new.php' ), true );
 
@@ -73,6 +73,15 @@ class Assets {
 
 		wp_enqueue_media();
 
+		// ابزارهای مشترک انتخابگرها؛ داده‌ی محلی‌سازی‌شده‌ی manaCoreAdmin روی همین فایل است.
+		wp_enqueue_script(
+			'manacore-admin-picker',
+			MANACORE_URL . 'assets/js/admin-picker.js',
+			array(),
+			MANACORE_VERSION,
+			true
+		);
+
 		wp_enqueue_script(
 			'manacore-admin-links',
 			MANACORE_URL . 'assets/js/admin-links.js',
@@ -84,13 +93,21 @@ class Assets {
 		wp_enqueue_script(
 			'manacore-admin-people',
 			MANACORE_URL . 'assets/js/admin-people.js',
-			array( 'manacore-admin-links' ),
+			array( 'manacore-admin-picker' ),
+			MANACORE_VERSION,
+			true
+		);
+
+		wp_enqueue_script(
+			'manacore-admin-works',
+			MANACORE_URL . 'assets/js/admin-works.js',
+			array( 'manacore-admin-picker' ),
 			MANACORE_VERSION,
 			true
 		);
 
 		wp_localize_script(
-			'manacore-admin-links',
+			'manacore-admin-picker',
 			'manaCoreAdmin',
 			array(
 				'restUrl' => esc_url_raw( rest_url( 'manacore/v1/' ) ),
@@ -139,6 +156,26 @@ class Assets {
 					'removeLink'    => __( 'حذف لینک', 'manacore' ),
 					'choose'        => __( '— انتخاب —', 'manacore' ),
 					'selectImage'   => __( 'انتخاب تصویر', 'manacore' ),
+					'untitled'      => __( 'بدون عنوان', 'manacore' ),
+					'moveUpShort'   => __( 'بالا', 'manacore' ),
+					'moveDownShort' => __( 'پایین', 'manacore' ),
+					'removeShort'   => __( 'حذف', 'manacore' ),
+					'moveUpWork'    => __( 'انتقال «%s» به بالا', 'manacore' ),
+					'moveDownWork'  => __( 'انتقال «%s» به پایین', 'manacore' ),
+					'removeWork'    => __( 'حذف «%s» از مجموعه', 'manacore' ),
+					'removeItem'    => __( 'حذف «%s»', 'manacore' ),
+					'clearWork'     => __( 'حذف انتخاب', 'manacore' ),
+					'countWorks'    => __( '%s اثر', 'manacore' ),
+					'importLinked'  => __( 'افزودن آثار متصل (%s)', 'manacore' ),
+					'alreadyAdded'  => __( 'در فهرست', 'manacore' ),
+					'noWorks'       => __( 'اثری پیدا نشد.', 'manacore' ),
+					'maxWorks'      => __( 'حداکثر %s اثر در هر مجموعه مجاز است.', 'manacore' ),
+					'workAdded'     => __( '«%s» افزوده شد.', 'manacore' ),
+					'workRemoved'   => __( '«%s» حذف شد.', 'manacore' ),
+					'workMoved'     => __( '«%s» به موقعیت %s منتقل شد.', 'manacore' ),
+					'linkedAdded'   => __( '%s اثر متصل افزوده شد.', 'manacore' ),
+					'confirmClear'  => __( 'همه‌ی آثار این مجموعه از فهرست حذف شوند؟', 'manacore' ),
+					'clearedWorks'  => __( 'فهرست آثار خالی شد.', 'manacore' ),
 				),
 			)
 		);

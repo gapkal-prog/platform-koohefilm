@@ -749,15 +749,7 @@ class Query {
 			)
 		);
 
-		$ordered = get_post_meta( $collection_id, 'manacore_collection_items', true );
-
-		if ( is_array( $ordered ) ) {
-			$ordered = array_values( array_filter( array_map( 'absint', $ordered ) ) );
-		} elseif ( is_string( $ordered ) && '' !== $ordered ) {
-			$ordered = array_values( array_filter( array_map( 'absint', preg_split( '/[\s,]+/', $ordered ) ) ) );
-		} else {
-			$ordered = array();
-		}
+		$ordered = Collection::items( $collection_id );
 
 		/* فهرست دستی مجموعه، ترتیب و اعضا را تعیین می‌کند. */
 		if ( $ordered ) {
@@ -790,6 +782,12 @@ class Query {
 			$args['post__in'] = $ordered;
 			if ( empty( $args['orderby'] ) || 'post__in' === $args['orderby'] ) {
 				$args['orderby'] = 'post__in';
+			}
+		} else {
+			/* بدون فهرست دستی، ترتیب خودکار تنظیم‌شده‌ی مجموعه اعمال می‌شود. */
+			$sort = Collection::sort( $collection_id );
+			if ( 'manual' !== $sort ) {
+				$args = array_merge( $args, Collection::sort_args( $sort ) );
 			}
 		}
 

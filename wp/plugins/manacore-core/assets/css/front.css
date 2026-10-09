@@ -7799,6 +7799,27 @@ body.manacore-modal-open {
 	color: var(--mc-text-muted);
 }
 
+/* اثر در حال پخش کانال: پیوند خوانا زیر تیتر کانال. */
+.live-now-work {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 4px;
+	margin: 8px 0 0;
+	font-size: .8125rem;
+	color: var(--mc-text-muted);
+}
+
+.live-now-work a {
+	color: inherit;
+	font-weight: 600;
+	text-decoration: none;
+}
+
+.live-now-work a:hover,
+.live-now-work a:focus-visible {
+	text-decoration: underline;
+}
+
 .live-player-actions {
 	display: flex;
 	gap: 8px;

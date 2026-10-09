@@ -36,6 +36,8 @@ class Channel {
 		'icon'     => 'manacore_channel_icon',
 		'video'    => 'manacore_channel_video',
 		'poster'   => 'manacore_channel_poster',
+		'now'      => 'manacore_channel_now',
+		'hidden'   => 'manacore_channel_hidden',
 	);
 
 	/**
@@ -44,6 +46,62 @@ class Channel {
 	public function hooks() {
 		add_action( 'init', array( $this, 'register_rewrites' ), 20 );
 		add_action( 'init', array( $this, 'maybe_migrate_meta' ), 30 );
+		add_filter( 'manage_channel_posts_columns', array( $this, 'columns' ) );
+		add_action( 'manage_channel_posts_custom_column', array( $this, 'column' ), 10, 2 );
+	}
+
+	/**
+	 * ستون‌های فهرست کانال‌ها در پیشخوان: وضعیت پخش، اثر در حال پخش و کیفیت.
+	 *
+	 * @param array $columns ستون‌های پیش‌فرض.
+	 * @return array
+	 */
+	public function columns( $columns ) {
+		$out = array();
+
+		foreach ( $columns as $key => $label ) {
+			$out[ $key ] = $label;
+
+			if ( 'title' === $key ) {
+				$out['manacore_status']  = __( 'وضعیت پخش', 'manacore' );
+				$out['manacore_now']     = __( 'اثر در حال پخش', 'manacore' );
+				$out['manacore_quality'] = __( 'کیفیت', 'manacore' );
+			}
+		}
+
+		return $out;
+	}
+
+	/**
+	 * محتوای ستون‌های سفارشی فهرست کانال‌ها.
+	 *
+	 * @param string $column  نام ستون.
+	 * @param int    $post_id شناسه‌ی کانال.
+	 */
+	public function column( $column, $post_id ) {
+		switch ( $column ) {
+			case 'manacore_status':
+				if ( self::is_hidden( $post_id ) ) {
+					echo esc_html__( 'پنهان از فهرست', 'manacore' );
+				} else {
+					echo esc_html__( 'نمایش در فهرست', 'manacore' );
+				}
+				break;
+
+			case 'manacore_now':
+				$work = self::now_work( $post_id );
+				if ( $work ) {
+					echo esc_html( get_the_title( $work ) );
+				} else {
+					echo '—';
+				}
+				break;
+
+			case 'manacore_quality':
+				$quality = (string) get_post_meta( $post_id, self::META['quality'], true );
+				echo esc_html( $quality ? manacore_fa_digits( $quality ) . 'p' : '—' );
+				break;
+		}
 	}
 
 	/**
@@ -93,10 +151,14 @@ class Channel {
 	/**
 	 * کانال‌ها به ترتیب نمایش.
 	 *
-	 * @param int $limit شمار کانال‌ها (۰ = همه).
+	 * کانال‌های «پنهان از فهرست» جز با $include_hidden حذف می‌شوند؛ نشانی
+	 * مستقیم آن‌ها (resolve با نامک) همچنان کار می‌کند.
+	 *
+	 * @param int  $limit          شمار کانال‌ها (۰ = همه).
+	 * @param bool $include_hidden نمایش کانال‌های پنهان هم (برای مهاجرت و پیشخوان).
 	 * @return array<int,\WP_Post>
 	 */
-	public static function all( $limit = 0 ) {
+	public static function all( $limit = 0, $include_hidden = false ) {
 		$args = array(
 			'post_type'      => 'channel',
 			'post_status'    => 'publish',
@@ -115,7 +177,85 @@ class Channel {
 			'no_found_rows'  => true,
 		);
 
+		if ( ! $include_hidden ) {
+			$args['meta_query'] = array(  // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
+				'relation' => 'OR',
+				array(
+					'key'     => self::META['hidden'],
+					'compare' => 'NOT EXISTS',
+				),
+				array(
+					'key'     => self::META['hidden'],
+					'value'   => '1',
+					'compare' => '!=',
+				),
+			);
+		}
+
 		return get_posts( $args );
+	}
+
+	/**
+	 * آیا کانال از فهرست پنهان است؟
+	 *
+	 * @param int $post_id شناسه‌ی کانال.
+	 * @return bool
+	 */
+	public static function is_hidden( $post_id ) {
+		return '1' === (string) get_post_meta( (int) $post_id, self::META['hidden'], true );
+	}
+
+	/**
+	 * اثر انتخاب‌شده‌ی «در حال پخش» با هر وضعیت انتشار، یا null.
+	 *
+	 * @param int $post_id شناسه‌ی کانال.
+	 * @return \WP_Post|null
+	 */
+	public static function now_work( $post_id ) {
+		$work_id = absint( get_post_meta( (int) $post_id, self::META['now'], true ) );
+		if ( ! $work_id || ! in_array( get_post_type( $work_id ), array_merge( manacore_title_post_types(), array( 'episode' ) ), true ) ) {
+			return null;
+		}
+
+		$work = get_post( $work_id );
+
+		return $work instanceof \WP_Post ? $work : null;
+	}
+
+	/**
+	 * اثر «در حال پخش» برای نمایش عمومی (فقط آثار منتشرشده).
+	 *
+	 * @param int $post_id شناسه‌ی کانال.
+	 * @return array{id:int,title:string,url:string}|null
+	 */
+	public static function now_playing( $post_id ) {
+		$work = self::now_work( $post_id );
+		if ( ! $work || 'publish' !== $work->post_status ) {
+			return null;
+		}
+
+		return array(
+			'id'    => (int) $work->ID,
+			'title' => get_the_title( $work ),
+			'url'   => (string) get_permalink( $work ),
+		);
+	}
+
+	/**
+	 * پاک‌سازی نشانی ویدئوی پخش: فقط نشانی مطلق http(s) پذیرفته می‌شود.
+	 *
+	 * @param string $url نشانی خام.
+	 * @return string
+	 */
+	public static function clean_video( $url ) {
+		$url = trim( (string) $url );
+		if ( '' === $url ) {
+			return '';
+		}
+
+		$valid = wp_http_validate_url( $url );
+
+		return $valid ? esc_url_raw( $valid ) : '';
 	}
 
 	/**
@@ -160,7 +300,7 @@ class Channel {
 			return;
 		}
 
-		foreach ( self::all() as $post ) {
+		foreach ( self::all( 0, true ) as $post ) {
 			if ( '' !== (string) get_post_meta( $post->ID, self::META['title'], true ) ) {
 				continue;
 			}
@@ -241,9 +381,10 @@ class Channel {
 			'subtitle' => $meta['subtitle'],
 			'quality'  => $quality,
 			'icon'     => $icon,
-			'video'    => esc_url_raw( $meta['video'] ),
+			'video'    => self::clean_video( $meta['video'] ),
 			'poster'   => esc_url_raw( (string) self::poster( $id ) ),
 			'url'      => self::url( $obj ),
+			'now'      => self::now_playing( $id ),
 		);
 	}
 

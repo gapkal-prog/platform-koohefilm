@@ -72,6 +72,24 @@ class Metaboxes {
 		}
 
 		add_meta_box(
+			'manacore-details',
+			__( 'مشخصات کانال — ManaCore', 'manacore' ),
+			array( $this, 'render_details' ),
+			'channel',
+			'normal',
+			'high'
+		);
+
+		add_meta_box(
+			'manacore-details',
+			__( 'اطلاعات مجموعه — ManaCore', 'manacore' ),
+			array( $this, 'render_details' ),
+			'collection',
+			'normal',
+			'high'
+		);
+
+		add_meta_box(
 			'manacore-collection-items',
 			__( 'آثار این مجموعه — ManaCore', 'manacore' ),
 			array( $this, 'render_collection_items' ),
@@ -86,36 +104,29 @@ class Metaboxes {
 	 *
 	 * ترتیب دستی اعضا در متای manacore_collection_items نگهداری می‌شود و
 	 * بلوک manacore/titles-grid با source="collection" از همان ترتیب پیروی می‌کند.
-	 * در نبود فهرست دستی، آثاری که متای manacore_collection آن‌ها به این
-	 * مجموعه اشاره دارد نمایش داده می‌شوند.
+	 * در نبود فهرست دستی، ترتیب خودکار مجموعه (manacore_collection_sort) و سپس
+	 * آثاری که متای manacore_collection آن‌ها به این مجموعه اشاره دارد نمایش داده می‌شوند.
+	 *
+	 * رابط با admin-works.js کار می‌کند؛ داده‌ی اولیه از JSON و یک فیلد پنهان
+	 * بدون JS (برای حفظ ترتیب ذخیره‌شده) فراهم می‌شود.
 	 *
 	 * @param \WP_Post $post پست مجموعه.
 	 */
 	public function render_collection_items( $post ) {
 		wp_nonce_field( self::NONCE, self::NONCE );
 
-		$stored = get_post_meta( $post->ID, 'manacore_collection_items', true );
-
-		if ( is_array( $stored ) ) {
-			$selected = array_values( array_filter( array_map( 'absint', $stored ) ) );
-		} elseif ( is_string( $stored ) && '' !== $stored ) {
-			$selected = array_values( array_filter( array_map( 'absint', preg_split( '/[\s,]+/', $stored ) ) ) );
-		} else {
-			$selected = array();
+		$selected = array();
+		foreach ( Collection::items( $post->ID ) as $id ) {
+			if ( Collection::is_work( $id ) ) {
+				$item = Picker::item( $id );
+				if ( $item ) {
+					$selected[] = $item;
+				}
+			}
 		}
 
-		$titles = get_posts(
-			array(
-				'post_type'      => manacore_title_post_types(),
-				'posts_per_page' => 500,
-				'orderby'        => 'title',
-				'order'          => 'ASC',
-				'post_status'    => array( 'publish', 'draft', 'pending', 'future' ),
-			)
-		);
-
 		/* آثاری که از سمت خودشان به این مجموعه متصل شده‌اند. */
-		$linked = get_posts(
+		$linked_ids = get_posts(
 			array(
 				'post_type'      => manacore_title_post_types(),
 				'posts_per_page' => 500,
@@ -129,47 +140,67 @@ class Metaboxes {
 				),
 			)
 		);
+
+		$linked = array();
+		foreach ( array_slice( $linked_ids, 0, 100 ) as $id ) {
+			$item = Picker::item( $id );
+			if ( $item ) {
+				$linked[] = $item;
+			}
+		}
+
+		$base = 'manacore-collection-' . (int) $post->ID;
 		?>
-		<div class="manacore-collection-items">
+		<div class="manacore-works" data-works-list
+			data-works-name="manacore_collection_items[]"
+			data-max="<?php echo esc_attr( (string) Collection::MAX_ITEMS ); ?>"
+			data-items="<?php echo esc_attr( (string) wp_json_encode( $selected ) ); ?>"
+			data-linked="<?php echo esc_attr( (string) wp_json_encode( $linked ) ); ?>">
+
 			<p class="description">
-				<?php esc_html_e( 'آثار عضو این مجموعه را انتخاب کنید. ترتیب انتخاب، ترتیب نمایش در بلوک «آثار مجموعه» خواهد بود.', 'manacore' ); ?>
+				<?php esc_html_e( 'آثار را با جست‌وجوی نام پیدا و به فهرست اضافه کنید. ترتیب این فهرست همان ترتیب نمایش است؛ با دکمه‌های «بالا» و «پایین» آن را تغییر دهید.', 'manacore' ); ?>
 			</p>
 
-			<label class="screen-reader-text" for="manacore_collection_items">
-				<?php esc_html_e( 'آثار مجموعه', 'manacore' ); ?>
-			</label>
-			<select
-				id="manacore_collection_items"
-				name="manacore_collection_items[]"
-				class="widefat"
-				multiple="multiple"
-				size="12"
-			>
-				<?php foreach ( $titles as $item ) : ?>
-					<option value="<?php echo esc_attr( $item->ID ); ?>" <?php selected( in_array( (int) $item->ID, $selected, true ) ); ?>>
-						<?php
-						printf(
-							/* translators: 1: عنوان اثر، 2: نوع محتوا */
-							'%1$s (%2$s)',
-							esc_html( $item->post_title ),
-							esc_html( (string) get_post_type( $item ) )
-						);
-						?>
-					</option>
-				<?php endforeach; ?>
-			</select>
+			<div class="manacore-works-search">
+				<label class="manacore-label" for="<?php echo esc_attr( $base ); ?>-search">
+					<?php esc_html_e( 'جست‌وجو و افزودن اثر', 'manacore' ); ?>
+				</label>
+				<div class="manacore-works-search-row">
+					<input type="search" id="<?php echo esc_attr( $base ); ?>-search" class="widefat" data-works-search autocomplete="off" placeholder="<?php esc_attr_e( 'نام اثر را بنویسید…', 'manacore' ); ?>" />
+					<label class="screen-reader-text" for="<?php echo esc_attr( $base ); ?>-type"><?php esc_html_e( 'نوع اثر', 'manacore' ); ?></label>
+					<select id="<?php echo esc_attr( $base ); ?>-type" data-works-type>
+						<option value=""><?php esc_html_e( 'همه‌ی انواع', 'manacore' ); ?></option>
+						<?php foreach ( manacore_title_post_types() as $type ) : ?>
+							<option value="<?php echo esc_attr( $type ); ?>"><?php echo esc_html( Picker::type_label( $type ) ); ?></option>
+						<?php endforeach; ?>
+					</select>
+				</div>
+				<div class="manacore-picker-results manacore-works-results" data-works-results role="listbox" aria-label="<?php esc_attr_e( 'نتایج جست‌وجو', 'manacore' ); ?>" hidden></div>
+			</div>
 
-			<?php if ( ! empty( $linked ) ) : ?>
-				<p class="description manacore-desc">
-					<?php
-					printf(
-						/* translators: %d: تعداد آثار */
-						esc_html__( '%d اثر از طریق فیلد «مجموعه» در صفحه‌ی خودشان به این مجموعه متصل شده‌اند. در صورت خالی بودن فهرست بالا، همان‌ها نمایش داده می‌شوند.', 'manacore' ),
-						count( $linked )
-					);
-					?>
-				</p>
-			<?php endif; ?>
+			<div class="manacore-works-toolbar">
+				<span class="manacore-works-count" data-works-count aria-live="polite"></span>
+				<span class="manacore-works-tools">
+					<button type="button" class="button" data-works-import hidden></button>
+					<button type="button" class="button-link" data-works-clear><?php esc_html_e( 'پاک کردن همه', 'manacore' ); ?></button>
+				</span>
+			</div>
+
+			<p class="manacore-works-status" data-works-status aria-live="polite"></p>
+
+			<ol class="manacore-works-selected" data-works-selected aria-label="<?php esc_attr_e( 'ترتیب نمایش آثار', 'manacore' ); ?>"></ol>
+			<p class="manacore-works-empty" data-works-empty<?php echo $selected ? ' hidden' : ''; ?>>
+				<?php esc_html_e( 'هنوز اثری در این مجموعه نیست. از کادر بالا جست‌وجو کنید.', 'manacore' ); ?>
+			</p>
+
+			<div class="manacore-works-fallback" data-works-fallback hidden>
+				<?php foreach ( $selected as $item ) : ?>
+					<input type="hidden" name="manacore_collection_items[]" value="<?php echo esc_attr( (string) $item['id'] ); ?>" />
+				<?php endforeach; ?>
+			</div>
+			<noscript>
+				<p class="description"><?php esc_html_e( 'برای مدیریت فهرست آثار به JavaScript نیاز است. ترتیب فعلی حفظ می‌شود.', 'manacore' ); ?></p>
+			</noscript>
 		</div>
 		<?php
 	}
@@ -325,7 +356,7 @@ class Metaboxes {
 	protected function render_field( $key, $field, $post_id ) {
 		$value = get_post_meta( $post_id, $key, true );
 		$attrs = isset( $field['attrs'] ) ? $field['attrs'] : array();
-		$wide  = in_array( $field['type'], array( 'textarea', 'repeater', 'gallery', 'people' ), true );
+		$wide  = in_array( $field['type'], array( 'textarea', 'repeater', 'gallery', 'people', 'work_select' ), true );
 
 		$attr_string = '';
 		foreach ( $attrs as $attr_key => $attr_value ) {
@@ -410,6 +441,20 @@ class Metaboxes {
 					<?php else : ?>
 						<img class="manacore-media-preview" src="" alt="" hidden />
 					<?php endif; ?>
+					<?php
+					break;
+
+				case 'work_select':
+					$work_id = Picker::valid_id( $value, self::work_types() );
+					$item    = $work_id ? Picker::item( $work_id ) : null;
+					?>
+					<div class="manacore-work-select" data-work-select data-item="<?php echo esc_attr( (string) wp_json_encode( $item ) ); ?>">
+						<input type="hidden" name="<?php echo esc_attr( $key ); ?>" value="<?php echo esc_attr( $item ? (string) $item['id'] : '' ); ?>" data-work-value />
+						<div class="manacore-work-current" data-work-current hidden></div>
+						<p class="description manacore-work-none" data-work-none><?php esc_html_e( 'هیچ اثری انتخاب نشده است.', 'manacore' ); ?></p>
+						<input type="search" id="<?php echo esc_attr( $key ); ?>" class="widefat" data-work-search autocomplete="off" placeholder="<?php esc_attr_e( 'نام اثر را برای انتخاب بنویسید…', 'manacore' ); ?>" />
+						<div class="manacore-picker-results" data-work-results role="listbox" aria-label="<?php esc_attr_e( 'نتایج جست‌وجو', 'manacore' ); ?>" hidden></div>
+					</div>
 					<?php
 					break;
 
@@ -532,7 +577,7 @@ class Metaboxes {
 					aria-label="<?php esc_attr_e( 'نام بازیگر؛ برای پیوند به صفحه‌ی عامل جست‌وجو کنید', 'manacore' ); ?>"
 					placeholder="<?php esc_attr_e( 'جست‌وجوی عامل یا نام آزاد…', 'manacore' ); ?>"
 					data-person-search data-role="cast" />
-				<div class="manacore-people-results" data-people-results role="listbox" hidden></div>
+				<div class="manacore-picker-results" data-people-results role="listbox" hidden></div>
 				<span class="manacore-person-badge" data-person-badge<?php echo $person_id ? '' : ' hidden'; ?>>
 					<span class="dashicons dashicons-yes-alt" aria-hidden="true"></span>
 					<?php esc_html_e( 'به صفحه‌ی عامل پیوند خورده', 'manacore' ); ?>
@@ -577,7 +622,7 @@ class Metaboxes {
 				aria-label="<?php echo esc_attr( sprintf( /* translators: %s: نام نقش */ __( 'افزودن %s', 'manacore' ), $label ) ); ?>"
 				placeholder="<?php esc_attr_e( 'نام عامل را جست‌وجو کنید یا نام آزاد را تایپ و Enter بزنید…', 'manacore' ); ?>"
 				data-people-input />
-			<div class="manacore-people-results" data-people-results role="listbox" hidden></div>
+			<div class="manacore-picker-results" data-people-results role="listbox" hidden></div>
 			<input type="hidden" id="<?php echo esc_attr( $key ); ?>" name="<?php echo esc_attr( $key ); ?>"
 				value="<?php echo esc_attr( Crew::encode( $items ) ); ?>" data-people-value />
 		</div>
@@ -611,7 +656,7 @@ class Metaboxes {
 					<?php endforeach; ?>
 				</select>
 			</div>
-			<div class="manacore-people-results" data-finder-results role="listbox" hidden></div>
+			<div class="manacore-picker-results" data-finder-results role="listbox" hidden></div>
 		</div>
 		<?php
 	}
@@ -704,14 +749,12 @@ class Metaboxes {
 			return;
 		}
 
-		// ذخیره‌ی اعضای مجموعه (نوع محتوای collection).
+		// ذخیره‌ی فهرست مرتب اعضای مجموعه؛ فیلدهای اطلاعات مجموعه در ادامه ذخیره می‌شوند.
 		if ( 'collection' === $post->post_type ) {
 			$this->save_collection_items( $post_id );
-			do_action( 'manacore_after_save_meta', $post_id, $post );
-			return;
 		}
 
-		$types = array_merge( manacore_title_post_types(), array( 'episode' ) );
+		$types = array_merge( manacore_title_post_types(), array( 'episode', 'channel', 'collection' ) );
 		if ( ! in_array( $post->post_type, $types, true ) ) {
 			return;
 		}
@@ -753,8 +796,8 @@ class Metaboxes {
 			}
 		}
 
-		// ذخیره‌ی لینک‌ها.
-		if ( isset( $_POST['manacore_links_json'] ) ) {
+		// ذخیره‌ی لینک‌ها (فقط نوع‌های اثر و قسمت).
+		if ( isset( $_POST['manacore_links_json'] ) && in_array( $post->post_type, array_merge( manacore_title_post_types(), array( 'episode' ) ), true ) ) {
 			$json = wp_unslash( $_POST['manacore_links_json'] ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput
 			Links::save( $post_id, $json );
 		}
@@ -765,6 +808,9 @@ class Metaboxes {
 	/**
 	 * ذخیره‌ی فهرست مرتب اعضای مجموعه.
 	 *
+	 * ترتیب ورودی (ترتیب ردیف‌های پیشخوان) حفظ می‌شود؛ تکراری‌ها و شناسه‌های
+	 * غیرِ اثر حذف می‌شوند.
+	 *
 	 * @param int $post_id شناسه‌ی مجموعه.
 	 */
 	protected function save_collection_items( $post_id ) {
@@ -774,7 +820,7 @@ class Metaboxes {
 		}
 
 		$raw   = wp_unslash( $_POST['manacore_collection_items'] ); // phpcs:ignore WordPress.Security
-		$clean = array_values( array_unique( array_filter( array_map( 'absint', (array) $raw ) ) ) );
+		$clean = Collection::sanitize_items( (array) $raw );
 
 		if ( empty( $clean ) ) {
 			delete_post_meta( $post_id, 'manacore_collection_items' );
@@ -782,6 +828,15 @@ class Metaboxes {
 		}
 
 		update_post_meta( $post_id, 'manacore_collection_items', $clean );
+	}
+
+	/**
+	 * نوع‌های محتوایی که می‌توانند در فیلدهای «اثر» (مثل اثر در حال پخش) انتخاب شوند.
+	 *
+	 * @return string[]
+	 */
+	private static function work_types() {
+		return array_merge( manacore_title_post_types(), array( 'episode' ) );
 	}
 
 	/**
@@ -875,6 +930,8 @@ class Metaboxes {
 				return isset( $field['options'][ $val ] ) ? $val : '';
 			case 'post_select':
 				return absint( $raw ) ?: '';
+			case 'work_select':
+				return Picker::valid_id( $raw, self::work_types() ) ?: '';
 			case 'people':
 				$items = Crew::sanitize( (string) $raw );
 				return $items ? Crew::encode( $items ) : '';
