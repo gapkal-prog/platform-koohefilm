@@ -293,7 +293,7 @@ foreach ( $plain as $key ) {
 
 mc_ok( array() === $unseen, 'هر کلید نقشه در پنل دیده می‌شود (گزینه‌ی پنهان نداریم)', implode( ',', $unseen ) );
 mc_ok(
-	array( 'general', 'appearance', 'watch', 'requests', 'reports', 'mega', 'tools' ) === $tabs,
+	array( 'general', 'appearance', 'watch', 'requests', 'reports', 'tools' ) === $tabs,
 	'نام و ترتیب تب‌های پنل همان ترتیب مستندشده است'
 );
 
@@ -301,15 +301,13 @@ mc_ok(
 $sink = array( '_tab' => 'general' );
 
 foreach ( $plain as $key ) {
-	if ( in_array( $key, array( 'items_per_page', 'requests_per_page', 'mega_terms', 'mega_columns', 'mega_featured_id' ), true ) ) {
+	if ( in_array( $key, array( 'items_per_page', 'requests_per_page' ), true ) ) {
 		$sink[ $key ] = 2;
 	} elseif ( in_array( $key, array( 'slug_movie', 'slug_series', 'slug_anime', 'slug_episode', 'slug_person', 'slug_collection' ), true ) ) {
 		$sink[ $key ] = 'film';
 	} elseif ( in_array( $key, array( 'default_color_mode' ), true ) ) {
 		$sink[ $key ] = 'dark';
-	} elseif ( in_array( $key, array( 'mega_taxonomy' ), true ) ) {
-		$sink[ $key ] = 'genre';
-	} elseif ( in_array( $key, array( 'requests_intro', 'requests_thanks', 'download_notice_text', 'player_notice_text', 'custom_qualities' ), true ) ) {
+		} elseif ( in_array( $key, array( 'requests_intro', 'requests_thanks', 'download_notice_text', 'player_notice_text', 'custom_qualities' ), true ) ) {
 		$sink[ $key ] = "متن\nنمونه";
 	} else {
 		$sink[ $key ] = 1;
@@ -391,7 +389,7 @@ $result = Portability::import(
 	array(
 		'format'   => 'manacore-settings',
 		'version'  => 1,
-		'settings' => array( 'items_per_page' => 40, 'mega_title' => 'پنل تازه', 'evil_key' => 'x' ),
+		'settings' => array( 'items_per_page' => 40, 'requests_heading' => 'درخواست تازه', 'evil_key' => 'x' ),
 		'pages'    => array( 'manacore_watch_page' => 'watch' ),
 	)
 );
@@ -402,9 +400,9 @@ mc_ok( array( 'evil_key' ) === $result['skipped'], 'کلید ناشناخته د
 mc_ok( ! isset( $GLOBALS['mc_options']['manacore_settings']['evil_key'] ), 'کلید ناشناخته هرگز ذخیره نمی‌شود' );
 mc_ok( 40 === $GLOBALS['mc_options']['manacore_settings']['items_per_page'], 'مقدار تازه ذخیره شد' );
 mc_ok( 1 === $GLOBALS['mc_options']['manacore_settings']['enable_ratings'], 'تبی که در فایل نبود، مقدار قبلی‌اش را نگه داشت' );
-mc_ok( 'پنل تازه' === $GLOBALS['mc_options']['manacore_settings']['mega_title'], 'تب دیگر همان فایل هم اعمال شد' );
+mc_ok( 'درخواست تازه' === $GLOBALS['mc_options']['manacore_settings']['requests_heading'], 'تب دیگر همان فایل هم اعمال شد' );
 mc_ok( 55 === $GLOBALS['mc_options']['manacore_watch_page'], 'برگه‌ی پخش از نامک به شناسه‌ی همین سایت وصل شد' );
-mc_ok( array( 'general' => 1, 'mega' => 1 ) === $result['tabs'], 'گزارش تب‌به‌تب درست است', wp_json_encode( $result['tabs'] ) );
+mc_ok( array( 'general' => 1, 'requests' => 1 ) === $result['tabs'], 'گزارش تب‌به‌تب درست است', wp_json_encode( $result['tabs'] ) );
 
 /* کرانه‌گذاری همان تب: مقدار بیرون بازه باید بریده شود، نه ذخیره‌ی خام. */
 Portability::import( array( 'settings' => array( 'items_per_page' => 9999 ) ) );

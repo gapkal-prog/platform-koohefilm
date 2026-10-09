@@ -77,14 +77,6 @@ function manacore_boot() {
 	ManaCore\Core\Article::instance()->hooks();
 	ManaCore\Core\Seo::instance()->hooks();
 
-	/*
-	 * مگامنو یک سرویس مشترک است: قالب کوهه داده‌ی آن را به آیتم‌های فهرست
-	 * راهبری تبدیل می‌کند، قالب‌های دیگر از شورت‌کد `[manacore_mega_menu]`
-	 * استفاده می‌کنند و پنل مدیریت متن‌ها/تعداد/کارت ویژه را تنظیم می‌کند.
-	 * پیش‌تر این کلاس هرگز boot نمی‌شد و کدش مرده بود.
-	 */
-	ManaCore\Core\Mega_Menu::instance()->hooks();
-
 	/* گزارش خرابی لینک: مسیر REST، کنش‌های پیشخوان و ارتقای پایگاه‌داده. */
 	ManaCore\Core\Reports::instance()->hooks();
 

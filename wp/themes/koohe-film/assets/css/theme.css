@@ -950,6 +950,29 @@ table {
 	grid-area: 1 / 2 / 4 / 3;
 }
 
+/*
+ * گروه‌های پنل (ژانرها، دسترسی سریع) همیشه بازند. هسته زیرمنوی هر آیتم
+ * `has-child` را تا hover پنهان می‌کند؛ اینجا زیرمنوی گروه، با ویژگی بالاتر از
+ * قاعده‌ی هسته، صریحاً نمایش داده می‌شود. کلاس گروه روی `li` است و زیرمنوی
+ * واقعی (`ul`) فرزند آن.
+ */
+.koohe-nav .wp-block-navigation-item.koohe-mega > .wp-block-navigation__submenu-container > .koohe-mega-group > .wp-block-navigation__submenu-container {
+	position: static;
+	visibility: visible;
+	opacity: 1;
+	overflow: visible;
+	width: auto;
+	height: auto;
+	min-width: 0;
+	margin: 0;
+	padding: 0;
+	background: none;
+	border: 0;
+	border-radius: 0;
+	box-shadow: none;
+	transform: none;
+}
+
 .koohe-nav .wp-block-navigation-item.koohe-mega > .wp-block-navigation__submenu-container > .koohe-mega-feature {
 	grid-area: 1 / 3 / 4 / 4;
 	display: flex;
@@ -1030,7 +1053,7 @@ table {
  * ---------------------------------------------------------------------- */
 
 .koohe-nav .wp-block-navigation-item.koohe-mega-group.koohe-mega-genres {
-	/* پیش‌فرض ستون‌ها؛ تنظیم «تعداد ستون‌ها» از فیلتر رندر روی همین عنصر می‌نشیند. */
+	/* پیش‌فرض ستون‌ها؛ کلاس `koohe-mega-cols-N` (کنترل «تعداد ستون‌ها» در ویرایشگر) آن را عوض می‌کند. */
 	--koohe-mega-columns: 3;
 	display: block;
 	align-self: stretch;
@@ -1048,11 +1071,18 @@ table {
  * ویژگی بالاتر خنثی می‌شود.
  */
 /*
- * تعداد ستون‌ها از متغیر `--koohe-mega-columns` می‌آید که فیلتر رندر قالب
- * (koohe_mega_columns_var) با مقدار تنظیم «تعداد ستون‌های شبکه‌ی ژانرها»
- * روی <li> گروه می‌گذارد؛ پیش‌فرض ۳ است.
+ * تعداد ستون‌ها از متغیر `--koohe-mega-columns` می‌آید؛ پیش‌فرض ۳ است و
+ * کلاس‌های `koohe-mega-cols-2|4` (از ویرایشگر فهرست) آن را بازنویسی می‌کنند.
  */
-.koohe-nav .wp-block-navigation-item.koohe-mega > .wp-block-navigation__submenu-container ul.koohe-mega-group.koohe-mega-genres {
+.koohe-nav .wp-block-navigation-item.koohe-mega-group.koohe-mega-genres.koohe-mega-cols-2 {
+	--koohe-mega-columns: 2;
+}
+
+.koohe-nav .wp-block-navigation-item.koohe-mega-group.koohe-mega-genres.koohe-mega-cols-4 {
+	--koohe-mega-columns: 4;
+}
+
+.koohe-nav .wp-block-navigation-item.koohe-mega > .wp-block-navigation__submenu-container .koohe-mega-group.koohe-mega-genres > .wp-block-navigation__submenu-container {
 	position: static;
 	display: grid;
 	grid-template-columns: repeat(var(--koohe-mega-columns, 3), minmax(0, 1fr));
@@ -1126,7 +1156,7 @@ table {
 	display: none;
 }
 
-.koohe-nav .wp-block-navigation-item.koohe-mega > .wp-block-navigation__submenu-container ul.koohe-mega-group.koohe-mega-quick {
+.koohe-nav .wp-block-navigation-item.koohe-mega > .wp-block-navigation__submenu-container .koohe-mega-group.koohe-mega-quick > .wp-block-navigation__submenu-container {
 	position: static;
 	display: flex;
 	flex-direction: column;
@@ -1149,7 +1179,7 @@ table {
  * ردیف‌ها ۱۹px‌اند و بدون پدینگ — دقیقاً `.mega-quick>a` مرجع. زنجیره‌ی
  * کامل نوشته می‌شود تا قاعده‌ی عمومی چیپ‌ها (۹px پدینگ) بازنده بماند.
  */
-.koohe-nav .wp-block-navigation-item.koohe-mega > .wp-block-navigation__submenu-container ul.koohe-mega-group.koohe-mega-quick > li > .wp-block-navigation-item__content {
+.koohe-nav .wp-block-navigation-item.koohe-mega > .wp-block-navigation__submenu-container .koohe-mega-group.koohe-mega-quick > .wp-block-navigation__submenu-container > li > .wp-block-navigation-item__content {
 	justify-content: flex-start;
 	gap: 10px;
 	padding: 0;
@@ -1160,11 +1190,11 @@ table {
 	line-height: 1.7;
 }
 
-.koohe-nav .wp-block-navigation-item.koohe-mega > .wp-block-navigation__submenu-container ul.koohe-mega-group.koohe-mega-quick > li > .wp-block-navigation-item__content::after {
+.koohe-nav .wp-block-navigation-item.koohe-mega > .wp-block-navigation__submenu-container .koohe-mega-group.koohe-mega-quick > .wp-block-navigation__submenu-container > li > .wp-block-navigation-item__content::after {
 	display: none;
 }
 
-.koohe-nav .wp-block-navigation-item.koohe-mega > .wp-block-navigation__submenu-container ul.koohe-mega-group.koohe-mega-quick > li > .wp-block-navigation-item__content::before {
+.koohe-nav .wp-block-navigation-item.koohe-mega > .wp-block-navigation__submenu-container .koohe-mega-group.koohe-mega-quick > .wp-block-navigation__submenu-container > li > .wp-block-navigation-item__content::before {
 	content: "";
 	flex: 0 0 auto;
 	width: 19px;
@@ -1176,24 +1206,24 @@ table {
 
 /* آیکون هر ردیف، همان آیکون مرجع (ستاره، فیلم، پرچم، عوامل). */
 /* آیکون هر ردیف، همان آیکون مرجع (ستاره، فیلم، پرچم، عوامل). */
-.koohe-nav .wp-block-navigation-item.koohe-mega > .wp-block-navigation__submenu-container ul.koohe-mega-group.koohe-mega-quick > .koohe-mega-quick--rating > .wp-block-navigation-item__content {
+.koohe-nav .wp-block-navigation-item.koohe-mega > .wp-block-navigation__submenu-container .koohe-mega-group.koohe-mega-quick > .wp-block-navigation__submenu-container > .koohe-mega-quick--rating > .wp-block-navigation-item__content {
 	--koohe-mega-icon: var(--koohe-icon-sparkle);
 }
 
-.koohe-nav .wp-block-navigation-item.koohe-mega > .wp-block-navigation__submenu-container ul.koohe-mega-group.koohe-mega-quick > .koohe-mega-quick--newest > .wp-block-navigation-item__content {
+.koohe-nav .wp-block-navigation-item.koohe-mega > .wp-block-navigation__submenu-container .koohe-mega-group.koohe-mega-quick > .wp-block-navigation__submenu-container > .koohe-mega-quick--newest > .wp-block-navigation-item__content {
 	--koohe-mega-icon: var(--koohe-icon-film);
 }
 
-.koohe-nav .wp-block-navigation-item.koohe-mega > .wp-block-navigation__submenu-container ul.koohe-mega-group.koohe-mega-quick > .koohe-mega-quick--korean > .wp-block-navigation-item__content {
+.koohe-nav .wp-block-navigation-item.koohe-mega > .wp-block-navigation__submenu-container .koohe-mega-group.koohe-mega-quick > .wp-block-navigation__submenu-container > .koohe-mega-quick--korean > .wp-block-navigation-item__content {
 	--koohe-mega-icon: var(--koohe-icon-flag);
 }
 
-.koohe-nav .wp-block-navigation-item.koohe-mega > .wp-block-navigation__submenu-container ul.koohe-mega-group.koohe-mega-quick > .koohe-mega-quick--cast > .wp-block-navigation-item__content {
+.koohe-nav .wp-block-navigation-item.koohe-mega > .wp-block-navigation__submenu-container .koohe-mega-group.koohe-mega-quick > .wp-block-navigation__submenu-container > .koohe-mega-quick--cast > .wp-block-navigation-item__content {
 	--koohe-mega-icon: var(--koohe-icon-person);
 }
 
-.koohe-nav .wp-block-navigation-item.koohe-mega > .wp-block-navigation__submenu-container ul.koohe-mega-group.koohe-mega-quick > li > .wp-block-navigation-item__content:hover,
-.koohe-nav .wp-block-navigation-item.koohe-mega > .wp-block-navigation__submenu-container ul.koohe-mega-group.koohe-mega-quick > li > .wp-block-navigation-item__content:focus-visible {
+.koohe-nav .wp-block-navigation-item.koohe-mega > .wp-block-navigation__submenu-container .koohe-mega-group.koohe-mega-quick > .wp-block-navigation__submenu-container > li > .wp-block-navigation-item__content:hover,
+.koohe-nav .wp-block-navigation-item.koohe-mega > .wp-block-navigation__submenu-container .koohe-mega-group.koohe-mega-quick > .wp-block-navigation__submenu-container > li > .wp-block-navigation-item__content:focus-visible {
 	background: none;
 	color: var(--koohe-accent);
 }
@@ -1407,7 +1437,7 @@ table {
 		display: flex;
 	}
 
-	.koohe-nav ul.koohe-mega-group.koohe-mega-quick > li > .wp-block-navigation-item__content {
+	.koohe-nav .koohe-mega-group.koohe-mega-quick > .wp-block-navigation__submenu-container > li > .wp-block-navigation-item__content {
 		margin-inline-start: 0;
 	}
 }
@@ -5451,6 +5481,62 @@ html:not([dir="rtl"]) .koohe-toggle[aria-pressed="true"] .koohe-toggle-thumb {
 	font-size: .625rem;
 	color: var(--koohe-muted);
 	margin: 23px 0 15px;
+}
+
+.koohe-search-overlay__section {
+	margin-top: 18px;
+}
+
+.koohe-search-overlay__head {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12px;
+}
+
+.koohe-search-overlay__heading {
+	margin: 0 0 10px;
+	font-size: .625rem;
+	color: var(--koohe-muted);
+}
+
+.koohe-search-overlay__clear {
+	margin: 0 0 10px;
+	padding: 0;
+	border: 0;
+	background: none;
+	color: var(--koohe-accent);
+	font: inherit;
+	font-size: .625rem;
+	cursor: pointer;
+}
+
+.koohe-search-overlay__chips {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 6px;
+}
+
+.koohe-search-overlay__chip {
+	display: inline-block;
+	padding: 5px 12px;
+	border: 1px solid var(--koohe-border);
+	border-radius: var(--koohe-radius-pill);
+	background: var(--koohe-surface);
+	color: var(--koohe-text);
+	font: inherit;
+	font-size: .75rem;
+	line-height: 1.6;
+	text-decoration: none;
+	cursor: pointer;
+	transition: all var(--koohe-transition);
+}
+
+.koohe-search-overlay__chip:hover,
+.koohe-search-overlay__chip:focus-visible {
+	background: var(--koohe-accent);
+	border-color: var(--koohe-accent);
+	color: var(--koohe-accent-contrast);
 }
 
 .koohe-search-overlay__results {

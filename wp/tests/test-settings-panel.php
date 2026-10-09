@@ -397,7 +397,6 @@ require_once MANACORE_PATH . 'includes/class-reports.php';
 require_once MANACORE_PATH . 'includes/class-demo.php';
 require_once MANACORE_PATH . 'includes/class-portability.php';
 require_once MANACORE_PATH . 'includes/class-analytics.php';
-require_once MANACORE_PATH . 'includes/class-mega-menu.php';
 require_once MANACORE_PATH . 'includes/class-link-tools.php';
 require_once MANACORE_PATH . 'includes/class-settings.php';
 
@@ -413,7 +412,7 @@ echo "\n=== ۱) تب‌ها و ناوبری ===\n";
  * شش تب، به همین ترتیب. تب «تحلیل و آمار» عمداً نیست: داده‌ی اساسی‌اش در
  * کارت «نگاه کلی» تب عمومی آمده و بقیه به تب‌های مرتبط خودش رفته است.
  */
-$expected = array( 'general', 'appearance', 'watch', 'requests', 'reports', 'mega', 'tools' );
+$expected = array( 'general', 'appearance', 'watch', 'requests', 'reports', 'tools' );
 mc_ok( $expected === array_keys( Settings::tabs() ), 'ترتیب تب‌ها همان ترتیب مستندشده است', implode( ',', array_keys( Settings::tabs() ) ) );
 mc_ok( ! in_array( 'ads', array_keys( Settings::tabs() ), true ), 'تب تبلیغات از پنل برداشته شده است' );
 mc_ok( ! in_array( 'analytics', array_keys( Settings::tabs() ), true ), 'تب تحلیل و آمار از پنل برداشته شده است' );
@@ -476,7 +475,8 @@ mc_ok( false !== strpos( $panels['general'], 'action="options.php"' ), 'تب ع�
 mc_ok( false !== strpos( $panels['general'], 'name="manacore_settings[slug_movie]"' ), 'فیلد نشانی یکتا در فرم هست' );
 mc_ok( false !== strpos( $panels['watch'], 'name="manacore_settings[download_ttl]"' ), 'فیلد اعتبار لینک دانلود در تب پخش هست' );
 mc_ok( false !== strpos( $panels['requests'], 'name="manacore_settings[requests_enabled]"' ), 'فیلد فعال‌بودن درخواست‌ها در تب درخواست‌ها هست' );
-mc_ok( false !== strpos( $panels['mega'], 'name="manacore_settings[mega_terms]"' ), 'فیلد تعداد ژانرها در تب مگامنو هست' );
+mc_ok( ! isset( $panels['mega'] ), 'تب مگامنو از پیشخوان حذف شده است (مدیریت از فهرست راهبری)' );
+mc_ok( array() === array_intersect( Settings::retired_keys(), Settings::option_keys() ), 'کلیدهای منسوخ مگامنو در هیچ تبی نیستند' );
 
 /*
  * تب ابزارها هم فرم تنظیمات دارد (کارت «سلامت لینک‌ها») هم فرم‌های

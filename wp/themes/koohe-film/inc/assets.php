@@ -24,6 +24,59 @@ function koohe_asset_version( $relative ) {
 /**
  * استایل و اسکریپت سمت کاربر.
  */
+/**
+ * فهرست ژانرهای پرمحتوا برای بخش «ژانرها» در پوسته‌ی جستجو.
+ *
+ * نتیجه کش ترنزینت می‌شود و با ایجاد، ویرایش یا حذف ژانر پاک می‌شود، تا
+ * هر بارگذاری صفحه کوئری تازه نزند.
+ *
+ * @return array<int,array{name:string,url:string}>
+ */
+function koohe_search_genres() {
+	$cached = get_transient( 'koohe_search_genres' );
+
+	if ( is_array( $cached ) ) {
+		return $cached;
+	}
+
+	$terms = get_terms(
+		array(
+			'taxonomy'   => 'genre',
+			'hide_empty' => true,
+			'number'     => 12,
+			'orderby'    => 'count',
+			'order'      => 'DESC',
+		)
+	);
+
+	$genres = array();
+
+	if ( ! is_wp_error( $terms ) ) {
+		foreach ( $terms as $term ) {
+			$url = get_term_link( $term );
+
+			if ( is_string( $url ) ) {
+				$genres[] = array(
+					'name' => $term->name,
+					'url'  => $url,
+				);
+			}
+		}
+	}
+
+	set_transient( 'koohe_search_genres', $genres, 12 * HOUR_IN_SECONDS );
+
+	return $genres;
+}
+
+/** پاک‌کردن کش ژانرهای پوسته‌ی جستجو با هر تغییر در ترم‌های ژانر. */
+function koohe_flush_search_genres() {
+	delete_transient( 'koohe_search_genres' );
+}
+add_action( 'created_genre', 'koohe_flush_search_genres' );
+add_action( 'edited_genre', 'koohe_flush_search_genres' );
+add_action( 'delete_genre', 'koohe_flush_search_genres' );
+
 function koohe_enqueue_front() {
 	wp_enqueue_style(
 		'koohe-film',
@@ -100,6 +153,7 @@ function koohe_enqueue_front() {
 			'searchUrl'   => $has_core ? esc_url_raw( rest_url( 'manacore/v1/search' ) ) : '',
 			'titlesUrl'   => $has_core ? esc_url_raw( rest_url( 'manacore/v1/titles' ) ) : '',
 			'searchPage'  => esc_url_raw( home_url( '/' ) ),
+			'genres'      => koohe_search_genres(),
 			'i18n'        => array(
 				'toDark'    => __( 'حالت تیره', 'koohe-film' ),
 				'toLight'   => __( 'حالت روشن', 'koohe-film' ),
@@ -113,6 +167,9 @@ function koohe_enqueue_front() {
 				/* translators: %s: شمار نتایج. */
 				'results'   => __( '%s نتیجه پیشنهادی', 'koohe-film' ),
 				'trending'  => __( 'این روزها بیشتر جستجو می‌شوند', 'koohe-film' ),
+				'genres'    => __( 'ژانرها', 'koohe-film' ),
+				'history'   => __( 'تاریخچه‌ی جستجو', 'koohe-film' ),
+				'clear'     => __( 'پاک‌کردن', 'koohe-film' ),
 			),
 		)
 	);

@@ -854,6 +854,12 @@
 		 */
 		var triggers = qsa( '[data-koohe-search-open]' );
 
+		var historyBox   = overlay.querySelector( '[data-koohe-search-history]' );
+		var historyList  = overlay.querySelector( '[data-koohe-search-history-list]' );
+		var genresBox    = overlay.querySelector( '[data-koohe-search-genres-box]' );
+		var genresList   = overlay.querySelector( '[data-koohe-search-genres]' );
+		var genres       = Array.isArray( config.genres ) ? config.genres : [];
+
 		function setExpanded( state ) {
 			triggers.forEach( function ( btn ) {
 				btn.setAttribute( 'aria-expanded', state ? 'true' : 'false' );
@@ -918,6 +924,9 @@
 			items.forEach( function ( item ) {
 				var a = document.createElement( 'a' );
 				a.href = item.url || '#';
+				a.addEventListener( 'click', function () {
+					rememberQuery( input ? input.value : '' );
+				} );
 
 				var img = document.createElement( 'img' );
 				img.src = item.poster || '';
@@ -1010,8 +1019,166 @@
 			} );
 		}
 
+		/* ---------------------------------------------------------------
+		 * تاریخچه‌ی جستجو: فقط روی دستگاه کاربر (localStorage)، حداکثر
+		 * ۶ مورد، جدیدترین اول. ثبت هنگام ارسال فرم یا باز کردن یک نتیجه.
+		 * ------------------------------------------------------------- */
+
+		var HISTORY_KEY = 'koohe-search-history';
+		var HISTORY_MAX = 6;
+
+		function readHistory() {
+			try {
+				var list = JSON.parse( window.localStorage.getItem( HISTORY_KEY ) || '[]' );
+
+				return Array.isArray( list ) ? list.filter( function ( term ) {
+					return 'string' === typeof term && '' !== term;
+				} ).slice( 0, HISTORY_MAX ) : [];
+			} catch ( error ) {
+				return [];
+			}
+		}
+
+		function rememberQuery( query ) {
+			var term = String( query || '' ).trim();
+
+			if ( term.length < 2 ) {
+				return;
+			}
+
+			var list = readHistory().filter( function ( item ) {
+				return item !== term;
+			} );
+
+			list.unshift( term );
+
+			try {
+				window.localStorage.setItem( HISTORY_KEY, JSON.stringify( list.slice( 0, HISTORY_MAX ) ) );
+			} catch ( error ) {
+				/* حافظه‌ی مرورگر پر یا بسته است؛ تاریخچه اختیاری است. */
+			}
+		}
+
+		function forgetHistory() {
+			try {
+				window.localStorage.removeItem( HISTORY_KEY );
+			} catch ( error ) {
+				/* همان‌طور؛ نبودِ دسترسی به حافظه خطای کاربری نیست. */
+			}
+		}
+
+		/**
+		 * دکمه‌ی پیوند یا عنصر دکمه‌وار برای یک چیپ.
+		 *
+		 * @param {string} text متن چیپ.
+		 * @param {string} href نشانی (اختیاری؛ بدون آن دکمه ساخته می‌شود).
+		 * @return {HTMLElement} عنصر.
+		 */
+		function makeChip( text, href ) {
+			var node = document.createElement( href ? 'a' : 'button' );
+
+			node.className = 'koohe-search-overlay__chip';
+			if ( href ) {
+				node.href = href;
+			} else {
+				node.type = 'button';
+			}
+			node.textContent = text;
+
+			return node;
+		}
+
+		/** بخش‌های «ژانرها» و «تاریخچه» فقط وقتی کادر خالی است دیده می‌شوند. */
+		function setIdle( visible ) {
+			if ( historyBox ) {
+				historyBox.hidden = ! visible || ! readHistory().length;
+			}
+			if ( genresBox ) {
+				genresBox.hidden = ! visible || ! genres.length;
+			}
+		}
+
+		function renderHistory() {
+			if ( ! historyBox || ! historyList ) {
+				return;
+			}
+
+			var list = readHistory();
+
+			historyList.innerHTML = '';
+			list.forEach( function ( term ) {
+				var chip = makeChip( term, '' );
+
+				chip.addEventListener( 'click', function () {
+					searchFor( term );
+				} );
+
+				historyList.appendChild( chip );
+			} );
+		}
+
+		/**
+		 * اجرای جستجو از روی یک عبارت ذخیره‌شده. بدون افزونه، به برگه‌ی
+		 * جستجوی وردپرس می‌رود.
+		 *
+		 * @param {string} term عبارت.
+		 */
+		function searchFor( term ) {
+			if ( ! config.searchUrl ) {
+				window.location.href = ( config.searchPage || '/' ) + '?s=' + encodeURIComponent( term );
+				return;
+			}
+
+			input.value = term;
+			setIdle( false );
+			window.clearTimeout( timer );
+			runSearch( term );
+		}
+
+		function renderGenres() {
+			if ( ! genresList || ! genres.length ) {
+				return;
+			}
+
+			genres.forEach( function ( genre ) {
+				genresList.appendChild( makeChip( genre.name, genre.url ) );
+			} );
+		}
+
+		/** برچسب‌های بخش‌ها از ترجمه‌های قالب (`kooheFilm.i18n`). */
+		function labelSections() {
+			var i18n = config.i18n || {};
+			var set  = function ( selector, text ) {
+				var node = overlay.querySelector( selector );
+
+				if ( node && text ) {
+					node.textContent = text;
+				}
+			};
+
+			set( '[data-koohe-search-history-title]', i18n.history );
+			set( '[data-koohe-search-history-clear]', i18n.clear );
+			set( '[data-koohe-search-genres-title]', i18n.genres );
+		}
+
+		if ( historyBox ) {
+			qsa( '[data-koohe-search-history-clear]', overlay ).forEach( function ( btn ) {
+				btn.addEventListener( 'click', function () {
+					forgetHistory();
+					renderHistory();
+					setIdle( true );
+				} );
+			} );
+		}
+
+		labelSections();
+		renderGenres();
+
 		/** پیشنهادهای روز (وقتی کادر جستجو خالی است). */
 		function showSuggestions() {
+			renderHistory();
+			setIdle( true );
+
 			if ( ! config.titlesUrl ) {
 				return;
 			}
@@ -1088,11 +1255,21 @@
 				} );
 		}
 
+		if ( form ) {
+			form.addEventListener( 'submit', function () {
+				rememberQuery( input ? input.value : '' );
+			} );
+		}
+
 		if ( input ) {
 			input.addEventListener( 'input', function () {
 				var query = input.value.trim();
 
 				window.clearTimeout( timer );
+
+				if ( '' !== query ) {
+					setIdle( false );
+				}
 
 				if ( query.length < 2 ) {
 					reset();

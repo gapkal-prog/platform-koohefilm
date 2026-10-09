@@ -8,7 +8,7 @@
  * پس از مهاجرت» از خط فرمان وجود نداشت.
  *
  * همه‌ی کارهای سنگین به همان کلاس‌های افزونه سپرده می‌شوند (Demo،
- * Portability، Analytics، Mega_Menu) تا منطق یک‌جا بماند و از خط فرمان و پنل
+ * Portability، Analytics) تا منطق یک‌جا بماند و از خط فرمان و پنل
  * رفتار یکسان باشد.
  *
  * نمونه:
@@ -349,10 +349,6 @@ class Cli {
 	 * @return void
 	 */
 	public function rebuild() {
-		if ( class_exists( __NAMESPACE__ . '\\Mega_Menu' ) ) {
-			Mega_Menu::flush_cache();
-		}
-
 		delete_transient( 'manacore_home_stats' );
 
 		if ( class_exists( __NAMESPACE__ . '\\Analytics' ) ) {

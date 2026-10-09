@@ -42,7 +42,6 @@ class Settings {
 			'watch'      => __( 'پخش و دانلود', 'manacore' ),
 			'requests'   => __( 'درخواست‌ها', 'manacore' ),
 			'reports'    => __( 'خرابی لینک', 'manacore' ),
-			'mega'       => __( 'مگامنو', 'manacore' ),
 			'tools'      => __( 'ابزارها و نگه‌داری', 'manacore' ),
 		);
 	}
@@ -64,7 +63,6 @@ class Settings {
 			'appearance' => array( 'default_color_mode', 'hero_autoplay', 'hero_interval', 'hero_effect' ),
 			'watch'      => array( 'download_notice_text', 'player_notice_text', 'subscribe_label', 'subscribe_url', 'download_signing', 'download_ttl', 'download_bridge', 'bridge_notice_text' ),
 			'requests'   => array( 'requests_enabled', 'requests_guests', 'requests_show_pending', 'requests_heading', 'requests_board_title', 'requests_button', 'requests_intro', 'requests_thanks', 'requests_per_page' ),
-			'mega'       => array( 'mega_enabled', 'mega_show_korean', 'mega_show_cast', 'mega_show_feature', 'mega_show_rating', 'mega_show_newest', 'mega_eyebrow', 'mega_title', 'mega_genre_label', 'mega_quick_label', 'mega_feature_label', 'mega_cta_label', 'mega_rating_label', 'mega_newest_label', 'mega_korean_label', 'mega_cast_label', 'mega_taxonomy', 'mega_terms', 'mega_columns', 'mega_hub_url', 'mega_featured_id' ),
 			'tools'      => array( 'links_check_interval', 'links_check_batch', 'links_check_timeout' ),
 		);
 	}
@@ -82,6 +80,40 @@ class Settings {
 		}
 
 		return $keys;
+	}
+
+	/**
+	 * کلیدهای منسوخ که دیگر در هیچ تبی نیستند و در ذخیره پاک می‌شوند.
+	 *
+	 * تنظیمات مگامنو از پیشخوان حذف شد؛ مدیریت آن اکنون از خود فهرست
+	 * راهبری وردپرس (و ویرایشگر سایت) انجام می‌شود.
+	 *
+	 * @return array<int,string>
+	 */
+	public static function retired_keys() {
+		return array(
+			'mega_enabled',
+			'mega_show_korean',
+			'mega_show_cast',
+			'mega_show_feature',
+			'mega_show_rating',
+			'mega_show_newest',
+			'mega_eyebrow',
+			'mega_title',
+			'mega_genre_label',
+			'mega_quick_label',
+			'mega_feature_label',
+			'mega_cta_label',
+			'mega_rating_label',
+			'mega_newest_label',
+			'mega_korean_label',
+			'mega_cast_label',
+			'mega_taxonomy',
+			'mega_terms',
+			'mega_columns',
+			'mega_hub_url',
+			'mega_featured_id',
+		);
 	}
 
 	/**
@@ -218,7 +250,7 @@ class Settings {
 
 			$clean['hero_autoplay'] = empty( $input['hero_autoplay'] ) ? 0 : 1;
 
-			$clean['hero_interval'] = isset( $input['hero_interval'] ) ? max( 3, min( 15, (int) $input['hero_interval'] ) ) : 7;
+			$clean['hero_interval'] = isset( $input['hero_interval'] ) ? max( 3, min( 15, (int) $input['hero_interval'] ) ) : 10;
 
 			$effects = class_exists( __NAMESPACE__ . '\\Block_Data' ) ? array_keys( Block_Data::slider_effects() ) : array( 'fade', 'slide', 'zoom', 'none' );
 			$effect  = isset( $input['hero_effect'] ) ? sanitize_key( $input['hero_effect'] ) : 'fade';
@@ -264,41 +296,6 @@ class Settings {
 				: 12;
 		}
 
-		/* ---------------- تب مگامنو ---------------- */
-		if ( $do( 'mega' ) ) {
-			$mega_bools = array( 'mega_enabled', 'mega_show_korean', 'mega_show_cast', 'mega_show_feature', 'mega_show_rating', 'mega_show_newest' );
-			foreach ( $mega_bools as $key ) {
-				$clean[ $key ] = empty( $input[ $key ] ) ? 0 : 1;
-			}
-
-			foreach ( array( 'mega_eyebrow', 'mega_title', 'mega_genre_label', 'mega_quick_label', 'mega_feature_label', 'mega_cta_label', 'mega_rating_label', 'mega_newest_label', 'mega_korean_label', 'mega_cast_label' ) as $key ) {
-				if ( isset( $input[ $key ] ) ) {
-					$clean[ $key ] = sanitize_text_field( $input[ $key ] );
-				}
-			}
-
-			if ( isset( $input['mega_taxonomy'] ) ) {
-				$tax                    = sanitize_key( $input['mega_taxonomy'] );
-				$clean['mega_taxonomy'] = taxonomy_exists( $tax ) ? $tax : 'genre';
-			}
-
-			$clean['mega_terms']   = isset( $input['mega_terms'] ) ? max( 3, min( 30, (int) $input['mega_terms'] ) ) : 12;
-			$clean['mega_columns'] = isset( $input['mega_columns'] ) ? max( 2, min( 4, (int) $input['mega_columns'] ) ) : 3;
-			$clean['mega_hub_url'] = isset( $input['mega_hub_url'] ) ? esc_url_raw( trim( (string) $input['mega_hub_url'] ) ) : '';
-
-			$featured = isset( $input['mega_featured_id'] ) ? absint( $input['mega_featured_id'] ) : 0;
-
-			/* اثر ویژه فقط از نوع‌های ManaCore و منتشرشده پذیرفته می‌شود. */
-			if ( $featured ) {
-				$type = (string) get_post_type( $featured );
-				if ( ! array_key_exists( $type, manacore_post_types() ) || 'publish' !== get_post_status( $featured ) ) {
-					$featured = 0;
-				}
-			}
-
-			$clean['mega_featured_id'] = $featured;
-		}
-
 		/* ---------------- تب وضعیت و ابزارها ---------------- */
 		if ( $do( 'tools' ) ) {
 			/*
@@ -322,13 +319,8 @@ class Settings {
 
 		$merged = array_merge( $existing, $clean );
 
-		/*
-		 * کش ترنزینت‌های مگامنو با ذخیره‌ی تنظیمات پاک می‌شود تا متن/تعداد
-		 * تازه بی‌درنگ در پنل و شورت‌کد دیده شود.
-		 */
-		if ( class_exists( __NAMESPACE__ . '\\Mega_Menu' ) ) {
-			Mega_Menu::flush_cache();
-		}
+		/* کلیدهای منسوخ (مثلاً تنظیمات حذف‌شده‌ی مگامنو) در هر ذخیره پاک می‌شوند. */
+		$merged = array_diff_key( $merged, array_flip( self::retired_keys() ) );
 
 		/**
 		 * فیلتر تنظیمات نهایی.
@@ -357,8 +349,7 @@ class Settings {
 
 		$map = array(
 			'watch-ok'      => array( 'success', __( 'برگه‌ی پخش ساخته/بازیابی شد.', 'manacore' ) ),
-			'mega-ok'       => array( 'success', __( 'فهرست راهبری مگامنو بازسازی شد.', 'manacore' ) ),
-			'cache-ok'      => array( 'success', __( 'کش مگامنو و برگه‌های گذرا پاک شد.', 'manacore' ) ),
+			'cache-ok'      => array( 'success', __( 'کش و برگه‌های گذرا پاک شد.', 'manacore' ) ),
 			'rewrite-ok'    => array( 'success', __( 'قواعد پیوندهای یکتا بازسازی شد.', 'manacore' ) ),
 			'report-ok'     => array( 'success', __( 'گزارش به‌روز شد.', 'manacore' ) ),
 			'request-ok'    => array( 'success', __( 'برگه‌ی درخواست‌ها ساخته شد.', 'manacore' ) ),
@@ -455,7 +446,6 @@ class Settings {
 		$back_to = array(
 			'watch-page'   => 'watch',
 			'request-page' => 'requests',
-			'mega-rebuild' => 'mega',
 		);
 		$tab     = isset( $back_to[ $tool ] ) ? $back_to[ $tool ] : 'tools';
 
@@ -491,14 +481,7 @@ class Settings {
 				$notice = 'demo-removed';
 				break;
 
-			case 'mega-rebuild':
-				$notice = function_exists( 'koohe_rebuild_navigation' ) && koohe_rebuild_navigation() ? 'mega-ok' : 'failed';
-				break;
-
 			case 'flush-cache':
-				if ( class_exists( __NAMESPACE__ . '\\Mega_Menu' ) ) {
-					Mega_Menu::flush_cache();
-				}
 				delete_transient( 'manacore_home_stats' );
 
 				if ( class_exists( __NAMESPACE__ . '\\Analytics' ) ) {
@@ -598,10 +581,6 @@ class Settings {
 
 				case 'reports':
 					$this->render_reports_tab();
-					break;
-
-				case 'mega':
-					$this->render_mega_tab();
 					break;
 
 				case 'tools':
@@ -998,7 +977,7 @@ class Settings {
 						<th scope="row"><label for="hero_interval"><?php esc_html_e( 'فاصله‌ی تعویض اسلاید', 'manacore' ); ?></label></th>
 						<td>
 							<input type="number" id="hero_interval" name="manacore_settings[hero_interval]" min="3" max="15" step="1"
-								value="<?php echo esc_attr( (int) manacore_get_option( 'hero_interval', 7 ) ); ?>" class="small-text" />
+								value="<?php echo esc_attr( (int) manacore_get_option( 'hero_interval', 10 ) ); ?>" class="small-text" />
 							<?php esc_html_e( 'ثانیه (۳ تا ۱۵)', 'manacore' ); ?>
 						</td>
 					</tr>
@@ -1615,189 +1594,6 @@ class Settings {
 	}
 
 	/**
-	 * تب «مگامنو»: تنظیمات پنل + وضعیت و بازسازی.
-	 *
-	 * @return void
-	 */
-	protected function render_mega_tab() {
-		$settings = class_exists( __NAMESPACE__ . '\\Mega_Menu' ) ? Mega_Menu::settings() : array();
-		$taxonomy = isset( $settings['taxonomy'] ) ? (string) $settings['taxonomy'] : 'genre';
-
-		$this->tab_form(
-			'mega',
-			function () use ( $taxonomy ) {
-				$this->panel_open(
-					__( 'پنل مگامنو', 'manacore' ),
-					__( 'پنل کشویی ژانرها که در فهرست راهبری قالب باز می‌شود.', 'manacore' )
-				);
-				?>
-				<table class="form-table" role="presentation">
-					<tr>
-						<th scope="row"><?php esc_html_e( 'نمایش پنل', 'manacore' ); ?></th>
-						<td>
-							<label>
-								<input type="checkbox" name="manacore_settings[mega_enabled]" value="1" <?php checked( 1, (int) manacore_get_option( 'mega_enabled', 1 ) ); ?> />
-								<?php esc_html_e( 'پنل مگامنو فعال باشد', 'manacore' ); ?>
-							</label>
-						</td>
-					</tr>
-					<tr>
-						<th scope="row"><label for="mega_taxonomy"><?php esc_html_e( 'تاکسونومی ژانرها', 'manacore' ); ?></label></th>
-						<td>
-							<select id="mega_taxonomy" name="manacore_settings[mega_taxonomy]">
-								<?php
-								foreach ( get_taxonomies( array( 'public' => true ), 'objects' ) as $tax ) {
-									printf(
-										'<option value="%1$s" %2$s>%3$s</option>',
-										esc_attr( $tax->name ),
-										selected( $taxonomy, $tax->name, false ),
-										esc_html( $tax->labels->name )
-									);
-								}
-								?>
-							</select>
-						</td>
-					</tr>
-						<tr>
-							<th scope="row"><label for="mega_terms"><?php esc_html_e( 'تعداد ژانرها', 'manacore' ); ?></label></th>
-							<td>
-								<input type="number" id="mega_terms" name="manacore_settings[mega_terms]" min="3" max="30"
-									value="<?php echo esc_attr( (int) manacore_get_option( 'mega_terms', 12 ) ); ?>" class="small-text" />
-								<p class="description"><?php esc_html_e( 'ترم‌ها به ترتیب بیشترین محتوا انتخاب می‌شوند.', 'manacore' ); ?></p>
-							</td>
-						</tr>
-						<tr>
-							<th scope="row"><label for="mega_columns"><?php esc_html_e( 'تعداد ستون‌های شبکه‌ی ژانرها', 'manacore' ); ?></label></th>
-							<td>
-								<input type="number" id="mega_columns" name="manacore_settings[mega_columns]" min="2" max="4"
-									value="<?php echo esc_attr( (int) manacore_get_option( 'mega_columns', 3 ) ); ?>" class="small-text" />
-								<p class="description"><?php esc_html_e( '۲ تا ۴ ستون در پنل دسکتاپ.', 'manacore' ); ?></p>
-							</td>
-						</tr>
-					<tr>
-						<th scope="row"><label for="mega_hub_url"><?php esc_html_e( 'نشانی «مرکز دسته‌بندی‌ها»', 'manacore' ); ?></label></th>
-						<td>
-							<input type="url" id="mega_hub_url" name="manacore_settings[mega_hub_url]" class="regular-text" dir="ltr"
-								value="<?php echo esc_attr( manacore_get_option( 'mega_hub_url', '' ) ); ?>"
-								placeholder="<?php echo esc_attr( home_url( '/categories-hub/' ) ); ?>" />
-							<p class="description"><?php esc_html_e( 'خالی = برگه‌ی categories-hub یا browse یا آرشیو فیلم، هرکدام موجود بود.', 'manacore' ); ?></p>
-						</td>
-					</tr>
-					<tr>
-						<th scope="row"><label for="mega_featured_id"><?php esc_html_e( 'کارت ویژه (شناسه‌ی اثر)', 'manacore' ); ?></label></th>
-						<td>
-							<input type="number" id="mega_featured_id" name="manacore_settings[mega_featured_id]" min="0"
-								value="<?php echo esc_attr( (int) manacore_get_option( 'mega_featured_id', 0 ) ); ?>" class="small-text" />
-							<p class="description"><?php esc_html_e( 'شناسه‌ی فیلم/سریال برای ستون سوم پنل. صفر = خودکار (تازه‌ترین اثر دارای پوستر).', 'manacore' ); ?></p>
-						</td>
-					</tr>
-				</table>
-				<?php
-				$this->panel_close();
-
-				$this->panel_open( __( 'متن‌های پنل', 'manacore' ), __( 'خالی بگذارید تا متن پیش‌فرض قالب بیاید.', 'manacore' ) );
-
-				$texts = array(
-					'mega_eyebrow'       => array( __( 'سرستون پنل', 'manacore' ), __( 'یک دنیا انتخاب', 'manacore' ) ),
-					'mega_title'         => array( __( 'تیتر پنل', 'manacore' ), __( 'حال‌وهوای امشبت چیه؟', 'manacore' ) ),
-					'mega_genre_label'   => array( __( 'سرستون ستون ژانرها', 'manacore' ), __( 'ژانرها', 'manacore' ) ),
-					'mega_quick_label'   => array( __( 'سرستون ستون دسترسی سریع', 'manacore' ), __( 'به انتخاب سینورا', 'manacore' ) ),
-					'mega_rating_label'  => array( __( 'ردیف «بالاترین امتیازها»', 'manacore' ), '' ),
-					'mega_newest_label'  => array( __( 'ردیف «تازه‌ها»', 'manacore' ), '' ),
-					'mega_korean_label'  => array( __( 'ردیف «کره‌ای»', 'manacore' ), '' ),
-					'mega_cast_label'    => array( __( 'ردیف «بازیگران»', 'manacore' ), '' ),
-					'mega_feature_label' => array( __( 'سطر ریز کارت ویژه', 'manacore' ), '' ),
-					'mega_cta_label'     => array( __( 'برچسب کنش کارت ویژه', 'manacore' ), __( 'کشف داستان', 'manacore' ) ),
-				);
-				?>
-				<table class="form-table" role="presentation">
-					<?php foreach ( $texts as $key => $row ) : ?>
-						<tr>
-							<th scope="row"><label for="<?php echo esc_attr( $key ); ?>"><?php echo esc_html( $row[0] ); ?></label></th>
-							<td>
-								<input type="text" id="<?php echo esc_attr( $key ); ?>" name="manacore_settings[<?php echo esc_attr( $key ); ?>]"
-									class="regular-text" placeholder="<?php echo esc_attr( $row[1] ); ?>"
-									value="<?php echo esc_attr( manacore_get_option( $key, '' ) ); ?>" />
-							</td>
-						</tr>
-					<?php endforeach; ?>
-					<tr>
-						<th scope="row"><?php esc_html_e( 'ستون‌ها و ردیف‌های اختیاری', 'manacore' ); ?></th>
-						<td>
-							<label>
-								<input type="checkbox" name="manacore_settings[mega_show_feature]" value="1" <?php checked( 1, (int) manacore_get_option( 'mega_show_feature', 1 ) ); ?> />
-								<?php esc_html_e( 'کارت ویژه (ستون سوم)', 'manacore' ); ?>
-							</label>
-							<br />
-							<label>
-								<input type="checkbox" name="manacore_settings[mega_show_rating]" value="1" <?php checked( 1, (int) manacore_get_option( 'mega_show_rating', 1 ) ); ?> />
-								<?php esc_html_e( 'ردیف «بالاترین امتیازها»', 'manacore' ); ?>
-							</label>
-							<br />
-							<label>
-								<input type="checkbox" name="manacore_settings[mega_show_newest]" value="1" <?php checked( 1, (int) manacore_get_option( 'mega_show_newest', 1 ) ); ?> />
-								<?php esc_html_e( 'ردیف «تازه‌های کوهه»', 'manacore' ); ?>
-							</label>
-							<br />
-							<label>
-								<input type="checkbox" name="manacore_settings[mega_show_korean]" value="1" <?php checked( 1, (int) manacore_get_option( 'mega_show_korean', 1 ) ); ?> />
-								<?php esc_html_e( 'ردیف «فیلم و سریال کره‌ای» (نیازمند ترم کشور کره)', 'manacore' ); ?>
-							</label>
-							<br />
-							<label>
-								<input type="checkbox" name="manacore_settings[mega_show_cast]" value="1" <?php checked( 1, (int) manacore_get_option( 'mega_show_cast', 1 ) ); ?> />
-								<?php esc_html_e( 'ردیف «بازیگران و کارگردان‌ها»', 'manacore' ); ?>
-							</label>
-						</td>
-					</tr>
-				</table>
-				<?php
-				$this->panel_close();
-			}
-		);
-
-		$this->mega_status_panel();
-	}
-
-	/**
-	 * کارت وضعیت مگامنو و بازسازی فهرست راهبری.
-	 *
-	 * @return void
-	 */
-	protected function mega_status_panel() {
-		$menu_id  = function_exists( 'koohe_primary_navigation_id' ) ? (int) koohe_primary_navigation_id() : 0;
-		$menu     = $menu_id ? get_post( $menu_id ) : null;
-		$content  = $menu ? (string) $menu->post_content : '';
-		$has_mega = false !== strpos( $content, 'koohe-mega' );
-		$terms    = class_exists( __NAMESPACE__ . '\\Mega_Menu' ) ? count( Mega_Menu::menu_terms( 'genre', 30 ) ) : 0;
-
-		$this->panel_open( __( 'وضعیت مگامنو', 'manacore' ) );
-
-		if ( $has_mega ) {
-			$this->status_line( true, __( 'فهرست راهبری آیتم مگامنو دارد.', 'manacore' ) );
-		} else {
-			$this->status_line( false, __( 'فهرست راهبری فعلی آیتم مگامنو ندارد؛ با دکمه‌ی زیر بسازید.', 'manacore' ) );
-		}
-
-		$this->stat_list(
-			array(
-				array( __( 'ژانر آماده برای پنل', 'manacore' ), number_format_i18n( $terms ) ),
-			)
-		);
-
-		$this->tool_row(
-			'mega-rebuild',
-			__( 'بازسازی فهرست راهبری', 'manacore' ),
-			__( 'بازسازی فهرست راهبری مگامنو', 'manacore' ),
-			__( 'با تغییر متن‌ها یا تعداد ژانرها در تب مگامنو، فهرست در نخستین بازدید خودکار به‌روز می‌شود؛ این دکمه برای بازسازی فوری است.', 'manacore' ),
-			__( 'مطمئنید؟ فهرست راهبری با ساختار تازه‌ی قالب بازنویسی می‌شود.', 'manacore' ),
-			true
-		);
-
-		$this->panel_close();
-	}
-
-	/**
 	 * بخش «نگاه کلی» — داده‌های اساسی داشبورد، درون تب عمومی.
 	 *
 	 * جای تب جداگانه‌ی «تحلیل و آمار» را گرفته است: مدیر بدون ترک صفحه‌ی
@@ -1934,7 +1730,7 @@ class Settings {
 			'flush-cache',
 			__( 'پاک‌کردن کش', 'manacore' ),
 			__( 'پاک‌کردن کش‌ها', 'manacore' ),
-			__( 'کش داده‌های مگامنو یک‌ساعته است؛ تغییر ترم‌ها یا تنظیمات خودش پاکش می‌کند. این دکمه برای پاک‌سازی دستی است.', 'manacore' )
+			__( 'کش‌های گذرا (مانند آمار صفحه‌ی اصلی و نتایج جست‌وجو) خودکار بازسازی می‌شوند. این دکمه برای پاک‌سازی دستی است.', 'manacore' )
 		);
 		$this->tool_row(
 			'flush-rewrite',
@@ -1949,7 +1745,6 @@ class Settings {
 		$this->panel_open( __( 'شورت‌کدها', 'manacore' ), __( 'برای قالب‌هایی که الگوهای کوهه را ندارند.', 'manacore' ) );
 		?>
 		<ul class="manacore-codes">
-			<li><code>[manacore_mega_menu]</code> — <?php esc_html_e( 'پنل مگامنو', 'manacore' ); ?></li>
 			<li><code>[manacore_player]</code> — <?php esc_html_e( 'پخش‌کننده (با manacore_id)', 'manacore' ); ?></li>
 			<li><code>[manacore_request_form]</code> — <?php esc_html_e( 'فرم درخواست فیلم/سریال', 'manacore' ); ?></li>
 			<li><code>[manacore_requests]</code> — <?php esc_html_e( 'تخته‌ی درخواست‌ها با رأی‌گیری', 'manacore' ); ?></li>
