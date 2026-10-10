@@ -174,7 +174,7 @@ class Block_Query {
 			'menu_order'     => __( 'ترتیب دستی (menu_order)', 'manacore' ),
 			'rating'         => __( 'امتیاز IMDb', 'manacore' ),
 			'tmdb_rating'    => __( 'امتیاز TMDB', 'manacore' ),
-			'views'          => __( 'بازدید', 'manacore' ),
+			'views'          => __( 'تماشا', 'manacore' ),
 			'year'           => __( 'سال انتشار', 'manacore' ),
 			'runtime'        => __( 'مدت زمان', 'manacore' ),
 			'episode_number' => __( 'شماره‌ی قسمت', 'manacore' ),

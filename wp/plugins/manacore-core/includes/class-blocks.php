@@ -55,6 +55,15 @@ class Blocks {
 	 * @return array
 	 */
 	public function definitions() {
+		/*
+		 * پیش‌فرض‌های «پخش خودکار»، «فاصله» و «جلوه» از تب «ظاهر و استایل»
+		 * (hero_autoplay/hero_interval/hero_effect) می‌آیند. چون ثبت ویرایشگر
+		 * هم از همین تعریف می‌آید، ویرایشگر و خروجی رندرشده یک پیش‌فرض مشترک
+		 * می‌بینند؛ مقداری که در ویرایشگر برای هر بلوک می‌گذارید (و در محتوای
+		 * ذخیره‌شده می‌نشیند) اولویت دارد.
+		 */
+		$hero_defaults = self::hero_defaults();
+
 		$blocks = array(
 
 			'manacore/titles-grid'    => array(
@@ -113,7 +122,7 @@ class Blocks {
 						),
 						'effect'       => array(
 							'type'    => 'string',
-							'default' => 'fade',
+							'default' => $hero_defaults['effect'],
 						),
 						'contentAlign' => array(
 							'type'    => 'string',
@@ -129,11 +138,11 @@ class Blocks {
 						),
 						'autoplay'     => array(
 							'type'    => 'boolean',
-							'default' => true,
+							'default' => $hero_defaults['autoplay'],
 						),
 						'interval'     => array(
 							'type'    => 'number',
-							'default' => 7,
+							'default' => $hero_defaults['interval'],
 						),
 						'showDots'     => array(
 							'type'    => 'boolean',
@@ -141,7 +150,7 @@ class Blocks {
 						),
 						'showArrows'   => array(
 							'type'    => 'boolean',
-							'default' => false,
+							'default' => true,
 						),
 						'showLogo'     => array(
 							'type'    => 'boolean',
@@ -178,6 +187,56 @@ class Blocks {
 						'trailerLabel' => array(
 							'type'    => 'string',
 							'default' => '',
+						),
+						/*
+						 * اجزای تازه‌ی هم‌شکل مرجع `cinora/index.html`: نشان ویژه،
+						 * عنوان لاتین، نشان کیفیت، برچسب زبان، واترمارک، شمارنده و
+						 * یادداشت پایین اسلایدر. هر کدام کلید خاموش/روشن خودش را
+						 * دارد و متن‌های دلخواه هم از همان‌جا می‌آید.
+						 */
+						'showEyebrow'   => array(
+							'type'    => 'boolean',
+							'default' => true,
+						),
+						'eyebrowLabel' => array(
+							'type'    => 'string',
+							'default' => '',
+						),
+						'eyebrowTagline' => array(
+							'type'    => 'string',
+							'default' => '',
+						),
+						'showOriginal' => array(
+							'type'    => 'boolean',
+							'default' => true,
+						),
+						'showQuality'  => array(
+							'type'    => 'boolean',
+							'default' => true,
+						),
+						'showLanguages' => array(
+							'type'    => 'boolean',
+							'default' => true,
+						),
+						'showWordmark' => array(
+							'type'    => 'boolean',
+							'default' => true,
+						),
+						'showCounter'  => array(
+							'type'    => 'boolean',
+							'default' => true,
+						),
+						'showNote'     => array(
+							'type'    => 'boolean',
+							'default' => true,
+						),
+						'noteText'     => array(
+							'type'    => 'string',
+							'default' => '',
+						),
+						'tilt'         => array(
+							'type'    => 'boolean',
+							'default' => true,
 						),
 					)
 				),
@@ -231,6 +290,37 @@ class Blocks {
 						'boxStyle'   => array(
 							'type'    => 'string',
 							'default' => 'cards',
+						),
+						/*
+						 * `mode` طراحی و منطق باکس را از نوع محتوا جدا می‌کند:
+						 * فیلم → جدول کیفیت، سریال → بسته‌های کامل فصل،
+						 * قسمت → جدول کیفیت همان قسمت. `auto` از نوع پست
+						 * تشخیص می‌دهد تا قالب‌های موجود دست‌نخورده بمانند.
+						 */
+						'mode'       => array(
+							'type'    => 'string',
+							'default' => 'auto',
+						),
+						'packLabel'  => array(
+							'type'    => 'string',
+							'default' => '',
+						),
+						/*
+						 * منبع ردیف‌های جدول: در سریال‌ها لینک هر قسمت روی
+						 * پست همان قسمت ثبت می‌شود؛ «هر دو» (پیش‌فرض سریال)
+						 * بسته‌های کامل فصل و لینک قسمت‌ها را یک‌جا می‌آورد.
+						 */
+						'linkSource' => array(
+							'type'    => 'string',
+							'default' => 'auto',
+						),
+						'episodeLabel' => array(
+							'type'    => 'string',
+							'default' => '',
+						),
+						'sizeLabel'  => array(
+							'type'    => 'string',
+							'default' => '',
 						),
 						'subtitle'   => array(
 							'type'    => 'string',
@@ -644,6 +734,31 @@ class Blocks {
 			/*
 			 * «امشب با چه حال‌وهوایی؟» — کالکشن‌های مرجع (collections-grid).
 			 */
+			'manacore/collection-hero' => array(
+				'title'       => __( 'مشخصات مجموعه', 'manacore' ),
+				'description' => __( 'کاور، عنوان، زیرعنوان و شمار آثار یک مجموعه. در قالب تک‌مجموعه سرآمد صفحه است و در آرشیو کارت هر مجموعه.', 'manacore' ),
+				'icon'        => 'format-gallery',
+				'attributes'  => array(
+					'variant'      => array(
+						'type'    => 'string',
+						'default' => 'hero',
+					),
+					'showCover'    => array(
+						'type'    => 'boolean',
+						'default' => true,
+					),
+					'showSubtitle' => array(
+						'type'    => 'boolean',
+						'default' => true,
+					),
+					'showCount'    => array(
+						'type'    => 'boolean',
+						'default' => true,
+					),
+				),
+				'render'      => array( $this, 'render_collection_hero' ),
+			),
+
 			'manacore/collection-row' => array(
 				'title'       => __( 'ردیف کالکشن‌ها', 'manacore' ),
 				'description' => __( 'کارت‌های تصویری کالکشن‌ها با شماره، عنوان، توضیح و فلش — بخش «امشب با چه حال‌وهوایی؟».', 'manacore' ),
@@ -1824,6 +1939,51 @@ class Blocks {
 				'render'      => array( $this, 'render_account_history' ),
 			),
 
+			'manacore/account-requests' => array(
+				'title'       => __( 'درخواست‌های من', 'manacore' ),
+				'description' => __( 'فرم ثبت درخواست فیلم/سریال و فهرست درخواست‌های خودِ کاربر با وضعیت هر کدام (در انتظار، تأییدشده، ردشده).', 'manacore' ),
+				'icon'        => 'feedback',
+				'attributes'  => array(
+					'heading'     => array(
+						'type'    => 'string',
+						'default' => __( 'درخواست‌های من', 'manacore' ),
+					),
+					'subheading'  => array(
+						'type'    => 'string',
+						'default' => __( 'هر چه فرستادی، وضعیتش همین‌جاست؛ رأی بقیه را هم از تخته‌ی درخواست‌ها ببین.', 'manacore' ),
+					),
+					'showForm'    => array(
+						'type'    => 'boolean',
+						'default' => true,
+					),
+					'formHeading' => array(
+						'type'    => 'string',
+						'default' => '',
+					),
+					'formIntro'   => array(
+						'type'    => 'string',
+						'default' => '',
+					),
+					'formButton'  => array(
+						'type'    => 'string',
+						'default' => '',
+					),
+					'perPage'     => array(
+						'type'    => 'number',
+						'default' => 12,
+					),
+					'emptyTitle'  => array(
+						'type'    => 'string',
+						'default' => '',
+					),
+					'emptyText'   => array(
+						'type'    => 'string',
+						'default' => '',
+					),
+				),
+				'render'      => array( $this, 'render_account_requests' ),
+			),
+
 			'manacore/account-analytics' => array(
 				'title'       => __( 'تحلیل سلیقه', 'manacore' ),
 				'description' => __( 'چهار کارت تحلیل: حلقه‌ی ژانرها، سهم فیلم/سریال، نمودار هفته و کشورها (هم‌ارز `data-panel=\"analytics\"` مرجع).', 'manacore' ),
@@ -2159,6 +2319,30 @@ class Blocks {
 				'attributes'  => Block_Support::compose(
 					Block_Support::header_attributes(),
 					array(
+						'boxStyle'       => array(
+							'type'    => 'string',
+							'default' => 'cards',
+						),
+						'showNotice'     => array(
+							'type'    => 'boolean',
+							'default' => true,
+						),
+						'packTitle'      => array(
+							'type'    => 'string',
+							'default' => '',
+						),
+						'sizeLabel'      => array(
+							'type'    => 'string',
+							'default' => '',
+						),
+						'playLabel'      => array(
+							'type'    => 'string',
+							'default' => '',
+						),
+						'showPackList'   => array(
+							'type'    => 'boolean',
+							'default' => true,
+						),
 						'seasonNumber'   => array(
 							'type'    => 'number',
 							'default' => 0,
@@ -2207,6 +2391,66 @@ class Blocks {
 				),
 				'render'      => array( $this, 'render_episodes' ),
 			),
+
+			/*
+			 * درخواست کاربران: فرم ثبت + تخته‌ی رأی‌گیری. دو بلوک جداگانه
+			 * است تا مدیر بتواند فقط یکی را در برگه بگذارد (مثلاً تخته در
+			 * صفحه‌ی اصلی و فرم در برگه‌ی «درخواست‌ها»).
+			 */
+			'manacore/request-form'   => array(
+				'title'       => __( 'فرم درخواست فیلم/سریال', 'manacore' ),
+				'description' => __( 'فرم ثبت درخواست کاربران برای اثری که در آرشیو نیست.', 'manacore' ),
+				'icon'        => 'feedback',
+				'attributes'  => array(
+					'heading'   => array(
+						'type'    => 'string',
+						'default' => '',
+					),
+					'intro'     => array(
+						'type'    => 'string',
+						'default' => '',
+					),
+					'button'    => array(
+						'type'    => 'string',
+						'default' => '',
+					),
+					'showTypes' => array(
+						'type'    => 'boolean',
+						'default' => true,
+					),
+				),
+				'render'      => array( $this, 'render_request_form' ),
+			),
+
+			'manacore/requests'       => array(
+				'title'       => __( 'تخته‌ی درخواست‌ها', 'manacore' ),
+				'description' => __( 'فهرست درخواست‌های کاربران با رأی‌گیری و نشان «در انتظار تأیید».', 'manacore' ),
+				'icon'        => 'list-view',
+				'attributes'  => array(
+					'heading'     => array(
+						'type'    => 'string',
+						'default' => '',
+					),
+					'perPage'     => array(
+						'type'    => 'number',
+						'default' => 0,
+					),
+					'orderby'     => array(
+						'type'    => 'string',
+						'default' => 'votes',
+					),
+					'showPending' => array(
+						'type'    => 'boolean',
+						'default' => true,
+					),
+					'type'        => array(
+						'type'    => 'string',
+						'default' => '',
+					),
+				),
+				'render'      => array( $this, 'render_requests_board' ),
+			),
+
 		);
 
 		/**
@@ -2215,6 +2459,36 @@ class Blocks {
 		 * @param array $blocks تعریف‌ها.
 		 */
 		return (array) apply_filters( 'manacore_block_definitions', $blocks );
+	}
+
+	/**
+	 * پیش‌فرض‌های اسلایدر خانه از تب «ظاهر و استایل».
+	 *
+	 * این مقادیر پیش‌فرض ویژگی‌های بلوک `manacore/hero-slider` می‌شوند
+	 * (یعنی هم در ویرایشگر و هم در رندر سرور). مقداری که مدیر در ویرایشگر
+	 * برای یک بلوک می‌گذارد در محتوای ذخیره‌شده می‌نشیند و بر پیش‌فرض
+	 * سایت غلبه می‌کند. کرانه‌ها در پاک‌سازی همان تب اعمال می‌شوند؛ این‌جا
+	 * دوباره اعمال می‌شوند تا فراخوانی دستی هم ایمن بماند.
+	 *
+	 * @return array{autoplay:bool,interval:int,effect:string}
+	 */
+	public static function hero_defaults() {
+		$effects  = array_keys( Block_Data::slider_effects() );
+		$effect   = (string) manacore_get_option( 'hero_effect', 'fade' );
+		$interval = (int) manacore_get_option( 'hero_interval', 10 );
+
+		$defaults = array(
+			'autoplay' => (bool) manacore_get_option( 'hero_autoplay', 1 ),
+			'interval' => max( 3, min( 15, $interval ) ),
+			'effect'   => in_array( $effect, $effects, true ) ? $effect : 'fade',
+		);
+
+		/**
+		 * فیلتر پیش‌فرض‌های اسلایدر خانه.
+		 *
+		 * @param array $defaults پیش‌فرض‌ها.
+		 */
+		return (array) apply_filters( 'manacore_hero_defaults', $defaults );
 	}
 
 	/**
@@ -2481,6 +2755,15 @@ class Blocks {
 			Block_Support::defaults( Block_Support::loop_attributes() )
 		);
 
+		/*
+		 * شماره‌ی حلقه و صفحه‌ی درخواستی آن. شماره‌ی حلقه پیش از هر خروجی
+		 * گرفته می‌شود تا صفحه‌ی واکشی‌شده هم همان شماره را داشته باشد.
+		 */
+		$loop  = Block_Support::next_loop_index();
+		$param = Block_Support::page_param( $attrs, $loop );
+
+		$attrs['loopPage'] = Block_Support::requested_page( $param );
+
 		$posts = Block_Support::get_posts( $attrs, 48 );
 		if ( empty( $posts ) ) {
 			/*
@@ -2488,7 +2771,7 @@ class Blocks {
 			 * مرجع را می‌گیرد: پنل `.empty-state` با راه بازگشت به فهرست
 			 * کامل — چون آنجا کاربر با فیلترهای خودش به بن‌بست خورده است.
 			 */
-			if ( ! empty( $attrs['showFilterSummary'] ) || ! empty( $attrs['loadMore'] )
+			if ( ! empty( $attrs['showFilterSummary'] ) || Block_Support::paginates( $attrs )
 				|| ! empty( $attrs['emptyTitle'] ) || ! empty( $attrs['emptyLinkUrl'] ) ) {
 				/*
 				 * صفحه‌ی بیرون از محدوده (`?paged=9` با سه صفحه نتیجه) هم به
@@ -2497,9 +2780,7 @@ class Blocks {
 				 * پیامِ پنل خالی برای این حالت جداگانه است تا کاربر فکر
 				 * نکند فیلترهایش بی‌نتیجه بوده.
 				 */
-				$paged_now = isset( $_GET['paged'] ) ? max( 1, (int) $_GET['paged'] ) : 1; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-
-				return $this->render_discovery_empty( $attrs, $paged_now );
+				return $this->render_discovery_empty( $attrs, $attrs['loopPage'] );
 			}
 
 			return Block_Support::render_empty( $attrs, 'manacore-titles-block' );
@@ -2593,7 +2874,7 @@ class Blocks {
 		}
 
 		ob_start();
-		echo '<div ' . Block_Support::wrapper( $attrs, array( 'manacore-titles-block', 'is-layout-' . $layout ) ) . '>'; // phpcs:ignore WordPress.Security.EscapeOutput
+		echo '<div ' . Block_Support::wrapper( $attrs, array( 'manacore-titles-block', 'is-layout-' . $layout ) ) . ' data-manacore-loop="' . (int) $loop . '">'; // phpcs:ignore WordPress.Security.EscapeOutput
 
 		echo Block_Support::render_header( $attrs, $tabs ); // phpcs:ignore WordPress.Security.EscapeOutput
 
@@ -2635,8 +2916,12 @@ class Blocks {
 
 		echo '</div>';
 
-		if ( ! empty( $attrs['loadMore'] ) ) {
-			echo $this->render_load_more( $attrs, $paged, $max_pages, $total ); // phpcs:ignore WordPress.Security.EscapeOutput
+		$mode = Block_Support::pagination_mode( $attrs );
+
+		if ( 'loadMore' === $mode ) {
+			echo $this->render_load_more( $attrs, $paged, $max_pages, $total, $param ); // phpcs:ignore WordPress.Security.EscapeOutput
+		} elseif ( 'numbered' === $mode ) {
+			echo $this->render_numbered_pagination( $paged, $max_pages, $param ); // phpcs:ignore WordPress.Security.EscapeOutput
 		}
 
 		echo '</div>';
@@ -2701,13 +2986,14 @@ class Blocks {
 	 * (رفتار مرجع)؛ اگر جاوااسکریپت نباشد، همان پیوند صفحه‌ی بعد را
 	 * می‌آورد. در پایانِ صفحه‌بندی، همان پیام مرجع چاپ می‌شود.
 	 *
-	 * @param array $attrs     ویژگی‌ها.
-	 * @param int   $paged     صفحه‌ی جاری.
-	 * @param int   $max_pages شمار صفحه‌ها.
-	 * @param int   $total     شمار کل آثار.
+	 * @param array  $attrs     ویژگی‌ها.
+	 * @param int    $paged     صفحه‌ی جاری.
+	 * @param int    $max_pages شمار صفحه‌ها.
+	 * @param int    $total     شمار کل آثار.
+	 * @param string $param     پارامتر نشانی صفحه‌ی همین حلقه.
 	 * @return string
 	 */
-	protected function render_load_more( $attrs, $paged, $max_pages, $total ) {
+	protected function render_load_more( $attrs, $paged, $max_pages, $total, $param ) {
 		$label = ! empty( $attrs['loadText'] ) ? (string) $attrs['loadText'] : __( 'داستان‌های بیشتر', 'manacore' );
 
 		if ( $paged >= $max_pages ) {
@@ -2728,12 +3014,65 @@ class Blocks {
 				. '</p></div>';
 		}
 
-		$next = add_query_arg( 'paged', $paged + 1 );
+		$next = add_query_arg( $param, $paged + 1 );
+		$auto = ! empty( $attrs['autoLoad'] ) ? ' data-manacore-autoload="1"' : '';
 
-		return '<div class="load-more-zone"><a class="button secondary" href="' . esc_url( $next ) . '" rel="next" data-manacore-load-more>'
+		return '<div class="load-more-zone"><a class="button secondary" href="' . esc_url( $next ) . '" rel="next" data-manacore-load-more' . $auto
+			. ' data-manacore-error="' . esc_attr__( 'بارگذاری انجام نشد. دوباره تلاش کنید.', 'manacore' ) . '">'
 			. esc_html( $label )
 			. '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>'
 			. '</a></div>';
+	}
+
+	/**
+	 * بخش شماره‌ی صفحه‌ها («حالت شماره‌ی صفحه‌ها» ویرایشگر).
+	 *
+	 * پیوندها واقعی‌اند و بدون جاوااسکریپت هم کار می‌کنند. فقط پارامتر صفحه‌ی
+	 * همین حلقه عوض می‌شود؛ بقیه‌ی نشانی (فیلترها، مرتب‌سازی) حفظ می‌شود.
+	 *
+	 * @param int    $paged     صفحه‌ی جاری.
+	 * @param int    $max_pages شمار صفحه‌ها.
+	 * @param string $param     پارامتر نشانی صفحه‌ی همین حلقه.
+	 * @return string
+	 */
+	protected function render_numbered_pagination( $paged, $max_pages, $param ) {
+		if ( $max_pages < 2 ) {
+			return '';
+		}
+
+		/*
+		 * الگوی صفحه: عدد جای‌نگهدار را با `add_query_arg` می‌سازیم و بعد با
+		 * `%#%` عوض می‌کنیم (همان روش هستهٔ `paginate_links`، چون `%` در
+		 * `add_query_arg` کدگذاری می‌شود).
+		 */
+		$placeholder = 999999999;
+		$base        = str_replace(
+			$placeholder,
+			'%#%',
+			esc_url( add_query_arg( $param, $placeholder, remove_query_arg( $param ) ) )
+		);
+
+		$links = paginate_links(
+			array(
+				'base'      => $base,
+				'format'    => '',
+				'current'   => max( 1, (int) $paged ),
+				'total'     => (int) $max_pages,
+				'prev_text' => __( 'قبلی', 'manacore' ),
+				'next_text' => __( 'بعدی', 'manacore' ),
+				'mid_size'  => 1,
+				'end_size'  => 1,
+				'type'      => 'list',
+			)
+		);
+
+		if ( ! $links ) {
+			return '';
+		}
+
+		return '<nav class="koohe-pagination manacore-pagination" aria-label="' . esc_attr__( 'صفحه‌بندی آثار', 'manacore' ) . '">'
+			. wp_kses_post( $links )
+			. '</nav>';
 	}
 
 	/**
@@ -2854,7 +3193,16 @@ class Blocks {
 	/**
 	 * رندر اسلایدر ویژه.
 	 *
-	 * @param array $attrs ویژگی‌ها.
+	 * چیدمان و اجزای این بلوک هم‌شکل مرجع `cinora/index.html` است: کادر
+	 * گرد سینمایی با تصویر عریض و پوشش گرادیانی، ستون محتوا روی سمت راست
+	 * (نشان ویژه، عنوان، عنوان لاتین، ردیف امتیاز/سال/مدت، خلاصه، برچسب
+	 * زبان و ژانر، دکمه‌ها)، نشان کیفیت در گوشه‌ی بالا، واترمارک لاتین و
+	 * نوار کنترل پایین (فلش‌ها، نقطه‌ها و شمارنده‌ی اسلاید).
+	 *
+	 * هر جزء یک کلید روشن/خاموش در ویرایشگر دارد و همه‌ی داده‌ها از
+	 * فراداده و تاکسونومی‌های خود اثر خوانده می‌شوند، نه از متن ثابت.
+	 *
+	 * @param array $attrs ویژگی‌های بلوک.
 	 * @return string
 	 */
 	public function render_hero_slider( $attrs ) {
@@ -2895,9 +3243,16 @@ class Blocks {
 		$overlay = max( 0, min( 100, (int) $attrs['overlay'] ) );
 		$inline  = $overlay ? sprintf( ' style="--mc-hero-overlay:%s"', esc_attr( $overlay / 100 ) ) : '';
 
+		$show_meta  = ! empty( $attrs['showMeta'] );
+		$show_genre = ! empty( $attrs['showGenres'] );
+		$genre_max  = max( 1, (int) $attrs['genreCount'] );
+		$label      = ! empty( $attrs['primaryLabel'] )
+			? (string) $attrs['primaryLabel']
+			: __( 'مشاهده و دانلود', 'manacore' );
+
 		ob_start();
 		printf(
-			'<div %1$s%5$s data-manacore-hero data-autoplay="%2$s" data-interval="%3$d" data-effect="%4$s">',
+			'<div %1$s%5$s data-manacore-hero data-autoplay="%2$s" data-interval="%3$d" data-effect="%4$s" data-tilt="%6$s">',
 			Block_Support::wrapper( // phpcs:ignore WordPress.Security.EscapeOutput
 				$attrs,
 				array(
@@ -2911,55 +3266,116 @@ class Blocks {
 			$autoplay ? 'true' : 'false',
 			esc_attr( $interval * 1000 ),
 			esc_attr( $effect ),
-			$inline // phpcs:ignore WordPress.Security.EscapeOutput
+			$inline, // phpcs:ignore WordPress.Security.EscapeOutput
+			! empty( $attrs['tilt'] ) ? 'true' : 'false'
 		);
 
 		echo Block_Support::render_header( $attrs ); // phpcs:ignore WordPress.Security.EscapeOutput
 		echo '<div class="manacore-hero-track">';
 
 		foreach ( $posts as $index => $post ) {
-			$backdrop = get_post_meta( $post->ID, 'manacore_backdrop_url', true );
-			$backdrop = $backdrop ? $backdrop : manacore_poster_url( $post->ID, 'full' );
-			$logo     = ! empty( $attrs['showLogo'] ) ? get_post_meta( $post->ID, 'manacore_logo_url', true ) : '';
-			$rating   = Templates::best_rating( $post->ID );
-			$year     = Templates::year( $post->ID );
-			$trailer  = ! empty( $attrs['showTrailer'] ) ? get_post_meta( $post->ID, 'manacore_trailer_url', true ) : '';
+			$post_id = (int) $post->ID;
+
+			$backdrop = manacore_backdrop_url( $post_id, 'full' );
+			$logo     = ! empty( $attrs['showLogo'] ) ? get_post_meta( $post_id, 'manacore_logo_url', true ) : '';
+			$trailer  = ! empty( $attrs['showTrailer'] ) ? get_post_meta( $post_id, 'manacore_trailer_url', true ) : '';
+			$rating   = $show_meta ? Templates::best_rating( $post_id ) : 0;
+			$year     = $show_meta ? Templates::year( $post_id ) : '';
+			$runtime  = $show_meta ? $this->hero_runtime_text( $post_id ) : '';
+			$age      = $show_meta ? $this->hero_age_rating( $post_id ) : '';
+			$original = ! empty( $attrs['showOriginal'] ) ? $this->hero_original_title( $post_id ) : '';
+
+			$badge = array( '', '' );
+			if ( ! empty( $attrs['showQuality'] ) ) {
+				$badge = $this->hero_quality_badge( $post_id );
+			}
+
+			$languages = ! empty( $attrs['showLanguages'] ) ? $this->hero_language_tags( $post_id ) : array();
+			$genres    = array();
+			if ( $show_genre ) {
+				$terms = get_the_terms( $post_id, 'genre' );
+				if ( $terms && ! is_wp_error( $terms ) ) {
+					$genres = array_slice( $terms, 0, $genre_max );
+				}
+			}
+
+			$eyebrow = '';
+			$tagline = '';
+			if ( ! empty( $attrs['showEyebrow'] ) ) {
+				$eyebrow = $this->hero_eyebrow( $post_id, $attrs );
+				$tagline = ! empty( $attrs['eyebrowTagline'] )
+					? (string) $attrs['eyebrowTagline']
+					: trim( (string) get_post_meta( $post_id, 'manacore_tagline', true ) );
+			}
+
+			$wordmark = ! empty( $attrs['showWordmark'] ) ? $this->hero_wordmark( $original ) : array( '', '' );
 			?>
 			<div class="manacore-hero-slide<?php echo 0 === $index ? ' is-active' : ''; ?>" data-hero-slide="<?php echo esc_attr( $index ); ?>">
-				<img class="manacore-hero-bg" src="<?php echo esc_url( $backdrop ); ?>"
-					alt="" loading="<?php echo 0 === $index ? 'eager' : 'lazy'; ?>" decoding="async" />
+				<div class="manacore-hero-image">
+					<img class="manacore-hero-bg" src="<?php echo esc_url( $backdrop ); ?>" alt="" fetchpriority="<?php echo 0 === $index ? 'high' : 'low'; ?>" <?php echo 0 === $index ? '' : 'loading="lazy"'; ?> decoding="async" />
+					<span class="manacore-hero-gradient" aria-hidden="true"></span>
+				</div>
+				<span class="manacore-hero-grain" aria-hidden="true"></span>
+
+				<?php if ( '' !== $badge[0] ) : ?>
+					<span class="manacore-hero-quality">
+						<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 3H5a2 2 0 0 0-2 2v3M16 3h3a2 2 0 0 1 2 2v3M8 21H5a2 2 0 0 1-2-2v-3M16 21h3a2 2 0 0 0 2-2v-3"/></svg>
+						<b><?php echo esc_html( $badge[0] ); ?></b>
+						<?php if ( '' !== $badge[1] ) : ?>
+							<span><?php echo esc_html( $badge[1] ); ?></span>
+						<?php endif; ?>
+					</span>
+				<?php endif; ?>
+
 				<div class="manacore-hero-content">
+					<?php if ( '' !== $eyebrow ) : ?>
+						<div class="manacore-hero-eyebrow">
+							<span>
+								<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 3-1.5 5.5L5 10l5.5 1.5L12 17l1.5-5.5L19 10l-5.5-1.5L12 3z"/></svg>
+								<?php echo esc_html( $eyebrow ); ?>
+							</span>
+							<?php if ( '' !== $tagline ) : ?>
+								<i aria-hidden="true"></i><?php echo esc_html( $tagline ); ?>
+							<?php endif; ?>
+						</div>
+					<?php endif; ?>
+
 					<?php if ( $logo ) : ?>
 						<img class="manacore-hero-logo" src="<?php echo esc_url( $logo ); ?>"
 							alt="<?php echo esc_attr( get_the_title( $post ) ); ?>" loading="lazy" />
 					<?php else : ?>
-						<h2 class="manacore-hero-title"><?php echo esc_html( get_the_title( $post ) ); ?></h2>
+						<h2 class="manacore-hero-title">
+							<a href="<?php echo esc_url( get_permalink( $post ) ); ?>"><?php echo esc_html( get_the_title( $post ) ); ?></a>
+						</h2>
 					<?php endif; ?>
 
-					<?php if ( ! empty( $attrs['showMeta'] ) ) : ?>
+					<?php if ( '' !== $original ) : ?>
+						<p class="manacore-hero-original" dir="ltr"><?php echo esc_html( $original ); ?></p>
+					<?php endif; ?>
+
+					<?php if ( $rating || '' !== $year || '' !== $runtime || '' !== $age ) : ?>
 						<div class="manacore-hero-meta">
 							<?php if ( $rating ) : ?>
-								<span class="manacore-chip is-quality">⭐ <?php echo esc_html( number_format_i18n( $rating, 1 ) ); ?></span>
+								<span class="manacore-hero-rating">
+									<b>IMDb</b>
+									<strong><?php echo esc_html( number_format_i18n( $rating, 1 ) ); ?></strong>
+									<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 2 3.09 6.26L22 9.27l-5 4.87L18.18 21 12 17.77 5.82 21 7 14.14l-5-4.87 6.91-1.01L12 2z"/></svg>
+								</span>
 							<?php endif; ?>
-							<?php if ( $year ) : ?>
-								<span class="manacore-chip"><?php echo esc_html( $year ); ?></span>
+							<?php if ( '' !== $year ) : ?>
+								<span><?php echo esc_html( manacore_fa_digits( $year ) ); ?></span>
 							<?php endif; ?>
-							<?php
-							if ( ! empty( $attrs['showGenres'] ) ) {
-								$genres = get_the_terms( $post->ID, 'genre' );
-								if ( $genres && ! is_wp_error( $genres ) ) {
-									$limit = max( 1, (int) $attrs['genreCount'] );
-									foreach ( array_slice( $genres, 0, $limit ) as $genre ) {
-										echo '<span class="manacore-chip">' . esc_html( $genre->name ) . '</span>';
-									}
-								}
-							}
-							?>
+							<?php if ( '' !== $runtime ) : ?>
+								<i aria-hidden="true"></i><span><?php echo esc_html( $runtime ); ?></span>
+							<?php endif; ?>
+							<?php if ( '' !== $age ) : ?>
+								<span class="manacore-hero-age"><?php echo esc_html( $age ); ?></span>
+							<?php endif; ?>
 						</div>
 					<?php endif; ?>
 
 					<?php if ( ! empty( $attrs['showExcerpt'] ) ) : ?>
-						<p class="manacore-hero-excerpt">
+						<p class="manacore-hero-description">
 							<?php
 							echo esc_html(
 								wp_trim_words(
@@ -2972,18 +3388,24 @@ class Blocks {
 						</p>
 					<?php endif; ?>
 
+					<?php if ( $languages || $genres ) : ?>
+						<div class="manacore-hero-tags">
+							<?php foreach ( $languages as $language_index => $language ) : ?>
+								<span<?php echo 0 === $language_index ? ' class="is-first"' : ''; ?>><?php if ( 0 === $language_index ) : ?><span class="live-dot" aria-hidden="true"></span><?php endif; ?><?php echo esc_html( $language ); ?></span>
+							<?php endforeach; ?>
+							<?php foreach ( $genres as $genre ) : ?>
+								<a href="<?php echo esc_url( (string) get_term_link( $genre ) ); ?>"><?php echo esc_html( $genre->name ); ?></a>
+							<?php endforeach; ?>
+						</div>
+					<?php endif; ?>
+
 					<div class="manacore-hero-actions">
 						<a class="manacore-btn is-primary" href="<?php echo esc_url( get_permalink( $post ) ); ?>">
-							<?php
-							echo esc_html(
-								! empty( $attrs['primaryLabel'] )
-									? $attrs['primaryLabel']
-									: __( 'مشاهده و دانلود', 'manacore' )
-							);
-							?>
+							<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+							<?php echo esc_html( $label ); ?>
 						</a>
 						<?php if ( $trailer ) : ?>
-							<button type="button" class="manacore-btn is-ghost"
+							<button type="button" class="manacore-btn is-glass"
 								data-manacore-play="<?php echo esc_url( $trailer ); ?>"
 								data-title="<?php echo esc_attr( get_the_title( $post ) ); ?>">
 								<?php
@@ -2995,40 +3417,314 @@ class Blocks {
 								?>
 							</button>
 						<?php endif; ?>
+						<?php if ( manacore_get_option( 'enable_watchlist', 1 ) ) : ?>
+							<?php $saved = Watchlist::instance()->has( $post_id ); ?>
+							<button type="button" class="manacore-hero-save<?php echo esc_attr( $saved ? ' is-active' : '' ); ?>"
+								data-manacore-watchlist="<?php echo esc_attr( $post_id ); ?>"
+								aria-pressed="<?php echo esc_attr( $saved ? 'true' : 'false' ); ?>"
+								aria-label="<?php esc_attr_e( 'افزودن به لیست تماشا', 'manacore' ); ?>">
+								<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h12a1 1 0 0 1 1 1v17l-7-4-7 4V4a1 1 0 0 1 1-1z"/></svg>
+							</button>
+						<?php endif; ?>
 					</div>
 				</div>
+
+				<?php if ( '' !== $wordmark[0] ) : ?>
+					<div class="manacore-hero-wordmark" aria-hidden="true">
+						<span><?php echo esc_html( $wordmark[0] ); ?></span>
+						<?php if ( '' !== $wordmark[1] ) : ?>
+							<small><?php echo esc_html( $wordmark[1] ); ?></small>
+						<?php endif; ?>
+					</div>
+				<?php endif; ?>
 			</div>
 			<?php
 		}
 
 		echo '</div>';
 
-		if ( ! empty( $attrs['showArrows'] ) && $total > 1 ) {
-			printf(
-				'<button type="button" class="manacore-hero-arrow is-prev" data-hero-prev aria-label="%s"></button>'
-				. '<button type="button" class="manacore-hero-arrow is-next" data-hero-next aria-label="%s"></button>',
-				esc_attr__( 'اسلاید قبلی', 'manacore' ),
-				esc_attr__( 'اسلاید بعدی', 'manacore' )
-			);
-		}
+		$has_controls = ( ! empty( $attrs['showDots'] ) || ! empty( $attrs['showArrows'] ) || ! empty( $attrs['showCounter'] ) ) && $total > 1;
 
-		if ( ! empty( $attrs['showDots'] ) && $total > 1 ) {
-			echo '<div class="manacore-hero-dots" role="tablist">';
-			foreach ( $posts as $index => $post ) {
+		if ( $has_controls ) {
+			echo '<div class="manacore-hero-controls">';
+
+			if ( ! empty( $attrs['showArrows'] ) ) {
 				printf(
-					'<button type="button" class="manacore-hero-dot%1$s" data-hero-dot="%2$d" role="tab" aria-selected="%3$s" aria-label="%4$s"></button>',
-					0 === $index ? ' is-active' : '',
-					esc_attr( $index ),
-					0 === $index ? 'true' : 'false',
-					esc_attr( get_the_title( $post ) )
+					'<button type="button" class="manacore-hero-arrow is-prev" data-hero-prev aria-label="%s">'
+					. '<svg xmlns="http://www.w3.org/2000/svg" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>'
+					. '</button>',
+					esc_attr__( 'اسلاید قبلی', 'manacore' )
 				);
 			}
+
+			if ( ! empty( $attrs['showDots'] ) ) {
+				echo '<div class="manacore-hero-dots">';
+				foreach ( $posts as $index => $post ) {
+					printf(
+						'<button type="button" class="manacore-hero-dot%1$s" data-hero-dot="%2$d" aria-pressed="%3$s" aria-label="%4$s"><span></span></button>',
+						0 === $index ? ' is-active' : '',
+						esc_attr( $index ),
+						0 === $index ? 'true' : 'false',
+						esc_attr( get_the_title( $post ) )
+					);
+				}
+				echo '</div>';
+			}
+
+			if ( ! empty( $attrs['showCounter'] ) ) {
+				printf(
+					'<span class="manacore-hero-counter" dir="ltr"><b>01</b> / %s</span>',
+					esc_html( str_pad( (string) $total, 2, '0', STR_PAD_LEFT ) )
+				);
+			}
+
+			if ( ! empty( $attrs['showArrows'] ) ) {
+				printf(
+					'<button type="button" class="manacore-hero-arrow is-next" data-hero-next aria-label="%s">'
+					. '<svg xmlns="http://www.w3.org/2000/svg" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg>'
+					. '</button>',
+					esc_attr__( 'اسلاید بعدی', 'manacore' )
+				);
+			}
+
 			echo '</div>';
+		}
+
+		if ( ! empty( $attrs['showNote'] ) ) {
+			$note = ! empty( $attrs['noteText'] )
+				? (string) $attrs['noteText']
+				: __( 'تصویر، صدا، داستان؛ یک تجربه‌ی متفاوت.', 'manacore' );
+
+			printf(
+				'<div class="manacore-hero-note"><span aria-hidden="true"></span>%s</div>',
+				esc_html( $note )
+			);
 		}
 
 		echo '</div>';
 
 		return (string) ob_get_clean();
+	}
+
+	/**
+	 * برچسب نشان ویژه‌ی اسلایدر («انتخاب ویژه»).
+	 *
+	 * اگر نویسنده برچسب دلخواهی در ویرایشگر بگذارد همان می‌آید؛ وگرنه
+	 * اثرِ «نمایش در اسلایدر ویژه» برچسب ویژه می‌گیرد و بقیه پیشنهاد
+	 * عمومی. نتیجه با فیلتر `manacore_hero_eyebrow` قابل تغییر است.
+	 *
+	 * @param int   $post_id شناسه‌ی اثر.
+	 * @param array $attrs   ویژگی‌های بلوک.
+	 * @return string
+	 */
+	protected function hero_eyebrow( $post_id, $attrs ) {
+		if ( ! empty( $attrs['eyebrowLabel'] ) ) {
+			$label = (string) $attrs['eyebrowLabel'];
+		} elseif ( get_post_meta( $post_id, 'manacore_is_featured', true ) ) {
+			$label = __( 'انتخاب ویژه', 'manacore' );
+		} else {
+			$label = __( 'پیشنهاد ویژه', 'manacore' );
+		}
+
+		return (string) apply_filters( 'manacore_hero_eyebrow', $label, $post_id );
+	}
+
+	/**
+	 * عنوان لاتین اثر برای خط زیر عنوان.
+	 *
+	 * @param int $post_id شناسه‌ی اثر.
+	 * @return string
+	 */
+	protected function hero_original_title( $post_id ) {
+		return trim( (string) get_post_meta( $post_id, 'manacore_original_title', true ) );
+	}
+
+	/**
+	 * واترمارک لاتین اسلایدر (هم‌شکل مرجع).
+	 *
+	 * عنوان لاتین به دو خط شکسته می‌شود: بخش اصلی با حروف فاصله‌دار در
+	 * خط اول و ادامه‌ی عنوان (بعد از دونقطه) در خط دوم. اثر بدون عنوان
+	 * لاتین واترمارک نمی‌گیرد، چون متن فارسی در این قالب حروف‌چینی
+	 * لاتین را خراب می‌کند.
+	 *
+	 * @param string $original عنوان لاتین.
+	 * @return array{0:string,1:string} [خط اول، خط دوم]
+	 */
+	protected function hero_wordmark( $original ) {
+		$original = trim( (string) $original );
+
+		if ( '' === $original ) {
+			return array( '', '' );
+		}
+
+		$parts = array_map( 'trim', explode( ':', $original, 2 ) );
+		$lines = array();
+
+		foreach ( $parts as $part ) {
+			$part = preg_replace( '/\s+/u', ' ', (string) $part );
+
+			if ( '' !== $part ) {
+				$lines[] = function_exists( 'mb_strtoupper' )
+					? mb_strtoupper( $part, 'UTF-8' )
+					: strtoupper( $part );
+			}
+		}
+
+		return array( $lines[0] ?? '', $lines[1] ?? '' );
+	}
+
+	/**
+	 * برچسب کیفیت اسلایدر (نشان گوشه‌ی بالا).
+	 *
+	 * ترتیب خواندن: ترم تاکسونومی «کیفیت» → نخستین کیفیتِ غیرخالی در
+	 * گروه‌های لینک اثر. گروه‌ها به ترتیب ویرایشگر خوانده می‌شوند، پس
+	 * مدیر با جابه‌جایی گروه‌ها تعیین می‌کند چه کیفیتی نشان داده شود.
+	 *
+	 * @param int $post_id شناسه‌ی اثر.
+	 * @return array{0:string,1:string} [نشان کوتاه، زیرنویس]
+	 */
+	protected function hero_quality_badge( $post_id ) {
+		$name = '';
+
+		$terms = get_the_terms( $post_id, 'quality' );
+		if ( $terms && ! is_wp_error( $terms ) ) {
+			$name = trim( (string) $terms[0]->name );
+		}
+
+		if ( '' === $name ) {
+			foreach ( manacore_get_links( $post_id ) as $group ) {
+				$key = Links::value( array(), $group, 'quality' );
+
+				if ( '' !== $key ) {
+					$name = Links::quality_label( $key );
+					break;
+				}
+			}
+		}
+
+		if ( '' === $name ) {
+			return array( '', '' );
+		}
+
+		$captions = array(
+			'/(2160|4\s*k)/i'  => array( '4K', 'ULTRA HD' ),
+			'/(1440|2\s*k)/i'  => array( '2K', 'QHD' ),
+			'/1080/i'          => array( '1080p', 'FULL HD' ),
+			'/720/i'           => array( '720p', 'HD' ),
+			'/(480|360|SD)/i'  => array( $name, 'SD' ),
+		);
+
+		foreach ( $captions as $pattern => $pair ) {
+			if ( preg_match( $pattern, $name ) ) {
+				return $pair;
+			}
+		}
+
+		return array( $name, '' );
+	}
+
+	/**
+	 * برچسب‌های زبان اسلایدر.
+	 *
+	 * زبان‌ها از گروه‌های لینک همان اثر خوانده می‌شوند (نه از متن ثابت)
+	 * و ترتیب ویرایشگر حفظ می‌شود؛ «دوبله فارسی» هم اگر فراداده‌ی اثر
+	 * روشن باشد به ابتدای فهرست می‌آید.
+	 *
+	 * @param int $post_id شناسه‌ی اثر.
+	 * @return array<int,string>
+	 */
+	protected function hero_language_tags( $post_id ) {
+		$tags = array();
+
+		if ( get_post_meta( $post_id, 'manacore_dubbed', true ) ) {
+			$tags[] = __( 'دوبله فارسی', 'manacore' );
+		}
+
+		foreach ( manacore_get_links( $post_id ) as $group ) {
+			$key = Links::value( array(), $group, 'language' );
+
+			if ( '' === $key ) {
+				continue;
+			}
+
+			$label = Links::language_label( $key );
+
+			if ( ! in_array( $label, $tags, true ) ) {
+				$tags[] = $label;
+			}
+		}
+
+		return array_slice( (array) apply_filters( 'manacore_hero_languages', $tags, $post_id ), 0, 3 );
+	}
+
+	/**
+	 * رده‌ی سنی اثر از تاکسونومی «رده سنی».
+	 *
+	 * @param int $post_id شناسه‌ی اثر.
+	 * @return string
+	 */
+	protected function hero_age_rating( $post_id ) {
+		$terms = get_the_terms( $post_id, 'age_rating' );
+
+		if ( ! $terms || is_wp_error( $terms ) ) {
+			return '';
+		}
+
+		return trim( (string) $terms[0]->name );
+	}
+
+	/**
+	 * متن مدت اثر: «۲ ساعت و ۴۷ دقیقه» برای فیلم و «۱۲ قسمت» برای سریال.
+	 *
+	 * @param int $post_id شناسه‌ی اثر.
+	 * @return string
+	 */
+	protected function hero_runtime_text( $post_id ) {
+		if ( in_array( get_post_type( $post_id ), manacore_serial_post_types(), true ) ) {
+			$episodes = (int) manacore_series_episodes_count( $post_id );
+
+			if ( $episodes ) {
+				return sprintf(
+					/* translators: %s: تعداد قسمت */
+					__( '%s قسمت', 'manacore' ),
+					manacore_fa_digits( number_format_i18n( $episodes ) )
+				);
+			}
+		}
+
+		$runtime = (int) get_post_meta( $post_id, 'manacore_runtime', true );
+		if ( ! $runtime ) {
+			return '';
+		}
+
+		$hours   = (int) floor( $runtime / 60 );
+		$minutes = $runtime % 60;
+		$format  = static function ( $value ) {
+			return manacore_fa_digits( number_format_i18n( $value ) );
+		};
+
+		if ( $hours && $minutes ) {
+			return sprintf(
+				/* translators: ۱: ساعت ۲: دقیقه */
+				__( '%1$s ساعت و %2$s دقیقه', 'manacore' ),
+				$format( $hours ),
+				$format( $minutes )
+			);
+		}
+
+		if ( $hours ) {
+			return sprintf(
+				/* translators: %s: ساعت */
+				__( '%s ساعت', 'manacore' ),
+				$format( $hours )
+			);
+		}
+
+		return sprintf(
+			/* translators: %s: دقیقه */
+			__( '%s دقیقه', 'manacore' ),
+			$format( $minutes )
+		);
 	}
 
 	/**
@@ -3123,6 +3819,9 @@ class Blocks {
 			$post_id,
 			array(
 				'box_style'    => $box_style,
+				'mode'         => (string) $attrs['mode'],
+				'pack_label'   => (string) $attrs['packLabel'],
+				'size_label'   => (string) $attrs['sizeLabel'],
 				'heading'      => (string) $attrs['heading'],
 				'subtitle'     => (string) $attrs['subtitle'],
 				'heading_tag'  => $level,
@@ -3134,6 +3833,8 @@ class Blocks {
 				'types'        => $this->to_array( $attrs['types'] ),
 				'qualities'    => $this->to_array( $attrs['qualities'] ),
 				'season'       => max( 0, (int) $attrs['season'] ),
+				'source'       => (string) $attrs['linkSource'],
+				'episode_label' => (string) $attrs['episodeLabel'],
 			)
 		);
 
@@ -3290,9 +3991,8 @@ class Blocks {
 			return Block_Support::render_empty( $attrs, 'manacore-cast' );
 		}
 
-		$cast = get_post_meta( $post_id, 'manacore_cast', true );
-		$cast = is_string( $cast ) ? json_decode( $cast, true ) : $cast;
-		if ( ! is_array( $cast ) || empty( $cast ) ) {
+		$cast = Crew::cast( $post_id );
+		if ( empty( $cast ) ) {
 			return Block_Support::render_empty( $attrs, 'manacore-cast' );
 		}
 
@@ -3321,7 +4021,7 @@ class Blocks {
 			if ( empty( $person['name'] ) ) {
 				continue;
 			}
-			$photo = ! empty( $person['photo'] ) ? $person['photo'] : MANACORE_URL . 'assets/avatar.svg';
+			$photo = $person['photo'] ?: Crew::photo( $person['person_id'] ) ?: MANACORE_URL . 'assets/avatar.svg';
 			?>
 			<figure class="manacore-cast-item<?php echo $ratio ? ' is-ratio-' . esc_attr( $ratio ) : ''; ?>">
 				<?php if ( ! empty( $attrs['showPhoto'] ) ) : ?>
@@ -3329,7 +4029,7 @@ class Blocks {
 						loading="lazy" decoding="async" />
 				<?php endif; ?>
 				<figcaption>
-					<strong><?php echo esc_html( $person['name'] ); ?></strong>
+					<strong><?php echo Crew::link_html( $person ); // phpcs:ignore WordPress.Security.EscapeOutput -- نام و نشانی در Crew::link_html escape می‌شوند. ?></strong>
 					<?php if ( ! empty( $attrs['showCharacter'] ) && ! empty( $person['character'] ) ) : ?>
 						<span><?php echo esc_html( $person['character'] ); ?></span>
 					<?php endif; ?>
@@ -3344,11 +4044,130 @@ class Blocks {
 	}
 
 	/**
+	 * فهرست زیرنویس‌های قابل‌استفاده برای پلیر.
+	 *
+	 * ردیف‌های ناقص (بی‌آدرس یا بی‌کد زبان) و فایل‌های غیرِ `.vtt` کنار
+	 * گذاشته می‌شوند. اگر هیچ ردیفی «پیش‌فرض» نبود، ردیف نخست پیش‌فرض
+	 * می‌شود تا مرورگر زیرنویس را خودکار روی تصویر بیاورد.
+	 *
+	 * @param array<int,int> $post_ids شناسه‌ها به ترتیب اولویت.
+	 * @return array<int,array{url:string,lang:string,label:string,default:bool}>
+	 */
+	protected static function subtitle_tracks( $post_ids ) {
+		$rows = array();
+
+		foreach ( (array) $post_ids as $post_id ) {
+			$raw = get_post_meta( (int) $post_id, 'manacore_subtitles', true );
+			$raw = is_string( $raw ) ? json_decode( $raw, true ) : $raw;
+
+			if ( is_array( $raw ) && $raw ) {
+				$rows = $raw;
+				break;
+			}
+		}
+
+		$tracks = array();
+
+		foreach ( (array) $rows as $row ) {
+			if ( ! is_array( $row ) || empty( $row['url'] ) ) {
+				continue;
+			}
+
+			$url = (string) $row['url'];
+
+			/* مرورگر فقط WebVTT می‌فهمد؛ پسوند پرس‌وجو هم پذیرفته می‌شود. */
+			if ( ! preg_match( '/\.vtt(\?|#|$)/i', $url ) ) {
+				continue;
+			}
+
+			/* کد زبان BCP-47 است؛ حروف بزرگ/کوچکش باید بماند (en-US). */
+			$lang = trim( preg_replace( '/[^A-Za-z0-9\-]/', '', str_replace( '_', '-', (string) ( isset( $row['lang'] ) ? $row['lang'] : '' ) ) ) );
+
+			if ( '' === $lang ) {
+				continue;
+			}
+
+			$tracks[] = array(
+				'url'     => esc_url_raw( $url ),
+				'lang'    => $lang,
+				'label'   => '' !== trim( (string) ( $row['label'] ?? '' ) ) ? sanitize_text_field( (string) $row['label'] ) : strtoupper( $lang ),
+				'default' => ! empty( $row['default'] ),
+			);
+		}
+
+		$has_default = false;
+		foreach ( $tracks as $track ) {
+			if ( $track['default'] ) {
+				$has_default = true;
+				break;
+			}
+		}
+
+		if ( ! $has_default && isset( $tracks[0] ) ) {
+			$tracks[0]['default'] = true;
+		}
+
+		/**
+		 * فیلتر فهرست زیرنویس‌های پلیر.
+		 *
+		 * @param array $tracks   ردیف‌های آماده.
+		 * @param int   $post_id  شناسه‌ی منبع پخش.
+		 */
+		return (array) apply_filters( 'manacore_player_subtitles', $tracks, (int) ( isset( $post_ids[0] ) ? $post_ids[0] : 0 ) );
+	}
+
+	/**
 	 * رندر تریلر.
 	 *
 	 * @param array $attrs ویژگی‌ها.
 	 * @return string
 	 */
+	/**
+	 * آیا یک ردیف لینک را می‌توان در پلیر پخش کرد؟
+	 *
+	 * «پخش آنلاین» همیشه؛ و لینک مستقیمِ ویدئویی (mp4/webm/m3u8) هم. فایل‌های
+	 * غیرویدئویی (مثلاً آرشیو) و صفحه‌های پیوندی فقط دانلود می‌مانند.
+	 *
+	 * @param array $row ردیف تخت لینک (`Links::post_rows()`).
+	 * @return bool
+	 */
+	public static function is_playable_row( $row ) {
+		if ( 'stream' === ( $row['type'] ?? '' ) ) {
+			return true;
+		}
+
+		return 'direct' === ( $row['type'] ?? '' )
+			&& 'video' === Player::resolve( (string) ( $row['url'] ?? '' ) )['type'];
+	}
+
+	/**
+	 * کلید گزینه‌ی پیش‌انتخاب‌شده‌ی پلیر.
+	 *
+	 * ترتیب: تطابق دقیق با `?quality=`؛ سپس نشانی‌های قدیمی که فقط کیفیت را
+	 * دارند (`1080p` → `1080p · دوبله فارسی`)؛ و در نهایت نخستین گزینه.
+	 *
+	 * @param array  $sources   گزینه‌ها (کلید => نشانی).
+	 * @param string $requested کیفیت درخواستی.
+	 * @return string
+	 */
+	public static function pick_source_key( $sources, $requested ) {
+		$requested = (string) $requested;
+
+		if ( '' !== $requested ) {
+			if ( isset( $sources[ $requested ] ) ) {
+				return $requested;
+			}
+
+			foreach ( array_keys( (array) $sources ) as $key ) {
+				if ( 0 === strpos( (string) $key, $requested . ' · ' ) ) {
+					return (string) $key;
+				}
+			}
+		}
+
+		return (string) key( (array) $sources );
+	}
+
 	/**
 	 * رندر صفحه‌ی پخش (الگوی «در حال پخش»).
 	 *
@@ -3371,51 +4190,97 @@ class Blocks {
 		 * ترتیب تعیین اثر: شناسه‌ی صریح بلوک → `?manacore_id=` صفحه‌ی پخش
 		 * (همان قرارداد `Player::watched_id()`) → اثر جاری → نمونه‌ی
 		 * ویرایشگر. بدون گام دوم، صفحه‌ی پخش خودش را نشان می‌داد نه اثر.
+		 *
+		 * دو شناسه نگه داشته می‌شود:
+		 *   `$display_id` — اثری که سرصفحه/دکمه‌ی بازگشت/امتیاز از آن می‌آید.
+		 *   `$source_id`  — پستی که منبع‌های پخش از آن خوانده می‌شود.
+		 * برای سریال، کاربر از صفحه‌ی سریال می‌آید ولی لینک‌ها روی قسمت‌ها
+		 * ثبت شده‌اند؛ `Player::resolve_target()` قسمتِ درست را پیدا می‌کند
+		 * تا صفحه‌ی پخش خالی نماند.
 		 */
-		$post_id = ! empty( $attrs['postId'] ) ? (int) $attrs['postId'] : Player::watched_id();
-		if ( ! $post_id ) {
-			$post_id = $this->target_post( $attrs, manacore_title_post_types() );
+		$display_id = ! empty( $attrs['postId'] ) ? (int) $attrs['postId'] : Player::watched_id();
+		if ( ! $display_id ) {
+			$display_id = $this->target_post( $attrs, manacore_title_post_types() );
 		}
-		if ( ! $post_id ) {
+		if ( ! $display_id ) {
 			return Block_Support::render_empty( $attrs, 'manacore-player-page' );
 		}
 
-		$title    = get_the_title( $post_id );
-		$original = (string) get_post_meta( $post_id, 'manacore_original_title', true );
-		$rating   = (float) get_post_meta( $post_id, 'manacore_imdb_rating', true );
-		$poster   = (string) get_post_meta( $post_id, 'manacore_backdrop_url', true );
-		if ( '' === $poster ) {
-			$poster = (string) get_post_meta( $post_id, 'manacore_poster_url', true );
+		// فصل/قسمت درخواستی (از پیوندهای «پخش» جدول دانلود).
+		$req_season  = isset( $_GET['season'] ) ? absint( wp_unslash( $_GET['season'] ) ) : 0; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		$req_episode = isset( $_GET['episode'] ) ? absint( wp_unslash( $_GET['episode'] ) ) : 0; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+
+		$source_id = Player::resolve_target( $display_id, $req_season, $req_episode );
+		if ( ! $source_id ) {
+			$source_id = $display_id;
 		}
 
-		/* منبع‌های پخش: هر گروه لینک، یک کیفیت. */
+		$title    = get_the_title( $display_id );
+		$original = (string) get_post_meta( $display_id, 'manacore_original_title', true );
+		$rating   = (float) get_post_meta( $display_id, 'manacore_imdb_rating', true );
+		$poster   = (string) get_post_meta( $display_id, 'manacore_backdrop_url', true );
+		if ( '' === $poster ) {
+			$poster = (string) get_post_meta( $display_id, 'manacore_poster_url', true );
+		}
+
+		/*
+		 * منبع‌های پخش. برای قسمت (`?season=&episode=`) «همه‌ی گزینه‌های
+		 * همان قسمت» از هر دو محل ثبت لینک خوانده می‌شوند (ردیف شماره‌دارِ
+		 * سریال و پست خودِ قسمت)، تا دکمه‌ی پخش کیفیت‌های یک قسمت را یک‌جا
+		 * بدهد. در غیر این صورت همان لینک‌های نشانی. کلید هر گزینه: کیفیت +
+		 * زبان/دوبله + انکودر (همان کلیدی که جدول دانلود در `quality=` می‌فرستد).
+		 */
+		$scope_series = in_array( get_post_type( $display_id ), manacore_serial_post_types(), true )
+			? $display_id
+			: (int) get_post_meta( $display_id, 'manacore_parent_title', true );
+
+		$rows = array();
+
+		if ( $req_episode && $scope_series ) {
+			$rows = Links::episode_variants( $scope_series, $req_season, $req_episode );
+		}
+		if ( ! $rows ) {
+			$rows = Links::post_rows( $source_id );
+		}
+
 		$sources   = array();
 		$downloads = array();
 		$download  = '';
-		foreach ( Links::get( $post_id ) as $group ) {
-			$quality = trim( (string) $group['quality'] );
-			foreach ( $group['items'] as $item ) {
-				$key = '' !== $quality ? $quality : Links::type_label( $item['type'] );
 
-				if ( 'stream' === $item['type'] ) {
-					$sources[ $key ] = $item['url'];
-				} else {
-					/*
-					 * پیوند دانلود هر کیفیت جدا نگه داشته می‌شود تا دکمه‌ی
-					 * «دانلود نمونه» — مثل مرجع — همان کیفیتی را بدهد که
-					 * کاربر در نوار کنترل انتخاب کرده است.
-					 */
-					if ( ! isset( $downloads[ $key ] ) ) {
-						$downloads[ $key ] = $item['url'];
-					}
-					if ( '' === $download ) {
-						$download = $item['url'];
-					}
+		foreach ( $rows as $row ) {
+			// گروه ویژه فقط برای دارندگان دسترسی؛ همان قاعده‌ی باکس دانلود.
+			if ( ! empty( $row['premium'] ) && ! manacore_user_can_access( (int) ( $row['owner'] ?: $display_id ) ) ) {
+				continue;
+			}
+
+			$key = Links::variant_key( $row['quality'], $row['type'], $row['language'], $row['encoder'] );
+
+			if ( '' === $key ) {
+				$key = __( 'کیفیت اصلی', 'manacore' );
+			}
+
+			if ( self::is_playable_row( $row ) && ! isset( $sources[ $key ] ) ) {
+				$sources[ $key ] = $row['url'];
+			}
+
+			if ( 'stream' !== $row['type'] ) {
+				/*
+				 * پیوند دانلود هر کیفیت جدا نگه داشته می‌شود تا دکمه‌ی
+				 * «دانلود نمونه» همان کیفیتی را بدهد که کاربر انتخاب کرده.
+				 */
+				if ( ! isset( $downloads[ $key ] ) ) {
+					$downloads[ $key ] = $row['url'];
+				}
+				if ( '' === $download ) {
+					$download = $row['url'];
 				}
 			}
 		}
 
-		$trailer = (string) get_post_meta( $post_id, 'manacore_trailer_url', true );
+		$trailer = (string) get_post_meta( $source_id, 'manacore_trailer_url', true );
+		if ( '' === $trailer && $source_id !== $display_id ) {
+			$trailer = (string) get_post_meta( $display_id, 'manacore_trailer_url', true );
+		}
 		if ( ! $sources && $trailer ) {
 			$sources[ __( 'کیفیت اصلی', 'manacore' ) ] = $trailer;
 		}
@@ -3423,17 +4288,46 @@ class Blocks {
 			$download = $trailer;
 		}
 
+		/*
+		 * حالت خالی گویا: در بازدید عمومی پیام `render_empty()` پیش‌فرض
+		 * چیزی چاپ نمی‌کند و کاربر صفحه‌ی سفید می‌بیند؛ اینجا یک کارت
+		 * کوتاه با نام اثر و راه بازگشت ساخته می‌شود تا «صفحه‌ی پخش خالی»
+		 * به «صفحه‌ی بی‌محتوا» تبدیل نشود. در بوم ویرایشگر همان رفتار
+		 * پیشین (`render_empty`) حفظ می‌شود تا نویسنده راهنمای بلوک را ببیند.
+		 */
 		if ( ! $sources ) {
-			return Block_Support::render_empty( $attrs, 'manacore-player-page' );
+			if ( Block_Support::is_editor_preview() ) {
+				return Block_Support::render_empty( $attrs, 'manacore-player-page' );
+			}
+
+			$empty_text = ! empty( $attrs['emptyText'] )
+				? (string) $attrs['emptyText']
+				: __( 'برای این اثر هنوز لینک پخشی ثبت نشده است.', 'manacore' );
+
+			$empty = '<div ' . Block_Support::wrapper( $attrs, array( 'manacore-player-page', 'is-empty' ) ) . '>' // phpcs:ignore WordPress.Security.EscapeOutput
+				. '<div class="player-page player-page--empty" data-manacore-player-page="' . esc_attr( $source_id ) . '">'
+				. '<div class="player-title"><div><p class="eyebrow">' . esc_html( $eyebrow ) . '</p><h1>' . esc_html( $title ) . '</h1></div></div>'
+				. '<div class="demo-notice"><span aria-hidden="true">ⓘ</span><p>' . esc_html( $empty_text ) . '</p></div>'
+				. '<p><a class="manacore-btn is-secondary is-small" href="' . esc_url( (string) get_permalink( $display_id ) ) . '">'
+				. '‹ ' . esc_html( $back_label ) . '</a></p>'
+				. '</div></div>';
+
+			return $empty;
 		}
 
-		/* کیفیت درخواستی (از دکمه‌ی «پخش» جدول دانلود) مقدم است. */
+		/*
+		 * کیفیت درخواستی (از دکمه‌ی «پخش» جدول دانلود) مقدم است؛ ولی فقط
+		 * اگر در همان اثر واقعاً وجود داشته باشد. این «فهرست سفید» جلوی
+		 * مقدار ساختگیِ `?quality=` را می‌گیرد: پیش‌تر هر رشته‌ای که
+		 * سرویس‌دهنده می‌پذیرفت بی‌اثر بود، ولی اکنون ناسازگارها به
+		 * نخستین کیفیت موجود برمی‌گردند (نه پیوند شکسته).
+		 */
 		$requested = isset( $_GET['quality'] ) ? sanitize_text_field( wp_unslash( $_GET['quality'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-		$current   = $requested && isset( $sources[ $requested ] ) ? $requested : (string) key( $sources );
+		$current   = self::pick_source_key( $sources, $requested );
 
 		$eyebrow    = $attrs['eyebrow'] ? (string) $attrs['eyebrow'] : __( 'NOW PLAYING · DEMO', 'manacore' );
 		$back_label = $attrs['backLabel'] ? (string) $attrs['backLabel'] : __( 'بازگشت به جزئیات', 'manacore' );
-		$notice     = $attrs['notice'] ? (string) $attrs['notice'] : (string) get_post_meta( $post_id, 'manacore_custom_notice', true );
+		$notice     = $attrs['notice'] ? (string) $attrs['notice'] : (string) get_post_meta( $display_id, 'manacore_custom_notice', true );
 
 		/*
 		 * مرجع همیشه زیر پلیر یک یادداشت نمونه دارد (`player.js` متن ثابت
@@ -3441,11 +4335,16 @@ class Blocks {
 		 * همین یادداشت پیش‌فرض با نام اثر چاپ می‌شود.
 		 */
 		if ( '' === trim( $notice ) ) {
-			$notice = sprintf(
-				/* translators: %s: نام اثر */
-				__( 'این پلیر با ویدئوی نمونه‌ی آزاد کار می‌کند، نه فایل اصلی %s. کیفیت‌ها واقعی و پیشرفت تماشا قابل ذخیره است.', 'manacore' ),
-				$title
-			);
+			/* متن پیش‌فرض یادداشت پلیر از پنل مدیریت (تب «پخش و دانلود»). */
+			$default_notice = trim( (string) manacore_get_option( 'player_notice_text', '' ) );
+
+			$notice = '' !== $default_notice
+				? str_replace( '{title}', $title, $default_notice )
+				: sprintf(
+					/* translators: %s: نام اثر */
+					__( 'این پلیر با ویدئوی نمونه‌ی آزاد کار می‌کند، نه فایل اصلی %s. کیفیت‌ها واقعی و پیشرفت تماشا قابل ذخیره است.', 'manacore' ),
+					$title
+				);
 		}
 
 		$resolved = Player::resolve( $sources[ $current ] );
@@ -3456,16 +4355,20 @@ class Blocks {
 		 * تیتر «نام اصلی · فصل ۱، قسمت ۳» می‌شود و هم بخش
 		 * «قسمت‌های فصل» زیر پلیر ساخته می‌شود — عیناً رفتار مرجع.
 		 */
-		$series_parent = (int) get_post_meta( $post_id, 'manacore_parent_title', true );
-		$series_id     = 'series' === get_post_type( $post_id ) ? $post_id : $series_parent;
-		$season_number = isset( $_GET['season'] ) ? max( 0, (int) $_GET['season'] ) : (int) get_post_meta( $post_id, 'manacore_season_number', true ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-		$episode_number = isset( $_GET['episode'] ) ? max( 0, (int) $_GET['episode'] ) : (int) get_post_meta( $post_id, 'manacore_episode_number', true ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		$series_parent = (int) get_post_meta( $display_id, 'manacore_parent_title', true );
+		$series_id     = in_array( get_post_type( $display_id ), manacore_serial_post_types(), true ) ? $display_id : $series_parent;
+
+		$season_number  = $req_season ? $req_season : (int) get_post_meta( $source_id, 'manacore_season_number', true );
+		$episode_number = $req_episode ? $req_episode : (int) get_post_meta( $source_id, 'manacore_episode_number', true );
 
 		if ( ! $season_number ) {
 			$season_number = 1;
 		}
 
-		$episodes = array();
+		$episodes   = array();
+		$next_item  = null;   // قسمت بعدی برای پخش خودکار.
+		$next_value = 0;
+
 		if ( $series_id ) {
 			$episodes = get_posts(
 				array(
@@ -3491,13 +4394,78 @@ class Blocks {
 					}
 				)
 			);
+
+			/*
+			 * وقتی نشانی فصل/قسمت مشخص نکرده باشد (مثلاً کلیک روی «پخش» خودِ
+			 * سریال)، قسمتِ فعال همان قسمتی است که پخش می‌شود؛ اگر آن هم
+			 * نامشخص باشد، نخستین قسمت فصل تا فهرست و ناوبری بی‌نشان نمانند.
+			 */
+			if ( ! $episode_number && $episodes ) {
+				$episode_number = (int) get_post_meta( $episodes[0]->ID, 'manacore_episode_number', true );
+			}
+
+			/*
+			 * قسمت بعدی برای پخش خودکار پس از پایان قسمت جاری. کوچک‌ترین
+			 * شماره‌ی بزرگ‌تر از قسمت جاری انتخاب می‌شود (نه «قسمت بعد در
+			 * فهرست») تا با شماره‌گذاری نامرتب هم درست کار کند.
+			 */
+			foreach ( $episodes as $episode_item ) {
+				$number = (int) get_post_meta( $episode_item->ID, 'manacore_episode_number', true );
+
+				if ( $number > $episode_number && ( ! $next_item || $number < $next_value ) ) {
+					$next_item  = $episode_item;
+					$next_value = $number;
+				}
+			}
+		}
+
+		/*
+		 * پخش خودکار قسمت بعدی: نشانی و نام قسمت بعدی روی ریشه‌ی صفحه
+		 * می‌نشیند تا جاوااسکریپت وقتی `ended` شد، کارت «قسمت بعدی» را
+		 * با شمارش معکوس نشان دهد. برای فیلم (بی‌قسمت بعدی) هیچ‌چیز چاپ
+		 * نمی‌شود و رفتار پیشین دست‌نخورده می‌ماند.
+		 */
+		$next_url   = '';
+		$next_title = '';
+
+		if ( $next_item && $series_id ) {
+			$next_url   = Player::url_for(
+				(int) $series_id,
+				array(
+					'season'  => $season_number,
+					'episode' => $next_value,
+					'quality' => $current,
+				)
+			);
+			$next_title = (string) get_the_title( $next_item->ID );
+		}
+
+		$is_hls = Player::has_hls( $sources );
+
+		/*
+		 * زیرنویس‌ها: فهرست تکرارشونده‌ی `manacore_subtitles` (JSON) روی
+		 * خودِ منبع، و اگر نداشت روی اثر نمایش. فایل‌های غیرِ WebVTT رد
+		 * می‌شوند — مرورگر فقط `.vtt` را می‌فهمد.
+		 */
+		$subtitles = self::subtitle_tracks( $source_id !== $display_id ? array( $source_id, $display_id ) : array( $display_id ) );
+
+		/*
+		 * `subs=1` از دکمه‌ی «زیرنویس» جدول دانلود می‌آید: اولین زیرنویس از
+		 * همان لحظه روشن است. بدون این پارامتر، فقط زیرنویس پیش‌فرضِ خود اثر.
+		 */
+		$subs_on = isset( $_GET['subs'] ) && '1' === sanitize_text_field( wp_unslash( $_GET['subs'] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		if ( $subs_on ) {
+			foreach ( $subtitles as $i => $subtitle ) {
+				$subtitles[ $i ]['default'] = 0 === $i;
+			}
 		}
 
 		ob_start();
 		?>
-		<div class="player-page" data-manacore-player-page="<?php echo esc_attr( $post_id ); ?>">
+		<div class="player-page" data-manacore-player-page="<?php echo esc_attr( $source_id ); ?>"
+			<?php echo '' !== $next_url ? 'data-next-url="' . esc_url( $next_url ) . '" data-next-title="' . esc_attr( $next_title ) . '"' : ''; ?>>
 			<div class="player-top">
-				<a class="text-link" href="<?php echo esc_url( (string) get_permalink( $post_id ) ); ?>">
+				<a class="text-link" href="<?php echo esc_url( (string) get_permalink( $display_id ) ); ?>">
 					<?php echo esc_html( '← ' . $back_label ); ?>
 				</a>
 				<span><span class="live-dot" aria-hidden="true"></span><?php esc_html_e( 'سینما، هر جا که تو باشی.', 'manacore' ); ?></span>
@@ -3540,6 +4508,7 @@ class Blocks {
 			<div class="video-frame" data-player-frame>
 				<?php if ( 'video' === $resolved['type'] ) : ?>
 					<video controls preload="metadata" playsinline data-player-video
+						data-player-media="<?php echo $is_hls ? 'hls' : 'file'; ?>"
 						<?php echo $poster ? ' poster="' . esc_url( $poster ) . '"' : ''; ?>
 						title="<?php echo esc_attr( $title ); ?>">
 						<?php
@@ -3557,10 +4526,20 @@ class Blocks {
 						$first = true;
 						?>
 						<?php foreach ( $ordered as $label => $url ) : ?>
+							<?php $mime = Player::mime_for( $url ); ?>
 							<source <?php echo $first ? 'src="' . esc_url( $url ) . '"' : ''; ?>
 								data-quality="<?php echo esc_attr( (string) $label ); ?>"
+								<?php echo '' !== $mime ? 'type="' . esc_attr( $mime ) . '"' : ''; ?>
 								data-src="<?php echo esc_url( $url ); ?>" />
 							<?php $first = false; ?>
+						<?php endforeach; ?>
+						<?php foreach ( $subtitles as $track ) : ?>
+							<track kind="subtitles"
+								src="<?php echo esc_url( $track['url'] ); ?>"
+								srclang="<?php echo esc_attr( $track['lang'] ); ?>"
+								label="<?php echo esc_attr( $track['label'] ); ?>"
+								<?php echo $track['default'] ? 'default' : ''; ?>
+								data-manacore-subtitle />
 						<?php endforeach; ?>
 						<?php esc_html_e( 'مرورگر شما از پخش ویدیو پشتیبانی نمی‌کند.', 'manacore' ); ?>
 					</video>
@@ -3614,22 +4593,36 @@ class Blocks {
 				</button>
 
 				<?php
-				$in_watchlist = function_exists( 'manacore_in_watchlist' ) ? (bool) manacore_in_watchlist( $post_id ) : false;
+				/*
+				 * «لیست تماشا» و رویداد «track-download» روی اثری ثبت
+				 * می‌شوند که کاربر واقعاً تماشا می‌کند (`$source_id`)
+				 * نه سریالی که فقط ظرف صفحه است.
+				 */
+				$in_watchlist = function_exists( 'manacore_in_watchlist' ) ? (bool) manacore_in_watchlist( $source_id ) : false;
 				?>
 				<button type="button" class="manacore-btn is-secondary is-small<?php echo $in_watchlist ? ' is-active' : ''; ?>"
-					data-manacore-watchlist="<?php echo esc_attr( $post_id ); ?>"
+					data-manacore-watchlist="<?php echo esc_attr( $source_id ); ?>"
 					aria-pressed="<?php echo $in_watchlist ? 'true' : 'false'; ?>">
 					<span aria-hidden="true">♡</span> <?php esc_html_e( 'لیست تماشا', 'manacore' ); ?>
 				</button>
 
 				<?php
 				$download_url = isset( $downloads[ $current ] ) ? $downloads[ $current ] : $download;
+
+		/*
+		 * دکمه‌ی دانلود پلیر هم از همان مسیر امضاشده می‌گذرد (اگر روشن
+		 * باشد). پلیر فقط نشانی را می‌شناسد، پس شناسه‌ی لینک با تطبیق
+		 * نشانی پیدا می‌شود؛ در نبود تطبیق، نشانی خام می‌ماند.
+		 */
+		if ( $download_url && class_exists( '\\ManaCore\\Core\\Downloads' ) ) {
+			$download_url = \ManaCore\Core\Downloads::url_for( (int) $source_id, (string) $download_url, 'direct' );
+		}
 				?>
 				<?php if ( $download_url ) : ?>
 					<a class="manacore-btn is-primary is-small" href="<?php echo esc_url( $download_url ); ?>"
 						rel="nofollow noopener" target="_blank" download
 						data-player-download
-						data-manacore-download="<?php echo esc_attr( $post_id ); ?>">
+						data-manacore-download="<?php echo esc_attr( $source_id ); ?>">
 						<span aria-hidden="true">⇩</span> <?php esc_html_e( 'دانلود نمونه', 'manacore' ); ?>
 					</a>
 				<?php endif; ?>
@@ -3724,6 +4717,35 @@ class Blocks {
 		<?php
 		return (string) ob_get_clean();
 	}
+
+	/**
+	 * رندر بلوک فرم درخواست.
+	 *
+	 * @param array $attrs ویژگی‌ها.
+	 * @return string
+	 */
+	public function render_request_form( $attrs = array() ) {
+		if ( ! class_exists( __NAMESPACE__ . '\\Requests' ) ) {
+			return '';
+		}
+
+		return Requests::instance()->render_form( is_array( $attrs ) ? $attrs : array() );
+	}
+
+	/**
+	 * رندر بلوک تخته‌ی درخواست‌ها.
+	 *
+	 * @param array $attrs ویژگی‌ها.
+	 * @return string
+	 */
+	public function render_requests_board( $attrs = array() ) {
+		if ( ! class_exists( __NAMESPACE__ . '\\Requests' ) ) {
+			return '';
+		}
+
+		return Requests::instance()->render_board( is_array( $attrs ) ? $attrs : array() );
+	}
+
 
 	public function render_trailer( $attrs = array() ) {
 		if ( ! Block_Support::should_render( $attrs ) ) {
@@ -3860,6 +4882,8 @@ class Blocks {
 		$base   = Block_Support::is_editor_preview() ? home_url( '/' ) : manacore_archive_base_url();
 		$active = Block_Support::is_editor_preview() ? array() : manacore_active_filters();
 
+		$all_taxonomies = $list;
+
 		/*
 		 * تاکسونومی‌ای که «گروه تیک‌زنی» را می‌سازد از حلقه‌ی گزینشگرها
 		 * کنار می‌رود تا همان فیلتر دو بار دیده نشود.
@@ -3872,6 +4896,44 @@ class Blocks {
 		}
 		if ( $check_taxonomy ) {
 			$list = array_values( array_diff( $list, array( $check_taxonomy ) ) );
+		}
+
+		/*
+		 * نام پارامتر جستجو: در آرشیو و برگه‌ی جستجو `s` طبیعی است، ولی در
+		 * برگه‌ی عادی (صفحه‌ی «کشف داستان‌ها») آوردن `s` در نشانی، وردپرس را
+		 * به حالت جستجو می‌برد و همان برگه ۴۰۴ می‌شود (سنجیده‌شده:
+		 * `/about/?s=test` → ۴۰۴). پس در آن حالت پارامتر خودمان فرستاده
+		 * می‌شود و حلقه هم آن را می‌خواند.
+		 */
+		$search_param = ( is_archive() || is_search() ) ? 's' : 'manacore_q';
+
+		/*
+		 * کنترل‌هایی که این فرم خودش می‌سازد؛ بقیه‌ی پارامترهای نشانی (مثلاً
+		 * جستجو یا مرتب‌سازی نوار مرور) هنگام ارسال نگه داشته می‌شوند.
+		 */
+		$owned = array( 'type' );
+		foreach ( $all_taxonomies as $taxonomy ) {
+			if ( isset( $param_map[ $taxonomy ] ) ) {
+				$owned[] = $param_map[ $taxonomy ];
+			}
+		}
+		if ( ! empty( $attrs['showSearch'] ) || is_search() ) {
+			$owned[] = $search_param;
+		}
+		if ( ! empty( $attrs['showSort'] ) ) {
+			$owned[] = 'mc_sort';
+		}
+		if ( $is_sidebar ) {
+			if ( ! empty( $attrs['showYearRange'] ) ) {
+				$owned[] = 'mc_year_min';
+				$owned[] = 'mc_year_max';
+			}
+			if ( ! empty( $attrs['showRating'] ) ) {
+				$owned[] = 'mc_rating_min';
+			}
+			if ( ! empty( $attrs['showDubbed'] ) ) {
+				$owned[] = 'mc_dubbed';
+			}
 		}
 
 		/*
@@ -3915,6 +4977,8 @@ class Blocks {
 				if ( '' !== $keep_type && in_array( $keep_type, manacore_title_post_types(), true ) ) {
 					printf( '<input type="hidden" name="type" value="%s" />', esc_attr( $keep_type ) );
 				}
+
+				manacore_hidden_fields( manacore_preserved_query_args( $owned ) );
 			}
 			?>
 
@@ -3948,14 +5012,6 @@ class Blocks {
 
 			<?php
 			if ( ! empty( $attrs['showSearch'] ) ) {
-				/*
-				 * نام پارامتر جستجو: در آرشیو و برگه‌ی جستجو `s` طبیعی است،
-				 * ولی در برگه‌ی عادی (صفحه‌ی «کشف داستان‌ها») آوردن `s` در
-				 * نشانی، وردپرس را به حالت جستجو می‌برد و همان برگه ۴۰۴
-				 * می‌شود (سنجیده‌شده: `/about/?s=test` → ۴۰۴). پس در آن حالت
-				 * پارامتر خودمان فرستاده می‌شود و حلقه هم آن را می‌خواند.
-				 */
-				$search_param = ( is_archive() || is_search() ) ? 's' : 'manacore_q';
 
 				// phpcs:ignore WordPress.Security.NonceVerification.Recommended
 				$term = isset( $_GET[ $search_param ] ) ? sanitize_text_field( wp_unslash( $_GET[ $search_param ] ) ) : '';
@@ -4427,7 +5483,7 @@ class Blocks {
 					foreach ( $term_list as $term ) {
 						printf(
 							'<button type="button" data-role="%1$s" aria-pressed="false">%2$s</button>',
-							esc_attr( $term->slug ),
+							esc_attr( (string) $term->term_id ),
 							esc_html( $term->name )
 						);
 					}
@@ -4467,7 +5523,6 @@ class Blocks {
 		$term         = isset( $_GET[ $search_param ] ) ? sanitize_text_field( wp_unslash( $_GET[ $search_param ] ) ) : '';
 		$sort         = isset( $_GET['mc_sort'] ) ? sanitize_key( wp_unslash( $_GET['mc_sort'] ) ) : '';
 		$type         = isset( $_GET['type'] ) ? sanitize_key( wp_unslash( $_GET['type'] ) ) : 'all';
-		$current      = $editor ? array() : $_GET;
 		// phpcs:enable
 
 		if ( ! in_array( $type, manacore_title_post_types(), true ) ) {
@@ -4494,20 +5549,23 @@ class Blocks {
 		<form class="browse-toolbar" method="get" action="<?php echo esc_url( $base ); ?>" data-manacore-browse-toolbar>
 			<?php
 			/*
-			 * حفظ پارامترهایی که این فرم رندر نمی‌کند (فیلترهای سایدبار،
-			 * جستجوی آرشیو و…): بدون آن‌ها تغییر یک کنترل، بقیه را پاک می‌کرد.
+			 * حفظ پارامترهایی که این نوار رندر نمی‌کند (فیلترهای سایدبار،
+			 * جستجوی دیگر، مرتب‌سازی…): بدون آن‌ها تغییر یک کنترل، بقیه‌ی
+			 * حالت صفحه را پاک می‌کرد.
 			 */
-			$skip = array_merge(
-				array( $search_param, 'mc_sort', 'type', 'paged', 'page' ),
-				array_values( manacore_filter_params() )
-			);
+			$owned = array();
+			if ( ! empty( $attrs['showSearch'] ) ) {
+				$owned[] = $search_param;
+			}
+			if ( ! empty( $attrs['showSort'] ) ) {
+				$owned[] = 'mc_sort';
+			}
+			if ( ! empty( $attrs['showTypes'] ) && $types ) {
+				$owned[] = 'type';
+			}
 
-			foreach ( $current as $key => $value ) {
-				$key = sanitize_key( (string) $key );
-				if ( '' === $key || in_array( $key, $skip, true ) || ! is_scalar( $value ) ) {
-					continue;
-				}
-				printf( '<input type="hidden" name="%s" value="%s" />', esc_attr( $key ), esc_attr( wp_unslash( (string) $value ) ) );
+			if ( ! $editor ) {
+				manacore_hidden_fields( manacore_preserved_query_args( $owned ) );
 			}
 			?>
 
@@ -4755,22 +5813,8 @@ class Blocks {
 	 * @return string نشانی تصویر.
 	 */
 	protected function media_url( $post_id, $size = 'large' ) {
-		$thumb = get_post_thumbnail_id( $post_id );
-		if ( $thumb ) {
-			$url = wp_get_attachment_image_url( $thumb, $size );
-			if ( $url ) {
-				return $url;
-			}
-		}
-
-		foreach ( array( 'manacore_backdrop_url', 'manacore_poster_url' ) as $key ) {
-			$url = (string) get_post_meta( $post_id, $key, true );
-			if ( $url ) {
-				return $url;
-			}
-		}
-
-		return manacore_poster_url( $post_id, $size );
+		/* همان زنجیره‌ی مشترک `manacore_backdrop_url()` — یک منبع حقیقت. */
+		return manacore_backdrop_url( $post_id, $size );
 	}
 
 	/**
@@ -4800,6 +5844,93 @@ class Blocks {
 		 * ستون کنار هم از آن استفاده می‌کنند (۲۰۰ واژه در دقیقه).
 		 */
 		return Article::read_minutes( $post_id );
+	}
+
+	/**
+	 * مشخصات یک مجموعه: کاور، عنوان، زیرعنوان و شمار آثار.
+	 *
+	 * دو شکل دارد: `hero` برای سرآمد تک‌مجموعه (با عنوان سطح یک) و `card`
+	 * برای هر کارت در آرشیو (در حلقه‌ی پرس‌وجو، همان نوشته‌ی جاری). کاور از
+	 * `Collection::cover()` می‌آید: کاور اختصاصی، سپس تصویر شاخص. شمار فقط
+	 * آثار منتشرشده را می‌شمارد.
+	 *
+	 * @param array $attrs ویژگی‌های بلوک.
+	 * @return string
+	 */
+	public function render_collection_hero( $attrs ) {
+		if ( ! Block_Support::should_render( $attrs ) ) {
+			return '';
+		}
+
+		$definitions = $this->definitions();
+		$attrs       = wp_parse_args(
+			is_array( $attrs ) ? $attrs : array(),
+			Block_Support::defaults( $definitions['manacore/collection-hero']['attributes'] )
+		);
+
+		$post_id = (int) get_the_ID();
+
+		if ( ! $post_id || 'collection' !== get_post_type( $post_id ) ) {
+			return Block_Support::render_empty( $attrs, 'manacore-collection-hero' );
+		}
+
+		$variant  = 'card' === $attrs['variant'] ? 'card' : 'hero';
+		$title    = get_the_title( $post_id );
+		$url      = (string) get_permalink( $post_id );
+		$subtitle = trim( (string) get_post_meta( $post_id, 'manacore_collection_subtitle', true ) );
+		$cover    = $attrs['showCover'] ? Collection::cover( $post_id, 'large' ) : '';
+
+		$count = 0;
+		foreach ( Collection::items( $post_id ) as $work_id ) {
+			if ( 'publish' === get_post_status( $work_id ) && Collection::is_work( $work_id ) ) {
+				++$count;
+			}
+		}
+
+		$count_label = sprintf(
+			/* translators: %s: شمار آثار */
+			__( '%s اثر', 'manacore' ),
+			manacore_fa_digits( number_format_i18n( $count ) )
+		);
+
+		ob_start();
+		?>
+		<?php if ( 'card' === $variant ) : ?>
+			<article <?php echo Block_Support::wrapper( $attrs, array( 'manacore-collection-hero', 'is-card' ) ); // phpcs:ignore WordPress.Security.EscapeOutput -- سازنده‌ی امن. ?>>
+				<?php if ( '' !== $cover ) : ?>
+					<a class="collection-hero__cover" href="<?php echo esc_url( $url ); ?>" tabindex="-1" aria-hidden="true">
+						<img src="<?php echo esc_url( $cover ); ?>" alt="" loading="lazy" decoding="async" />
+					</a>
+				<?php endif; ?>
+				<h3 class="collection-hero__title"><a href="<?php echo esc_url( $url ); ?>"><?php echo esc_html( $title ); ?></a></h3>
+				<?php if ( $attrs['showSubtitle'] && '' !== $subtitle ) : ?>
+					<p class="collection-hero__subtitle"><?php echo esc_html( $subtitle ); ?></p>
+				<?php endif; ?>
+				<?php if ( $attrs['showCount'] && $count > 0 ) : ?>
+					<p class="collection-hero__count"><?php echo esc_html( $count_label ); ?></p>
+				<?php endif; ?>
+			</article>
+		<?php else : ?>
+			<section <?php echo Block_Support::wrapper( $attrs, array( 'manacore-collection-hero', 'is-hero' ) ); // phpcs:ignore WordPress.Security.EscapeOutput -- سازنده‌ی امن. ?>>
+				<?php if ( '' !== $cover ) : ?>
+					<div class="collection-hero__cover">
+						<img src="<?php echo esc_url( $cover ); ?>" alt="" decoding="async" />
+					</div>
+				<?php endif; ?>
+				<div class="collection-hero__body">
+					<p class="collection-hero__eyebrow"><?php esc_html_e( 'مجموعه', 'manacore' ); ?></p>
+					<h1 class="collection-hero__title"><?php echo esc_html( $title ); ?></h1>
+					<?php if ( $attrs['showSubtitle'] && '' !== $subtitle ) : ?>
+						<p class="collection-hero__subtitle"><?php echo esc_html( $subtitle ); ?></p>
+					<?php endif; ?>
+					<?php if ( $attrs['showCount'] && $count > 0 ) : ?>
+						<p class="collection-hero__count"><?php echo esc_html( $count_label ); ?></p>
+					<?php endif; ?>
+				</div>
+			</section>
+		<?php endif; ?>
+		<?php
+		return (string) ob_get_clean();
 	}
 
 	/**
@@ -4874,10 +6005,14 @@ class Blocks {
 				$url   = get_term_link( $item );
 				$image = (string) get_term_meta( $item->term_id, 'manacore_term_image', true );
 			} else {
-				$title = get_the_title( $item );
-				$desc  = wp_strip_all_tags( get_the_excerpt( $item ) );
-				$url   = get_permalink( $item );
-				$image = $this->media_url( $item->ID, 'large' );
+				$title    = get_the_title( $item );
+				$subtitle = (string) get_post_meta( $item->ID, 'manacore_collection_subtitle', true );
+				$desc     = wp_strip_all_tags( '' !== trim( $subtitle ) ? $subtitle : get_the_excerpt( $item ) );
+				$url      = get_permalink( $item );
+				$image    = Collection::cover( $item->ID, 'large' );
+				if ( '' === $image ) {
+					$image = $this->media_url( $item->ID, 'large' );
+				}
 			}
 
 			$url = is_wp_error( $url ) ? '#' : $url;
@@ -6190,6 +7325,30 @@ class Blocks {
 	 * @param array $attrs ویژگی‌های بلوک.
 	 * @return string
 	 */
+	/**
+	 * رندر پنل «درخواست‌های من» در حساب کاربری.
+	 *
+	 * رندر واقعی در `Requests::render_mine()` است تا شورت‌کد و بلوک یک
+	 * مارک‌آپ بدهند (یک منبع حقیقت).
+	 *
+	 * @param array $attrs ویژگی‌های بلوک.
+	 * @return string
+	 */
+	public function render_account_requests( $attrs ) {
+		$definitions = $this->definitions();
+		$attrs       = wp_parse_args(
+			is_array( $attrs ) ? $attrs : array(),
+			Block_Support::defaults( $definitions['manacore/account-requests']['attributes'] )
+		);
+
+		if ( ! Block_Support::should_render( $attrs ) ) {
+			return '';
+		}
+
+		// phpcs:ignore WordPress.Security.EscapeOutput -- خروجی همین کلاس و امن است.
+		return Requests::instance()->render_mine( $attrs );
+	}
+
 	public function render_account_analytics( $attrs ) {
 		$definitions = $this->definitions();
 		$attrs       = wp_parse_args(
@@ -6799,7 +7958,7 @@ class Blocks {
 				<?php endif; ?>
 			</div>
 			<?php if ( ! empty( $attrs['showButton'] ) && '' !== $label && '' !== $url ) : ?>
-				<a class="button primary" id="open-register" href="<?php echo esc_url( $url ); ?>"><?php echo esc_html( $label ); ?></a>
+				<a class="button primary" id="open-register" href="<?php echo esc_url( $url ); ?>"<?php echo $profile['guest'] ? ' data-manacore-auth-open="' . esc_attr( get_option( 'users_can_register' ) ? 'register' : 'login' ) . '" aria-haspopup="dialog"' : ''; // phpcs:ignore WordPress.Security.EscapeOutput -- مقدار ثابت و escape شده. ?>><?php echo esc_html( $label ); ?></a>
 			<?php endif; ?>
 		</div>
 		<?php
@@ -6866,7 +8025,15 @@ class Blocks {
 						<?php echo $item['active'] ? ' class="active" aria-current="true"' : ''; ?>
 					><?php echo esc_html( $item['label'] ); ?><?php
 						if ( '' !== $item['badge'] ) {
-							echo '<span id="watch-count">' . esc_html( $item['badge'] ) . '</span>';
+							/*
+							 * شناسه‌ی نشان، مخصوص همان تب است: `watch-count`
+							 * برای لیست تماشا (هم‌نام مرجع) و برای تب‌های دیگر
+							 * `<اسلاگ>-count`. با یک شناسه‌ی مشترک، دو تب
+							 * نشان‌دار شناسه‌ی تکراری می‌ساختند.
+							 */
+							$badge_id = 'watchlist' === $item['slug'] ? 'watch-count' : $item['slug'] . '-count';
+
+							echo '<span id="' . esc_attr( $badge_id ) . '">' . esc_html( $item['badge'] ) . '</span>';
 						}
 						if ( '' !== $item['tag'] ) {
 							echo '<small>' . esc_html( $item['tag'] ) . '</small>';
@@ -7213,25 +8380,64 @@ class Blocks {
 		$heading   = $attrs['heading'] ? (string) $attrs['heading'] : __( 'هر فصل، یک داستان تازه', 'manacore' );
 
 		/*
+		 * سبک جعبه از همان فهرست مشترک `Block_Data::download_styles()`
+		 * می‌آید تا با «لینک‌های دانلود» یکی باشد. پیش‌تر این خط از کلید
+		 * `box_style` می‌خواند که در تعریف بلوک وجود نداشت: هشدار
+		 * «Undefined array key» در PHP 8.0+ و بی‌اثر بودن سبک جعبه.
+		 */
+		$box_style = Block_Support::pick( $attrs['boxStyle'], Block_Data::download_styles(), 'cards' );
+
+		/*
+		 * سه ویژگی بلوک (`showAirDate`/`showCount`/`showThumb`) در تعریف و
+		 * پنل ویرایشگر بودند ولی در رندر هیچ مصرفی نداشتند؛ یعنی چیزی که
+		 * مدیر خاموش/روشن می‌کرد اثری نداشت. اکنون هر سه کار می‌کنند و
+		 * مقدار پیش‌فرضشان همان رندر پیشین را می‌دهد (بی‌تغییر برای
+		 * محتوای موجود).
+		 */
+		$show_air_date = ! empty( $attrs['showAirDate'] );
+		$show_count    = ! empty( $attrs['showCount'] );
+		$show_thumb    = ! empty( $attrs['showThumb'] );
+
+		$pack_label = '' !== trim( (string) $attrs['packTitle'] )
+			? (string) $attrs['packTitle']
+			: __( 'بسته‌ی کامل فصل', 'manacore' );
+		$size_label = '' !== trim( (string) $attrs['sizeLabel'] )
+			? (string) $attrs['sizeLabel']
+			: __( 'حجم نمونه', 'manacore' );
+		$play_label = '' !== trim( (string) $attrs['playLabel'] )
+			? (string) $attrs['playLabel']
+			: __( 'پخش قسمت %s', 'manacore' );
+
+		/*
 		 * یادداشت بخش، مثل `.demo-notice` مرجع: متن ویژه‌ی اثر (اگر مدیر
 		 * نوشته باشد) و در نبودش متن پیش‌فرض کتابخانه.
 		 */
-		$notice = (string) get_post_meta( $parent, 'manacore_custom_notice', true );
-		if ( '' === trim( $notice ) ) {
-			$notice = (string) apply_filters(
-				'manacore_download_notice',
-				__( 'لینک‌های این نسخه، نمونه ویدئوی آزاد ۱۰ ثانیه‌ای هستند؛ نه فایل اصلی سریال.', 'manacore' ),
-				$parent
-			);
+		$notice = ! empty( $attrs['showNotice'] ) ? (string) get_post_meta( $parent, 'manacore_custom_notice', true ) : '';
+		if ( ! empty( $attrs['showNotice'] ) && '' === trim( $notice ) ) {
+			$default_notice = trim( (string) manacore_get_option( 'download_notice_text', '' ) );
+
+			if ( '' === $default_notice ) {
+				$default_notice = __( 'لینک‌های این نسخه، نمونه ویدئوی آزاد ۱۰ ثانیه‌ای هستند؛ نه فایل اصلی سریال.', 'manacore' );
+			}
+
+			$notice = (string) apply_filters( 'manacore_download_notice', $default_notice, $parent );
 		}
+
+		/*
+		 * «بسته‌های فصل»: لینک‌هایی که مدیر روی پست خودِ سریال ثبت کرده
+		 * است (مثلاً «دانلود کامل فصل ۱ با کیفیت ۱۰۸۰»). پیش‌تر این داده
+		 * هیچ‌جا رندر نمی‌شد، چون فقط لینک‌های قسمت‌ها نمایش داده می‌شدند.
+		 */
+		// فقط بسته‌های بی‌شماره؛ ردیف‌های شماره‌دار را جعبه‌ی دانلود قسمت‌به‌قسمت نشان می‌دهد.
+		$packs = ! empty( $attrs['showPackList'] ) ? Links::season_packs( $parent ) : array();
 
 		$season_index = 0;
 		$is_multi     = count( $by_season ) > 1;
 
 		ob_start();
 		?>
-		<section class="download-section<?php echo 'cards' === Block_Support::pick( $attrs['box_style'], Block_Data::download_styles(), 'cards' ) ? '' : ' is-' . esc_attr( Block_Support::pick( $attrs['box_style'], Block_Data::download_styles(), 'cards' ) ); ?>"
-			id="download" data-manacore-episodes="<?php echo esc_attr( $parent ); ?>">
+		<section class="download-section manacore-episodes<?php echo 'cards' === $box_style ? '' : ' is-' . esc_attr( $box_style ); ?>"
+			id="episodes" data-manacore-episodes="<?php echo esc_attr( $parent ); ?>">
 			<div class="section-heading">
 				<div class="heading-title">
 					<?php if ( ! empty( $attrs['showIcon'] ) ) : ?>
@@ -7272,7 +8478,9 @@ class Blocks {
 								? esc_html( sprintf( __( 'فصل %s', 'manacore' ), manacore_fa_digits( number_format_i18n( $season ) ) ) )
 								: esc_html__( 'عمومی', 'manacore' );
 							?>
-							<small><?php echo esc_html( sprintf( /* translators: %s: تعداد قسمت */ __( '%s قسمت', 'manacore' ), manacore_fa_digits( number_format_i18n( count( $items ) ) ) ) ); ?></small>
+							<?php if ( $show_count ) : ?>
+								<small><?php echo esc_html( sprintf( /* translators: %s: تعداد قسمت */ __( '%s قسمت', 'manacore' ), manacore_fa_digits( number_format_i18n( count( $items ) ) ) ) ); ?></small>
+							<?php endif; ?>
 						</button>
 						<?php $first = false; ?>
 					<?php endforeach; ?>
@@ -7294,21 +8502,73 @@ class Blocks {
 				?>
 				<div class="episode-list" id="episode-list" data-season-panel="<?php echo esc_attr( $season ); ?>" <?php echo $is_open ? '' : 'hidden'; ?>>
 					<?php
+					/*
+					 * ۱) بسته‌های کامل فصل (لینک‌های خودِ سریال برای همین فصل).
+					 *    این جدول هم‌مارک‌آپ جدول قسمت است تا استایل و
+					 *    آزمون‌های هندسی موجود دست‌نخورده بمانند.
+					 */
+					$season_packs = isset( $packs[ $season ] ) ? (array) $packs[ $season ] : (array) ( $packs[0] ?? array() );
+
+					if ( $season_packs ) :
+						?>
+						<?php
+						$pack_rows = Templates::pack_rows( $season_packs, $pack_label );
+						$pack_cols = Templates::download_columns( $pack_rows );
+						$pack_play = class_exists( '\\ManaCore\\Core\\Player' )
+							? Player::url_for( $parent, 0 < $season ? array( 'season' => $season ) : array() )
+							: '';
+						?>
+						<div class="download-table download-packs" data-season-packs="<?php echo esc_attr( $season ); ?>">
+							<?php echo Templates::download_head( $pack_cols, $size_label ); // phpcs:ignore WordPress.Security.EscapeOutput ?>
+							<?php
+							foreach ( Templates::download_entries( $pack_rows ) as $pack_entry ) {
+								echo Templates::entry_row( $pack_entry, $pack_cols, $parent, $pack_play ); // phpcs:ignore WordPress.Security.EscapeOutput
+							}
+							?>
+						</div>
+						<?php
+					endif;
+
 					$episode_index = 0;
 					foreach ( $items as $episode ) :
 						$number    = (int) get_post_meta( $episode->ID, 'manacore_episode_number', true );
 						$air_date  = (string) get_post_meta( $episode->ID, 'manacore_air_date', true );
 						$expanded  = $is_open && 0 === $episode_index;
-						$play_url  = class_exists( '\ManaCore\Core\Player' )
-							? add_query_arg(
-								array(
-									'season'  => $season,
-									'episode' => $number,
-								),
-								Player::page_url( $parent )
-							)
-							: '';
-						$sub_label = $air_date ? $air_date : __( 'نسخه نمایشی', 'manacore' );
+						/*
+						 * با خاموش‌بودن «نمایش تاریخ پخش»، برچسب نمایشی هم
+						 * نمی‌آید تا خط زیرنویس خالی نماند (پیش‌تر این ویژگی
+						 * اثری نداشت و همیشه تاریخ می‌آمد).
+						 */
+						$sub_label = $show_air_date ? $air_date : '';
+
+						if ( $show_air_date && '' === $sub_label ) {
+							$sub_label = __( 'نسخه نمایشی', 'manacore' );
+						}
+
+						/*
+						 * هدف پخش با `Player::resolve_target()` تعیین می‌شود:
+						 * اگر خودِ قسمت لینک داشته باشد، همان قسمت پخش
+						 * می‌شود (نه سریال)؛ وگرنه والد یا نخستین قسمتِ
+						 * دارای لینک. در نبود برگه‌ی پخش، `url_for()`
+						 * رشته‌ی خالی می‌دهد و دکمه ساخته نمی‌شود تا
+						 * پیوندِ ناقص (فقط `?season=…`) به کاربر نرسد.
+						 */
+						$play_url = '';
+
+						if ( class_exists( '\ManaCore\Core\Player' ) ) {
+							$play_target = Player::resolve_target( $parent, $season, $number );
+							$play_args   = array(
+								'season'  => $season,
+								'episode' => $number,
+							);
+
+							if ( $play_target && Player::has_sources( $play_target ) ) {
+								$play_url = Player::url_for( $play_target, $play_args );
+							} elseif ( Player::has_sources( $parent ) ) {
+								$play_url = Player::url_for( $parent, $play_args );
+							}
+						}
+
 						++$episode_index;
 						?>
 						<article class="episode-card<?php echo $expanded ? ' expanded' : ''; ?>">
@@ -7316,6 +8576,12 @@ class Blocks {
 								<button type="button" class="episode-toggle" data-episode="<?php echo esc_attr( $number ); ?>"
 									aria-controls="episode-download-<?php echo esc_attr( $episode->ID ); ?>"
 									aria-expanded="<?php echo $expanded ? 'true' : 'false'; ?>">
+									<?php if ( $show_thumb ) : ?>
+										<?php $thumb = get_the_post_thumbnail( $episode, 'thumbnail', array( 'alt' => '', 'loading' => 'lazy' ) ); ?>
+										<?php if ( '' !== $thumb ) : ?>
+											<span class="episode-thumb"><?php echo $thumb; // phpcs:ignore WordPress.Security.EscapeOutput — خروجی get_the_post_thumbnail خودش escape شده است ?></span>
+										<?php endif; ?>
+									<?php endif; ?>
 									<?php /* مرجع شماره‌ی کارت را دو رقمی و با ارقام فارسی می‌نویسد: «۰۱». */ ?>
 									<span class="episode-number"><?php echo esc_html( manacore_fa_digits( str_pad( (string) number_format_i18n( $number ), 2, '0', STR_PAD_LEFT ) ) ); ?></span>
 									<span>
@@ -7325,14 +8591,16 @@ class Blocks {
 											echo esc_html( sprintf( __( 'قسمت %s', 'manacore' ), manacore_fa_digits( number_format_i18n( $number ) ) ) );
 											?>
 										</strong>
+										<?php if ( $show_air_date || 0 < $season || '' !== $sub_label ) : ?>
 										<small>
 											<?php
 											echo 0 < $season
 												/* translators: 1: شماره فصل، 2: برچسب قسمت */
-												? esc_html( sprintf( __( 'فصل %1$s · %2$s', 'manacore' ), manacore_fa_digits( number_format_i18n( $season ) ), manacore_fa_digits( $sub_label ) ) )
+												? esc_html( sprintf( '' !== $sub_label ? __( 'فصل %1$s · %2$s', 'manacore' ) : __( 'فصل %s', 'manacore' ), manacore_fa_digits( number_format_i18n( $season ) ), manacore_fa_digits( $sub_label ) ) )
 												: esc_html( manacore_fa_digits( $sub_label ) );
 											?>
 										</small>
+										<?php endif; ?>
 									</span>
 									<?php if ( ! empty( $attrs['showEpisodeName'] ) && '' !== trim( (string) $episode->post_title ) ) : ?>
 										<span class="episode-subtitle"><?php echo esc_html( get_the_title( $episode ) ); ?></span>
@@ -7345,39 +8613,28 @@ class Blocks {
 								</button>
 								<?php if ( $play_url ) : ?>
 									<a class="episode-play" href="<?php echo esc_url( $play_url ); ?>"
-										aria-label="<?php echo esc_attr( sprintf( /* translators: %s: شماره قسمت */ __( 'پخش قسمت %s', 'manacore' ), manacore_fa_digits( number_format_i18n( $number ) ) ) ); ?>">
+										title="<?php echo esc_attr( sprintf( $play_label, manacore_fa_digits( number_format_i18n( $number ) ) ) ); ?>"
+										aria-label="<?php echo esc_attr( sprintf( $play_label, manacore_fa_digits( number_format_i18n( $number ) ) ) ); ?>">
 										<svg viewBox="0 0 24 24" width="17" height="17" fill="currentColor" aria-hidden="true"><path d="m8 5 11 7-11 7V5Z"/></svg>
 									</a>
 								<?php endif; ?>
 							</div>
+							<?php
+							$groups  = Links::get( $episode->ID );
+							$ep_rows = Templates::download_rows( $groups );
+							$ep_cols = Templates::download_columns( $ep_rows );
+							?>
 							<div class="download-table episode-download" id="episode-download-<?php echo esc_attr( $episode->ID ); ?>" <?php echo $expanded ? '' : 'hidden'; ?>>
-								<div class="download-table-header">
-									<span><?php esc_html_e( 'کیفیت تصویر', 'manacore' ); ?></span>
-									<span><?php esc_html_e( 'فرمت', 'manacore' ); ?></span>
-									<span><?php esc_html_e( 'حجم نمونه', 'manacore' ); ?></span>
-									<span><?php esc_html_e( 'پخش و دانلود', 'manacore' ); ?></span>
-								</div>
+								<?php echo Templates::download_head( $ep_cols, $size_label ); // phpcs:ignore WordPress.Security.EscapeOutput ?>
 								<?php
-								$has_access = manacore_user_can_access( $episode->ID );
-								$groups     = Links::get( $episode->ID );
-
-								if ( ! $groups ) :
+								if ( ! $ep_rows ) :
 									?>
 									<p class="muted"><?php esc_html_e( 'برای این قسمت هنوز فایلی ثبت نشده است.', 'manacore' ); ?></p>
 									<?php
 								else :
-									foreach ( $groups as $group ) :
-										$quality  = trim( (string) $group['quality'] );
-										$play_row = '';
-										$quality  = '' !== $quality ? $quality : trim( (string) $group['title'] );
-
-										if ( $play_url && '' !== $quality ) {
-											$play_row = add_query_arg( 'quality', rawurlencode( $quality ), $play_url );
-										} elseif ( $play_url ) {
-											$play_row = $play_url;
-										}
-
-										echo Templates::link_row( $group, $has_access, $episode->ID, $play_row ); // phpcs:ignore WordPress.Security.EscapeOutput
+									foreach ( Templates::download_entries( $ep_rows ) as $ep_entry ) :
+										// کلید گزینه‌ی هر لینک را خودِ `variant_cells()` می‌سازد (همان کلید صفحه‌ی پخش).
+										echo Templates::entry_row( $ep_entry, $ep_cols, $episode->ID, (string) $play_url ); // phpcs:ignore WordPress.Security.EscapeOutput
 									endforeach;
 								endif;
 								?>
@@ -7618,9 +8875,20 @@ class Blocks {
 			);
 		}
 
-		$english = trim( (string) get_post_meta( $post_id, 'manacore_person_english', true ) );
-		$born    = trim( (string) get_post_meta( $post_id, 'manacore_person_born', true ) );
-		$country = trim( (string) get_post_meta( $post_id, 'manacore_country', true ) );
+		$english    = trim( (string) get_post_meta( $post_id, 'manacore_person_english', true ) );
+		$original   = trim( (string) get_post_meta( $post_id, 'manacore_person_original_name', true ) );
+		$born       = trim( (string) get_post_meta( $post_id, 'manacore_person_born', true ) );
+		$birth_year = (int) get_post_meta( $post_id, 'manacore_person_birth_year', true );
+		$birthplace = trim( (string) get_post_meta( $post_id, 'manacore_person_birthplace', true ) );
+		$country    = trim( (string) get_post_meta( $post_id, 'manacore_country', true ) );
+
+		// تاریخ متنی آزاد اولویت دارد؛ وگرنه سال عددی (با رقم فارسی).
+		if ( '' === $born && $birth_year > 0 ) {
+			$born = manacore_fa_digits( $birth_year );
+		}
+
+		// «اهل کجاست» کنار کشور: مثلاً «تهران، ایران».
+		$origin = implode( '، ', array_filter( array( $birthplace, $country ) ) );
 
 		$facts = array();
 
@@ -7631,10 +8899,10 @@ class Blocks {
 			);
 		}
 
-		if ( ! empty( $attrs['showCountry'] ) && '' !== $country ) {
+		if ( ! empty( $attrs['showCountry'] ) && '' !== $origin ) {
 			$facts[] = sprintf(
 				'<span><span class="person-fact-icon" aria-hidden="true">◌</span>%s</span>',
-				esc_html( $country )
+				esc_html( $origin )
 			);
 		}
 
@@ -7654,6 +8922,10 @@ class Blocks {
 		$english_html = ( ! empty( $attrs['showEnglish'] ) && '' !== $english )
 			? '<p class="person-english" dir="ltr">' . esc_html( $english ) . '</p>'
 			: '';
+
+		if ( ! empty( $attrs['showEnglish'] ) && '' !== $original ) {
+			$english_html .= '<p class="person-original" dir="auto">' . esc_html( $original ) . '</p>';
+		}
 
 		if ( '' === $english_html && ! $facts ) {
 			return Block_Support::render_empty( $attrs, 'manacore-person-meta' );
@@ -7880,12 +9152,12 @@ class Blocks {
 		}
 
 		foreach ( $people as $person ) {
-			$id      = (int) $person->ID;
-			$name    = get_the_title( $person );
-			$english = trim( (string) get_post_meta( $id, 'manacore_person_english', true ) );
+			$id       = (int) $person->ID;
+			$name     = get_the_title( $person );
+			$english  = trim( (string) get_post_meta( $id, 'manacore_person_english', true ) );
 			$termlist = wp_get_post_terms( $id, 'person_role', array( 'fields' => 'all' ) );
-			$role    = ( is_array( $termlist ) && $termlist ) ? $termlist[0]->name : '';
-			$slugs   = ( is_array( $termlist ) && $termlist ) ? wp_list_pluck( $termlist, 'slug' ) : array();
+			$role     = ( is_array( $termlist ) && $termlist ) ? $termlist[0]->name : '';
+			$role_ids = ( is_array( $termlist ) && $termlist ) ? wp_list_pluck( $termlist, 'term_id' ) : array();
 			/*
 			 * تصویر شاخص اولویت دارد؛ اگر نبود، نشانی تصویر جایگزین
 			 * (`manacore_person_photo`) — همان الگویی که کانال‌های پخش زنده
@@ -7918,7 +9190,7 @@ class Blocks {
 				data-name="<?php echo esc_attr( $name ); ?>"
 				data-english="<?php echo esc_attr( $english ); ?>"
 				data-search="<?php echo esc_attr( $name . ' ' . $english ); ?>"
-				data-role="<?php echo esc_attr( implode( ' ', array_map( 'sanitize_html_class', $slugs ) ) ); ?>">
+				data-role="<?php echo esc_attr( implode( ' ', array_map( 'absint', $role_ids ) ) ); ?>">
 				<div>
 					<?php if ( $photo ) : ?>
 						<img src="<?php echo esc_url( $photo ); ?>" alt="<?php echo esc_attr( $name ); ?>" loading="lazy" />
@@ -8148,7 +9420,7 @@ class Blocks {
 		$channel_id = (int) $attrs['channelId'];
 		$channel    = $channel_id ? Channel::payload( $channel_id ) : array();
 		if ( ! $channel ) {
-			$post = Channel::resolve( $slug );
+			$post    = Channel::current( $slug );
 			$channel = $post ? Channel::payload( $post ) : array();
 		}
 
@@ -8191,12 +9463,25 @@ class Blocks {
 
 			<div class="live-now-info">
 				<span class="live-channel-logo" aria-hidden="true"><?php echo Block_Support::heading_icon( $channel['icon'] ); // phpcs:ignore WordPress.Security.EscapeOutput -- سازنده‌ی امن. ?></span>
+				<?php
+				/*
+				 * همه‌ی بخش‌های متنی همیشه در مارک‌آپ‌اند و با `hidden` پنهان
+				 * می‌مانند؛ تا `front.js` هنگام عوض‌شدن کانال، هر کدام را که داده
+				 * دارد نشان دهد و دادهٔ کانال قبلی باقی نماند.
+				 */
+				$now_work = ! empty( $channel['now'] ) ? $channel['now'] : array();
+				?>
 				<div>
-					<small><?php echo esc_html( (string) $attrs['nowLabel'] ); ?> · <?php echo esc_html( manacore_fa_digits( $channel['quality'] ) ); ?>p</small>
+					<small>
+						<?php echo esc_html( (string) $attrs['nowLabel'] ); ?>
+						<span id="live-quality-wrap"<?php echo '' === $channel['quality_label'] ? ' hidden' : ''; ?>> · <span id="live-quality"><?php echo esc_html( $channel['quality_label'] ); ?></span></span>
+					</small>
 					<h2 id="live-title"><?php echo esc_html( $title ); ?></h2>
-					<?php if ( '' !== $subtitle ) : ?>
-						<p id="live-subtitle"><?php echo esc_html( $subtitle ); ?></p>
-					<?php endif; ?>
+					<p id="live-subtitle"<?php echo '' === $subtitle ? ' hidden' : ''; ?>><?php echo esc_html( $subtitle ); ?></p>
+					<p class="live-now-work" id="live-now-work"<?php echo $now_work ? '' : ' hidden'; ?>>
+						<span><?php esc_html_e( 'اثر در حال پخش:', 'manacore' ); ?></span>
+						<a id="live-now-link" href="<?php echo esc_url( (string) ( $now_work['url'] ?? '' ) ); ?>"><span id="live-now-title"><?php echo esc_html( (string) ( $now_work['title'] ?? '' ) ); ?></span></a>
+					</p>
 				</div>
 				<div class="live-player-actions">
 					<button class="icon-button" id="mute-video" type="button" aria-pressed="false" aria-label="<?php esc_attr_e( 'روشن کردن صدا', 'manacore' ); ?>">
@@ -8271,7 +9556,7 @@ class Blocks {
 		$slug = isset( $_GET['channel'] ) ? sanitize_title( wp_unslash( $_GET['channel'] ) ) : '';
 		// phpcs:enable
 
-		$current = Channel::resolve( $slug );
+		$current = Channel::current( $slug );
 
 		$note_title = trim( (string) $attrs['noteTitle'] );
 		$note_text  = trim( (string) $attrs['noteText'] );
@@ -8296,19 +9581,29 @@ class Blocks {
 					$data     = Channel::payload( $channel );
 					$is_now   = $current && (int) $current->ID === (int) $channel->ID;
 					$suffix   = trim( (string) $attrs['qualitySuffix'] );
-					$subtitle = manacore_fa_digits( $data['quality'] ) . 'p';
+					$subtitle = $data['quality_label'];
 					if ( '' !== $suffix ) {
-						$subtitle .= ' · ' . $suffix;
+						$subtitle = '' !== $subtitle ? $subtitle . ' · ' . $suffix : $suffix;
 					}
 					?>
 					<a class="channel-card<?php echo $is_now ? ' active' : ''; ?>" role="listitem"
 						href="<?php echo esc_url( $data['url'] ); ?>"
 						data-channel="<?php echo esc_attr( $data['slug'] ); ?>"
 						<?php echo $is_now ? ' aria-current="true"' : ''; ?>>
-						<span class="channel-icon" aria-hidden="true"><?php echo Block_Support::heading_icon( $data['icon'] ); // phpcs:ignore WordPress.Security.EscapeOutput -- سازنده‌ی امن. ?></span>
+						<?php if ( '' !== $data['poster'] ) : ?>
+							<span class="channel-poster"><img src="<?php echo esc_url( $data['poster'] ); ?>" alt="" loading="lazy" decoding="async" /></span>
+						<?php else : ?>
+							<span class="channel-icon" aria-hidden="true"><?php echo Block_Support::heading_icon( $data['icon'] ); // phpcs:ignore WordPress.Security.EscapeOutput -- سازنده‌ی امن. ?></span>
+						<?php endif; ?>
 						<span>
 							<strong><?php echo esc_html( $data['name'] ); ?></strong>
+							<?php if ( '' !== trim( (string) $data['subtitle'] ) ) : ?>
+								<em class="channel-subtitle"><?php echo esc_html( $data['subtitle'] ); ?></em>
+							<?php endif; ?>
 							<small><?php echo esc_html( $subtitle ); ?></small>
+							<?php if ( ! empty( $data['now']['title'] ) ) : ?>
+								<em class="channel-now-work"><?php esc_html_e( 'اثر:', 'manacore' ); ?> <?php echo esc_html( $data['now']['title'] ); ?></em>
+							<?php endif; ?>
 						</span>
 						<?php if ( $is_now ) : ?>
 							<span class="channel-on-air"><span class="live-dot" aria-hidden="true"></span><?php echo esc_html( (string) $attrs['onlineLabel'] ); ?></span>

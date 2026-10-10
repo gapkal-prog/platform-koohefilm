@@ -817,12 +817,19 @@
 	 * ------------------------------------------------------------------ */
 
 	/**
-	 * پنل جستجوی سریع.
+	 * پنل جستجوی سریع — هم‌رفتار با مرجع (`cinora/assets/js/main.js`).
 	 *
-	 * نتایج زنده از REST هسته (منسوخ با data-manacore-search) نمی‌آید؛ اینجا
-	 * مستقیم از endpoint سرچ هسته استفاده می‌شود. اگر ورودی خالی باشد، نتایج
-	 * پنهان و دکمه‌ی Escape بسته می‌شود. دکمه‌ی هدر با data-koohe-search-open
-	 * و کلید میان‌بر ⌘K/Ctrl+K آن را باز می‌کند.
+	 * مسیر داده: `kooheFilm.searchUrl` که به مسیر REST خودِ افزونه
+	 * (`manacore/v1/search`) اشاره می‌کند. پیش‌تر این‌جا نشانی دستی ساخته
+	 * می‌شد (`config.restUrl` + `wp/v2/search`) و چون `restUrl` فضای‌نام
+	 * افزونه بود، درخواست به `…/wp-json/manacore/v1/wp/v2/search` می‌رفت،
+	 * ۴۰۴ می‌گرفت و خطا هم بلعیده می‌شد؛ نتیجه: هر عبارت — فارسی یا
+	 * انگلیسی — پیام «این داستان را هنوز پیدا نکردیم» را نشان می‌داد.
+	 *
+	 * رفتار: با ورودی خالی نتایج پیشنهادی («این روزها بیشتر جستجو می‌شوند»)،
+	 * از دو نویسه به بعد جستجوی زنده با تأخیر ۲۵۰ms، و تفکیک روشن میان
+	 * «نتیجه‌ای نیست» و «جستجو انجام نشد» (خطای شبکه با پیام نبود نتیجه
+	 * اشتباه گرفته نشود).
 	 */
 	function initSearchOverlay() {
 		var overlay = document.querySelector( '[data-koohe-search-overlay]' );
@@ -830,11 +837,15 @@
 			return;
 		}
 
-		var input = overlay.querySelector( '[data-koohe-search-input]' );
-		var results = overlay.querySelector( '[data-koohe-search-results]' );
-		var empty = overlay.querySelector( '[data-koohe-search-empty]' );
+		var input     = overlay.querySelector( '[data-koohe-search-input]' );
+		var form      = overlay.querySelector( '.koohe-search-overlay__form' );
+		var results   = overlay.querySelector( '[data-koohe-search-results]' );
+		var empty     = overlay.querySelector( '[data-koohe-search-empty]' );
+		var label     = overlay.querySelector( '[data-koohe-search-label]' );
 		var lastQuery = '';
-		var searchTimer = null;
+		var timer     = null;
+		var controller = null;
+		var suggestions = null;
 
 		/*
 		 * دکمه‌های بازکننده‌ی پوسته (مثل دکمه‌ی جستجوی سربرگ) وضعیت
@@ -842,6 +853,12 @@
 		 * نمی‌فهمد پوسته باز شده است.
 		 */
 		var triggers = qsa( '[data-koohe-search-open]' );
+
+		var historyBox   = overlay.querySelector( '[data-koohe-search-history]' );
+		var historyList  = overlay.querySelector( '[data-koohe-search-history-list]' );
+		var genresBox    = overlay.querySelector( '[data-koohe-search-genres-box]' );
+		var genresList   = overlay.querySelector( '[data-koohe-search-genres]' );
+		var genres       = Array.isArray( config.genres ) ? config.genres : [];
 
 		function setExpanded( state ) {
 			triggers.forEach( function ( btn ) {
@@ -853,9 +870,12 @@
 			overlay.hidden = false;
 			document.body.classList.add( 'koohe-search-open' );
 			setExpanded( true );
+
 			if ( input ) {
 				input.focus();
 			}
+
+			showSuggestions();
 		}
 
 		function close() {
@@ -864,82 +884,418 @@
 			setExpanded( false );
 		}
 
-		function renderResults( items ) {
+		/** نشانی برگه‌ی جستجو برای ارسال بدون جاوااسکریپت/شکست جستجوی زنده. */
+		if ( form && config.searchPage ) {
+			form.setAttribute( 'action', config.searchPage );
+		}
+
+		/** برچسب بالای فهرست: شمار نتایج یا «پیشنهادهای روز». */
+		function setLabel( text ) {
+			if ( label ) {
+				label.textContent = text;
+				label.hidden = false;
+			}
+		}
+
+		/** پنهان‌کردن هر دو حالت نتیجه/خالی. */
+		function reset() {
+			if ( results ) {
+				results.hidden = true;
+				results.innerHTML = '';
+			}
+			if ( empty ) {
+				empty.hidden = true;
+			}
+		}
+
+		/**
+		 * رندر یک فهرست نتیجه؛ همان ساختار مرجع: پوستر، عنوان، نام اصلی و
+		 * «سال · نوع» به‌همراه شِورون.
+		 *
+		 * @param {Array} items آیتم‌های پاسخ REST.
+		 */
+		function renderItems( items ) {
 			if ( ! results ) {
 				return;
 			}
-			results.hidden = ! items.length;
-			if ( empty ) {
-				empty.hidden = !! items.length;
-			}
 
 			results.innerHTML = '';
+
 			items.forEach( function ( item ) {
 				var a = document.createElement( 'a' );
 				a.href = item.url || '#';
+				a.addEventListener( 'click', function () {
+					rememberQuery( input ? input.value : '' );
+				} );
 
 				var img = document.createElement( 'img' );
-				img.src = item.image || '';
+				img.src = item.poster || '';
 				img.alt = '';
 				img.loading = 'lazy';
 				a.appendChild( img );
 
-				var body = document.createElement( 'span' );
-				var strong = document.createElement( 'strong' );
-				strong.textContent = item.title || '';
-				body.appendChild( strong );
+				var body  = document.createElement( 'span' );
+				var title = document.createElement( 'strong' );
+				title.textContent = item.title || '';
+				body.appendChild( title );
 
-				if ( item.type ) {
-					var small = document.createElement( 'small' );
-					small.textContent = item.type;
-					body.appendChild( small );
+				if ( item.original ) {
+					var original = document.createElement( 'small' );
+					original.textContent = item.original;
+					body.appendChild( original );
+				}
+
+				var meta = [ item.year ? toFa( item.year ) : '', item.typeLabel || '' ].filter( Boolean ).join( ' · ' );
+				if ( meta ) {
+					var em = document.createElement( 'em' );
+					em.textContent = meta;
+					body.appendChild( em );
 				}
 
 				a.appendChild( body );
+
+				var chevron = document.createElementNS( 'http://www.w3.org/2000/svg', 'svg' );
+				chevron.setAttribute( 'width', '17' );
+				chevron.setAttribute( 'height', '17' );
+				chevron.setAttribute( 'viewBox', '0 0 24 24' );
+				chevron.setAttribute( 'fill', 'none' );
+				chevron.setAttribute( 'stroke', 'currentColor' );
+				chevron.setAttribute( 'stroke-width', '2' );
+				chevron.setAttribute( 'stroke-linecap', 'round' );
+				chevron.setAttribute( 'stroke-linejoin', 'round' );
+				chevron.setAttribute( 'aria-hidden', 'true' );
+				chevron.innerHTML = '<path d="m15 18-6-6 6-6"/>';
+				a.appendChild( chevron );
+
 				results.appendChild( a );
+			} );
+
+			results.hidden = ! items.length;
+		}
+
+		/**
+		 * پیام وضعیت داخل ظرف نتایج (در حال جستجو / خطا).
+		 *
+		 * @param {string} text متن پیام.
+		 */
+		function setStatus( text ) {
+			if ( ! results ) {
+				return;
+			}
+
+			results.innerHTML = '';
+			var p = document.createElement( 'p' );
+			p.className = 'koohe-search-overlay__status';
+			p.textContent = text;
+			results.appendChild( p );
+			results.hidden = false;
+
+			if ( empty ) {
+				empty.hidden = true;
+			}
+		}
+
+		/**
+		 * واکشی یک مسیر REST افزونه.
+		 *
+		 * @param {string} url نشانی کامل.
+		 * @return {Promise<Object>} پاسخ JSON.
+		 */
+		function request( url ) {
+			if ( controller ) {
+				controller.abort();
+			}
+			controller = new AbortController();
+
+			return fetch( url, {
+				signal: controller.signal,
+				credentials: 'same-origin',
+				headers: { Accept: 'application/json' },
+			} ).then( function ( response ) {
+				if ( ! response.ok ) {
+					throw new Error( 'HTTP ' + response.status );
+				}
+				return response.json();
 			} );
 		}
 
+		/* ---------------------------------------------------------------
+		 * تاریخچه‌ی جستجو: فقط روی دستگاه کاربر (localStorage)، حداکثر
+		 * ۶ مورد، جدیدترین اول. ثبت هنگام ارسال فرم یا باز کردن یک نتیجه.
+		 * ------------------------------------------------------------- */
+
+		var HISTORY_KEY = 'koohe-search-history';
+		var HISTORY_MAX = 6;
+
+		function readHistory() {
+			try {
+				var list = JSON.parse( window.localStorage.getItem( HISTORY_KEY ) || '[]' );
+
+				return Array.isArray( list ) ? list.filter( function ( term ) {
+					return 'string' === typeof term && '' !== term;
+				} ).slice( 0, HISTORY_MAX ) : [];
+			} catch ( error ) {
+				return [];
+			}
+		}
+
+		function rememberQuery( query ) {
+			var term = String( query || '' ).trim();
+
+			if ( term.length < 2 ) {
+				return;
+			}
+
+			var list = readHistory().filter( function ( item ) {
+				return item !== term;
+			} );
+
+			list.unshift( term );
+
+			try {
+				window.localStorage.setItem( HISTORY_KEY, JSON.stringify( list.slice( 0, HISTORY_MAX ) ) );
+			} catch ( error ) {
+				/* حافظه‌ی مرورگر پر یا بسته است؛ تاریخچه اختیاری است. */
+			}
+		}
+
+		function forgetHistory() {
+			try {
+				window.localStorage.removeItem( HISTORY_KEY );
+			} catch ( error ) {
+				/* همان‌طور؛ نبودِ دسترسی به حافظه خطای کاربری نیست. */
+			}
+		}
+
+		/**
+		 * دکمه‌ی پیوند یا عنصر دکمه‌وار برای یک چیپ.
+		 *
+		 * @param {string} text متن چیپ.
+		 * @param {string} href نشانی (اختیاری؛ بدون آن دکمه ساخته می‌شود).
+		 * @return {HTMLElement} عنصر.
+		 */
+		function makeChip( text, href ) {
+			var node = document.createElement( href ? 'a' : 'button' );
+
+			node.className = 'koohe-search-overlay__chip';
+			if ( href ) {
+				node.href = href;
+			} else {
+				node.type = 'button';
+			}
+			node.textContent = text;
+
+			return node;
+		}
+
+		/** بخش‌های «ژانرها» و «تاریخچه» فقط وقتی کادر خالی است دیده می‌شوند. */
+		function setIdle( visible ) {
+			if ( historyBox ) {
+				historyBox.hidden = ! visible || ! readHistory().length;
+			}
+			if ( genresBox ) {
+				genresBox.hidden = ! visible || ! genres.length;
+			}
+		}
+
+		function renderHistory() {
+			if ( ! historyBox || ! historyList ) {
+				return;
+			}
+
+			var list = readHistory();
+
+			historyList.innerHTML = '';
+			list.forEach( function ( term ) {
+				var chip = makeChip( term, '' );
+
+				chip.addEventListener( 'click', function () {
+					searchFor( term );
+				} );
+
+				historyList.appendChild( chip );
+			} );
+		}
+
+		/**
+		 * اجرای جستجو از روی یک عبارت ذخیره‌شده. بدون افزونه، به برگه‌ی
+		 * جستجوی وردپرس می‌رود.
+		 *
+		 * @param {string} term عبارت.
+		 */
+		function searchFor( term ) {
+			if ( ! config.searchUrl ) {
+				window.location.href = ( config.searchPage || '/' ) + '?s=' + encodeURIComponent( term );
+				return;
+			}
+
+			input.value = term;
+			setIdle( false );
+			window.clearTimeout( timer );
+			runSearch( term );
+		}
+
+		function renderGenres() {
+			if ( ! genresList || ! genres.length ) {
+				return;
+			}
+
+			genres.forEach( function ( genre ) {
+				genresList.appendChild( makeChip( genre.name, genre.url ) );
+			} );
+		}
+
+		/** برچسب‌های بخش‌ها از ترجمه‌های قالب (`kooheFilm.i18n`). */
+		function labelSections() {
+			var i18n = config.i18n || {};
+			var set  = function ( selector, text ) {
+				var node = overlay.querySelector( selector );
+
+				if ( node && text ) {
+					node.textContent = text;
+				}
+			};
+
+			set( '[data-koohe-search-history-title]', i18n.history );
+			set( '[data-koohe-search-history-clear]', i18n.clear );
+			set( '[data-koohe-search-genres-title]', i18n.genres );
+		}
+
+		if ( historyBox ) {
+			qsa( '[data-koohe-search-history-clear]', overlay ).forEach( function ( btn ) {
+				btn.addEventListener( 'click', function () {
+					forgetHistory();
+					renderHistory();
+					setIdle( true );
+				} );
+			} );
+		}
+
+		labelSections();
+		renderGenres();
+
+		/** پیشنهادهای روز (وقتی کادر جستجو خالی است). */
+		function showSuggestions() {
+			renderHistory();
+			setIdle( true );
+
+			if ( ! config.titlesUrl ) {
+				return;
+			}
+
+			if ( suggestions ) {
+				setLabel( config.i18n.trending || '' );
+				renderItems( suggestions );
+				return;
+			}
+
+			request( config.titlesUrl + '?per_page=6&source=trending' )
+				.then( function ( payload ) {
+					suggestions = ( payload && payload.items ) || [];
+					if ( ! input || '' !== input.value.trim() ) {
+						return;
+					}
+					setLabel( config.i18n.trending || '' );
+					renderItems( suggestions );
+				} )
+				.catch( function () {
+					/* پیشنهادها تزئینی‌اند؛ خطایشان چیزی را نمی‌شکند. */
+				} );
+		}
+
+		/**
+		 * جستجوی زنده و نمایش نتیجه.
+		 *
+		 * @param {string} query عبارت کاربر.
+		 */
 		function runSearch( query ) {
 			lastQuery = query;
-			var restBase = ( window.manacore && window.manacore.restUrl ) || '/wp-json/';
-			var restBase2 = restBase.replace( /\/?$/, '/' );
-			fetch( restBase2 + 'wp/v2/search?search=' + encodeURIComponent( query ) + '&per_page=6' )
-				.then( function ( r ) {
-					return r.ok ? r.json() : [];
-				} )
-				.then( function ( data ) {
+
+			if ( ! config.searchUrl ) {
+				/* بدون افزونه، جستجوی زنده نداریم؛ فرم به برگه‌ی جستجو می‌رود. */
+				return;
+			}
+
+			setStatus( config.i18n.searching || '' );
+
+			request(
+				config.searchUrl +
+					'?q=' + encodeURIComponent( query ) +
+					'&per_page=6'
+			)
+				.then( function ( payload ) {
 					/* اگر در فاصله‌ی واکشی، پرسمان عوض شده باشد، نتیجه‌ی کهنه نکوب. */
 					if ( query !== lastQuery ) {
 						return;
 					}
-					renderResults( ( data || [] ).map( function ( item ) {
-						return {
-							url: item.url || item._links && item._links.self && item._links.self[ 0 ] && item._links.self[ 0 ].href || '#',
-							title: item.title || '',
-							type: item.subtype || item.type || ''
-						};
-					} ) );
+
+					var items = ( payload && payload.items ) || [];
+
+					setLabel(
+						( config.i18n.results || '%s' ).replace( '%s', toFa( items.length ) )
+					);
+					renderItems( items );
+
+					if ( empty ) {
+						empty.hidden = !! items.length;
+					}
 				} )
-				.catch( function () {} );
+				.catch( function ( error ) {
+					if ( error && 'AbortError' === error.name ) {
+						return;
+					}
+
+					/*
+					 * خطای شبکه/سرور با «نتیجه‌ای نیست» یکی نیست؛ پیام
+					 * درست نشان داده می‌شود تا کاربر گمان نکند محتوا
+					 * وجود ندارد.
+					 */
+					setLabel( '' );
+					setStatus( config.i18n.error || '' );
+				} );
+		}
+
+		if ( form ) {
+			form.addEventListener( 'submit', function () {
+				rememberQuery( input ? input.value : '' );
+			} );
 		}
 
 		if ( input ) {
 			input.addEventListener( 'input', function () {
 				var query = input.value.trim();
-				window.clearTimeout( searchTimer);
+
+				window.clearTimeout( timer );
+
+				if ( '' !== query ) {
+					setIdle( false );
+				}
+
 				if ( query.length < 2 ) {
-					if ( results ) {
-						results.hidden = true;
+					reset();
+
+					if ( '' === query ) {
+						showSuggestions();
+					} else {
+						setLabel( config.i18n.trending || '' );
 					}
-					if ( empty ) {
-						empty.hidden = true;
-					}
+
 					return;
 				}
-				searchTimer = window.setTimeout( function () {
+
+				timer = window.setTimeout( function () {
 					runSearch( query );
 				}, 250 );
+			} );
+
+			/* پاک‌کردن کادر با Escape: بازگشت به پیشنهادها (نه بستن پوسته). */
+			input.addEventListener( 'keydown', function ( event ) {
+				if ( 'Escape' === event.key && input.value ) {
+					event.stopPropagation();
+					input.value = '';
+					reset();
+					showSuggestions();
+				}
 			} );
 		}
 
@@ -949,7 +1305,7 @@
 
 		qsa( '[data-koohe-search-close]' ).forEach( function ( el ) {
 			el.addEventListener( 'click', close );
-			} );
+		} );
 
 		document.addEventListener( 'keydown', function ( event ) {
 			/* ⌘K یا Ctrl+K: باز/بسته کردن. */
@@ -961,11 +1317,13 @@
 					close();
 				}
 				return;
-			}		if ( 'Escape' === event.key && ! overlay.hidden ) {
-			close();
-		}
-	} );
-}
+			}
+
+			if ( 'Escape' === event.key && ! overlay.hidden ) {
+				close();
+			}
+		} );
+	}
 
 	/* ---------------------------------------------------------------------
 	 * کشوی منوی موبایل (≤۹۸۰px)

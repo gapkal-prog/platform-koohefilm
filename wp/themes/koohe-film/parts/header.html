@@ -46,8 +46,21 @@
 			<input type="search" name="s" data-koohe-search-input placeholder="نام فیلم، سریال یا ژانر…" aria-label="عبارت جستجو" autocomplete="off" />
 			<button type="submit" class="koohe-btn koohe-btn--primary koohe-btn--small">جستجو</button>
 		</form>
+		<div class="koohe-search-overlay__section" data-koohe-search-history hidden>
+			<div class="koohe-search-overlay__head">
+				<p class="koohe-search-overlay__heading" data-koohe-search-history-title></p>
+				<button type="button" class="koohe-search-overlay__clear" data-koohe-search-history-clear></button>
+			</div>
+			<div class="koohe-search-overlay__chips" data-koohe-search-history-list></div>
+		</div>
+		<div class="koohe-search-overlay__section" data-koohe-search-genres-box hidden>
+			<p class="koohe-search-overlay__heading" data-koohe-search-genres-title></p>
+			<div class="koohe-search-overlay__chips" data-koohe-search-genres></div>
+		</div>
+		<p class="koohe-search-overlay__label" data-koohe-search-label>این روزها بیشتر جستجو می‌شوند</p>
 		<div class="koohe-search-overlay__results" data-koohe-search-results hidden></div>
 		<div class="koohe-empty-state" data-koohe-search-empty hidden>
+			<svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
 			<h3>این داستان را هنوز پیدا نکردیم.</h3>
 			<p>نام انگلیسی یا کلمه‌ی کوتاه‌تری را امتحان کن.</p>
 		</div>

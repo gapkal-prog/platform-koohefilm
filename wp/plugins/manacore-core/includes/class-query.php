@@ -21,7 +21,55 @@ class Query {
 	 */
 	public function hooks() {
 		add_action( 'pre_get_posts', array( $this, 'adjust' ) );
+		add_filter( 'request', array( $this, 'drop_search_on_pages' ) );
 		add_filter( 'posts_search', array( $this, 'search_meta' ), 10, 2 );
+		add_action( 'manacore_after_save_meta', array( $this, 'flush_person_cache' ) );
+		add_action( 'save_post_person', array( $this, 'flush_person_cache' ) );
+	}
+
+	/**
+	 * نادیده گرفتن `s` روی برگه‌های عادی.
+	 *
+	 * وردپرس هر برگه‌ای را که `s` داشته باشد به حالت جستجو می‌برد و آن برگه
+	 * ۴۰۴ می‌شود (`/browse/?s=x`). برگه جستجو ندارد، پس پارامتر را پیش از
+	 * `parse_query()` کنار می‌گذاریم تا برگه‌ی درخواستی همان‌طور نمایش داده
+	 * شود. جستجوی آثار با `manacore_q` روی برگه، و با `s` روی آرشیو و
+	 * برگه‌ی جستجو انجام می‌شود.
+	 *
+	 * @param array $vars متغیرهای پرسمان.
+	 * @return array
+	 */
+	public function drop_search_on_pages( $vars ) {
+		if ( ! empty( $vars['pagename'] ) && isset( $vars['s'] ) ) {
+			unset( $vars['s'] );
+		}
+
+		return $vars;
+	}
+
+	/**
+	 * پاک‌کردن کش «آثار این عامل» پس از تغییر اثر یا عامل.
+	 *
+	 * برای اثر، کش همه‌ی عواملی که در آن آمده‌اند پاک می‌شود؛ برای عامل، کش خودش.
+	 *
+	 * @param int $post_id شناسه‌ی پست.
+	 */
+	public function flush_person_cache( $post_id ) {
+		$post_id = absint( $post_id );
+
+		if ( 'person' === get_post_type( $post_id ) ) {
+			delete_transient( 'manacore_person_works_' . $post_id );
+			return;
+		}
+
+		$roles = array_merge( array_values( Crew::ROLE_FIELDS ), array( 'cast' ) );
+		foreach ( $roles as $role ) {
+			foreach ( Crew::items( $post_id, $role ) as $item ) {
+				if ( ! empty( $item['person_id'] ) ) {
+					delete_transient( 'manacore_person_works_' . absint( $item['person_id'] ) );
+				}
+			}
+		}
 	}
 
 	/**
@@ -507,22 +555,27 @@ class Query {
 		if ( ! is_array( $cached ) ) {
 			global $wpdb;
 
-			$name = get_the_title( $person_id );
-			$like = '%' . $wpdb->esc_like( $name ) . '%';
+			$name = trim( (string) get_the_title( $person_id ) );
 
 			/*
-			 * manacore_cast یک فیلد JSON است (repeater)؛ جست‌وجوی متنی روی
-			 * نام + بازیگر + کارگردان/نویسنده‌ی متنی، هر دو مسیر را پوشش می‌دهد.
+			 * پیوند دقیق با شناسه (person_id در JSON عوامل و بازیگران) و پیوند
+			 * قدیمی با نام (متن ساده‌ی ایمپورتر و داده‌های بی‌شناسه). نام خالی
+			 * نباید به LIKE '%%' تبدیل شود که همه‌ی آثار را برمی‌گرداند.
 			 */
+			$id_like = '%"person_id":' . $person_id . '}%';
+			$like    = '' !== $name ? '%' . $wpdb->esc_like( $name ) . '%' : '';
+			$by_name = '' !== $like ? $like : $id_like;
+
 			$found = array_map(
 				'absint',
 				(array) $wpdb->get_col(
 					$wpdb->prepare(
 						"SELECT DISTINCT post_id FROM {$wpdb->postmeta}
-						 WHERE meta_key IN ('manacore_cast','manacore_director','manacore_writer')
-						 AND meta_value LIKE %s
+						 WHERE meta_key IN ('manacore_cast','manacore_director','manacore_writer','manacore_producer','manacore_composer')
+						 AND (meta_value LIKE %s OR meta_value LIKE %s)
 						 LIMIT 200",
-						$like
+						$by_name,
+						$id_like
 					)
 				)
 			);
@@ -717,15 +770,7 @@ class Query {
 			)
 		);
 
-		$ordered = get_post_meta( $collection_id, 'manacore_collection_items', true );
-
-		if ( is_array( $ordered ) ) {
-			$ordered = array_values( array_filter( array_map( 'absint', $ordered ) ) );
-		} elseif ( is_string( $ordered ) && '' !== $ordered ) {
-			$ordered = array_values( array_filter( array_map( 'absint', preg_split( '/[\s,]+/', $ordered ) ) ) );
-		} else {
-			$ordered = array();
-		}
+		$ordered = Collection::items( $collection_id );
 
 		/* فهرست دستی مجموعه، ترتیب و اعضا را تعیین می‌کند. */
 		if ( $ordered ) {
@@ -758,6 +803,12 @@ class Query {
 			$args['post__in'] = $ordered;
 			if ( empty( $args['orderby'] ) || 'post__in' === $args['orderby'] ) {
 				$args['orderby'] = 'post__in';
+			}
+		} else {
+			/* بدون فهرست دستی، ترتیب خودکار تنظیم‌شده‌ی مجموعه اعمال می‌شود. */
+			$sort = Collection::sort( $collection_id );
+			if ( 'manual' !== $sort ) {
+				$args = array_merge( $args, Collection::sort_args( $sort ) );
 			}
 		}
 

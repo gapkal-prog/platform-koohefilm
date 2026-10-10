@@ -1160,13 +1160,67 @@
 	}
 
 	/**
+	 * پنل صفحه‌بندی حلقه: دکمه‌ی «داستان‌های بیشتر»، شماره‌ی صفحه‌ها، یا هیچ‌کدام.
+	 *
+	 * «بدون صفحه‌بندی» پیش‌فرض بلوک‌های تازه است. ویژگی `loadMore` همگام
+	 * نگه داشته می‌شود تا قالب‌ها و کدهای قدیمی که آن را می‌خوانند درست بمانند.
+	 *
+	 * @param {Object} props props بلوک.
+	 * @return {Object|null} پنل.
+	 */
+	function paginationPanel( props ) {
+		if ( ! has( props, 'paginationMode' ) ) {
+			return null;
+		}
+
+		var a    = props.attributes;
+		var mode = a.paginationMode || ( a.loadMore ? 'loadMore' : 'none' );
+
+		return el(
+			PanelBody,
+			{ key: 'pagination', title: __( 'صفحه‌بندی', 'manacore' ), initialOpen: false },
+			el( SelectControl, {
+				label: __( 'حالت صفحه‌بندی', 'manacore' ),
+				value: mode,
+				options: [
+					{ label: __( 'بدون صفحه‌بندی', 'manacore' ), value: 'none' },
+					{ label: __( 'دکمه‌ی «داستان‌های بیشتر»', 'manacore' ), value: 'loadMore' },
+					{ label: __( 'بخش شماره‌ی صفحه‌ها', 'manacore' ), value: 'numbered' },
+				],
+				onChange: function ( value ) {
+					props.setAttributes( { paginationMode: value, loadMore: 'loadMore' === value } );
+				},
+				__nextHasNoMarginBottom: true,
+			} ),
+			'loadMore' === mode
+				? el( ToggleControl, {
+						label: __( 'بارگذاری خودکار با اسکرول', 'manacore' ),
+						help: __( 'با رسیدن به انتهای فهرست، صفحه‌ی بعد خودکار می‌آید. دکمه همچنان دیده می‌شود.', 'manacore' ),
+						checked: !! a.autoLoad,
+						onChange: setter( props, 'autoLoad' ),
+						__nextHasNoMarginBottom: true,
+				  } )
+				: null,
+			'loadMore' === mode
+				? el( TextControl, {
+						label: __( 'متن دکمه', 'manacore' ),
+						help: __( 'خالی = «داستان‌های بیشتر».', 'manacore' ),
+						value: a.loadText,
+						onChange: setter( props, 'loadText' ),
+						__nextHasNoMarginBottom: true,
+				  } )
+				: null
+		);
+	}
+
+	/**
 	 * مجموع پنل‌های کوئری.
 	 *
 	 * @param {Object} props props بلوک.
 	 * @return {Array} پنل‌ها.
 	 */
 	function queryPanels( props ) {
-		return [ sourcePanel( props ), taxonomyPanel( props ), filtersPanel( props ), orderPanel( props ) ];
+		return [ sourcePanel( props ), taxonomyPanel( props ), filtersPanel( props ), orderPanel( props ), paginationPanel( props ) ];
 	}
 
 	/* -----------------------------------------------------------------
@@ -1918,6 +1972,8 @@
 							: null,
 						{ attr: 'showDots', type: 'toggle', label: __( 'نمایش نقطه‌ها', 'manacore' ) },
 						{ attr: 'showArrows', type: 'toggle', label: __( 'نمایش فلش‌ها', 'manacore' ) },
+						{ attr: 'showCounter', type: 'toggle', label: __( 'نمایش شمارنده‌ی اسلاید', 'manacore' ) },
+						{ attr: 'tilt', type: 'toggle', label: __( 'چرخش ملایم با حرکت ماوس', 'manacore' ), help: __( 'روی نمایشگر لمسی و در حالت «حرکت کمتر» خودکار خاموش می‌شود.', 'manacore' ) },
 						{ attr: 'showLogo', type: 'toggle', label: __( 'نمایش لوگوی اثر', 'manacore' ) },
 						{ attr: 'showMeta', type: 'toggle', label: __( 'نمایش مشخصات', 'manacore' ) },
 						{ attr: 'showGenres', type: 'toggle', label: __( 'نمایش ژانرها', 'manacore' ) },
@@ -1943,6 +1999,23 @@
 						{ attr: 'showTrailer', type: 'toggle', label: __( 'دکمه‌ی تریلر', 'manacore' ) },
 						{ attr: 'primaryLabel', label: __( 'برچسب دکمه‌ی اصلی', 'manacore' ) },
 						{ attr: 'trailerLabel', label: __( 'برچسب دکمه‌ی تریلر', 'manacore' ) },
+					] ),
+					optionsPanel( props, __( 'اجزای اسلاید', 'manacore' ), [
+						{ attr: 'showEyebrow', type: 'toggle', label: __( 'نمایش نشان ویژه', 'manacore' ) },
+						a.showEyebrow
+							? { attr: 'eyebrowLabel', label: __( 'متن نشان ویژه', 'manacore' ), help: __( 'خالی = «انتخاب ویژه» برای اثرهای ویژه و «پیشنهاد ویژه» برای بقیه.', 'manacore' ) }
+							: null,
+						a.showEyebrow
+							? { attr: 'eyebrowTagline', label: __( 'خط معرفی کنار نشان', 'manacore' ), help: __( 'خالی = «شعار / خط معرفی» خود اثر.', 'manacore' ) }
+							: null,
+						{ attr: 'showOriginal', type: 'toggle', label: __( 'نمایش عنوان لاتین', 'manacore' ) },
+						{ attr: 'showQuality', type: 'toggle', label: __( 'نشان کیفیت', 'manacore' ), help: __( 'از ترم «کیفیت» اثر یا نخستین گروه لینک خوانده می‌شود.', 'manacore' ) },
+						{ attr: 'showLanguages', type: 'toggle', label: __( 'برچسب‌های زبان', 'manacore' ), help: __( 'از زبان گروه‌های لینک و کلید «دوبله فارسی» اثر ساخته می‌شود.', 'manacore' ) },
+						{ attr: 'showWordmark', type: 'toggle', label: __( 'واترمارک لاتین', 'manacore' ), help: __( 'از عنوان لاتین اثر ساخته می‌شود؛ اثر بدون عنوان لاتین واترمارک نمی‌گیرد.', 'manacore' ) },
+						{ attr: 'showNote', type: 'toggle', label: __( 'یادداشت پایین اسلایدر', 'manacore' ), help: __( 'مثل مرجع فقط زیر ۹۸۱px دیده می‌شود؛ در دسکتاپ جای دکمه‌ها تنگ می‌شود.', 'manacore' ) },
+						a.showNote
+							? { attr: 'noteText', label: __( 'متن یادداشت', 'manacore' ) }
+							: null,
 					] ),
 				];
 
@@ -1985,12 +2058,67 @@
 				return [
 					optionsPanel( props, __( 'تنظیمات لینک‌ها', 'manacore' ), [
 						{
+							/*
+							 * حالتِ باکس: فیلم = جدول کیفیت‌ها، سریال =
+							 * بسته‌های کامل فصل، قسمت = کیفیت‌های همان
+							 * قسمت. «خودکار» از نوع پست تشخیص می‌دهد تا
+							 * قالب‌های موجود بدون تغییر کار کنند.
+							 */
+							attr: 'mode',
+							type: 'select',
+							label: __( 'حالت نمایش', 'manacore' ),
+							help: __( '«خودکار» از نوع محتوا پیروی می‌کند: فیلم ← جدول کیفیت، سریال ← بسته‌های کامل فصل.', 'manacore' ),
+							options: [
+								{ label: __( 'خودکار (از نوع محتوا)', 'manacore' ), value: 'auto' },
+								{ label: __( 'فیلم — جدول کیفیت‌ها', 'manacore' ), value: 'movie' },
+								{ label: __( 'سریال — بسته‌های فصل', 'manacore' ), value: 'series' },
+								{ label: __( 'قسمت — کیفیت‌های همین قسمت', 'manacore' ), value: 'episode' },
+							],
+						},
+						{
 							attr: 'boxStyle',
 							type: 'select',
 							label: __( 'سبک ظاهری جدول', 'manacore' ),
 							help: __( '«کارتی» همان قاب مرجع است؛ «بدون قاب» فقط خط‌های جداکننده دارد.', 'manacore' ),
 							options: toOptions( data.downloadStyles ),
 						},
+						{
+							attr: 'packLabel',
+							type: 'text',
+							label: __( 'برچسب بسته‌ی فصل', 'manacore' ),
+							help: __( 'در حالت سریال، زیر کیفیت هر ردیف می‌آید. خالی = «بسته‌ی کامل فصل».', 'manacore' ),
+						},
+						{
+							attr: 'sizeLabel',
+							type: 'text',
+							label: __( 'عنوان ستون حجم', 'manacore' ),
+							help: __( 'خالی = «حجم نمونه».', 'manacore' ),
+						},
+						{
+							/*
+							 * منبع ردیف‌های جدول. در سریال‌ها لینک هر قسمت روی
+							 * پست همان قسمت ثبت می‌شود؛ «هر دو» بسته‌های کامل
+							 * فصل و لینک قسمت‌ها را یک‌جا می‌آورد.
+							 */
+							attr: 'linkSource',
+							type: 'select',
+							label: __( 'منبع ردیف‌ها', 'manacore' ),
+							help: __( '«خودکار» برای سریال‌ها هر دو منبع را می‌آورد (بسته‌های فصل و لینک قسمت‌ها).', 'manacore' ),
+							options: [
+								{ label: __( 'خودکار (از نوع محتوا)', 'manacore' ), value: 'auto' },
+								{ label: __( 'فقط لینک‌های همین اثر', 'manacore' ), value: 'post' },
+								{ label: __( 'فقط لینک‌های قسمت‌ها', 'manacore' ), value: 'episodes' },
+								{ label: __( 'هر دو', 'manacore' ), value: 'both' },
+							],
+						},
+						'linkSource-episodes' === a.linkSource || 'both' === a.linkSource || 'auto' === a.linkSource
+							? {
+								attr: 'episodeLabel',
+								type: 'text',
+								label: __( 'برچسب ردیف قسمت‌ها', 'manacore' ),
+								help: __( 'زیر کیفیت هر ردیف می‌آید؛ `%s` جای شماره‌ی قسمت است. خالی = «قسمت ۲».', 'manacore' ),
+							}
+							: null,
 						{
 							attr: 'subtitle',
 							type: 'text',
@@ -2784,6 +2912,32 @@
 			 * بلوک‌های برگه‌ی «حساب کاربری» — هم‌ارز `account.html` مرجع.
 			 * هر متن و هر نشانه‌ی این بلوک‌ها از همین‌جا قابل ویرایش است.
 			 */
+			case 'manacore/account-requests':
+				return [
+					optionsPanel( props, __( 'پنل درخواست‌ها', 'manacore' ), [
+						{ attr: 'showForm', type: 'toggle', label: __( 'نمایش فرم ثبت درخواست', 'manacore' ), help: __( 'خاموش کردنش فقط فهرست درخواست‌های کاربر را نگه می‌دارد.', 'manacore' ) },
+						{ attr: 'formHeading', type: 'text', label: __( 'عنوان فرم', 'manacore' ), help: __( 'خالی بگذارید تا عنوان پیش‌فرض تنظیمات درخواست‌ها بیاید.', 'manacore' ) },
+						{ attr: 'formIntro', type: 'textarea', label: __( 'توضیح فرم', 'manacore' ) },
+						{ attr: 'formButton', type: 'text', label: __( 'برچسب دکمه‌ی فرم', 'manacore' ) },
+						{ attr: 'perPage', type: 'range', label: __( 'حداکثر درخواست در فهرست', 'manacore' ), min: 1, max: 60 },
+						{ attr: 'emptyTitle', type: 'text', label: __( 'عنوان حالت خالی', 'manacore' ) },
+						{ attr: 'emptyText', type: 'textarea', label: __( 'متن حالت خالی', 'manacore' ) },
+					] ),
+				];
+
+			case 'manacore/account-requests':
+				return [
+					optionsPanel( props, __( 'پنل درخواست‌ها', 'manacore' ), [
+						{ attr: 'showForm', type: 'toggle', label: __( 'نمایش فرم ثبت درخواست', 'manacore' ), help: __( 'خاموش کردنش فقط فهرست درخواست‌های کاربر را نگه می‌دارد.', 'manacore' ) },
+						{ attr: 'formHeading', type: 'text', label: __( 'عنوان فرم', 'manacore' ), help: __( 'خالی بگذارید تا عنوان پیش‌فرض تنظیمات درخواست‌ها بیاید.', 'manacore' ) },
+						{ attr: 'formIntro', type: 'textarea', label: __( 'توضیح فرم', 'manacore' ) },
+						{ attr: 'formButton', type: 'text', label: __( 'برچسب دکمه‌ی فرم', 'manacore' ) },
+						{ attr: 'perPage', type: 'range', label: __( 'حداکثر درخواست در فهرست', 'manacore' ), min: 1, max: 60 },
+						{ attr: 'emptyTitle', type: 'text', label: __( 'عنوان حالت خالی', 'manacore' ) },
+						{ attr: 'emptyText', type: 'textarea', label: __( 'متن حالت خالی', 'manacore' ) },
+					] ),
+				];
+
 			case 'manacore/account-greeting':
 				return [
 					optionsPanel( props, __( 'تنظیمات سرصفحه', 'manacore' ), [
@@ -2907,6 +3061,38 @@
 			case 'manacore/episodes-list':
 				return [
 					optionsPanel( props, __( 'تنظیمات قسمت‌ها', 'manacore' ), [
+						{
+							attr: 'boxStyle',
+							type: 'select',
+							label: __( 'سبک ظاهری جعبه', 'manacore' ),
+							help: __( 'همان فهرست بلوک «لینک‌های دانلود»؛ «کارتی» قاب مرجع است.', 'manacore' ),
+							options: toOptions( data.downloadStyles ),
+						},
+						{ attr: 'showNotice', type: 'toggle', label: __( 'نمایش هشدار اشتراک', 'manacore' ) },
+						{
+							attr: 'showPackList',
+							type: 'toggle',
+							label: __( 'نمایش بسته‌های کامل فصل', 'manacore' ),
+							help: __( 'لینک‌هایی که روی خودِ سریال ثبت شده‌اند (مثل «دانلود کامل فصل ۱») بالای قسمت‌های هر فصل می‌آید.', 'manacore' ),
+						},
+						{
+							attr: 'packTitle',
+							type: 'text',
+							label: __( 'برچسب بسته‌ی فصل', 'manacore' ),
+							help: __( 'خالی = «بسته‌ی کامل فصل».', 'manacore' ),
+						},
+						{
+							attr: 'sizeLabel',
+							type: 'text',
+							label: __( 'عنوان ستون حجم', 'manacore' ),
+							help: __( 'خالی = «حجم نمونه».', 'manacore' ),
+						},
+						{
+							attr: 'playLabel',
+							type: 'text',
+							label: __( 'برچسب دکمه‌ی پخش', 'manacore' ),
+							help: __( 'در راهنمای دسترس‌پذیری دکمه‌ی ▶ استفاده می‌شود. «%s» = شماره‌ی قسمت.', 'manacore' ),
+						},
 						{
 							attr: 'seasonNumber',
 							type: 'number',

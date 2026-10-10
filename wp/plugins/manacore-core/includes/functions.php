@@ -20,6 +20,29 @@ function manacore_get_option( $key, $default = '' ) {
 }
 
 /**
+ * شناسه‌ی درهم‌شده‌ی بازدیدکننده.
+ *
+ * برای رأی/امتیاز/گزارش کاربران وارد‌نشده به‌جای نشانی شبکه‌ی خام (که هم
+ * حریم خصوصی را نقض می‌کند و هم با یک تغییر IP بی‌اثر می‌شود) یک درهم‌سازی
+ * نمک‌دار ذخیره می‌شود؛ عضو وارد‌شده با شناسه‌ی کاربری مشخص می‌شود تا رأی
+ * او در همه‌ی دستگاه‌ها یکی بماند.
+ *
+ * @param string $context پیشوند دامنه (تا رأی و گزارش یک کاربر با هم قاطی نشوند).
+ * @return string
+ */
+function manacore_visitor_hash( $context = 'visitor' ) {
+	$user_id = get_current_user_id();
+
+	if ( $user_id ) {
+		return 'u' . (int) $user_id;
+	}
+
+	$ip = isset( $_SERVER['REMOTE_ADDR'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REMOTE_ADDR'] ) ) : '';
+
+	return 'g' . substr( hash( 'sha256', $context . '|' . $ip . wp_salt( 'nonce' ) ), 0, 32 );
+}
+
+/**
  * فهرست انواع محتوای مدیریت‌شده توسط ManaCore.
  *
  * @return array<string,string>
@@ -531,6 +554,71 @@ function manacore_chip_removal_args( $active, $param ) {
 }
 
 /**
+ * پارامترهای نشانی که یک فرم فیلتر یا نوار مرور باید هنگام ارسال نگه دارد.
+ *
+ * هر فرم فقط کنترل‌های خودش را می‌سازد؛ بقیه‌ی حالت صفحه (جستجو، مرتب‌سازی،
+ * فیلترهای فرم‌های دیگر) باید بماند، وگرنه با هر تغییر همه‌ی حالت‌های دیگر
+ * پاک می‌شود. صفحه‌بندی همیشه کنار گذاشته می‌شود تا تغییر فیلتر از صفحه‌ی
+ * نخست شروع شود، و مقدارهای خالی هم نمی‌آیند تا نشانی تمیز بماند.
+ *
+ * @param string[] $owned نام پارامترهایی که همان فرم خودش رندر می‌کند.
+ * @return array<string,string|string[]> نام => مقدار (یا فهرست مقدار برای `name[]`).
+ */
+function manacore_preserved_query_args( $owned ) {
+	$skip = array_merge( (array) $owned, array( 'paged', 'page' ) );
+	$args = array();
+
+	// phpcs:ignore WordPress.Security.NonceVerification.Recommended
+	foreach ( $_GET as $key => $value ) {
+		$key = sanitize_key( (string) $key );
+
+		if ( '' === $key || in_array( $key, $skip, true ) ) {
+			continue;
+		}
+
+		if ( is_array( $value ) ) {
+			$values = array();
+			foreach ( $value as $item ) {
+				if ( is_scalar( $item ) && '' !== (string) $item ) {
+					$values[] = (string) wp_unslash( $item );
+				}
+			}
+			if ( $values ) {
+				$args[ $key ] = $values;
+			}
+			continue;
+		}
+
+		if ( ! is_scalar( $value ) ) {
+			continue;
+		}
+
+		$value = (string) wp_unslash( $value );
+
+		if ( '' !== $value ) {
+			$args[ $key ] = $value;
+		}
+	}
+
+	return $args;
+}
+
+/**
+ * چاپ ورودی‌های پنهان برای پارامترهای نگه‌داشته‌شده.
+ *
+ * @param array<string,string|string[]> $args خروجی manacore_preserved_query_args().
+ */
+function manacore_hidden_fields( $args ) {
+	foreach ( (array) $args as $key => $value ) {
+		$name = is_array( $value ) ? $key . '[]' : $key;
+
+		foreach ( (array) $value as $item ) {
+			printf( '<input type="hidden" name="%s" value="%s" />', esc_attr( $name ), esc_attr( $item ) );
+		}
+	}
+}
+
+/**
  * پارامترهای فیلتر موجود در آدرس جاری.
  *
  * @return array<string,string> کلید: نام پارامتر، مقدار: مقدار پاک‌سازی‌شده.
@@ -912,6 +1000,43 @@ function manacore_poster_url( $post_id, $size = 'medium_large' ) {
 		return esc_url_raw( $remote );
 	}
 	return MANACORE_URL . 'assets/placeholder.svg';
+}
+
+/**
+ * تصویر عریض (Backdrop) اثر، با زنجیره‌ی جانشین مشخص.
+ *
+ * ترتیب: تصویر شاخص → `manacore_backdrop_url` → `manacore_poster_url` →
+ * تصویر جانشین افزونه. پیش‌تر این زنجیره در چند نقطه‌ی کد تکرار شده بود
+ * (باکس‌های محتوا، مگامنو، هیرو) و هرکدام ترتیب متفاوتی داشتند؛ این
+ * تابع یک منبع حقیقت مشترک می‌سازد.
+ *
+ * @param int    $post_id شناسه‌ی اثر.
+ * @param string $size    اندازه‌ی تصویر شاخص.
+ * @return string نشانی تصویر (هرگز خالی).
+ */
+function manacore_backdrop_url( $post_id, $size = 'large' ) {
+	$post_id = (int) $post_id;
+
+	if ( ! $post_id ) {
+		return MANACORE_URL . 'assets/placeholder.svg';
+	}
+
+	$thumb = get_post_thumbnail_id( $post_id );
+	if ( $thumb ) {
+		$url = wp_get_attachment_image_url( $thumb, $size );
+		if ( $url ) {
+			return esc_url_raw( $url );
+		}
+	}
+
+	foreach ( array( 'manacore_backdrop_url', 'manacore_poster_url' ) as $key ) {
+		$url = (string) get_post_meta( $post_id, $key, true );
+		if ( '' !== trim( $url ) ) {
+			return esc_url_raw( $url );
+		}
+	}
+
+	return manacore_poster_url( $post_id, $size );
 }
 
 /**

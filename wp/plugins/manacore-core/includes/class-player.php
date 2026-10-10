@@ -221,14 +221,26 @@ class Player {
 	}
 
 	/**
-	 * آدرس «صفحه‌ی پخش» برای یک اثر.
+	 * انواع محتوایی که می‌توانند در صفحه‌ی پخش باز شوند.
 	 *
-	 * صفحه‌ای با نامک `watch` میزبان شورت‌کد `[manacore_player]` است؛ اگر
-	 * چنین صفحه‌ای ساخته نشده باشد، رشته‌ی خالی برمی‌گردد تا فراخوان‌ها
-	 * به ساز‌و‌کار جانشین (مُدال پخش) برگردند و پیوندِ مرده ساخته نشود.
+	 * `episode` هم اضافه شده است: جدول دانلود هر قسمت، دکمه‌ی «پخش» را با
+	 * شناسه‌ی خودِ قسمت می‌سازد (`variant_cells()`)، پس اگر این نوع پذیرفته
+	 * نشود، `watched_id()` صفر می‌دهد و صفحه‌ی پخش به‌جای قسمت، برگه‌ی
+	 * پخش را به‌عنوان هدف می‌گیرد و خالی می‌ماند.
 	 *
-	 * @param int $post_id شناسه‌ی اثر.
-	 * @return string آدرس یا رشته‌ی خالی.
+	 * @return string[]
+	 */
+	public static function playable_post_types() {
+		return (array) apply_filters(
+			'manacore_playable_post_types',
+			array_merge( manacore_title_post_types(), array( 'episode' ) )
+		);
+	}
+
+	/**
+	 * شناسه‌ی اثری که صفحه‌ی پخش باید نشان دهد (`?manacore_id=`).
+	 *
+	 * @return int صفر اگر نشانی معتبر نباشد.
 	 */
 	public static function watched_id() {
 		if ( ! isset( $_GET['manacore_id'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
@@ -241,18 +253,347 @@ class Player {
 			return 0;
 		}
 
-		return in_array( get_post_type( $post_id ), manacore_title_post_types(), true ) ? $post_id : 0;
+		return in_array( get_post_type( $post_id ), self::playable_post_types(), true ) ? $post_id : 0;
 	}
 
 	/**
-	 * ساخت یک‌باره‌ی صفحه‌ی پخش (`/watch/`) هنگام فعال‌سازی افزونه.
+	 * دارد‌بودن منبع پخش (لینک) برای یک پست.
 	 *
-	 * تنها اگر چنین صفحه‌ای نباشد ساخته می‌شود؛ صفحه‌ی موجود هرگز بازنویسی
-	 * نمی‌شود تا کاربر آزاد باشد قالب یا متن آن را دلخواه تغییر دهد.
+	 * هر پست یک‌بار در هر درخواست سنجیده می‌شود؛ چون صفحه‌ی پخش و جدول
+	 * دانلود ممکن است چند بار همین پرسش را بپرسند.
+	 *
+	 * @param int $post_id شناسه‌ی پست.
+	 * @return bool
 	 */
-	public static function ensure_page() {
-		if ( get_page_by_path( 'watch', OBJECT, 'page' ) ) {
-			return;
+	public static function has_sources( $post_id ) {
+		static $cache = array();
+
+		$post_id = (int) $post_id;
+		if ( ! $post_id ) {
+			return false;
+		}
+
+		if ( ! isset( $cache[ $post_id ] ) ) {
+			$cache[ $post_id ] = class_exists( __NAMESPACE__ . '\\Links' )
+				? \ManaCore\Core\Links::count( $post_id ) > 0
+				: false;
+		}
+
+		return (bool) $cache[ $post_id ];
+	}
+
+	/**
+	 * پستی که واقعاً باید پخش شود.
+	 *
+	 * چرا لازم است؟ روش متعارف سایت‌های سریالی این است که لینک‌ها روی
+	 * **قسمت‌ها** ثبت شوند، نه روی خودِ سریال. پیش از این، دکمه‌ی «پخش»
+	 * هر قسمت به `?manacore_id=<سریال>` می‌رفت و پلیر منابع را از پست
+	 * سریال می‌خواند؛ نتیجه یک صفحه‌ی پخش خالی بود.
+	 *
+	 * اکنون هدف با اولویت «هر پستی که لینک دارد» انتخاب می‌شود:
+	 *   ۱) خودِ پست اگر لینک دارد،
+	 *   ۲) قسمتِ خواسته‌شده (فصل/قسمت) اگر لینک دارد،
+	 *   ۳) والدِ سریال اگر لینک دارد،
+	 *   ۴) نخستین قسمتِ همان فصل که لینک دارد،
+	 *   ۵) در نهایت خودِ پست (تا پلیر پیام حالت خالی بدهد، نه صفحه‌ی سفید).
+	 *
+	 * @param int $post_id شناسه‌ی اثر/قسمت.
+	 * @param int $season  شماره‌ی فصل (۰ = هر فصل).
+	 * @param int $episode شماره‌ی قسمت (۰ = هر قسمت).
+	 * @return int شناسه‌ی هدف یا صفر.
+	 */
+	public static function resolve_target( $post_id, $season = 0, $episode = 0 ) {
+		$post_id = (int) $post_id;
+		$season  = max( 0, (int) $season );
+		$episode = max( 0, (int) $episode );
+
+		if ( ! $post_id || ! in_array( get_post_type( $post_id ), self::playable_post_types(), true ) ) {
+			return 0;
+		}
+
+		if ( 'episode' === get_post_type( $post_id ) ) {
+			if ( self::has_sources( $post_id ) ) {
+				return $post_id;
+			}
+
+			/*
+			 * قسمت بدون لینک: اگر خودِ سریال یا قسمت دیگری از همان فصل
+			 * لینک داشته باشد، همان پخش می‌شود؛ وگرنه خودِ قسمت برمی‌گردد
+			 * تا صفحه‌ی پخش پیام «لینکی ثبت نشده» بدهد، نه صفحه‌ی خالی.
+			 */
+			$parent = (int) get_post_meta( $post_id, 'manacore_parent_title', true );
+
+			if ( $parent ) {
+				$season  = $season ? $season : (int) get_post_meta( $post_id, 'manacore_season_number', true );
+				$episode = $episode ? $episode : (int) get_post_meta( $post_id, 'manacore_episode_number', true );
+
+				$resolved = self::resolve_target( $parent, $season, $episode );
+
+				if ( $resolved ) {
+					return $resolved;
+				}
+			}
+
+			return $post_id;
+		}
+
+		if ( ! in_array( get_post_type( $post_id ), manacore_serial_post_types(), true ) ) {
+			return $post_id;
+		}
+
+		$wanted = self::find_episode( $post_id, $season, $episode );
+
+		if ( $wanted && self::has_sources( $wanted ) ) {
+			return $wanted;
+		}
+
+		if ( self::has_sources( $post_id ) ) {
+			return $post_id;
+		}
+
+		if ( $wanted ) {
+			return $wanted;
+		}
+
+		$fallback = self::find_episode( $post_id, $season, 0, true );
+
+		return $fallback ? $fallback : $post_id;
+	}
+
+	/**
+	 * یافتن قسمتِ یک سریال با شماره‌ی فصل/قسمت.
+	 *
+	 * @param int  $series_id  شناسه‌ی سریال/انیمه.
+	 * @param int  $season      شماره‌ی فصل (۰ = بی‌اهمیت).
+	 * @param int  $episode     شماره‌ی قسمت (۰ = بی‌اهمیت).
+	 * @param bool $require_src فقط قسمت‌هایی که لینک دارند.
+	 * @return int صفر اگر پیدا نشد.
+	 */
+	protected static function find_episode( $series_id, $season = 0, $episode = 0, $require_src = false ) {
+		$meta_query = array(
+			array(
+				'key'   => 'manacore_parent_title',
+				'value' => (int) $series_id,
+			),
+		);
+
+		if ( $season ) {
+			$meta_query[] = array(
+				'key'   => 'manacore_season_number',
+				'value' => (int) $season,
+			);
+		}
+
+		if ( $episode ) {
+			$meta_query[] = array(
+				'key'   => 'manacore_episode_number',
+				'value' => (int) $episode,
+			);
+		}
+
+		$ids = get_posts(
+			array(
+				'post_type'        => 'episode',
+				'post_status'      => 'publish',
+				'posts_per_page'   => $require_src ? 50 : 1,
+				'fields'           => 'ids',
+				'no_found_rows'    => true,
+				'suppress_filters' => false,
+				'meta_key'         => 'manacore_episode_number', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
+				'orderby'          => array( 'meta_value_num' => 'ASC' ),
+				'meta_query'       => $meta_query, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
+			)
+		);
+
+		foreach ( (array) $ids as $id ) {
+			if ( ! $require_src || self::has_sources( $id ) ) {
+				return (int) $id;
+			}
+		}
+
+		return 0;
+	}
+
+	/**
+	 * آیا این نشانی یک فهرست‌پخش HLS است؟
+	 *
+	 * پسوند `.m3u8` (با یا بی رشته‌ی پرس‌وجو) نشانه‌ی HLS است. مرورگرهای
+	 * دسکتاپ آن را بومی پخش نمی‌کنند و به `hls.js` نیاز دارند، ولی
+	 * Safari/iOS از خودش پخش می‌کند — همین تفکیک در
+	 * `data-player-media` به جاوااسکریپت داده می‌شود.
+	 *
+	 * @param string $url نشانی منبع.
+	 * @return bool
+	 */
+	public static function is_hls_url( $url ) {
+		$url = trim( (string) $url );
+
+		if ( '' === $url ) {
+			return false;
+		}
+
+		$path = (string) wp_parse_url( $url, PHP_URL_PATH );
+
+		if ( '' === $path ) {
+			$path = $url;
+		}
+
+		$path = preg_replace( '/[?#].*$/', '', $path );
+
+		return (bool) preg_match( '/\.m3u8$/i', (string) $path );
+	}
+
+	/**
+	 * نوع MIME مناسب برای یک منبع پخش.
+	 *
+	 * @param string $url نشانی.
+	 * @return string نوع MIME یا رشته‌ی خالی (مرورگر خودش حدس بزند).
+	 */
+	public static function mime_for( $url ) {
+		if ( self::is_hls_url( $url ) ) {
+			return 'application/vnd.apple.mpegurl';
+		}
+
+		$path = (string) wp_parse_url( (string) $url, PHP_URL_PATH );
+
+		if ( preg_match( '/\.webm$/i', $path ) ) {
+			return 'video/webm';
+		}
+
+		if ( preg_match( '/\.(mp4|m4v)$/i', $path ) ) {
+			return 'video/mp4';
+		}
+
+		if ( preg_match( '/\.ogv$/i', $path ) ) {
+			return 'video/ogg';
+		}
+
+		return '';
+	}
+
+	/**
+	 * آیا هر یک از منبع‌ها HLS است؟
+	 *
+	 * @param array<string,string> $sources نقشه‌ی کیفیت → نشانی.
+	 * @return bool
+	 */
+	public static function has_hls( $sources ) {
+		foreach ( (array) $sources as $url ) {
+			if ( self::is_hls_url( $url ) ) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/**
+	 * نشانی کتابخانه‌ی HLS (فروشده در افزونه، نه CDN).
+	 *
+	 * فیلتر `manacore_hls_script_url` اجازه می‌دهد سایت‌دار نسخه‌ی
+	 * روزآمد یا نسخه‌ی سبک‌تر را جایگزین کند.
+	 *
+	 * @return string
+	 */
+	public static function hls_script_url() {
+		$url = MANACORE_URL . 'assets/vendor/hls/hls.min.js';
+
+		/**
+		 * فیلتر نشانی کتابخانه‌ی HLS.
+		 *
+		 * @param string $url نشانی پیش‌فرض.
+		 */
+		return (string) apply_filters( 'manacore_hls_script_url', $url );
+	}
+
+	/**
+	 * شناسه‌ی برگه‌ی پخش.
+	 *
+	 * سه لایه، به ترتیب اولویت: گزینه‌ی `manacore_watch_page` (که هنگام
+	 * ساخت برگه یا انتخاب مدیر ذخیره می‌شود) → برگه‌ی نامک `watch` →
+	 * فیلتر توسعه‌دهنده. نتیجه در همان درخواست کش می‌شود تا هر جدول
+	 * دانلود یک `get_page_by_path` تازه نزند.
+	 *
+	 * @return int صفر اگر برگه‌ی پخش وجود نداشته باشد.
+	 */
+	public static function page_id() {
+		static $page_id = null;
+
+		if ( null !== $page_id ) {
+			return $page_id;
+		}
+
+		$page_id   = 0;
+		$candidate = (int) get_option( 'manacore_watch_page', 0 );
+
+		if ( $candidate && 'page' === get_post_type( $candidate ) && 'publish' === get_post_status( $candidate ) ) {
+			$page_id = $candidate;
+		} else {
+			$page = get_page_by_path( 'watch', OBJECT, 'page' );
+			if ( $page && 'publish' === get_post_status( $page ) ) {
+				$page_id = (int) $page->ID;
+			}
+		}
+
+		/**
+		 * فیلتر شناسه‌ی برگه‌ی پخش.
+		 *
+		 * @param int $page_id شناسه (۰ در نبود برگه).
+		 */
+		$page_id = (int) apply_filters( 'manacore_watch_page_id', $page_id );
+
+		return $page_id;
+	}
+
+	/**
+	 * گزارش سلامت برگه‌ی پخش — برای نمایش در پنل مدیریت.
+	 *
+	 * @return array<string,mixed>
+	 */
+	public static function page_status() {
+		$page_id = self::page_id();
+
+		$status = array(
+			'id'        => $page_id,
+			'exists'    => false,
+			'published' => false,
+			'url'       => '',
+			'edit_url'  => '',
+			'has_block' => false,
+			'option'    => (int) get_option( 'manacore_watch_page', 0 ),
+		);
+
+		if ( ! $page_id || 'page' !== get_post_type( $page_id ) ) {
+			return $status;
+		}
+
+		$status['exists']    = true;
+		$status['published'] = 'publish' === get_post_status( $page_id );
+		$status['url']        = (string) get_permalink( $page_id );
+		$status['edit_url']   = (string) get_edit_post_link( $page_id, 'raw' );
+		$status['has_block']  = false !== strpos( (string) get_post_field( 'post_content', $page_id ), 'manacore/player-page' );
+
+		return $status;
+	}
+
+	/**
+	 * ساخت برگه‌ی پخش در صورت نبودن (از پنل مدیریت یا فعال‌سازی).
+	 *
+	 * @return int شناسه‌ی برگه یا صفر.
+	 */
+	public static function create_page() {
+		$existing = self::page_id();
+
+		if ( $existing ) {
+			update_option( 'manacore_watch_page', (int) $existing );
+			return (int) $existing;
+		}
+
+		$page = get_page_by_path( 'watch', OBJECT, 'page' );
+
+		if ( $page ) {
+			update_option( 'manacore_watch_page', (int) $page->ID );
+			return (int) $page->ID;
 		}
 
 		/*
@@ -273,25 +614,88 @@ class Player {
 
 		if ( $page_id && ! is_wp_error( $page_id ) ) {
 			update_option( 'manacore_watch_page', (int) $page_id );
+			return (int) $page_id;
 		}
+
+		return 0;
 	}
 
-	public static function page_url( $post_id = 0 ) {
+	/**
+	 * ساخت یک‌باره‌ی صفحه‌ی پخش (`/watch/`) هنگام فعال‌سازی افزونه.
+	 *
+	 * تنها اگر چنین صفحه‌ای نباشد ساخته می‌شود؛ صفحه‌ی موجود هرگز بازنویسی
+	 * نمی‌شود تا کاربر آزاد باشد قالب یا متن آن را دلخواه تغییر دهد.
+	 */
+	public static function ensure_page() {
+		self::create_page();
+	}
+
+	/**
+	 * آدرس «صفحه‌ی پخش» برای یک اثر.
+	 *
+	 * صفحه‌ی پخش با گزینه‌ی `manacore_watch_page` (و در نبودش نامک `watch`)
+	 * پیدا می‌شود؛ اگر چنین صفحه‌ای نباشد یا منتشر نشده باشد، رشته‌ی خالی
+	 * برمی‌گردد تا فراخوان‌ها به ساز‌و‌کار جانشین (مُدال پخش) برگردند و
+	 * پیوندِ مرده ساخته نشود.
+	 *
+	 * @param int   $post_id شناسه‌ی اثر.
+	 * @param array $args    پارامترهای افزوده (مثل `quality`/`season`/`episode`).
+	 * @return string آدرس یا رشته‌ی خالی.
+	 */
+	public static function page_url( $post_id = 0, $args = array() ) {
 		$post_id = $post_id ? (int) $post_id : (int) get_the_ID();
 		if ( ! $post_id ) {
 			return '';
 		}
 
-		$page = get_page_by_path( 'watch', OBJECT, 'page' );
 		/* صفحه‌ی پخش فقط برای بازدیدکننده‌ی عادی معنا دارد، نه پیش‌نمایش ویرایشگر. */
 		if ( is_admin() && ! wp_doing_ajax() ) {
 			return '';
 		}
-		if ( ! $page || 'publish' !== get_post_status( $page ) ) {
+
+		$url = self::url_for( $post_id, $args );
+
+		return $url;
+	}
+
+	/**
+	 * ساخت نشانی پخش بدون بررسی حالت مدیریت.
+	 *
+	 * @param int   $post_id شناسه‌ی اثر/قسمت.
+	 * @param array $args    پارامترهای افزوده.
+	 * @return string آدرس یا رشته‌ی خالی.
+	 */
+	public static function url_for( $post_id, $args = array() ) {
+		$post_id = (int) $post_id;
+		$page_id = self::page_id();
+
+		if ( ! $post_id || ! $page_id ) {
 			return '';
 		}
 
-		return (string) add_query_arg( 'manacore_id', $post_id, get_permalink( $page ) );
+		$base = (string) get_permalink( $page_id );
+
+		if ( '' === $base ) {
+			return '';
+		}
+
+		$args = array_filter(
+			(array) $args,
+			static function ( $value ) {
+				return '' !== $value && null !== $value;
+			}
+		);
+
+		$url = (string) add_query_arg( array_merge( array( 'manacore_id' => $post_id ), $args ), $base );
+
+		/**
+		 * فیلتر نشانی نهایی صفحه‌ی پخش.
+		 *
+		 * @param string $url     نشانی ساخته‌شده.
+		 * @param int    $post_id شناسه‌ی اثر/قسمت.
+		 * @param array  $args    پارامترهای افزوده.
+		 */
+		return (string) apply_filters( 'manacore_watch_url', $url, $post_id, $args );
 	}
 
 	/**

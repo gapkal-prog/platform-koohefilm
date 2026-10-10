@@ -156,6 +156,7 @@ class Account {
 		return array(
 			'overview'     => __( 'دنیای من', 'manacore' ),
 			'watchlist'    => __( 'لیست تماشا', 'manacore' ),
+			'requests'     => __( 'درخواست‌های من', 'manacore' ),
 			'history'      => __( 'تاریخچه تماشا', 'manacore' ),
 			'analytics'    => __( 'سلیقه من', 'manacore' ),
 			/*
@@ -185,8 +186,19 @@ class Account {
 		/*
 		 * نشان شمارشی همیشه هست — مرجع برای کاربر بی‌لیست هم «۰» نشان
 		 * می‌دهد؛ پنهان‌کردن آن جای ردیف تب را جابه‌جا می‌کرد.
+		 *
+		 * تب درخواست‌ها نشان را فقط وقتی می‌گیرد که کاربر درخواستی
+		 * داشته باشد؛ «۰» کنار «درخواست‌های من» فقط شلوغی است.
 		 */
 		$badges = array( 'watchlist' => manacore_fa_digits( $watch ) );
+
+		if ( class_exists( Requests::class ) ) {
+			$requests = Requests::mine_total();
+
+			if ( $requests > 0 ) {
+				$badges['requests'] = manacore_fa_digits( number_format_i18n( $requests ) );
+			}
+		}
 		$tags   = array( 'analytics' => __( 'برای تو', 'manacore' ) );
 
 		foreach ( $tabs as $slug => $label ) {

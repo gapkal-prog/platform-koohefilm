@@ -144,7 +144,12 @@ function koohe_default_color_mode() {
 	$mode = '';
 
 	if ( function_exists( 'manacore_get_option' ) ) {
-		$mode = (string) manacore_get_option( 'color_mode', '' );
+		/*
+		 * کلید «default_color_mode» است — همان کلیدی که تب «ظاهر و استایل»
+		 * افزونه ذخیره می‌کند. پیش‌تر این‌جا «color_mode» خوانده می‌شد که
+		 * هیچ‌گاه ذخیره نمی‌شد و تنظیم افزونه بی‌اثر می‌ماند.
+		 */
+		$mode = (string) manacore_get_option( 'default_color_mode', '' );
 	}
 
 	if ( '' === $mode ) {

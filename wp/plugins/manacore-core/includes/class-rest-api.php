@@ -155,6 +155,68 @@ class Rest_Api {
 			)
 		);
 
+		// جست‌وجوی آثار برای انتخابگرهای پیشخوان (مجموعه و کانال).
+		register_rest_route(
+			self::NS,
+			'/works',
+			array(
+				'methods'             => \WP_REST_Server::READABLE,
+				'callback'            => array( $this, 'works' ),
+				'permission_callback' => array( $this, 'verify_editor' ),
+				'args'                => array(
+					'q'       => array(
+						'type'              => 'string',
+						'default'           => '',
+						'sanitize_callback' => 'sanitize_text_field',
+					),
+					'type'    => array(
+						'type'              => 'string',
+						'default'           => '',
+						'sanitize_callback' => 'sanitize_key',
+					),
+					'limit'   => array(
+						'type'              => 'integer',
+						'default'           => 15,
+						'sanitize_callback' => 'absint',
+					),
+					'exclude' => array(
+						'type'              => 'string',
+						'default'           => '',
+						'sanitize_callback' => 'sanitize_text_field',
+					),
+				),
+			)
+		);
+
+		// جست‌وجوی عوامل برای پیشخوان (فقط ویرایشگران).
+		register_rest_route(
+			self::NS,
+			'/people',
+			array(
+				'methods'             => \WP_REST_Server::READABLE,
+				'callback'            => array( $this, 'people' ),
+				'permission_callback' => array( $this, 'verify_editor' ),
+				'args'                => array(
+					'q'    => array(
+						'type'              => 'string',
+						'default'           => '',
+						'sanitize_callback' => 'sanitize_text_field',
+					),
+					'role' => array(
+						'type'              => 'string',
+						'default'           => '',
+						'sanitize_callback' => 'sanitize_key',
+						'enum'              => array( '', 'director', 'writer', 'producer', 'composer', 'cast' ),
+					),
+					'limit' => array(
+						'type'              => 'integer',
+						'default'           => 10,
+						'sanitize_callback' => 'absint',
+					),
+				),
+			)
+		);
+
 		register_rest_route(
 			self::NS,
 			'/titles',
@@ -174,6 +236,27 @@ class Rest_Api {
 				'permission_callback' => '__return_true',
 				'args'                => array(
 					'id' => array(
+						'type'              => 'integer',
+						'sanitize_callback' => 'absint',
+					),
+				),
+			)
+		);
+
+		/*
+		 * شمارش تماشا: از سمت مرورگر و تنها با شروع واقعی پخش صدا زده
+		 * می‌شود (همان الگوی `track-download`).
+		 */
+		register_rest_route(
+			self::NS,
+			'/track-view',
+			array(
+				'methods'             => \WP_REST_Server::CREATABLE,
+				'callback'            => array( $this, 'track_view' ),
+				'permission_callback' => array( $this, 'verify_public_write' ),
+				'args'                => array(
+					'post_id' => array(
+						'required'          => true,
 						'type'              => 'integer',
 						'sanitize_callback' => 'absint',
 					),
@@ -235,46 +318,98 @@ class Rest_Api {
 	/**
 	 * جستجوی زنده.
 	 *
+	 * بدنه‌ی جستجو در `Search` است تا مسیر REST، کوئری اصلی برگه‌ی جستجو و
+	 * همه‌ی مصرف‌کننده‌های سمت کاربر یک رفتار داشته باشند.
+	 *
 	 * @param \WP_REST_Request $request درخواست.
 	 * @return \WP_REST_Response
 	 */
 	public function search( $request ) {
-		$post_types = manacore_title_post_types();
+		$term     = trim( (string) $request->get_param( 'q' ) );
+		$type     = (string) $request->get_param( 'type' );
+		$per_page = min( 20, max( 1, (int) $request->get_param( 'per_page' ) ) );
 
-		// اگر بلوک جستجو نوع‌های خاصی را تعیین کرده باشد، فقط همان‌ها جستجو می‌شوند.
-		$requested = (string) $request->get_param( 'type' );
-		if ( '' !== $requested ) {
-			$filtered = array_intersect(
-				array_map( 'sanitize_key', preg_split( '/[\s,،]+/', $requested, -1, PREG_SPLIT_NO_EMPTY ) ),
-				$post_types
-			);
-			if ( $filtered ) {
-				$post_types = array_values( $filtered );
-			}
+		/*
+		 * کش کوتاه‌مدت: جستجوی زنده با هر مکثِ تایپ اجرا می‌شود؛ روی سایتی با
+		 * چند هزار اثر، پاسخ تکراریِ چند کاربر در یک بازه‌ی کوتاه نباید دیتابیس
+		 * را دوباره درگیر کند. کلید از هر سه ورودی ساخته می‌شود تا پاسخ
+		 * محدودسازی‌شده با پاسخ عمومی قاطی نشود.
+		 */
+		$cache_key = 'manacore_search_' . md5( $term . '|' . $type . '|' . $per_page );
+		$cached    = get_transient( $cache_key );
+
+		if ( is_array( $cached ) ) {
+			return rest_ensure_response( $cached );
 		}
 
-		$query = new \WP_Query(
+		$query = Search::query(
 			array(
-				'post_type'           => $post_types,
-				'post_status'         => 'publish',
-				's'                   => $request['q'],
-				'posts_per_page'      => min( 20, max( 1, (int) $request['per_page'] ) ),
-				'ignore_sticky_posts' => true,
-				'no_found_rows'       => true,
+				's'        => $term,
+				'type'     => $type,
+				'per_page' => $per_page,
 			)
 		);
 
 		$items = array();
+
 		foreach ( $query->posts as $post ) {
 			$items[] = $this->format_post( $post );
 		}
 
-		return rest_ensure_response(
-			array(
-				'items' => $items,
-				'total' => count( $items ),
-			)
+		$payload = array(
+			'items' => $items,
+			'total' => count( $items ),
+			'query' => $term,
 		);
+
+		if ( '' !== $term ) {
+			set_transient( $cache_key, $payload, 5 * MINUTE_IN_SECONDS );
+		}
+
+		return rest_ensure_response( $payload );
+	}
+
+	/**
+	 * مجوز ویرایشگر برای مسیرهای پیشخوان.
+	 *
+	 * @return bool
+	 */
+	public function verify_editor() {
+		return current_user_can( 'edit_posts' );
+	}
+
+	/**
+	 * جست‌وجوی عوامل ثبت‌شده (CPT person) برای برچسب‌های پیشخوان.
+	 *
+	 * @param \WP_REST_Request $request درخواست.
+	 * @return \WP_REST_Response
+	 */
+	public function people( $request ) {
+		$items = Crew::search(
+			(string) $request->get_param( 'q' ),
+			(string) $request->get_param( 'role' ),
+			(int) $request->get_param( 'limit' )
+		);
+
+		return rest_ensure_response( array( 'items' => $items ) );
+	}
+
+	/**
+	 * جست‌وجوی آثار برای انتخابگرهای پیشخوان.
+	 *
+	 * @param \WP_REST_Request $request درخواست.
+	 * @return \WP_REST_Response
+	 */
+	public function works( $request ) {
+		$exclude = array_filter( array_map( 'absint', explode( ',', (string) $request->get_param( 'exclude' ) ) ) );
+		$items   = Picker::works(
+			(string) $request->get_param( 'q' ),
+			(string) $request->get_param( 'type' ),
+			(int) $request->get_param( 'limit' ),
+			$exclude
+		);
+
+		return rest_ensure_response( array( 'items' => $items ) );
 	}
 
 	/**
@@ -365,14 +500,46 @@ class Rest_Api {
 	}
 
 	/**
-	 * ثبت آمار دانلود.
+	 * ثبت شمارش تماشا (رویداد واقعی شروع پخش).
+	 *
+	 * @param \WP_REST_Request $request درخواست.
+	 * @return \WP_REST_Response
+	 */
+	public function track_view( $request ) {
+		/*
+		 * «تماشا» فقط با رویداد واقعی پخش از مرورگر می‌آید؛ سرور هم
+		 * پنجره‌ی ضدرعدّ‌سازی دارد تا یک تماشا چند بار شمرده نشود.
+		 */
+		$counted = Ratings::instance()->count_watch( (int) $request['post_id'] );
+
+		return rest_ensure_response(
+			array(
+				'ok'      => true,
+				'counted' => (bool) $counted,
+			)
+		);
+	}
+
+	/**
+	 * شمارش دانلود.
 	 *
 	 * @param \WP_REST_Request $request درخواست.
 	 * @return \WP_REST_Response
 	 */
 	public function track_download( $request ) {
-		Ratings::instance()->log_stat( (int) $request['post_id'], 'download' );
-		return rest_ensure_response( array( 'ok' => true ) );
+		/*
+		 * شمارش از پنجره‌ی ضدرعدّ‌سازی `Downloads` می‌گذرد تا کلیک دوباره
+		 * (یا رفرش پشت‌سرهم) آمار را باد نکند و با مسیر امضاشده‌ی دانلود
+		 * هم دوباره‌شماری پیش نیاید.
+		 */
+		$counted = Downloads::count( (int) $request['post_id'] );
+
+		return rest_ensure_response(
+			array(
+				'ok'      => true,
+				'counted' => (bool) $counted,
+			)
+		);
 	}
 
 	/**

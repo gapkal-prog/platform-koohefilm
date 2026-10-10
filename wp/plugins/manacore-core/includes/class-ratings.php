@@ -1,6 +1,6 @@
 <?php
 /**
- * امتیازدهی کاربران و شمارش بازدید.
+ * امتیازدهی کاربران و شمارش تماشا (شروع واقعی پخش).
  *
  * @package ManaCore\Core
  */
@@ -18,9 +18,13 @@ class Ratings {
 
 	/**
 	 * ثبت هوک‌ها.
+	 *
+	 * عمداً خالی است: امتیاز و تماشا هر دو از مسیرهای REST می‌آیند
+	 * (`/rate` و `/track-view`)، نه از قلاب‌های رندر. پیش‌تر اینجا
+	 * `add_action( 'wp', ... )` بود که هر بازشدن صفحه را «بازدید»
+	 * می‌شمرد؛ همان مسیر حذف شد.
 	 */
 	public function hooks() {
-		add_action( 'wp', array( $this, 'maybe_count_view' ) );
 	}
 
 	/**
@@ -142,35 +146,53 @@ class Ratings {
 	}
 
 	/**
-	 * شمارش بازدید صفحه‌ی تکی.
+	 * پنجره‌ی ضدرعدّ‌سازی شمارش تماشا (ثانیه).
 	 */
-	public function maybe_count_view() {
-		if ( is_admin() || ! is_singular() ) {
-			return;
-		}
-		if ( ! manacore_get_option( 'enable_views', 1 ) ) {
-			return;
+	const DEDUPE_WINDOW = 30;
+
+	/**
+	 * شمارش «تماشا» — تنها با رویداد واقعی شروع پخش.
+	 *
+	 * پیش‌تر این شمارنده روی قلاب `wp` می‌نشست، یعنی هر **بازشدن صفحه‌ی
+	 * تکی** یک بازدید ثبت می‌کرد. نتیجه عددی بود که با رفرش و مرور
+	 * ناشناس باد می‌کرد و هیچ ربطی به «چند نفر واقعاً تماشا کردند»
+	 * نداشت — آمار نمایشی، نه عملیاتی.
+	 *
+	 * اکنون سنجه از سمت مرورگر و فقط با فشردن پخش می‌آید
+	 * (`POST /manacore/v1/track-view`) و همان‌جا پنجره‌ی
+	 * ضدرعدّ‌سازی کوتاه دارد تا کلیک/رفرش پشت‌سرهم یک تماشا شمرده شود.
+	 *
+	 * @param int $post_id شناسه‌ی اثر/قسمت.
+	 * @return bool آیا این بار شمرده شد؟
+	 */
+	public function count_watch( $post_id ) {
+		$post_id = (int) $post_id;
+
+		if ( ! $post_id || ! manacore_get_option( 'enable_views', 1 ) ) {
+			return false;
 		}
 
-		$post_id = get_queried_object_id();
-		$types   = array_merge( manacore_title_post_types(), array( 'episode' ) );
-		if ( ! $post_id || ! in_array( get_post_type( $post_id ), $types, true ) ) {
-			return;
+		$key = 'manacore_watch_' . $post_id . '_' . md5( manacore_visitor_hash( 'watch' ) );
+
+		if ( get_transient( $key ) ) {
+			return false;
 		}
 
-		$cookie = 'manacore_v_' . $post_id;
-		// phpcs:ignore WordPress.Security.NonceVerification
-		if ( isset( $_COOKIE[ $cookie ] ) ) {
-			return;
-		}
+		set_transient( $key, 1, self::DEDUPE_WINDOW );
 
 		$views = (int) get_post_meta( $post_id, 'manacore_views', true );
 		update_post_meta( $post_id, 'manacore_views', $views + 1 );
+
 		$this->log_stat( $post_id, 'view' );
 
-		if ( ! headers_sent() ) {
-			setcookie( $cookie, '1', time() + 6 * HOUR_IN_SECONDS, COOKIEPATH ? COOKIEPATH : '/', COOKIE_DOMAIN );
-		}
+		/**
+		 * پس از شمردن یک تماشای واقعی.
+		 *
+		 * @param int $post_id شناسه‌ی اثر/قسمت.
+		 */
+		do_action( 'manacore_watch_counted', $post_id );
+
+		return true;
 	}
 
 	/**
@@ -198,7 +220,7 @@ class Ratings {
 	}
 
 	/**
-	 * پربازدیدترین‌ها در بازه‌ی زمانی.
+	 * پرتماشاترین‌ها در بازه‌ی زمانی.
 	 *
 	 * @param int    $days  تعداد روز.
 	 * @param int    $limit تعداد نتیجه.

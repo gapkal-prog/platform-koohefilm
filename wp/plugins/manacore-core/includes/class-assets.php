@@ -45,10 +45,16 @@ class Assets {
 	 */
 	public function admin( $hook ) {
 		$screen     = get_current_screen();
-		$post_types = array_merge( manacore_title_post_types(), array( 'episode' ) );
+		$post_types = array_merge( manacore_title_post_types(), array( 'episode', 'collection', 'channel' ) );
 		$is_editor  = $screen && in_array( $screen->post_type, $post_types, true )
 			&& in_array( $hook, array( 'post.php', 'post-new.php' ), true );
-		$is_settings = $screen && false !== strpos( (string) $screen->id, 'manacore' );
+
+		/*
+		 * صفحه‌های ManaCore و همچنین پیشخوان: ویجت «نگاه یک‌صفحه‌ای سایت»
+		 * کارت‌هایش را با کلاس‌های manacore-* می‌سازد و پیش‌تر روی پیشخوان
+		 * بی‌استایل (و ناخوانا) دیده می‌شد.
+		 */
+		$is_settings = $screen && ( false !== strpos( (string) $screen->id, 'manacore' ) || 'dashboard' === $screen->id );
 
 		if ( ! $is_editor && ! $is_settings ) {
 			return;
@@ -67,6 +73,15 @@ class Assets {
 
 		wp_enqueue_media();
 
+		// ابزارهای مشترک انتخابگرها؛ داده‌ی محلی‌سازی‌شده‌ی manaCoreAdmin روی همین فایل است.
+		wp_enqueue_script(
+			'manacore-admin-picker',
+			MANACORE_URL . 'assets/js/admin-picker.js',
+			array(),
+			MANACORE_VERSION,
+			true
+		);
+
 		wp_enqueue_script(
 			'manacore-admin-links',
 			MANACORE_URL . 'assets/js/admin-links.js',
@@ -75,8 +90,24 @@ class Assets {
 			true
 		);
 
+		wp_enqueue_script(
+			'manacore-admin-people',
+			MANACORE_URL . 'assets/js/admin-people.js',
+			array( 'manacore-admin-picker' ),
+			MANACORE_VERSION,
+			true
+		);
+
+		wp_enqueue_script(
+			'manacore-admin-works',
+			MANACORE_URL . 'assets/js/admin-works.js',
+			array( 'manacore-admin-picker' ),
+			MANACORE_VERSION,
+			true
+		);
+
 		wp_localize_script(
-			'manacore-admin-links',
+			'manacore-admin-picker',
 			'manaCoreAdmin',
 			array(
 				'restUrl' => esc_url_raw( rest_url( 'manacore/v1/' ) ),
@@ -91,6 +122,13 @@ class Assets {
 					'importedGroup' => __( 'گروه وارد شده', 'manacore' ),
 					'noGroups'      => __( 'هنوز گروهی اضافه نشده است. با دکمه‌ی «افزودن گروه لینک» شروع کنید.', 'manacore' ),
 					'untitledGroup' => __( 'گروه بدون عنوان', 'manacore' ),
+					'roleMatch'     => __( 'نقش مطابق', 'manacore' ),
+					'addFree'       => __( 'افزودن «%s» به‌عنوان نام آزاد', 'manacore' ),
+					'noResults'     => __( 'عاملی پیدا نشد.', 'manacore' ),
+					'searchError'   => __( 'خطا در جست‌وجو. دوباره تلاش کنید.', 'manacore' ),
+					'linked'        => __( 'به صفحه‌ی عامل پیوند خورده', 'manacore' ),
+					'removeName'    => __( 'حذف %s', 'manacore' ),
+					'roleMissing'   => __( 'این نقش برای این نوع محتوا فعال نیست.', 'manacore' ),
 					'linkUnit'      => __( 'لینک', 'manacore' ),
 					'toggle'        => __( 'باز/بسته کردن', 'manacore' ),
 					'moveUp'        => __( 'انتقال به بالا', 'manacore' ),
@@ -118,6 +156,26 @@ class Assets {
 					'removeLink'    => __( 'حذف لینک', 'manacore' ),
 					'choose'        => __( '— انتخاب —', 'manacore' ),
 					'selectImage'   => __( 'انتخاب تصویر', 'manacore' ),
+					'untitled'      => __( 'بدون عنوان', 'manacore' ),
+					'moveUpShort'   => __( 'بالا', 'manacore' ),
+					'moveDownShort' => __( 'پایین', 'manacore' ),
+					'removeShort'   => __( 'حذف', 'manacore' ),
+					'moveUpWork'    => __( 'انتقال «%s» به بالا', 'manacore' ),
+					'moveDownWork'  => __( 'انتقال «%s» به پایین', 'manacore' ),
+					'removeWork'    => __( 'حذف «%s» از مجموعه', 'manacore' ),
+					'removeItem'    => __( 'حذف «%s»', 'manacore' ),
+					'clearWork'     => __( 'حذف انتخاب', 'manacore' ),
+					'countWorks'    => __( '%s اثر', 'manacore' ),
+					'importLinked'  => __( 'افزودن آثار متصل (%s)', 'manacore' ),
+					'alreadyAdded'  => __( 'در فهرست', 'manacore' ),
+					'noWorks'       => __( 'اثری پیدا نشد.', 'manacore' ),
+					'maxWorks'      => __( 'حداکثر %s اثر در هر مجموعه مجاز است.', 'manacore' ),
+					'workAdded'     => __( '«%s» افزوده شد.', 'manacore' ),
+					'workRemoved'   => __( '«%s» حذف شد.', 'manacore' ),
+					'workMoved'     => __( '«%s» به موقعیت %s منتقل شد.', 'manacore' ),
+					'linkedAdded'   => __( '%s اثر متصل افزوده شد.', 'manacore' ),
+					'confirmClear'  => __( 'همه‌ی آثار این مجموعه از فهرست حذف شوند؟', 'manacore' ),
+					'clearedWorks'  => __( 'فهرست آثار خالی شد.', 'manacore' ),
 				),
 			)
 		);
@@ -177,15 +235,53 @@ class Assets {
 				'nonce'     => wp_create_nonce( 'wp_rest' ),
 				'loggedIn'  => is_user_logged_in(),
 				'loginUrl'  => wp_login_url( get_permalink() ),
+
+				/*
+				 * نشانی کتابخانه‌ی HLS. از خودِ افزونه سرو می‌شود (نه CDN)
+				 * و فقط وقتی برگه منبع `.m3u8` داشته باشد بارگذاری می‌شود.
+				 * با فیلتر `manacore_hls_script_url` قابل جایگزینی است.
+				 */
+				'hlsUrl'    => Player::hls_script_url(),
 				'i18n'      => array(
 					'copied'        => __( 'کپی شد', 'manacore' ),
 					'copy'          => __( 'کپی لینک', 'manacore' ),
 					'loginRequired' => __( 'برای این کار باید وارد حساب کاربری شوید.', 'manacore' ),
+					'authLoginTitle'    => __( 'خوش برگشتی!', 'manacore' ),
+					'authLoginCopy'     => __( 'وارد شو و ادامه داستان‌های موردعلاقه‌ات را ببین.', 'manacore' ),
+					'authLoginSubmit'   => __( 'ورود به حساب کاربری', 'manacore' ),
+					'authRegisterTitle' => __( 'داستانت از اینجا شروع می‌شود.', 'manacore' ),
+					'authRegisterCopy'  => __( 'برای ساختن لیست تماشا و دریافت پیشنهادهای شخصی عضو شو.', 'manacore' ),
+					'authRegisterSubmit' => __( 'ساخت حساب کاربری', 'manacore' ),
+					'authShow'          => __( 'نمایش', 'manacore' ),
+					'authHide'          => __( 'پنهان', 'manacore' ),
+					'authNetwork'       => __( 'ارتباط با سرور برقرار نشد. دوباره تلاش کنید.', 'manacore' ),
+					'authEmailInvalid'  => __( 'نشانی ایمیل معتبر نیست.', 'manacore' ),
+					'authNameShort'     => __( 'نام باید بین ۲ تا ۵۰ نویسه باشد.', 'manacore' ),
+					'authPasswordShort' => __( 'رمز عبور باید حداقل ۸ نویسه باشد.', 'manacore' ),
 					'added'         => __( 'به لیست تماشا اضافه شد', 'manacore' ),
 					'removed'       => __( 'از لیست تماشا حذف شد', 'manacore' ),
 					'error'         => __( 'خطایی رخ داد. دوباره تلاش کنید.', 'manacore' ),
 					'searching'     => __( 'در حال جستجو…', 'manacore' ),
 					'noResults'     => __( 'نتیجه‌ای یافت نشد.', 'manacore' ),
+					/* کنترل‌های افزودنی پلیر. */
+					'playbackSpeed' => __( 'سرعت پخش', 'manacore' ),
+					'pictureInPicture' => __( 'تصویر در تصویر', 'manacore' ),
+					'nextEpisode'   => __( 'قسمت بعدی', 'manacore' ),
+					/* گزارش خرابی لینک. */
+					'reportTitle'   => __( 'گزارش خرابی لینک', 'manacore' ),
+					'reportWhich'   => __( 'کدام لینک کار نمی‌کند؟', 'manacore' ),
+					'reportReason'  => __( 'توضیح کوتاه (اختیاری)', 'manacore' ),
+					'reportSend'    => __( 'ارسال گزارش', 'manacore' ),
+					'reportGeneric' => __( 'لینک این بخش', 'manacore' ),
+					'reportDone'    => __( 'گزارش ثبت شد. ممنون که اطلاع دادید!', 'manacore' ),
+					/* درخواست فیلم/سریال. */
+					'requestTitle'  => __( 'نام فیلم یا سریال را کامل بنویسید.', 'manacore' ),
+					'requestSending'=> __( 'در حال ارسال…', 'manacore' ),
+					'requestDone'   => __( 'درخواست شما ثبت شد.', 'manacore' ),
+					'requestError'  => __( 'ارسال نشد؛ دوباره تلاش کنید.', 'manacore' ),
+					'requestVoted'  => __( 'رأی شما ثبت شد.', 'manacore' ),
+					'playNext'      => __( 'پخش قسمت بعدی', 'manacore' ),
+					'cancel'        => __( 'لغو', 'manacore' ),
 					/*
 					 * پیام‌های برگه‌ی حساب؛ کلیدها همان کدهایی هستند که
 					 * `Account_Actions` با `?notice=` برمی‌گرداند.

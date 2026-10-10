@@ -343,6 +343,51 @@
 			var badge = root.querySelector( '.player-badges > span:last-child' );
 			var download = root.querySelector( '[data-player-download]' );
 
+			/*
+			 * نشاندن منبع جاری با آگاهی از نوع رسانه: `.m3u8` روی مرورگرهای
+			 * بدون پخش بومی HLS از راه `hls.js` می‌رود. نمونه‌ی فعال در
+			 * `detachHls` نگه داشته می‌شود تا با هر تعویض کیفیت آزاد شود.
+			 */
+			var detachHls = null;
+
+			if ( video && null === video.getAttribute( 'src' ) ) {
+				var initial = video.querySelector( 'source[data-src]' );
+				var initialUrl = initial ? String( initial.getAttribute( 'data-src' ) || '' ) : '';
+
+				/*
+				 * منبع نخست HLS است و مرورگر پخش بومی ندارد؟ پس پیش از هر
+				 * اقدامی `hls.js` وصل می‌شود. برای mp4 همان مسیر بومی
+				 * `<source>` می‌ماند و هیچ اسکریپتی اضافه نمی‌شود.
+				 */
+				if ( /\.m3u8(\?|#|$)/i.test( initialUrl ) ) {
+					detachHls = attachSource( video, initialUrl, false );
+				}
+			}
+
+			/*
+			 * «تماشا» = شروع واقعی پخش، نه بازشدن صفحه. یک‌بار برای هر
+			 * بارگذاریِ صفحه فرستاده می‌شود و سرور هم پنجره‌ی
+			 * ضدرعدّ‌سازی دارد؛ پس رفرش، عدد را باد نمی‌کند.
+			 */
+			if ( video ) {
+				var watchCounted = false;
+
+				video.addEventListener( 'play', function () {
+					if ( watchCounted ) {
+						return;
+					}
+
+					watchCounted = true;
+
+					api( 'track-view', {
+						method: 'POST',
+						body: {
+							post_id: parseInt( root.getAttribute( 'data-manacore-player-page' ), 10 ) || 0,
+						},
+					} ).catch( function () {} );
+				} );
+			}
+
 			if ( video && select ) {
 				select.addEventListener( 'change', function () {
 					var option = select.options[ select.selectedIndex ];
@@ -354,11 +399,17 @@
 					if ( ! source ) {
 						return;
 					}
-					video.src = source;
-					video.load();
-					if ( ! video.paused ) {
-						video.play().catch( function () {} );
+
+					/* نمونه‌ی پیشین HLS آزاد می‌شود؛ وگرنه هر تعویض کیفیت
+					 * یک نمونه‌ی زنده‌ی دیگر در حافظه می‌گذاشت. */
+					if ( typeof detachHls === 'function' ) {
+						detachHls();
+						detachHls = null;
 					}
+
+					var wasPlaying = ! video.paused;
+					video.setAttribute( 'data-player-media', /\.m3u8(\?|#|$)/i.test( source ) ? 'hls' : 'file' );
+					detachHls = attachSource( video, source, wasPlaying );
 
 					/*
 					 * مرجع با تغییر کیفیت، نشان کیفیت و پیوند دانلود را هم
@@ -471,6 +522,638 @@
 						cinema.setAttribute( 'aria-pressed', 'false' );
 					}
 				}
+			} );
+
+			/* افزودنی‌های پلیر: سرعت پخش، تصویر در تصویر، میان‌بُرها، قسمت بعدی. */
+			if ( video ) {
+				initPlayerExtras( root, video );
+				initPlayerKeyboard( root, video, frame );
+				initNextEpisode( root, video );
+			}
+		} );
+	}
+
+	/* ---------------- پخش‌کننده‌ی حرفه‌ای ---------------- */
+
+	/*
+	 * کتابخانه‌ی HLS فقط در صورت نیاز بارگذاری می‌شود: صفحه‌هایی که منبع
+	 * `.m3u8` دارند یک اسکریپت ۶۰۰ کیلوبایتی می‌گیرند و بقیه هیچ. فایل از
+	 * خودِ افزونه سرو می‌شود (`config.hlsUrl`)، نه CDN — سایت‌های فارسی
+	 * مخاطب ما به CDN دسترسی پایدار ندارند.
+	 */
+	var hlsPromise = null;
+
+	function loadHls() {
+		if ( window.Hls ) {
+			return Promise.resolve( window.Hls );
+		}
+
+		if ( hlsPromise ) {
+			return hlsPromise;
+		}
+
+		hlsPromise = new Promise( function ( resolve, reject ) {
+			if ( ! config.hlsUrl ) {
+				reject( new Error( 'hls-url-missing' ) );
+				return;
+			}
+
+			var script = document.createElement( 'script' );
+			script.src = config.hlsUrl;
+			script.async = true;
+			script.onload = function () {
+				window.Hls ? resolve( window.Hls ) : reject( new Error( 'hls-missing' ) );
+			};
+			script.onerror = function () {
+				reject( new Error( 'hls-load-failed' ) );
+			};
+			document.head.appendChild( script );
+		} );
+
+		return hlsPromise;
+	}
+
+	/*
+	 * نشاندن یک منبع روی پلیر: اگر HLS باشد و مرورگر پخش بومی نداشته
+	 * باشد، `hls.js` وصل می‌شود؛ در غیر این صورت همان `video.src`.
+	 * مقدار برگشتی، نمونه‌ی فعال HLS است (یا null) تا با تغییر کیفیت
+	 * نمونه‌ی قبلی آزاد شود — بی آن، هر تعویض کیفیت یک نمونه‌ی زنده‌ی
+	 * دیگر در حافظه می‌گذاشت.
+	 */
+	function attachSource( video, url, autoplay, onReady ) {
+		var needHls = /\.m3u8(\?|#|$)/i.test( String( url || '' ) );
+		var nativeHls = video.canPlayType( 'application/vnd.apple.mpegurl' );
+
+		if ( ! needHls || nativeHls ) {
+			video.src = url;
+			video.load();
+			if ( autoplay ) {
+				video.play().catch( function () {} );
+			}
+			if ( onReady ) {
+				onReady( null );
+			}
+			return null;
+		}
+
+		var instance = null;
+
+		loadHls()
+			.then( function ( Hls ) {
+				if ( ! Hls.isSupported() ) {
+					video.src = url;
+					video.load();
+					return;
+				}
+
+				instance = new Hls( { enableWorker: true, lowLatencyMode: false } );
+				instance.loadSource( url );
+				instance.attachMedia( video );
+
+				instance.on( Hls.Events.MANIFEST_PARSED, function () {
+					if ( autoplay ) {
+						video.play().catch( function () {} );
+					}
+				} );
+
+				if ( onReady ) {
+					onReady( instance );
+				}
+			} )
+			.catch( function () {
+				/* شکست بارگذاری کتابخانه = افت به پخش مستقیم. */
+				video.src = url;
+				video.load();
+			} );
+
+		return function () {
+			if ( instance ) {
+				instance.destroy();
+			}
+		};
+	}
+
+	/*
+	 * میان‌بُرهای کیبورد پلیر. مرجع ندارد، ولی هر پلیر حرفه‌ای دارد و
+	 * دسترس‌پذیری را هم بالا می‌برد (کاربر بدون ماوس هم می‌تواند پخش را
+	 * کنترل کند). در ورودی‌های متنی هرگز فعال نمی‌شود.
+	 */
+	function isTyping( target ) {
+		if ( ! target ) {
+			return false;
+		}
+
+		var tag = String( target.tagName || '' ).toLowerCase();
+
+		return 'input' === tag || 'textarea' === tag || 'select' === tag || target.isContentEditable;
+	}
+
+	function initPlayerKeyboard( root, video, frame ) {
+		document.addEventListener( 'keydown', function ( event ) {
+			if ( isTyping( event.target ) || event.metaKey || event.ctrlKey || event.altKey ) {
+				return;
+			}
+
+			/* فقط وقتی صفحه‌ی پخش واقعاً در دید است. */
+			if ( ! root.isConnected || root.offsetParent === null ) {
+				return;
+			}
+
+			var handled = true;
+
+			switch ( event.key ) {
+				case ' ':
+				case 'k':
+				case 'K':
+					video.paused ? video.play().catch( function () {} ) : video.pause();
+					break;
+				case 'ArrowRight':
+					video.currentTime = Math.min( video.duration || 0, video.currentTime + 5 );
+					break;
+				case 'ArrowLeft':
+					video.currentTime = Math.max( 0, video.currentTime - 5 );
+					break;
+				case 'ArrowUp':
+					video.volume = Math.min( 1, video.volume + 0.1 );
+					break;
+				case 'ArrowDown':
+					video.volume = Math.max( 0, video.volume - 0.1 );
+					break;
+				case 'm':
+				case 'M':
+					video.muted = ! video.muted;
+					break;
+				case 'f':
+				case 'F':
+					if ( frame && frame.requestFullscreen && ! document.fullscreenElement ) {
+						frame.requestFullscreen();
+					} else if ( document.fullscreenElement ) {
+						document.exitFullscreen();
+					}
+					break;
+				default:
+					handled = false;
+			}
+
+			if ( handled ) {
+				event.preventDefault();
+			}
+		} );
+	}
+
+	/*
+	 * دکمه‌های «سرعت پخش» و «تصویر در تصویر» با جاوااسکریپت ساخته
+	 * می‌شوند تا مارک‌آپ سمت سرور (و قرارداد آزمون‌های هم‌سانی با مرجع)
+	 * دست‌نخورده بماند. اگر مرورگر PiP نداشته باشد، دکمه ساخته نمی‌شود.
+	 */
+	var SPEEDS = [ 0.75, 1, 1.25, 1.5, 2 ];
+
+	function initPlayerExtras( root, video ) {
+		var controls = root.querySelector( '.player-controls' );
+		if ( ! controls || root.querySelector( '[data-player-speed]' ) ) {
+			return;
+		}
+
+		var speedIndex = 1;
+
+		try {
+			var saved = parseFloat( window.localStorage.getItem( 'manacore-speed' ) );
+			var found = SPEEDS.indexOf( saved );
+			if ( found > -1 ) {
+				speedIndex = found;
+			}
+		} catch ( e ) {}
+
+		video.playbackRate = SPEEDS[ speedIndex ];
+
+		var speed = document.createElement( 'button' );
+		speed.type = 'button';
+		speed.className = 'manacore-btn is-secondary is-small';
+		speed.setAttribute( 'data-player-speed', '1' );
+		speed.setAttribute(
+			'aria-label',
+			( i18n.playbackSpeed || 'سرعت پخش' ) + ': ' + SPEEDS[ speedIndex ] + '×'
+		);
+		speed.innerHTML = '<span aria-hidden="true">⏱</span> ';
+
+		var speedLabel = document.createElement( 'span' );
+		speedLabel.setAttribute( 'data-player-speed-label', '1' );
+		speedLabel.textContent = SPEEDS[ speedIndex ] + '×';
+		speed.appendChild( speedLabel );
+
+		speed.addEventListener( 'click', function () {
+			speedIndex = ( speedIndex + 1 ) % SPEEDS.length;
+			var rate = SPEEDS[ speedIndex ];
+			video.playbackRate = rate;
+			speedLabel.textContent = rate + '×';
+			speed.setAttribute( 'aria-label', ( i18n.playbackSpeed || 'سرعت پخش' ) + ': ' + rate + '×' );
+			try {
+				window.localStorage.setItem( 'manacore-speed', String( rate ) );
+			} catch ( e ) {}
+			toast( ( i18n.playbackSpeed || 'سرعت پخش' ) + ': ' + rate + '×' );
+		} );
+
+		controls.appendChild( speed );
+
+		if ( document.pictureInPictureEnabled && video.requestPictureInPicture ) {
+			var pip = document.createElement( 'button' );
+			pip.type = 'button';
+			pip.className = 'manacore-btn is-secondary is-small';
+			pip.setAttribute( 'data-player-pip', '1' );
+			pip.setAttribute( 'aria-label', i18n.pictureInPicture || 'تصویر در تصویر' );
+			pip.innerHTML = '<span aria-hidden="true">⧉</span> ' + ( i18n.pictureInPicture || 'تصویر در تصویر' );
+			pip.addEventListener( 'click', function () {
+				if ( document.pictureInPictureElement ) {
+					document.exitPictureInPicture();
+					return;
+				}
+				video.requestPictureInPicture().catch( function () {} );
+			} );
+			controls.appendChild( pip );
+		}
+	}
+
+	/*
+	 * کارت «قسمت بعدی» با شمارش معکوس. داده از `data-next-url` و
+	 * `data-next-title` می‌آید که فقط برای قسمت‌های میانی سریال چاپ
+	 * می‌شوند؛ برای فیلم هیچ کارتی ساخته نمی‌شود.
+	 */
+	var NEXT_DELAY = 8;
+
+	function initNextEpisode( root, video ) {
+		var nextUrl = root.getAttribute( 'data-next-url' );
+		var frame = root.querySelector( '[data-player-frame]' );
+
+		if ( ! nextUrl || ! frame || ! video ) {
+			return;
+		}
+
+		var nextTitle = root.getAttribute( 'data-next-title' ) || '';
+		var timer = null;
+
+		function clearCard() {
+			var card = frame.querySelector( '.player-next' );
+			if ( card ) {
+				card.parentNode.removeChild( card );
+			}
+			if ( timer ) {
+				window.clearInterval( timer );
+				timer = null;
+			}
+		}
+
+		video.addEventListener( 'ended', function () {
+			clearCard();
+
+			var card = document.createElement( 'div' );
+			card.className = 'player-next';
+			card.setAttribute( 'role', 'status' );
+			card.setAttribute( 'aria-live', 'polite' );
+
+			var label = document.createElement( 'p' );
+			label.className = 'player-next__label';
+			label.textContent = i18n.nextEpisode || 'قسمت بعدی';
+
+			var title = document.createElement( 'strong' );
+			title.textContent = nextTitle;
+
+			var countdown = document.createElement( 'span' );
+			countdown.className = 'player-next__count';
+			countdown.setAttribute( 'data-player-next-count', '1' );
+
+			var play = document.createElement( 'a' );
+			play.className = 'manacore-btn is-primary is-small';
+			play.setAttribute( 'data-player-next', '1' );
+			play.href = nextUrl;
+			play.textContent = i18n.playNext || 'پخش قسمت بعدی';
+
+			var cancel = document.createElement( 'button' );
+			cancel.type = 'button';
+			cancel.className = 'manacore-btn is-secondary is-small';
+			cancel.textContent = i18n.cancel || 'لغو';
+			cancel.addEventListener( 'click', clearCard );
+
+			card.appendChild( label );
+			card.appendChild( title );
+			card.appendChild( countdown );
+			card.appendChild( play );
+			card.appendChild( cancel );
+			frame.appendChild( card );
+
+			var left = NEXT_DELAY;
+			countdown.textContent = left;
+
+			timer = window.setInterval( function () {
+				left -= 1;
+				countdown.textContent = left;
+
+				if ( left <= 0 ) {
+					window.clearInterval( timer );
+					timer = null;
+					window.location.href = nextUrl;
+				}
+			}, 1000 );
+		} );
+
+		video.addEventListener( 'play', clearCard );
+	}
+
+	/* ---------------- گزارش خرابی لینک ---------------- */
+
+	/*
+	 * کاربر روی «خراب است؟» می‌زند، یک فرم کوچک کنارش باز می‌شود، لینک
+	 * مشکل‌دار را از فهرست همان بخش انتخاب می‌کند و می‌فرستد. فهرست
+	 * گزینه‌ها از خودِ جدول دانلود خوانده می‌شود (نه داده‌ی تکراری در
+	 * مارک‌آپ)، پس هر تغییری در جدول خودکار اینجا هم دیده می‌شود.
+	 */
+	/*
+	 * ---------------- درخواست فیلم/سریال ----------------
+	 *
+	 * فرم ثبت و رأی‌گیری هر دو روی REST کار می‌کنند. حالت‌های خطا از
+	 * پیام خود سرور می‌آید (پیام فارسی، همان‌جا در PHP) تا متن‌ها دو جا
+	 * تکرار نشوند؛ فقط وقتی پاسخ پیامی نداشت، متن جانشین نشان داده
+	 * می‌شود.
+	 */
+	function initRequests() {
+		var form = document.querySelector( '[data-manacore-request-form]' );
+
+		if ( form ) {
+			form.addEventListener( 'submit', function ( event ) {
+				event.preventDefault();
+
+				var status = form.querySelector( '[data-manacore-request-status]' );
+				var submit = form.querySelector( 'button[type="submit"]' );
+				var body = {
+					title: valueOf( form, 'title' ),
+					type: valueOf( form, 'type' ),
+					year: parseInt( valueOf( form, 'year' ), 10 ) || 0,
+					link: valueOf( form, 'link' ),
+					note: valueOf( form, 'note' ),
+					hp: valueOf( form, 'hp' ),
+				};
+
+				if ( body.title.length < 2 ) {
+					setStatus( status, i18n.requestTitle || 'نام فیلم یا سریال را کامل بنویسید.', true );
+					return;
+				}
+
+				if ( submit ) {
+					submit.disabled = true;
+				}
+
+				setStatus( status, i18n.requestSending || 'در حال ارسال…', false );
+
+				api( 'request', { method: 'POST', body: body } )
+					.then( function ( json ) {
+						setStatus( status, json && json.message ? json.message : i18n.requestDone || 'درخواست شما ثبت شد.', false );
+						toast( json && json.message ? json.message : i18n.requestDone || 'درخواست شما ثبت شد.', false );
+
+						form.reset();
+
+						/* تخته‌ی همین صفحه تازه می‌شود تا رأی تازه دیده شود. */
+						if ( json && json.id ) {
+							refreshRequests();
+						}
+					} )
+					.catch( function ( error ) {
+						setStatus( status, ( error && error.message ) || i18n.requestError || 'ارسال نشد؛ دوباره تلاش کنید.', true );
+					} )
+					.then( function () {
+						if ( submit ) {
+							submit.disabled = false;
+						}
+					} );
+			} );
+		}
+
+		document.addEventListener( 'click', function ( event ) {
+			var button = event.target.closest ? event.target.closest( '[data-manacore-vote]' ) : null;
+
+			if ( ! button ) {
+				return;
+			}
+
+			event.preventDefault();
+
+			if ( button.classList.contains( 'is-voted' ) ) {
+				toast( i18n.requestVoted || 'شما پیش‌تر به این درخواست رأی داده‌اید.', false );
+				return;
+			}
+
+			button.disabled = true;
+
+			api( 'request-vote', {
+				method: 'POST',
+				body: { request_id: parseInt( button.getAttribute( 'data-request-id' ), 10 ) || 0 },
+			} )
+				.then( function ( json ) {
+					var count = button.closest( '.manacore-request' ).querySelector( '[data-request-count]' );
+
+					if ( count && json && typeof json.votes !== 'undefined' ) {
+						count.textContent = json.votes;
+					}
+
+					button.classList.add( 'is-voted' );
+					toast( json && json.message ? json.message : i18n.requestVoted || 'رأی ثبت شد.', false );
+				} )
+				.catch( function ( error ) {
+					toast( ( error && error.message ) || i18n.requestError || 'رأی ثبت نشد.', true );
+				} )
+				.then( function () {
+					button.disabled = false;
+				} );
+		} );
+
+		refreshRequests();
+	}
+
+	/* خواندن یک فیلد فرم با پیشوند `manacore_settings`-مانند؛ ساده و امن. */
+	function valueOf( form, name ) {
+		var field = form.elements[ name ];
+
+		if ( ! field ) {
+			return '';
+		}
+
+		return ( field.value || '' ).trim();
+	}
+
+	function setStatus( node, message, isError ) {
+		if ( ! node ) {
+			return;
+		}
+
+		node.textContent = message || '';
+		node.classList.toggle( 'is-error', !! isError );
+	}
+
+	/*
+	 * تخته‌ی درخواست‌ها را از همان مسیر REST سرور تازه می‌کند تا شمار
+	 * رأی‌ها پس از ثبت درخواست/رأی همیشه واقعی باشد (بدون بازخوانی صفحه).
+	 */
+	function refreshRequests() {
+		var board = document.querySelector( '[data-manacore-requests]' );
+		var mine  = document.querySelector( '[data-manacore-mine]' );
+
+		/*
+		 * پنل «درخواست‌های من» هم بعد از ثبت درخواست تازه باید فهرست
+		 * کامل را بگیرد؛ سرور همان تکه‌ی HTML را می‌فرستد، پس کاربر
+		 * بدون بازخوانی صفحه Markup تازه می‌بیند.
+		 */
+		if ( mine ) {
+			api( 'my-requests', { method: 'GET' } )
+				.then( function ( json ) {
+					if ( json && json.html ) {
+						mine.innerHTML = json.html;
+					}
+				} )
+				.catch( function () {} );
+		}
+
+		if ( ! board ) {
+			return;
+		}
+
+		fetch( config.restUrl + 'requests?status=all&per_page=60' )
+			.then( function ( response ) {
+				return response.ok ? response.json() : null;
+			} )
+			.then( function ( json ) {
+				if ( ! json || ! json.items ) {
+					return;
+				}
+
+				json.items.forEach( function ( item ) {
+					var node = board.querySelector( '[data-request-id="' + item.id + '"]' );
+
+					if ( ! node ) {
+						return;
+					}
+
+					var count = node.querySelector( '[data-request-count]' );
+
+					if ( count ) {
+						count.textContent = item.votes;
+					}
+				} );
+			} )
+			.catch( function () {
+				/* تازه‌سازی تزئینی است؛ خطایش نباید چیزی را بشکند. */
+			} );
+	}
+
+	function initReports() {
+		document.querySelectorAll( '[data-manacore-report]' ).forEach( function ( button ) {
+			button.addEventListener( 'click', function () {
+				var section = button.closest( '.download-section' ) || document;
+				var existing = section.querySelector( '.manacore-report-panel' );
+
+				if ( existing ) {
+					existing.parentNode.removeChild( existing );
+					return;
+				}
+
+				var panel = document.createElement( 'form' );
+				panel.className = 'manacore-report-panel';
+				panel.setAttribute( 'aria-label', i18n.reportTitle || 'گزارش خرابی لینک' );
+
+				var title = document.createElement( 'p' );
+				title.className = 'manacore-report-panel__title';
+				title.textContent = i18n.reportTitle || 'گزارش خرابی لینک';
+				panel.appendChild( title );
+
+				var select = document.createElement( 'select' );
+				select.className = 'manacore-report-panel__link';
+				select.setAttribute( 'aria-label', i18n.reportWhich || 'کدام لینک؟' );
+
+				var rows = section.querySelectorAll( '.download-row' );
+				Array.prototype.forEach.call( rows, function ( row ) {
+					var link = row.querySelector( 'a[href]' );
+					/* ستون کیفیت یا نام ممکن است (بی‌داده) حذف شده باشد؛ هر کدام بود، برچسب است. */
+					var quality = row.querySelector( '.quality-name b, .download-name' );
+
+					if ( ! link || ! link.getAttribute( 'href' ) ) {
+						return;
+					}
+
+					var option = document.createElement( 'option' );
+					option.value = link.getAttribute( 'href' );
+					option.textContent = ( quality ? quality.textContent.trim() + ' — ' : '' ) + ( link.textContent.trim() || link.getAttribute( 'href' ) );
+					option.setAttribute( 'data-quality', quality ? quality.textContent.trim() : '' );
+					select.appendChild( option );
+				} );
+
+				/* اگر جدولی نبود، همان لینک روی خود دکمه به کار می‌رود. */
+				if ( ! select.options.length ) {
+					var fallback = document.createElement( 'option' );
+					fallback.value = button.getAttribute( 'data-link-url' ) || '';
+					fallback.textContent = i18n.reportGeneric || 'لینک این بخش';
+					select.appendChild( fallback );
+				}
+
+				var reason = document.createElement( 'input' );
+				reason.type = 'text';
+				reason.maxLength = 180;
+				reason.className = 'manacore-report-panel__reason';
+				reason.placeholder = i18n.reportReason || 'توضیح کوتاه (اختیاری)';
+				reason.setAttribute( 'aria-label', reason.placeholder );
+
+				var submit = document.createElement( 'button' );
+				submit.type = 'submit';
+				submit.className = 'manacore-btn is-primary is-small';
+				submit.textContent = i18n.reportSend || 'ارسال گزارش';
+
+				var cancel = document.createElement( 'button' );
+				cancel.type = 'button';
+				cancel.className = 'manacore-btn is-secondary is-small';
+				cancel.textContent = i18n.cancel || 'لغو';
+				cancel.addEventListener( 'click', function () {
+					panel.parentNode.removeChild( panel );
+					button.focus();
+				} );
+
+				panel.appendChild( select );
+				panel.appendChild( reason );
+				panel.appendChild( submit );
+				panel.appendChild( cancel );
+
+				panel.addEventListener( 'submit', function ( event ) {
+					event.preventDefault();
+
+					var option = select.options[ select.selectedIndex ];
+					var url = option ? option.value : '';
+
+					if ( ! url ) {
+						toast( i18n.reportWhich || 'کدام لینک؟', true );
+						return;
+					}
+
+					submit.disabled = true;
+
+					api( 'report-link', {
+						method: 'POST',
+						body: {
+							post_id: parseInt( button.getAttribute( 'data-post-id' ), 10 ) || 0,
+							link_url: url,
+							link_label: option ? option.textContent.trim() : '',
+							quality: option && option.getAttribute( 'data-quality' ) ? option.getAttribute( 'data-quality' ) : button.getAttribute( 'data-quality' ) || '',
+							reason: reason.value,
+						},
+					} )
+						.then( function ( response ) {
+							toast( ( response && response.message ) || i18n.reportDone || 'گزارش ثبت شد. ممنون!', false );
+							panel.parentNode.removeChild( panel );
+							button.setAttribute( 'disabled', 'disabled' );
+							button.classList.add( 'is-reported' );
+						} )
+						.catch( function ( error ) {
+							submit.disabled = false;
+							toast( ( error && error.message ) || i18n.error || 'خطایی رخ داد. دوباره تلاش کنید.', true );
+						} );
+				} );
+
+				button.parentNode.appendChild( panel );
+				select.focus();
 			} );
 		} );
 	}
@@ -730,7 +1413,18 @@
 	}
 
 	/* ---------------- اسلایدر ویژه ---------------- */
+	/*
+	 * رفتار اسلایدر هم‌شکل مرجع `cinora/index.html`:
+	 *   • جابه‌جایی با فلش‌ها، نقطه‌ها و کلیدهای جهت‌دار
+	 *   • شمارنده‌ی «۰۱ / ۰۳» با هر تغییر تازه می‌شود
+	 *   • پخش خودکار با توقف روی هاور و فوکوس، و توقف در تب پنهان
+	 *   • چرخش ملایم کادر با حرکت ماوس (اگر کلید tilt روشن باشد)
+	 * همه‌ی این‌ها با احترام به prefers-reduced-motion و بدون هیچ
+	 * اندازه‌گیری/شمارشی که به آمار سایت اضافه کند.
+	 */
 	function initHero() {
+		var finePointer = window.matchMedia( '(pointer: fine)' );
+
 		document.querySelectorAll( '[data-manacore-hero]' ).forEach( function ( hero ) {
 			var slides = Array.prototype.slice.call( hero.querySelectorAll( '[data-hero-slide]' ) );
 			var dots = Array.prototype.slice.call( hero.querySelectorAll( '[data-hero-dot]' ) );
@@ -740,16 +1434,29 @@
 
 			var current = 0;
 			var timer = null;
+			var paused = false;
+			var hovered = false;
+			var focused = false;
 
 			// تنظیمات از ویرایشگر بلوک روی خود عنصر نوشته می‌شود.
 			var autoplay = '0' !== hero.getAttribute( 'data-autoplay' );
+			var tilt = 'true' === hero.getAttribute( 'data-tilt' );
 			var interval = parseInt( hero.getAttribute( 'data-interval' ), 10 );
 			if ( ! interval || interval < 1500 ) {
-				interval = 7000;
+				interval = 10000;
 			}
 
 			var prevBtn = hero.querySelector( '[data-hero-prev]' );
 			var nextBtn = hero.querySelector( '[data-hero-next]' );
+			var counter = hero.querySelector( '.manacore-hero-counter b' );
+
+			function reduced() {
+				return window.matchMedia( '(prefers-reduced-motion: reduce)' ).matches;
+			}
+
+			function pad( value ) {
+				return value < 10 ? '0' + value : String( value );
+			}
 
 			function show( index ) {
 				current = ( index + slides.length ) % slides.length;
@@ -758,15 +1465,15 @@
 				} );
 				dots.forEach( function ( dot, i ) {
 					dot.classList.toggle( 'is-active', i === current );
-					dot.setAttribute( 'aria-selected', i === current ? 'true' : 'false' );
+					dot.setAttribute( 'aria-pressed', i === current ? 'true' : 'false' );
 				} );
+				if ( counter ) {
+					counter.textContent = pad( current + 1 );
+				}
 			}
 
 			function start() {
-				if ( ! autoplay ) {
-					return;
-				}
-				if ( window.matchMedia( '(prefers-reduced-motion: reduce)' ).matches ) {
+				if ( ! autoplay || paused || document.hidden || reduced() ) {
 					return;
 				}
 				stop();
@@ -779,40 +1486,97 @@
 				window.clearInterval( timer );
 			}
 
+			function go( index ) {
+				show( index );
+				start();
+			}
+
 			dots.forEach( function ( dot, index ) {
 				dot.addEventListener( 'click', function () {
-					show( index );
-					start();
+					go( index );
 				} );
 			} );
 
 			if ( prevBtn ) {
 				prevBtn.addEventListener( 'click', function () {
-					show( current - 1 );
-					start();
+					go( current - 1 );
 				} );
 			}
 
 			if ( nextBtn ) {
 				nextBtn.addEventListener( 'click', function () {
-					show( current + 1 );
-					start();
+					go( current + 1 );
 				} );
 			}
 
 			// پیمایش با صفحه‌کلید برای دسترس‌پذیری.
 			hero.addEventListener( 'keydown', function ( event ) {
 				if ( 'ArrowLeft' === event.key ) {
-					show( current + 1 );
-					start();
+					go( current + 1 );
 				} else if ( 'ArrowRight' === event.key ) {
-					show( current - 1 );
+					go( current - 1 );
+				}
+			} );
+
+			/*
+			 * توقف روی هاور و فوکوس جدا نگه داشته می‌شود: خروج فوکوس وقتی
+			 * ماوس هنوز روی اسلایدر است، پخش را دوباره روشن نمی‌کند.
+			 */
+			// فقط فوکوس صفحه‌کلید پخش را متوقف می‌کند؛ کلیک ماوس روی فلش/نقطه
+			// دکمه را فوکوس می‌کند و نباید پس از خروج ماوس پخش را خاموش نگه دارد.
+			hero.addEventListener( 'focusin', function ( event ) {
+				focused = event.target.matches( ':focus-visible' );
+				if ( focused ) {
+					paused = true;
+					stop();
+				}
+			} );
+
+			hero.addEventListener( 'focusout', function () {
+				focused = false;
+				paused = hovered;
+				start();
+			} );
+
+			hero.addEventListener( 'mouseenter', function () {
+				hovered = true;
+				paused = true;
+				stop();
+			} );
+
+			hero.addEventListener( 'mouseleave', function () {
+				hovered = false;
+				paused = focused;
+				hero.style.removeProperty( '--mc-hero-tilt' );
+				start();
+			} );
+
+			if ( tilt ) {
+				hero.addEventListener( 'mousemove', function ( event ) {
+					if ( reduced() || ! finePointer.matches ) {
+						return;
+					}
+					var rect = hero.getBoundingClientRect();
+					if ( ! rect.width ) {
+						return;
+					}
+					var angle = ( ( event.clientX - rect.left ) / rect.width - .5 ) * .8;
+					hero.style.setProperty( '--mc-hero-tilt', angle.toFixed( 3 ) + 'deg' );
+				} );
+			}
+
+			/*
+			 * تب پنهان نباید اسلاید عوض کند؛ هم مصرف بی‌دلیل را می‌گیرد و
+			 * هم وقتی کاربر برمی‌گردد اسلاید عوض‌شده غافلگیرش نمی‌کند.
+			 */
+			document.addEventListener( 'visibilitychange', function () {
+				if ( document.hidden ) {
+					stop();
+				} else {
 					start();
 				}
 			} );
 
-			hero.addEventListener( 'mouseenter', stop );
-			hero.addEventListener( 'mouseleave', start );
 			start();
 		} );
 	}
@@ -1033,74 +1797,192 @@
 	}
 
 	/*
-	 * «داستان‌های بیشتر» (`.load-more-zone` مرجع).
+	 * «داستان‌های بیشتر» و بارگذاری خودکار (`.load-more-zone` مرجع).
 	 *
-	 * پیوند صفحه‌ی بعد را می‌گیرد، کارت‌هایش را به انتهای همین شبکه
-	 * می‌چسباند (رفتار مرجع: افزودن، نه جایگزینی) و پیوند تازه‌ای برای
-	 * صفحه‌ی بعد می‌گذارد؛ در پایان همان پیام مرجع را نشان می‌دهد. اگر
-	 * جاوااسکریپت نباشد، همان پیوند یک صفحه‌بندی معمولی است و کار می‌کند.
+	 * کلیک، صفحه‌ی بعد **همان حلقه** را واکشی می‌کند (با شماره‌ی حلقه از
+	 * `data-manacore-loop`) و کارت‌هایش را به انتهای شبکه‌ی همان بلوک
+	 * می‌چسباند؛ کارت تکراری (همان `data-post-id`) دوباره نمی‌آید. پیوند
+	 * پایانی تازه‌ای می‌گذارد و در آخرین صفحه پیام پایانی را نشان می‌دهد.
+	 * خطا پیام کوتاه می‌دهد و صفحه بازبارگذاری نمی‌شود. اگر جاوااسکریپت
+	 * یا واکشی نباشد، همان پیوند یک صفحه‌بندی معمولی است.
 	 */
 	function initLoadMore() {
 		document.addEventListener( 'click', function ( event ) {
 			var link = event.target.closest( '[data-manacore-load-more]' );
-			if ( ! link || link.getAttribute( 'aria-busy' ) === 'true' ) {
-				return;
+			if ( ! link || ! loopBlockOf( link ) || ! window.fetch ) {
+				return; // پیوند معمولی: مرورگر خودش به صفحه‌ی بعد می‌رود.
 			}
 
-			var zone = link.closest( '.load-more-zone' );
-			var grid = document.querySelector( '.manacore-titles-block .manacore-grid-cards' );
-			var block = grid ? grid.closest( '.manacore-titles-block' ) : null;
-
-			if ( ! zone || ! grid || ! window.fetch ) {
-				return; // بدون جاوااسکریپت/مرورگر قدیمی: پیوند خودش کار می‌کند.
-			}
-
+			/*
+			 * از این‌جا به بعد JS کار را می‌گیرد؛ حتی وقتی واکشی در جریان است
+			 * کلیک تکراری هم باید بی‌صدا رد شود، نه ناوبری کامل صفحه.
+			 */
 			event.preventDefault();
-			link.setAttribute( 'aria-busy', 'true' );
+			requestMore( link );
+		} );
 
-			window.fetch( link.href, { credentials: 'same-origin' } )
-				.then( function ( response ) {
-					return response.text();
-				} )
-				.then( function ( html ) {
-					var parsed = new window.DOMParser().parseFromString( html, 'text/html' );
-					var page   = parsed.querySelector( '.manacore-titles-block .manacore-grid-cards' );
-					var next   = parsed.querySelector( '[data-manacore-load-more]' );
+		initLoadMoreAutoload();
+	}
 
-					if ( ! page ) {
-						window.location.href = link.href;
-						return;
+	/**
+	 * بلوک آثاری که این پیوند به آن تعلق دارد (یا null).
+	 *
+	 * @param {Element} link پیوند «داستان‌های بیشتر».
+	 * @return {Element|null}
+	 */
+	function loopBlockOf( link ) {
+		var block = link.closest( '.manacore-titles-block' );
+
+		return block && block.querySelector( '.manacore-grid-cards' ) ? block : null;
+	}
+
+	/**
+	 * صفحه‌ی بعد همان حلقه را واکشی و کارت‌هایش را اضافه می‌کند.
+	 *
+	 * @param {Element} link پیوند «داستان‌های بیشتر».
+	 * @return {Promise<boolean>} true اگر موفق بود؛ هرگز رد نمی‌شود.
+	 */
+	function requestMore( link ) {
+		if ( 'true' === link.getAttribute( 'aria-busy' ) ) {
+			return Promise.resolve( false );
+		}
+
+		var block = loopBlockOf( link );
+		var grid  = block.querySelector( '.manacore-grid-cards' );
+		var zone  = link.closest( '.load-more-zone' );
+		var loop  = block.getAttribute( 'data-manacore-loop' );
+
+		clearLoadError( zone );
+		link.setAttribute( 'aria-busy', 'true' );
+
+		return window.fetch( link.getAttribute( 'href' ), { credentials: 'same-origin' } )
+			.then( function ( response ) {
+				if ( ! response.ok ) {
+					throw new Error( 'HTTP ' + response.status );
+				}
+				return response.text();
+			} )
+			.then( function ( html ) {
+				var doc      = new window.DOMParser().parseFromString( html, 'text/html' );
+				var incoming = doc.querySelector( '.manacore-titles-block[data-manacore-loop="' + loop + '"]' );
+				if ( ! incoming ) {
+					throw new Error( 'loop not found' );
+				}
+
+				appendUniqueCards( grid, incoming.querySelector( '.manacore-grid-cards' ) );
+
+				var next = incoming.querySelector( '[data-manacore-load-more]' );
+				link.removeAttribute( 'aria-busy' );
+				if ( next ) {
+					link.setAttribute( 'href', next.getAttribute( 'href' ) );
+				} else if ( zone ) {
+					var done = incoming.querySelector( '.load-more-zone' );
+					zone.innerHTML = done ? done.innerHTML : '';
+				}
+
+				return true;
+			} )
+			.catch( function () {
+				link.removeAttribute( 'aria-busy' );
+				showLoadError( zone, link );
+				return false;
+			} );
+	}
+
+	/**
+	 * کارت‌های `source` را به انتهای `grid` می‌افزاید، بدون کارت تکراری.
+	 *
+	 * @param {Element}      grid   شبکه‌ی مقصد.
+	 * @param {Element|null} source شبکه‌ی واکشی‌شده.
+	 */
+	function appendUniqueCards( grid, source ) {
+		if ( ! source ) {
+			return;
+		}
+
+		var seen = {};
+		Array.prototype.forEach.call( grid.querySelectorAll( '[data-post-id]' ), function ( card ) {
+			seen[ card.getAttribute( 'data-post-id' ) ] = true;
+		} );
+
+		/* `children` زنده است؛ نخست فهرست ساکن می‌گیریم (گره‌ها جابه‌جا می‌شوند). */
+		Array.prototype.slice.call( source.children ).forEach( function ( card ) {
+			var id = card.getAttribute( 'data-post-id' );
+			if ( id ) {
+				if ( seen[ id ] ) {
+					return;
+				}
+				seen[ id ] = true;
+			}
+			grid.appendChild( card );
+		} );
+	}
+
+	/**
+	 * پیام خطا زیر دکمه (یک بار؛ با تلاش مجدد پاک می‌شود).
+	 *
+	 * @param {Element|null} zone ظرف دکمه.
+	 * @param {Element}      link دکمه.
+	 */
+	function showLoadError( zone, link ) {
+		if ( ! zone || zone.querySelector( '.load-more-error' ) ) {
+			return;
+		}
+
+		var message = document.createElement( 'p' );
+		message.className = 'load-more-error';
+		message.setAttribute( 'role', 'alert' );
+		message.textContent = link.getAttribute( 'data-manacore-error' ) || '';
+		zone.appendChild( message );
+	}
+
+	/**
+	 * پیام خطای قبلی را پاک می‌کند.
+	 *
+	 * @param {Element|null} zone ظرف دکمه.
+	 */
+	function clearLoadError( zone ) {
+		var old = zone ? zone.querySelector( '.load-more-error' ) : null;
+		if ( old ) {
+			old.parentNode.removeChild( old );
+		}
+	}
+
+	/*
+	 * بارگذاری خودکار با اسکرول: وقتی ظرف «داستان‌های بیشتر» به ناحیه‌ی
+	 * دید نزدیک می‌شود، همان تابع دکمه اجرا می‌شود. دکمه همچنان دیده
+	 * می‌شود. بعد از هر موفقیت دوباره مشاهده می‌شود تا اگر هنوز در دید است
+	 * صفحه‌ی بعد هم بیاید. بعد از خطا یا در آخرین صفحه متوقف می‌شود تا
+	 * حلقه‌ی بی‌پایان نداشته باشیم (دکمه برای ادامه‌ی دستی می‌ماند).
+	 * بدون IntersectionObserver فقط دکمه کار می‌کند.
+	 */
+	function initLoadMoreAutoload() {
+		if ( ! ( 'IntersectionObserver' in window ) ) {
+			return;
+		}
+
+		var observer = new window.IntersectionObserver( function ( entries ) {
+			entries.forEach( function ( entry ) {
+				var zone = entry.target;
+				var link = zone.querySelector( '[data-manacore-load-more]' );
+
+				if ( ! entry.isIntersecting || ! link || 'true' === link.getAttribute( 'aria-busy' ) ) {
+					return;
+				}
+
+				observer.unobserve( zone );
+				requestMore( link ).then( function ( ok ) {
+					if ( ok && zone.querySelector( '[data-manacore-load-more]' ) ) {
+						observer.observe( zone );
 					}
-
-					/*
-					 * `children` یک مجموعه‌ی زنده است؛ اگر همان را پیمایش
-					 * کنیم و هر گره را به شبکه‌ی مقصد بچسبانیم، گره از
-					 * مجموعه‌ی مبدأ حذف می‌شود و ایندکس‌ها جابه‌جا
-					 * می‌شوند — نتیجه، جاافتادن هر کارت دوم بود
-					 * (سنجیده‌شده: صفحه‌ی دوم با دو کارت، فقط یکی را
-					 * می‌افزود). پس نخست یک رونوشت ساکن می‌گیریم.
-					 */
-					var incoming = Array.prototype.slice.call( page.children );
-
-					incoming.forEach( function ( card ) {
-						grid.appendChild( card );
-					} );
-
-					if ( next ) {
-						link.setAttribute( 'href', next.getAttribute( 'href' ) );
-						link.removeAttribute( 'aria-busy' );
-						// شمارش کارت‌های افزوده‌شده به خواننده‌ی صفحه.
-						link.setAttribute( 'data-manacore-loaded', String( page.children.length ) );
-					} else if ( block ) {
-						var done = parsed.querySelector( '.load-more-zone' );
-						zone.innerHTML = done ? done.innerHTML : '';
-					} else {
-						zone.innerHTML = '';
-					}
-				} )
-				.catch( function () {
-					window.location.href = link.href;
 				} );
+			} );
+		}, { rootMargin: '600px 0px' } );
+
+		Array.prototype.forEach.call( document.querySelectorAll( '.load-more-zone' ), function ( zone ) {
+			if ( zone.querySelector( '[data-manacore-autoload]' ) ) {
+				observer.observe( zone );
+			}
 		} );
 	}
 
@@ -1380,6 +2262,11 @@
 		var video   = player.querySelector( '#live-video' );
 		var title   = player.querySelector( '#live-title' );
 		var sub     = player.querySelector( '#live-subtitle' );
+		var quality = player.querySelector( '#live-quality' );
+		var qualityWrap = player.querySelector( '#live-quality-wrap' );
+		var nowWork = player.querySelector( '#live-now-work' );
+		var nowLink = player.querySelector( '#live-now-link' );
+		var nowTitle = player.querySelector( '#live-now-title' );
 		var muteBtn = player.querySelector( '#mute-video' );
 		var fullBtn = player.querySelector( '#fullscreen-video' );
 		var retry   = player.querySelector( '#retry-video' );
@@ -1452,8 +2339,39 @@
 							title.textContent = data.title || data.name || '';
 						}
 
+						/*
+						 * هر بخش متنی کانال جدید را می‌گیرد؛ بخشی که داده ندارد
+						 * پنهان می‌شود تا متن کانال قبلی جا نماند.
+						 */
 						if ( sub ) {
 							sub.textContent = data.subtitle || '';
+							sub.hidden = ! data.subtitle;
+						}
+
+						if ( quality ) {
+							quality.textContent = data.quality_label || '';
+						}
+
+						if ( qualityWrap ) {
+							qualityWrap.hidden = ! data.quality_label;
+						}
+
+						if ( nowWork ) {
+							var now = data.now || null;
+
+							if ( nowTitle ) {
+								nowTitle.textContent = now ? now.title || '' : '';
+							}
+
+							if ( nowLink ) {
+								if ( now && now.url ) {
+									nowLink.setAttribute( 'href', now.url );
+								} else {
+									nowLink.removeAttribute( 'href' );
+								}
+							}
+
+							nowWork.hidden = ! now;
 						}
 
 						if ( data.poster ) {
@@ -1855,6 +2773,284 @@
 		} );
 	}
 
+	/*
+	 * مودال ورود/ثبت‌نام تب‌دار (الگوی `cinora/`). فقط برای کاربر واردشده‌نبوده
+	 * و فقط با کلیک کاربر باز می‌شود؛ درخواست‌ها با نانس REST و بدون
+	 * ذخیره‌ی رمز در مرورگر انجام می‌شود.
+	 */
+	function initAuthModal() {
+		var modal = document.querySelector( '[data-manacore-auth]' );
+
+		if ( ! modal || config.loggedIn ) {
+			return;
+		}
+
+		var panel = modal.querySelector( '.manacore-auth__panel' );
+		var form = modal.querySelector( '[data-auth-form]' );
+		var errorBox = modal.querySelector( '[data-auth-error]' );
+		var title = modal.querySelector( '[data-auth-title]' );
+		var copy = modal.querySelector( '[data-auth-copy]' );
+		var nameField = modal.querySelector( '[data-auth-name-field]' );
+		var nameInput = nameField.querySelector( 'input' );
+		var emailInput = form.elements.email;
+		var passInput = form.elements.password;
+		var submit = modal.querySelector( '[data-auth-submit]' );
+		var submitLabel = modal.querySelector( '[data-auth-submit-label]' );
+		var toggle = modal.querySelector( '[data-auth-password-toggle]' );
+		var tabs = modal.querySelectorAll( '[data-auth-mode]' );
+		var canRegister = modal.getAttribute( 'data-can-register' ) === '1';
+		var mode = 'register';
+		var busy = false;
+		var lastFocus = null;
+
+		var modes = {
+			login: {
+				title: i18n.authLoginTitle,
+				copy: i18n.authLoginCopy,
+				submit: i18n.authLoginSubmit,
+				autocomplete: 'current-password',
+			},
+			register: {
+				title: i18n.authRegisterTitle,
+				copy: i18n.authRegisterCopy,
+				submit: i18n.authRegisterSubmit,
+				autocomplete: 'new-password',
+			},
+		};
+
+		function showError( message ) {
+			errorBox.textContent = message;
+			errorBox.hidden = false;
+		}
+
+		function hideError() {
+			errorBox.textContent = '';
+			errorBox.hidden = true;
+		}
+
+		function setBusy( value ) {
+			busy = value;
+			submit.disabled = value;
+		}
+
+		function setMode( next ) {
+			if ( 'register' === next && ! canRegister ) {
+				next = 'login';
+			}
+
+			mode = next;
+			title.textContent = modes[ next ].title;
+			copy.textContent = modes[ next ].copy;
+			submitLabel.textContent = modes[ next ].submit;
+			form.setAttribute( 'aria-labelledby', 'manacore-auth-tab-' + next );
+			passInput.setAttribute( 'autocomplete', modes[ next ].autocomplete );
+			nameField.hidden = 'register' !== next;
+
+			Array.prototype.forEach.call( tabs, function ( tab ) {
+				var active = tab.getAttribute( 'data-auth-mode' ) === next;
+				tab.setAttribute( 'aria-selected', active ? 'true' : 'false' );
+				tab.tabIndex = active ? 0 : -1;
+			} );
+
+			hideError();
+		}
+
+		function open( next ) {
+			lastFocus = document.activeElement;
+			/* مثل مرجع cinora، پیش‌فرض تب «عضویت» است؛ «login» صریحاً ورود را باز می‌کند. */
+			setMode( next === 'login' ? 'login' : 'register' );
+			modal.hidden = false;
+			document.body.classList.add( 'manacore-auth-open' );
+			( 'register' === mode ? nameInput : emailInput ).focus();
+		}
+
+		function close() {
+			modal.hidden = true;
+			document.body.classList.remove( 'manacore-auth-open' );
+
+			if ( lastFocus && typeof lastFocus.focus === 'function' ) {
+				lastFocus.focus();
+			}
+		}
+
+		function focusables() {
+			return Array.prototype.filter.call(
+				panel.querySelectorAll( 'button, input, a[href]' ),
+				function ( el ) {
+					return el.offsetParent !== null && ! el.disabled;
+				}
+			);
+		}
+
+		function validate() {
+			if ( ! emailInput.value.trim() || ! emailInput.checkValidity() ) {
+				showError( i18n.authEmailInvalid );
+				emailInput.focus();
+				return false;
+			}
+
+			if ( 'register' === mode ) {
+				var name = nameInput.value.trim();
+
+				if ( name.length < 2 || name.length > 50 ) {
+					showError( i18n.authNameShort );
+					nameInput.focus();
+					return false;
+				}
+
+				if ( passInput.value.length < 8 ) {
+					showError( i18n.authPasswordShort );
+					passInput.focus();
+					return false;
+				}
+			}
+
+			if ( ! passInput.value ) {
+				showError( i18n.authPasswordShort );
+				passInput.focus();
+				return false;
+			}
+
+			return true;
+		}
+
+		/* باز و بسته‌کردن با کلیک روی هر عنصر دارای data-manacore-auth-open. */
+		document.addEventListener( 'click', function ( event ) {
+			var trigger = event.target.closest && event.target.closest( '[data-manacore-auth-open]' );
+
+			if ( trigger ) {
+				event.preventDefault();
+				open( trigger.getAttribute( 'data-manacore-auth-open' ) );
+			}
+		} );
+
+		modal.addEventListener( 'click', function ( event ) {
+			if ( event.target.closest( '[data-auth-close]' ) && ! busy ) {
+				close();
+			}
+		} );
+
+		modal.addEventListener( 'keydown', function ( event ) {
+			if ( 'Escape' === event.key && ! busy ) {
+				event.preventDefault();
+				close();
+				return;
+			}
+
+			if ( 'Tab' === event.key ) {
+				var items = focusables();
+
+				if ( ! items.length ) {
+					return;
+				}
+
+				var first = items[ 0 ];
+				var last = items[ items.length - 1 ];
+
+				if ( event.shiftKey && document.activeElement === first ) {
+					event.preventDefault();
+					last.focus();
+				} else if ( ! event.shiftKey && document.activeElement === last ) {
+					event.preventDefault();
+					first.focus();
+				}
+			}
+		} );
+
+		/* کلیدهای جهت‌دار بین تب‌ها (الگوی استاندارد tablist). */
+		modal.querySelector( '[role="tablist"]' ).addEventListener( 'keydown', function ( event ) {
+			if ( 'ArrowLeft' !== event.key && 'ArrowRight' !== event.key ) {
+				return;
+			}
+
+			var enabled = Array.prototype.filter.call( tabs, function ( tab ) {
+				return ! tab.hidden;
+			} );
+			var index = enabled.indexOf( document.activeElement );
+
+			if ( index < 0 ) {
+				return;
+			}
+
+			event.preventDefault();
+			var step = 'ArrowLeft' === event.key ? 1 : -1;
+			var next = enabled[ ( index + step + enabled.length ) % enabled.length ];
+			setMode( next.getAttribute( 'data-auth-mode' ) );
+			next.focus();
+		} );
+
+		Array.prototype.forEach.call( tabs, function ( tab ) {
+			tab.addEventListener( 'click', function () {
+				setMode( tab.getAttribute( 'data-auth-mode' ) );
+				( 'register' === mode ? nameInput : emailInput ).focus();
+			} );
+		} );
+
+		toggle.addEventListener( 'click', function () {
+			var reveal = passInput.type === 'password';
+			passInput.type = reveal ? 'text' : 'password';
+			toggle.setAttribute( 'aria-pressed', reveal ? 'true' : 'false' );
+			toggle.setAttribute( 'aria-label', reveal ? i18n.authHide : i18n.authShow );
+		} );
+
+		form.addEventListener( 'submit', function ( event ) {
+			event.preventDefault();
+
+			if ( busy ) {
+				return;
+			}
+
+			hideError();
+
+			if ( ! validate() ) {
+				return;
+			}
+
+			var body = {
+				email: emailInput.value.trim(),
+				password: passInput.value,
+				redirect: window.location.href,
+			};
+
+			if ( 'register' === mode ) {
+				body.name = nameInput.value.trim();
+			}
+
+			setBusy( true );
+
+			fetch( config.restUrl + 'auth/' + mode, {
+				method: 'POST',
+				credentials: 'same-origin',
+				headers: {
+					'Content-Type': 'application/json',
+					'X-WP-Nonce': config.nonce,
+				},
+				body: JSON.stringify( body ),
+			} )
+				.then( function ( res ) {
+					return res
+						.json()
+						.catch( function () {
+							return {};
+						} )
+						.then( function ( data ) {
+							if ( ! res.ok ) {
+								throw new Error( data && data.message ? data.message : i18n.authNetwork );
+							}
+							return data;
+						} );
+				} )
+				.then( function ( data ) {
+					/* بعد از موفقیت، کوکی احراز ست شده؛ صفحه‌ی جاری بازخوانی می‌شود. */
+					window.location.assign( data.redirect || window.location.href );
+				} )
+				.catch( function ( err ) {
+					showError( err && err.message ? err.message : i18n.authNetwork );
+					setBusy( false );
+				} );
+		} );
+	}
+
 	document.addEventListener( 'DOMContentLoaded', function () {
 		initCopy();
 		initRating();
@@ -1867,6 +3063,8 @@
 		initSearch();
 		initHero();
 		initDownloadTracking();
+		initReports();
+		initRequests();
 		initSectionTypeTabs();
 		initFilterForm();
 		initBrowseToolbar();
@@ -1879,5 +3077,6 @@
 		initPeopleFilter();
 		initArticleFilter();
 		initArticlePage();
+		initAuthModal();
 	} );
 } )();

@@ -386,7 +386,7 @@ class Post_Types {
 					'query_var'     => 'manacore_channel',
 					'has_archive'   => false,
 					'menu_position' => 26,
-					'supports'      => array( 'title', 'editor', 'excerpt', 'thumbnail', 'revisions', 'custom-fields' ),
+					'supports'      => array( 'title', 'editor', 'excerpt', 'thumbnail', 'revisions', 'custom-fields', 'page-attributes' ),
 				)
 			)
 		);
@@ -408,7 +408,7 @@ class Post_Types {
 					),
 					'rest_base'     => 'collections',
 					'menu_position' => 25,
-					'supports'      => array( 'title', 'editor', 'thumbnail', 'excerpt', 'revisions' ),
+					'supports'      => array( 'title', 'editor', 'thumbnail', 'excerpt', 'revisions', 'page-attributes' ),
 				)
 			)
 		);

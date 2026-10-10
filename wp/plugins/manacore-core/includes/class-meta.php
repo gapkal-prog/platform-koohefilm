@@ -237,7 +237,7 @@ class Meta {
 						),
 					),
 					'manacore_views' => array(
-						'label'      => __( 'تعداد بازدید', 'manacore' ),
+						'label'      => __( 'تعداد تماشا', 'manacore' ),
 						'type'       => 'number',
 						'post_types' => $all,
 						'attrs'      => array( 'readonly' => true ),
@@ -272,6 +272,37 @@ class Meta {
 						'post_types'  => $all,
 						'description' => __( 'یوتیوب، آپارات یا فایل mp4.', 'manacore' ),
 					),
+					/*
+					 * زیرنویس‌ها به‌صورت تکرارشونده («زبان | برچسب | آدرس
+					 * فایل WebVTT | پیش‌فرض») تعریف می‌شوند تا هر اثر
+					 * بتواند چند زبان داشته باشد و استودیو بتواند فایل
+					 * را روی CDN خودش بگذارد.
+					 */
+					'manacore_subtitles' => array(
+						'label'       => __( 'زیرنویس‌ها', 'manacore' ),
+						'type'        => 'repeater',
+						'post_types'  => $all,
+						'description' => __( 'هر ردیف یک زبان. «کد زبان» استاندارد است (fa، en، ar…) و آدرس باید فایل WebVTT با پسوند .vtt باشد.', 'manacore' ),
+						'subfields'   => array(
+							'lang'    => array(
+								'label'       => __( 'کد زبان', 'manacore' ),
+								'type'        => 'text',
+								'description' => __( 'مانند fa یا en-US', 'manacore' ),
+							),
+							'label'   => array(
+								'label' => __( 'برچسب زبان', 'manacore' ),
+								'type'  => 'text',
+							),
+							'url'     => array(
+								'label' => __( 'آدرس فایل .vtt', 'manacore' ),
+								'type'  => 'url',
+							),
+							'default' => array(
+								'label' => __( 'پیش‌فرض باشد', 'manacore' ),
+								'type'  => 'checkbox',
+							),
+						),
+					),
 					'manacore_gallery' => array(
 						'label'      => __( 'گالری تصاویر', 'manacore' ),
 						'type'       => 'gallery',
@@ -287,23 +318,27 @@ class Meta {
 				'fields' => array(
 					'manacore_director' => array(
 						'label'       => __( 'کارگردان', 'manacore' ),
-						'type'        => 'text',
+						'type'        => 'people',
+						'role'        => 'director',
 						'post_types'  => $all,
-						'description' => __( 'نام‌ها را با ویرگول جدا کنید.', 'manacore' ),
+						'description' => __( 'نام عامل را جست‌وجو کنید تا از صفحه‌ی عوامل انتخاب شود، یا نام آزاد را وارد و Enter بزنید.', 'manacore' ),
 					),
 					'manacore_writer' => array(
 						'label'      => __( 'نویسنده', 'manacore' ),
-						'type'       => 'text',
+						'type'       => 'people',
+						'role'       => 'writer',
 						'post_types' => $all,
 					),
 					'manacore_producer' => array(
 						'label'      => __( 'تهیه‌کننده', 'manacore' ),
-						'type'       => 'text',
+						'type'       => 'people',
+						'role'       => 'producer',
 						'post_types' => $titles,
 					),
 					'manacore_composer' => array(
 						'label'      => __( 'آهنگساز', 'manacore' ),
-						'type'       => 'text',
+						'type'       => 'people',
+						'role'       => 'composer',
 						'post_types' => $titles,
 					),
 					'manacore_cast' => array(
@@ -312,8 +347,9 @@ class Meta {
 						'post_types' => $titles,
 						'subfields'  => array(
 							'name'      => array(
-								'label' => __( 'نام', 'manacore' ),
-								'type'  => 'text',
+								'label'  => __( 'نام', 'manacore' ),
+								'type'   => 'text',
+								'picker' => 'person',
 							),
 							'character' => array(
 								'label' => __( 'نقش', 'manacore' ),
@@ -324,8 +360,9 @@ class Meta {
 								'type'  => 'image_url',
 							),
 							'person_id' => array(
-								'label' => __( 'شناسه عامل', 'manacore' ),
-								'type'  => 'number',
+								'label'  => __( 'شناسه عامل', 'manacore' ),
+								'type'   => 'number',
+								'hidden' => true,
 							),
 						),
 					),
@@ -479,6 +516,39 @@ class Meta {
 				),
 			),
 
+			/* ---------------- تب: اطلاعات مجموعه ---------------- */
+			'collection' => array(
+				'label'  => __( 'اطلاعات مجموعه', 'manacore' ),
+				'icon'   => 'images-alt2',
+				'fields' => array(
+					'manacore_collection_subtitle' => array(
+						'label'       => __( 'زیرعنوان مجموعه', 'manacore' ),
+						'type'        => 'text',
+						'post_types'  => array( 'collection' ),
+						'description' => __( 'توضیح کوتاه زیر عنوان در کارت و صفحه‌ی مجموعه.', 'manacore' ),
+					),
+					'manacore_collection_cover' => array(
+						'label'       => __( 'تصویر کاور', 'manacore' ),
+						'type'        => 'image_url',
+						'post_types'  => array( 'collection' ),
+						'description' => __( 'اگر خالی باشد، تصویر شاخص مجموعه نمایش داده می‌شود.', 'manacore' ),
+					),
+					'manacore_collection_sort' => array(
+						'label'       => __( 'ترتیب نمایش آثار', 'manacore' ),
+						'type'        => 'select',
+						'post_types'  => array( 'collection' ),
+						'options'     => array(
+							'manual'  => __( 'دستی (ترتیب فهرست آثار)', 'manacore' ),
+							'newest'  => __( 'جدیدترین ابتدا', 'manacore' ),
+							'oldest'  => __( 'قدیمی‌ترین ابتدا', 'manacore' ),
+							'rating'  => __( 'بالاترین امتیاز IMDb', 'manacore' ),
+							'title'   => __( 'عنوان (الفبایی)', 'manacore' ),
+						),
+						'description' => __( 'فقط وقتی فهرست دستی آثار خالی باشد اعمال می‌شود. در ترتیب امتیاز IMDb، آثار بدون امتیاز نمایش داده نمی‌شوند.', 'manacore' ),
+					),
+				),
+			),
+
 			/* ---------------- تب: کانال پخش زنده ---------------- */
 			'channel' => array(
 				'label'  => __( 'کانال', 'manacore' ),
@@ -526,6 +596,18 @@ class Meta {
 						'post_types'  => array( 'channel' ),
 						'description' => __( 'اگر تصویر شاخص گذاشته شود، همان اولویت دارد.', 'manacore' ),
 					),
+					'manacore_channel_now' => array(
+						'label'       => __( 'اثر در حال پخش', 'manacore' ),
+						'type'        => 'work_select',
+						'post_types'  => array( 'channel' ),
+						'description' => __( 'اختیاری. با جست‌وجوی عنوان انتخاب کنید؛ در صفحه‌ی پخش زنده به‌عنوان «اثر این کانال» نمایش داده می‌شود.', 'manacore' ),
+					),
+					'manacore_channel_hidden' => array(
+						'label'       => __( 'پنهان از فهرست کانال‌ها', 'manacore' ),
+						'type'        => 'checkbox',
+						'post_types'  => array( 'channel' ),
+						'description' => __( 'وقتی روشن باشد، کانال از فهرست و پخش پیش‌فرض حذف می‌شود؛ نشانی مستقیم آن همچنان کار می‌کند.', 'manacore' ),
+					),
 				),
 			),
 
@@ -540,10 +622,34 @@ class Meta {
 						'post_types'  => $people,
 						'description' => __( 'زیر نام فارسی و چپ‌چین نمایش داده می‌شود (هم‌ارز `person-english` مرجع).', 'manacore' ),
 					),
+					'manacore_person_original_name' => array(
+						'label'       => __( 'نام اصلی', 'manacore' ),
+						'type'        => 'text',
+						'post_types'  => $people,
+						'description' => __( 'نام به خط و زبان اصلی عامل (مثلاً ژاپنی، کره‌ای، روسی). در جست‌وجوی عوامل هم دیده می‌شود.', 'manacore' ),
+					),
 					'manacore_person_born' => array(
-						'label'      => __( 'زادروز', 'manacore' ),
-						'type'       => 'text',
-						'post_types' => $people,
+						'label'       => __( 'تاریخ تولد (متن آزاد)', 'manacore' ),
+						'type'        => 'text',
+						'post_types'  => $people,
+						'description' => __( 'مثلاً «۲۰ فروردین ۱۳۶۲». برای نمایش عددی از «سال تولد» استفاده کنید.', 'manacore' ),
+					),
+					'manacore_person_birth_year' => array(
+						'label'       => __( 'سال تولد', 'manacore' ),
+						'type'        => 'number',
+						'post_types'  => $people,
+						'attrs'       => array(
+							'min'  => 1800,
+							'max'  => 2100,
+							'step' => 1,
+						),
+						'description' => __( 'عدد چهار رقمی میلادی یا خورشیدی؛ در کارت و صفحه‌ی عامل نمایش داده می‌شود.', 'manacore' ),
+					),
+					'manacore_person_birthplace' => array(
+						'label'       => __( 'اهل کجاست', 'manacore' ),
+						'type'        => 'text',
+						'post_types'  => $people,
+						'description' => __( 'شهر یا منطقه‌ی محل تولد، مثلاً «تهران».', 'manacore' ),
 					),
 					'manacore_country' => array(
 						'label'      => __( 'کشور', 'manacore' ),

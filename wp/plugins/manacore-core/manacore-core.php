@@ -3,7 +3,7 @@
  * Plugin Name:       ManaCore Core
  * Plugin URI:        https://manacore.dev/manacore-core
  * Description:       موتور اصلی سایت فیلم و سریال: نوع‌های محتوا (فیلم، سریال، انیمه، قسمت)، تاکسونومی‌ها، متاباکس‌های کامل، مدیریت لینک دانلود و پخش، REST API و بلوک‌های ویرایشگر.
- * Version:           1.0.0
+ * Version:           1.1.0
  * Requires at least: 6.5
  * Requires PHP:      7.4
  * Author:            ManaCore
@@ -18,7 +18,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'MANACORE_VERSION', '1.0.0' );
+define( 'MANACORE_VERSION', '1.1.0' );
 define( 'MANACORE_FILE', __FILE__ );
 define( 'MANACORE_PATH', plugin_dir_path( __FILE__ ) );
 define( 'MANACORE_URL', plugin_dir_url( __FILE__ ) );
@@ -58,6 +58,13 @@ function manacore_boot() {
 	ManaCore\Core\Rest_Api::instance()->hooks();
 	ManaCore\Core\Blocks::instance()->hooks();
 	ManaCore\Core\Query::instance()->hooks();
+
+	/*
+	 * موتور جستجوی یکپارچه: نرمال‌سازی فارسی/چندزبانه و شکل‌های جایگزین
+	 * واژه. بدون آن، «شوگان» با «شوگان» (نویسه‌ی عربی) یا «می‌رود» با
+	 * «میرود» در دیتابیس تطبیق داده نمی‌شد.
+	 */
+	ManaCore\Core\Search::instance()->hooks();
 	ManaCore\Core\Channel::instance()->hooks();
 	ManaCore\Core\Assets::instance()->hooks();
 	ManaCore\Core\Settings::instance()->hooks();
@@ -68,7 +75,61 @@ function manacore_boot() {
 	ManaCore\Core\Player::instance()->hooks();
 	ManaCore\Core\Comments::instance()->hooks();
 	ManaCore\Core\Article::instance()->hooks();
-		ManaCore\Core\Seo::instance()->hooks();
+	ManaCore\Core\Seo::instance()->hooks();
+
+	/* گزارش خرابی لینک: مسیر REST، کنش‌های پیشخوان و ارتقای پایگاه‌داده. */
+	ManaCore\Core\Reports::instance()->hooks();
+
+	/* درخواست فیلم/سریال کاربران: نوع محتوا، رأی‌گیری، بازبینی و تخته. */
+	ManaCore\Core\Requests::instance()->hooks();
+
+	/* داشبورد تحلیلی: گزارش‌های پیشخوان و ویجت صفحه‌ی نخست مدیریت. */
+	ManaCore\Core\Analytics::instance()->hooks();
+
+	/* دانلود امضاشده: مسیر REST زمان‌دار + شمارش سرورسوی دانلود. */
+	ManaCore\Core\Downloads::instance()->hooks();
+
+	/* مشخصات لینک (کیفیت/زبان/انکودر/حجم) برای ویرایشگر؛ مسیر REST فقط نویسنده‌ها. */
+	ManaCore\Core\Link_Meta::instance()->hooks();
+	ManaCore\Core\Auth::instance()->hooks();
+
+	/*
+	 * مدیریت لینک‌ها از فهرست پیشخوان (ستون، پالایه و پیوند سریع).
+	 * فقط در پیشخوان قلاب می‌بندد؛ در REST/CLI بی‌اثر است.
+	 */
+	if ( is_admin() ) {
+		ManaCore\Core\Links_Admin::instance()->hooks();
+	}
+
+	/*
+	 * پشتیبان‌گیری/بازگردانی تنظیمات (JSON) و محتوای نمایشی یک‌کلیکی:
+	 * دو ابزار «تحویل حرفه‌ای» که کار مهاجرت و نمایش قالب به خریدار را
+	 * از چند ساعت به چند دقیقه می‌رسانند.
+	 */
+	ManaCore\Core\Portability::instance()->hooks();
+
+	/*
+	 * به‌روزرسانی افزونه از سرور فروش. تا وقتی نشانی تعریف نشده باشد
+	 * هیچ درخواستی به بیرون زده نمی‌شود؛ پس نصب آفلاین بی‌عارض است.
+	 */
+	ManaCore\Core\Updater::instance()->hooks();
+
+	/*
+	 * ابزارهای گروهی لینک: جایگزینی پیشوند نشانی، کپی گروه لینک و
+	 * بازرسی ساختاری. کنشش از پنل (admin-post) است، پس در فرانت بی‌اثر.
+	 */
+	ManaCore\Core\Link_Tools::instance()->hooks();
+
+	/* فرمان‌های WP-CLI؛ بیرون از CLI هیچ کاری نمی‌کنند. */
+	ManaCore\Core\Cli::register();
+
+	/*
+	 * ارتقای پایگاه‌داده. یک مقایسه‌ی گزینه‌ی خودبارگذاری‌شده در هر درخواست
+	 * است و کار سنگین (CREATE/ALTER) فقط وقتی نسخه اختلاف دارد اجرا
+	 * می‌شود؛ پس سایتی که افزونه را به‌روز می‌کند بدون بازکردن پیشخوان
+	 * هم جدول تازه را می‌گیرد.
+	 */
+	ManaCore\Core\Install::maybe_upgrade();
 }
 add_action( 'plugins_loaded', 'manacore_boot', 5 );
 
@@ -92,6 +153,7 @@ register_activation_hook(
 		ManaCore\Core\Taxonomies::instance()->register();
 		ManaCore\Core\Install::create_tables();
 		ManaCore\Core\Install::default_options();
+		ManaCore\Core\Requests::instance()->register_post_type();
 		ManaCore\Core\Player::ensure_page();
 		ManaCore\Core\Account::ensure_page();
 		flush_rewrite_rules();
@@ -102,5 +164,8 @@ register_deactivation_hook(
 	MANACORE_FILE,
 	static function () {
 		flush_rewrite_rules();
+
+		/* رویداد کرون ابزارها با غیرفعال‌شدن افزونه نباید بماند. */
+		wp_clear_scheduled_hook( 'manacore_links_check' );
 	}
 );
