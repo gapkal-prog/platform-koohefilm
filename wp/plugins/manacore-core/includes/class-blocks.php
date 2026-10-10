@@ -4882,6 +4882,8 @@ class Blocks {
 		$base   = Block_Support::is_editor_preview() ? home_url( '/' ) : manacore_archive_base_url();
 		$active = Block_Support::is_editor_preview() ? array() : manacore_active_filters();
 
+		$all_taxonomies = $list;
+
 		/*
 		 * تاکسونومی‌ای که «گروه تیک‌زنی» را می‌سازد از حلقه‌ی گزینشگرها
 		 * کنار می‌رود تا همان فیلتر دو بار دیده نشود.
@@ -4894,6 +4896,44 @@ class Blocks {
 		}
 		if ( $check_taxonomy ) {
 			$list = array_values( array_diff( $list, array( $check_taxonomy ) ) );
+		}
+
+		/*
+		 * نام پارامتر جستجو: در آرشیو و برگه‌ی جستجو `s` طبیعی است، ولی در
+		 * برگه‌ی عادی (صفحه‌ی «کشف داستان‌ها») آوردن `s` در نشانی، وردپرس را
+		 * به حالت جستجو می‌برد و همان برگه ۴۰۴ می‌شود (سنجیده‌شده:
+		 * `/about/?s=test` → ۴۰۴). پس در آن حالت پارامتر خودمان فرستاده
+		 * می‌شود و حلقه هم آن را می‌خواند.
+		 */
+		$search_param = ( is_archive() || is_search() ) ? 's' : 'manacore_q';
+
+		/*
+		 * کنترل‌هایی که این فرم خودش می‌سازد؛ بقیه‌ی پارامترهای نشانی (مثلاً
+		 * جستجو یا مرتب‌سازی نوار مرور) هنگام ارسال نگه داشته می‌شوند.
+		 */
+		$owned = array( 'type' );
+		foreach ( $all_taxonomies as $taxonomy ) {
+			if ( isset( $param_map[ $taxonomy ] ) ) {
+				$owned[] = $param_map[ $taxonomy ];
+			}
+		}
+		if ( ! empty( $attrs['showSearch'] ) || is_search() ) {
+			$owned[] = $search_param;
+		}
+		if ( ! empty( $attrs['showSort'] ) ) {
+			$owned[] = 'mc_sort';
+		}
+		if ( $is_sidebar ) {
+			if ( ! empty( $attrs['showYearRange'] ) ) {
+				$owned[] = 'mc_year_min';
+				$owned[] = 'mc_year_max';
+			}
+			if ( ! empty( $attrs['showRating'] ) ) {
+				$owned[] = 'mc_rating_min';
+			}
+			if ( ! empty( $attrs['showDubbed'] ) ) {
+				$owned[] = 'mc_dubbed';
+			}
 		}
 
 		/*
@@ -4937,6 +4977,8 @@ class Blocks {
 				if ( '' !== $keep_type && in_array( $keep_type, manacore_title_post_types(), true ) ) {
 					printf( '<input type="hidden" name="type" value="%s" />', esc_attr( $keep_type ) );
 				}
+
+				manacore_hidden_fields( manacore_preserved_query_args( $owned ) );
 			}
 			?>
 
@@ -4970,14 +5012,6 @@ class Blocks {
 
 			<?php
 			if ( ! empty( $attrs['showSearch'] ) ) {
-				/*
-				 * نام پارامتر جستجو: در آرشیو و برگه‌ی جستجو `s` طبیعی است،
-				 * ولی در برگه‌ی عادی (صفحه‌ی «کشف داستان‌ها») آوردن `s` در
-				 * نشانی، وردپرس را به حالت جستجو می‌برد و همان برگه ۴۰۴
-				 * می‌شود (سنجیده‌شده: `/about/?s=test` → ۴۰۴). پس در آن حالت
-				 * پارامتر خودمان فرستاده می‌شود و حلقه هم آن را می‌خواند.
-				 */
-				$search_param = ( is_archive() || is_search() ) ? 's' : 'manacore_q';
 
 				// phpcs:ignore WordPress.Security.NonceVerification.Recommended
 				$term = isset( $_GET[ $search_param ] ) ? sanitize_text_field( wp_unslash( $_GET[ $search_param ] ) ) : '';
@@ -5449,7 +5483,7 @@ class Blocks {
 					foreach ( $term_list as $term ) {
 						printf(
 							'<button type="button" data-role="%1$s" aria-pressed="false">%2$s</button>',
-							esc_attr( $term->slug ),
+							esc_attr( (string) $term->term_id ),
 							esc_html( $term->name )
 						);
 					}
@@ -5489,7 +5523,6 @@ class Blocks {
 		$term         = isset( $_GET[ $search_param ] ) ? sanitize_text_field( wp_unslash( $_GET[ $search_param ] ) ) : '';
 		$sort         = isset( $_GET['mc_sort'] ) ? sanitize_key( wp_unslash( $_GET['mc_sort'] ) ) : '';
 		$type         = isset( $_GET['type'] ) ? sanitize_key( wp_unslash( $_GET['type'] ) ) : 'all';
-		$current      = $editor ? array() : $_GET;
 		// phpcs:enable
 
 		if ( ! in_array( $type, manacore_title_post_types(), true ) ) {
@@ -5516,20 +5549,23 @@ class Blocks {
 		<form class="browse-toolbar" method="get" action="<?php echo esc_url( $base ); ?>" data-manacore-browse-toolbar>
 			<?php
 			/*
-			 * حفظ پارامترهایی که این فرم رندر نمی‌کند (فیلترهای سایدبار،
-			 * جستجوی آرشیو و…): بدون آن‌ها تغییر یک کنترل، بقیه را پاک می‌کرد.
+			 * حفظ پارامترهایی که این نوار رندر نمی‌کند (فیلترهای سایدبار،
+			 * جستجوی دیگر، مرتب‌سازی…): بدون آن‌ها تغییر یک کنترل، بقیه‌ی
+			 * حالت صفحه را پاک می‌کرد.
 			 */
-			$skip = array_merge(
-				array( $search_param, 'mc_sort', 'type', 'paged', 'page' ),
-				array_values( manacore_filter_params() )
-			);
+			$owned = array();
+			if ( ! empty( $attrs['showSearch'] ) ) {
+				$owned[] = $search_param;
+			}
+			if ( ! empty( $attrs['showSort'] ) ) {
+				$owned[] = 'mc_sort';
+			}
+			if ( ! empty( $attrs['showTypes'] ) && $types ) {
+				$owned[] = 'type';
+			}
 
-			foreach ( $current as $key => $value ) {
-				$key = sanitize_key( (string) $key );
-				if ( '' === $key || in_array( $key, $skip, true ) || ! is_scalar( $value ) ) {
-					continue;
-				}
-				printf( '<input type="hidden" name="%s" value="%s" />', esc_attr( $key ), esc_attr( wp_unslash( (string) $value ) ) );
+			if ( ! $editor ) {
+				manacore_hidden_fields( manacore_preserved_query_args( $owned ) );
 			}
 			?>
 
@@ -9116,12 +9152,12 @@ class Blocks {
 		}
 
 		foreach ( $people as $person ) {
-			$id      = (int) $person->ID;
-			$name    = get_the_title( $person );
-			$english = trim( (string) get_post_meta( $id, 'manacore_person_english', true ) );
+			$id       = (int) $person->ID;
+			$name     = get_the_title( $person );
+			$english  = trim( (string) get_post_meta( $id, 'manacore_person_english', true ) );
 			$termlist = wp_get_post_terms( $id, 'person_role', array( 'fields' => 'all' ) );
-			$role    = ( is_array( $termlist ) && $termlist ) ? $termlist[0]->name : '';
-			$slugs   = ( is_array( $termlist ) && $termlist ) ? wp_list_pluck( $termlist, 'slug' ) : array();
+			$role     = ( is_array( $termlist ) && $termlist ) ? $termlist[0]->name : '';
+			$role_ids = ( is_array( $termlist ) && $termlist ) ? wp_list_pluck( $termlist, 'term_id' ) : array();
 			/*
 			 * تصویر شاخص اولویت دارد؛ اگر نبود، نشانی تصویر جایگزین
 			 * (`manacore_person_photo`) — همان الگویی که کانال‌های پخش زنده
@@ -9154,7 +9190,7 @@ class Blocks {
 				data-name="<?php echo esc_attr( $name ); ?>"
 				data-english="<?php echo esc_attr( $english ); ?>"
 				data-search="<?php echo esc_attr( $name . ' ' . $english ); ?>"
-				data-role="<?php echo esc_attr( implode( ' ', array_map( 'sanitize_html_class', $slugs ) ) ); ?>">
+				data-role="<?php echo esc_attr( implode( ' ', array_map( 'absint', $role_ids ) ) ); ?>">
 				<div>
 					<?php if ( $photo ) : ?>
 						<img src="<?php echo esc_url( $photo ); ?>" alt="<?php echo esc_attr( $name ); ?>" loading="lazy" />

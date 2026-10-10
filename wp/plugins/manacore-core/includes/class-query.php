@@ -21,9 +21,30 @@ class Query {
 	 */
 	public function hooks() {
 		add_action( 'pre_get_posts', array( $this, 'adjust' ) );
+		add_filter( 'request', array( $this, 'drop_search_on_pages' ) );
 		add_filter( 'posts_search', array( $this, 'search_meta' ), 10, 2 );
 		add_action( 'manacore_after_save_meta', array( $this, 'flush_person_cache' ) );
 		add_action( 'save_post_person', array( $this, 'flush_person_cache' ) );
+	}
+
+	/**
+	 * نادیده گرفتن `s` روی برگه‌های عادی.
+	 *
+	 * وردپرس هر برگه‌ای را که `s` داشته باشد به حالت جستجو می‌برد و آن برگه
+	 * ۴۰۴ می‌شود (`/browse/?s=x`). برگه جستجو ندارد، پس پارامتر را پیش از
+	 * `parse_query()` کنار می‌گذاریم تا برگه‌ی درخواستی همان‌طور نمایش داده
+	 * شود. جستجوی آثار با `manacore_q` روی برگه، و با `s` روی آرشیو و
+	 * برگه‌ی جستجو انجام می‌شود.
+	 *
+	 * @param array $vars متغیرهای پرسمان.
+	 * @return array
+	 */
+	public function drop_search_on_pages( $vars ) {
+		if ( ! empty( $vars['pagename'] ) && isset( $vars['s'] ) ) {
+			unset( $vars['s'] );
+		}
+
+		return $vars;
 	}
 
 	/**

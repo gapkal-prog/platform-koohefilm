@@ -554,6 +554,71 @@ function manacore_chip_removal_args( $active, $param ) {
 }
 
 /**
+ * پارامترهای نشانی که یک فرم فیلتر یا نوار مرور باید هنگام ارسال نگه دارد.
+ *
+ * هر فرم فقط کنترل‌های خودش را می‌سازد؛ بقیه‌ی حالت صفحه (جستجو، مرتب‌سازی،
+ * فیلترهای فرم‌های دیگر) باید بماند، وگرنه با هر تغییر همه‌ی حالت‌های دیگر
+ * پاک می‌شود. صفحه‌بندی همیشه کنار گذاشته می‌شود تا تغییر فیلتر از صفحه‌ی
+ * نخست شروع شود، و مقدارهای خالی هم نمی‌آیند تا نشانی تمیز بماند.
+ *
+ * @param string[] $owned نام پارامترهایی که همان فرم خودش رندر می‌کند.
+ * @return array<string,string|string[]> نام => مقدار (یا فهرست مقدار برای `name[]`).
+ */
+function manacore_preserved_query_args( $owned ) {
+	$skip = array_merge( (array) $owned, array( 'paged', 'page' ) );
+	$args = array();
+
+	// phpcs:ignore WordPress.Security.NonceVerification.Recommended
+	foreach ( $_GET as $key => $value ) {
+		$key = sanitize_key( (string) $key );
+
+		if ( '' === $key || in_array( $key, $skip, true ) ) {
+			continue;
+		}
+
+		if ( is_array( $value ) ) {
+			$values = array();
+			foreach ( $value as $item ) {
+				if ( is_scalar( $item ) && '' !== (string) $item ) {
+					$values[] = (string) wp_unslash( $item );
+				}
+			}
+			if ( $values ) {
+				$args[ $key ] = $values;
+			}
+			continue;
+		}
+
+		if ( ! is_scalar( $value ) ) {
+			continue;
+		}
+
+		$value = (string) wp_unslash( $value );
+
+		if ( '' !== $value ) {
+			$args[ $key ] = $value;
+		}
+	}
+
+	return $args;
+}
+
+/**
+ * چاپ ورودی‌های پنهان برای پارامترهای نگه‌داشته‌شده.
+ *
+ * @param array<string,string|string[]> $args خروجی manacore_preserved_query_args().
+ */
+function manacore_hidden_fields( $args ) {
+	foreach ( (array) $args as $key => $value ) {
+		$name = is_array( $value ) ? $key . '[]' : $key;
+
+		foreach ( (array) $value as $item ) {
+			printf( '<input type="hidden" name="%s" value="%s" />', esc_attr( $name ), esc_attr( $item ) );
+		}
+	}
+}
+
+/**
  * پارامترهای فیلتر موجود در آدرس جاری.
  *
  * @return array<string,string> کلید: نام پارامتر، مقدار: مقدار پاک‌سازی‌شده.
