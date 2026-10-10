@@ -357,7 +357,8 @@ $series_html = \ManaCore\Core\Templates::links( 8 );
 mc_ok( false !== strpos( $series_html, 'is-series' ), 'خروجی سریال کلاس is-series دارد' );
 mc_ok( false !== strpos( $series_html, 'data-mode="series"' ), 'حالت خروجی سریال series است' );
 mc_ok( false !== strpos( $series_html, 'دانلود کامل فصل‌ها' ), 'سرصفحه‌ی پیش‌فرض سریال مخصوص خودش است' );
-mc_ok( false !== strpos( $series_html, 'بسته‌ی کامل فصل' ), 'نشان «بسته‌ی کامل فصل» روی سطرها می‌آید' );
+mc_ok( false !== strpos( $series_html, 'دانلود کامل' ), 'نام خودِ لینک روی سطر بسته می‌آید' );
+mc_ok( false === strpos( $series_html, 'بسته‌ی کامل فصل ۱' ), 'عنوان گروه (بی‌نام لینک) روی سطرها نمی‌آید' );
 
 /* قسمت: جدول کیفیت همان قسمت. */
 $episode_html = \ManaCore\Core\Templates::links( 11 );
@@ -538,14 +539,15 @@ mc_ok( '' === \ManaCore\Core\Templates::links( 10, array( 'source' => 'post' ) )
 $only_episodes = \ManaCore\Core\Templates::links( 10, array( 'source' => 'episodes', 'episode_label' => 'بخش %s' ) );
 mc_ok( false !== strpos( $only_episodes, 'بخش ۱' ), 'برچسب دلخواه قسمت از ویژگی بلوک می‌آید' );
 $pack_only = \ManaCore\Core\Templates::links( 8, array( 'source' => 'post' ) );
-mc_ok( false !== strpos( $pack_only, 'بسته‌ی کامل فصل' ), 'بسته‌های فصل با منبع «خود اثر» دست‌نخورده می‌مانند' );
+mc_ok( false !== strpos( $pack_only, 'دانلود کامل' ), 'بسته‌های فصل با منبع «خود اثر» دست‌نخورده می‌مانند' );
 
 /* ۶.۶ ادغام بسته‌ها و لینک قسمت‌ها در یک جدول */
 $merged = \ManaCore\Core\Templates::links( 14 );
-mc_ok( 3 === substr_count( $merged, 'class="download-row"' ), 'باکس سریال، دو بسته‌ی فصل و یک ردیف قسمت را کنار هم می‌آورد', 'ردیف‌ها: ' . substr_count( $merged, 'class="download-row"' ) );
+/* هر لینک یک ردیف است: دو بسته‌ی فصل + دو لینکِ قسمت (دانلود و پخش). */
+mc_ok( 4 === substr_count( $merged, 'class="download-row"' ), 'باکس سریال، دو بسته‌ی فصل و لینک‌های قسمت را کنار هم می‌آورد', 'ردیف‌ها: ' . substr_count( $merged, 'class="download-row"' ) );
 mc_ok( 2 === substr_count( $merged, 'data-season="' ), 'برای هر فصل یک تب ساخته می‌شود' );
 mc_ok( 2 === substr_count( $merged, 'data-season-panel=' ), 'هر تب پنل خودش را دارد' );
-mc_ok( false !== strpos( $merged, 'بسته‌ی کامل فصل' ) && false !== strpos( $merged, 'قسمت ۱' ), 'نشان بسته و نشان قسمت هر دو در یک جدول‌اند' );
+mc_ok( false !== strpos( $merged, 'دانلود کامل' ) && false !== strpos( $merged, 'قسمت ۱' ), 'نشان بسته و نشان قسمت هر دو در یک جدول‌اند' );
 mc_ok( 3 === substr_count( $merged, 'data-manacore-download=' ), 'هر ردیفِ دانلود (دو بسته + یک قسمت) کنش خودش را دارد', 'کنش‌ها: ' . substr_count( $merged, 'data-manacore-download=' ) );
 
 /* ۶.۷ فیلترها روی نتیجه‌ی ادغام‌شده هم می‌نشینند */
@@ -617,12 +619,12 @@ mc_ok( 2 === substr_count( $both_html, 'data-season="' ), 'برای هر فصل 
 
 $post_html = \ManaCore\Core\Templates::links( 16, array( 'source' => 'post' ) );
 mc_ok( 2 === substr_count( $post_html, 'class="episode-card' ), 'منبع post: ردیف قسمتی که لینکش روی پست قسمت است، تکرار نمی‌شود', 'کارت‌ها: ' . substr_count( $post_html, 'class="episode-card' ) );
-mc_ok( false !== strpos( $post_html, 'بسته‌ی کامل فصل' ), 'بسته‌ی فصل کنار کارت‌های قسمت می‌آید' );
+mc_ok( false !== strpos( $post_html, 'دانلود کامل فصل' ), 'بسته‌ی فصل کنار کارت‌های قسمت می‌آید' );
 
 $s2_html = \ManaCore\Core\Templates::links( 16, array( 'source' => 'both', 'season' => 2 ) );
 mc_ok( false !== strpos( $s2_html, 'data-season-panel="2"' ) && false === strpos( $s2_html, 'data-season-panel="1"' ), 'فیلتر فصل فقط همان فصل را نشان می‌دهد' );
 mc_ok( '' === \ManaCore\Core\Templates::links( 16, array( 'source' => 'both', 'season' => 9 ) ), 'فصلی که داده ندارد، باکس با فصل‌های دیگر پر نمی‌شود' );
-mc_ok( false !== strpos( $both_html, 'download-size">2GB<' ) && false !== strpos( $both_html, 'download-size">4GB<' ), 'حجم هر قسمت در جدول کیفیتش می‌آید (ارث‌بری از گروه وقتی آیتم حجم ندارد)' );
+mc_ok( false !== strpos( $both_html, 'download-size dl-col-size">2GB<' ) && false !== strpos( $both_html, 'download-size dl-col-size">4GB<' ), 'حجم هر قسمت در جدول کیفیتش می‌آید (ارث‌بری از گروه وقتی آیتم حجم ندارد)' );
 
 $movie_again = \ManaCore\Core\Templates::links( 4 );
 mc_ok( false === strpos( $movie_again, 'episode-card' ) && false === strpos( $movie_again, 'is-series' ), 'فیلم هیچ کارت قسمتی نمی‌گیرد' );

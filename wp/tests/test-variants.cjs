@@ -473,14 +473,20 @@ assert(
 	'بخش دانلود شناسه‌ی اثر را برای تب فصل‌ها نگه می‌دارد'
 );
 var rowBody = phpBody( templatesCode, 'function link_row(' );
+var headBody = phpBody( templatesCode, 'function download_head(' );
 assert(
-	/class="download-table"/.test( linksBody ) && /download-table-header/.test( linksBody ),
+	/class="download-table[\s"]/.test( linksBody ) && /download_head\(/.test( linksBody ),
 	'ساختار جدول دانلود (سرستون و ستون‌ها) ساخته می‌شود'
 );
 assert(
-	/class="download-row"/.test( rowBody ) && /class="download-actions"/.test( rowBody ) &&
-		/quality-name/.test( rowBody ) && /format-tag/.test( rowBody ),
-	'ردیف‌ها کیفیت، فرمت و کنش‌ها را دارند'
+	/download-table-header/.test( headBody ) && /dl-col-quality/.test( headBody ) &&
+		/dl-col-encoder/.test( headBody ) && /dl-col-size/.test( headBody ),
+	'سرستون فقط ستون‌های دارای داده را می‌سازد (کلاس‌های dl-col-*)'
+);
+assert(
+	/class="download-row"/.test( rowBody ) && /class="download-actions/.test( rowBody ) &&
+		/quality-name/.test( rowBody ) && /format-tag/.test( rowBody ) && /download-name/.test( rowBody ),
+	'ردیف‌ها کیفیت، نام، انکودر و کنش‌ها را دارند'
 );
 assert(
 	'' !== phpBody( templatesCode, 'function link_row(' ),

@@ -89,6 +89,10 @@ function manacore_boot() {
 	/* دانلود امضاشده: مسیر REST زمان‌دار + شمارش سرورسوی دانلود. */
 	ManaCore\Core\Downloads::instance()->hooks();
 
+	/* مشخصات لینک (کیفیت/زبان/انکودر/حجم) برای ویرایشگر؛ مسیر REST فقط نویسنده‌ها. */
+	ManaCore\Core\Link_Meta::instance()->hooks();
+	ManaCore\Core\Auth::instance()->hooks();
+
 	/*
 	 * مدیریت لینک‌ها از فهرست پیشخوان (ستون، پالایه و پیوند سریع).
 	 * فقط در پیشخوان قلاب می‌بندد؛ در REST/CLI بی‌اثر است.

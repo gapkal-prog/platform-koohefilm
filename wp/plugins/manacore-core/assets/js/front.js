@@ -1069,7 +1069,8 @@
 				var rows = section.querySelectorAll( '.download-row' );
 				Array.prototype.forEach.call( rows, function ( row ) {
 					var link = row.querySelector( 'a[href]' );
-					var quality = row.querySelector( '.quality-name b' );
+					/* ستون کیفیت یا نام ممکن است (بی‌داده) حذف شده باشد؛ هر کدام بود، برچسب است. */
+					var quality = row.querySelector( '.quality-name b, .download-name' );
 
 					if ( ! link || ! link.getAttribute( 'href' ) ) {
 						return;
@@ -2143,6 +2144,11 @@
 		var video   = player.querySelector( '#live-video' );
 		var title   = player.querySelector( '#live-title' );
 		var sub     = player.querySelector( '#live-subtitle' );
+		var quality = player.querySelector( '#live-quality' );
+		var qualityWrap = player.querySelector( '#live-quality-wrap' );
+		var nowWork = player.querySelector( '#live-now-work' );
+		var nowLink = player.querySelector( '#live-now-link' );
+		var nowTitle = player.querySelector( '#live-now-title' );
 		var muteBtn = player.querySelector( '#mute-video' );
 		var fullBtn = player.querySelector( '#fullscreen-video' );
 		var retry   = player.querySelector( '#retry-video' );
@@ -2215,8 +2221,39 @@
 							title.textContent = data.title || data.name || '';
 						}
 
+						/*
+						 * هر بخش متنی کانال جدید را می‌گیرد؛ بخشی که داده ندارد
+						 * پنهان می‌شود تا متن کانال قبلی جا نماند.
+						 */
 						if ( sub ) {
 							sub.textContent = data.subtitle || '';
+							sub.hidden = ! data.subtitle;
+						}
+
+						if ( quality ) {
+							quality.textContent = data.quality_label || '';
+						}
+
+						if ( qualityWrap ) {
+							qualityWrap.hidden = ! data.quality_label;
+						}
+
+						if ( nowWork ) {
+							var now = data.now || null;
+
+							if ( nowTitle ) {
+								nowTitle.textContent = now ? now.title || '' : '';
+							}
+
+							if ( nowLink ) {
+								if ( now && now.url ) {
+									nowLink.setAttribute( 'href', now.url );
+								} else {
+									nowLink.removeAttribute( 'href' );
+								}
+							}
+
+							nowWork.hidden = ! now;
 						}
 
 						if ( data.poster ) {
@@ -2618,6 +2655,284 @@
 		} );
 	}
 
+	/*
+	 * مودال ورود/ثبت‌نام تب‌دار (الگوی `cinora/`). فقط برای کاربر واردشده‌نبوده
+	 * و فقط با کلیک کاربر باز می‌شود؛ درخواست‌ها با نانس REST و بدون
+	 * ذخیره‌ی رمز در مرورگر انجام می‌شود.
+	 */
+	function initAuthModal() {
+		var modal = document.querySelector( '[data-manacore-auth]' );
+
+		if ( ! modal || config.loggedIn ) {
+			return;
+		}
+
+		var panel = modal.querySelector( '.manacore-auth__panel' );
+		var form = modal.querySelector( '[data-auth-form]' );
+		var errorBox = modal.querySelector( '[data-auth-error]' );
+		var title = modal.querySelector( '[data-auth-title]' );
+		var copy = modal.querySelector( '[data-auth-copy]' );
+		var nameField = modal.querySelector( '[data-auth-name-field]' );
+		var nameInput = nameField.querySelector( 'input' );
+		var emailInput = form.elements.email;
+		var passInput = form.elements.password;
+		var submit = modal.querySelector( '[data-auth-submit]' );
+		var submitLabel = modal.querySelector( '[data-auth-submit-label]' );
+		var toggle = modal.querySelector( '[data-auth-password-toggle]' );
+		var tabs = modal.querySelectorAll( '[data-auth-mode]' );
+		var canRegister = modal.getAttribute( 'data-can-register' ) === '1';
+		var mode = 'register';
+		var busy = false;
+		var lastFocus = null;
+
+		var modes = {
+			login: {
+				title: i18n.authLoginTitle,
+				copy: i18n.authLoginCopy,
+				submit: i18n.authLoginSubmit,
+				autocomplete: 'current-password',
+			},
+			register: {
+				title: i18n.authRegisterTitle,
+				copy: i18n.authRegisterCopy,
+				submit: i18n.authRegisterSubmit,
+				autocomplete: 'new-password',
+			},
+		};
+
+		function showError( message ) {
+			errorBox.textContent = message;
+			errorBox.hidden = false;
+		}
+
+		function hideError() {
+			errorBox.textContent = '';
+			errorBox.hidden = true;
+		}
+
+		function setBusy( value ) {
+			busy = value;
+			submit.disabled = value;
+		}
+
+		function setMode( next ) {
+			if ( 'register' === next && ! canRegister ) {
+				next = 'login';
+			}
+
+			mode = next;
+			title.textContent = modes[ next ].title;
+			copy.textContent = modes[ next ].copy;
+			submitLabel.textContent = modes[ next ].submit;
+			form.setAttribute( 'aria-labelledby', 'manacore-auth-tab-' + next );
+			passInput.setAttribute( 'autocomplete', modes[ next ].autocomplete );
+			nameField.hidden = 'register' !== next;
+
+			Array.prototype.forEach.call( tabs, function ( tab ) {
+				var active = tab.getAttribute( 'data-auth-mode' ) === next;
+				tab.setAttribute( 'aria-selected', active ? 'true' : 'false' );
+				tab.tabIndex = active ? 0 : -1;
+			} );
+
+			hideError();
+		}
+
+		function open( next ) {
+			lastFocus = document.activeElement;
+			/* مثل مرجع cinora، پیش‌فرض تب «عضویت» است؛ «login» صریحاً ورود را باز می‌کند. */
+			setMode( next === 'login' ? 'login' : 'register' );
+			modal.hidden = false;
+			document.body.classList.add( 'manacore-auth-open' );
+			( 'register' === mode ? nameInput : emailInput ).focus();
+		}
+
+		function close() {
+			modal.hidden = true;
+			document.body.classList.remove( 'manacore-auth-open' );
+
+			if ( lastFocus && typeof lastFocus.focus === 'function' ) {
+				lastFocus.focus();
+			}
+		}
+
+		function focusables() {
+			return Array.prototype.filter.call(
+				panel.querySelectorAll( 'button, input, a[href]' ),
+				function ( el ) {
+					return el.offsetParent !== null && ! el.disabled;
+				}
+			);
+		}
+
+		function validate() {
+			if ( ! emailInput.value.trim() || ! emailInput.checkValidity() ) {
+				showError( i18n.authEmailInvalid );
+				emailInput.focus();
+				return false;
+			}
+
+			if ( 'register' === mode ) {
+				var name = nameInput.value.trim();
+
+				if ( name.length < 2 || name.length > 50 ) {
+					showError( i18n.authNameShort );
+					nameInput.focus();
+					return false;
+				}
+
+				if ( passInput.value.length < 8 ) {
+					showError( i18n.authPasswordShort );
+					passInput.focus();
+					return false;
+				}
+			}
+
+			if ( ! passInput.value ) {
+				showError( i18n.authPasswordShort );
+				passInput.focus();
+				return false;
+			}
+
+			return true;
+		}
+
+		/* باز و بسته‌کردن با کلیک روی هر عنصر دارای data-manacore-auth-open. */
+		document.addEventListener( 'click', function ( event ) {
+			var trigger = event.target.closest && event.target.closest( '[data-manacore-auth-open]' );
+
+			if ( trigger ) {
+				event.preventDefault();
+				open( trigger.getAttribute( 'data-manacore-auth-open' ) );
+			}
+		} );
+
+		modal.addEventListener( 'click', function ( event ) {
+			if ( event.target.closest( '[data-auth-close]' ) && ! busy ) {
+				close();
+			}
+		} );
+
+		modal.addEventListener( 'keydown', function ( event ) {
+			if ( 'Escape' === event.key && ! busy ) {
+				event.preventDefault();
+				close();
+				return;
+			}
+
+			if ( 'Tab' === event.key ) {
+				var items = focusables();
+
+				if ( ! items.length ) {
+					return;
+				}
+
+				var first = items[ 0 ];
+				var last = items[ items.length - 1 ];
+
+				if ( event.shiftKey && document.activeElement === first ) {
+					event.preventDefault();
+					last.focus();
+				} else if ( ! event.shiftKey && document.activeElement === last ) {
+					event.preventDefault();
+					first.focus();
+				}
+			}
+		} );
+
+		/* کلیدهای جهت‌دار بین تب‌ها (الگوی استاندارد tablist). */
+		modal.querySelector( '[role="tablist"]' ).addEventListener( 'keydown', function ( event ) {
+			if ( 'ArrowLeft' !== event.key && 'ArrowRight' !== event.key ) {
+				return;
+			}
+
+			var enabled = Array.prototype.filter.call( tabs, function ( tab ) {
+				return ! tab.hidden;
+			} );
+			var index = enabled.indexOf( document.activeElement );
+
+			if ( index < 0 ) {
+				return;
+			}
+
+			event.preventDefault();
+			var step = 'ArrowLeft' === event.key ? 1 : -1;
+			var next = enabled[ ( index + step + enabled.length ) % enabled.length ];
+			setMode( next.getAttribute( 'data-auth-mode' ) );
+			next.focus();
+		} );
+
+		Array.prototype.forEach.call( tabs, function ( tab ) {
+			tab.addEventListener( 'click', function () {
+				setMode( tab.getAttribute( 'data-auth-mode' ) );
+				( 'register' === mode ? nameInput : emailInput ).focus();
+			} );
+		} );
+
+		toggle.addEventListener( 'click', function () {
+			var reveal = passInput.type === 'password';
+			passInput.type = reveal ? 'text' : 'password';
+			toggle.setAttribute( 'aria-pressed', reveal ? 'true' : 'false' );
+			toggle.setAttribute( 'aria-label', reveal ? i18n.authHide : i18n.authShow );
+		} );
+
+		form.addEventListener( 'submit', function ( event ) {
+			event.preventDefault();
+
+			if ( busy ) {
+				return;
+			}
+
+			hideError();
+
+			if ( ! validate() ) {
+				return;
+			}
+
+			var body = {
+				email: emailInput.value.trim(),
+				password: passInput.value,
+				redirect: window.location.href,
+			};
+
+			if ( 'register' === mode ) {
+				body.name = nameInput.value.trim();
+			}
+
+			setBusy( true );
+
+			fetch( config.restUrl + 'auth/' + mode, {
+				method: 'POST',
+				credentials: 'same-origin',
+				headers: {
+					'Content-Type': 'application/json',
+					'X-WP-Nonce': config.nonce,
+				},
+				body: JSON.stringify( body ),
+			} )
+				.then( function ( res ) {
+					return res
+						.json()
+						.catch( function () {
+							return {};
+						} )
+						.then( function ( data ) {
+							if ( ! res.ok ) {
+								throw new Error( data && data.message ? data.message : i18n.authNetwork );
+							}
+							return data;
+						} );
+				} )
+				.then( function ( data ) {
+					/* بعد از موفقیت، کوکی احراز ست شده؛ صفحه‌ی جاری بازخوانی می‌شود. */
+					window.location.assign( data.redirect || window.location.href );
+				} )
+				.catch( function ( err ) {
+					showError( err && err.message ? err.message : i18n.authNetwork );
+					setBusy( false );
+				} );
+		} );
+	}
+
 	document.addEventListener( 'DOMContentLoaded', function () {
 		initCopy();
 		initRating();
@@ -2644,5 +2959,6 @@
 		initPeopleFilter();
 		initArticleFilter();
 		initArticlePage();
+		initAuthModal();
 	} );
 } )();

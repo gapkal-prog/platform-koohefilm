@@ -2281,10 +2281,39 @@ html:not([dir="rtl"]) .manacore-hero-gradient {
 
 .download-section .download-table-header,
 .download-section .download-row {
-	display: grid;
-	grid-template-columns: minmax(0, 1fr) minmax(0, .95fr) minmax(0, .95fr) minmax(0, 184px);
+	display: flex;
 	align-items: center;
 	gap: 15px;
+}
+
+/*
+ * ستون‌های جدول دانلود: هر ستون یک سلول با کلاس `dl-col-*` است. ستونی که
+ * در هیچ ردیفی داده ندارد، از سرستون و ردیف‌ها حذف می‌شود (در PHP)، پس جای
+ * خالی نمی‌ماند؛ ضریب رشد ستون‌ها، فضای باقی‌مانده را بین ستون‌های
+ * موجود پخش می‌کند. سرستون و ردیف با همین کلاس‌ها هم‌عرض می‌مانند.
+ */
+.download-section .dl-col-quality,
+.download-section .dl-col-name {
+	flex: 2 1 0;
+	min-width: 0;
+	overflow-wrap: anywhere;
+}
+
+.download-section .dl-col-lang,
+.download-section .dl-col-encoder,
+.download-section .dl-col-size {
+	flex: 1 1 0;
+	min-width: 0;
+}
+
+.download-section .dl-col-actions {
+	flex: 0 0 auto;
+	min-width: 150px;
+	justify-content: flex-end;
+}
+
+.download-section .download-table-header .dl-col-actions {
+	text-align: end;
 }
 
 .download-section .download-table-header {
@@ -2338,6 +2367,14 @@ html:not([dir="rtl"]) .manacore-hero-gradient {
 	color: var(--mc-text-muted);
 	/* مرجع: پایه ۹px و از ۹۸۱px به بالا ۱۰px. */
 	font-size: .5625rem;
+}
+
+.download-section .download-name,
+.download-section .download-lang {
+	min-width: 0;
+	color: var(--mc-text-muted);
+	font-size: .5625rem;
+	overflow-wrap: anywhere;
 }
 
 /* مرجع در ≥۹۸۱px سرستون جدول و ستون حجم را یک پله بزرگ‌تر می‌کند. */
@@ -2685,7 +2722,6 @@ html:not([dir="rtl"]) .manacore-hero-gradient {
 @media (max-width: 1300px) {
 	.download-section .download-table-header,
 	.download-section .download-row {
-		grid-template-columns: minmax(0, 1fr) minmax(0, .8fr) minmax(0, .8fr) minmax(0, 180px);
 		gap: 10px;
 	}
 }
@@ -2695,13 +2731,8 @@ html:not([dir="rtl"]) .manacore-hero-gradient {
 		padding: 0 15px;
 	}
 
-	.download-section .download-table-header,
-	.download-section .download-row {
-		grid-template-columns: minmax(0, 1fr) minmax(0, .85fr) minmax(0, 170px);
-	}
-
-	.download-section .download-table-header > span:nth-child(3),
-	.download-section .download-size {
+	/* زیر ۱۱۰۰px ستون حجم کنار می‌رود تا کیفیت و کنش‌ها جا بگیرند. */
+	.download-section .dl-col-size {
 		display: none;
 	}
 
@@ -2725,8 +2756,11 @@ html:not([dir="rtl"]) .manacore-hero-gradient {
 
 	.download-section .download-table-header,
 	.download-section .download-row {
-		grid-template-columns: minmax(0, .9fr) minmax(0, .8fr) minmax(0, 147px);
 		gap: 6px;
+	}
+
+	.download-section .dl-col-lang {
+		display: none;
 	}
 
 	.download-section .download-actions {
@@ -2773,8 +2807,11 @@ html:not([dir="rtl"]) .manacore-hero-gradient {
 
 	.download-section .download-table-header,
 	.download-section .download-row {
-		grid-template-columns: minmax(0, .9fr) minmax(0, .75fr) minmax(0, 165px);
 		gap: 9px;
+	}
+
+	.download-section .dl-col-encoder {
+		display: none;
 	}
 
 	.download-section .download-table-header {
@@ -2824,8 +2861,15 @@ html:not([dir="rtl"]) .manacore-hero-gradient {
 
 	.download-section .download-table-header,
 	.download-section .download-row {
-		grid-template-columns: 63px minmax(50px, 1fr) 149px;
 		gap: 7px;
+	}
+
+	/* نام لینک در موبایل حذف نمی‌شود: تنها متنِ شناسایی ردیف است. */
+	.download-section .dl-col-name {
+		min-width: 0;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
 	}
 
 	.download-section .download-table-header {
@@ -2845,18 +2889,6 @@ html:not([dir="rtl"]) .manacore-hero-gradient {
 
 	.download-section .quality-name > b {
 		font-size: .8125rem;
-	}
-}
-
-@media (max-width: 360px) {
-	.download-section .download-table-header,
-	.download-section .download-row {
-		grid-template-columns: minmax(0, 1fr) 149px;
-	}
-
-	.download-section .download-table-header > span:nth-child(2),
-	.download-section .format-tag {
-		display: none;
 	}
 }
 
@@ -9985,5 +10017,391 @@ body.manacore-modal-open {
 
 	.legal-content .wp-block-post-content > section > p {
 		font-size: 11px;
+	}
+}
+
+/*
+ * مشخصات مجموعه (`manacore/collection-hero`): سرآمد تک‌مجموعه و کارت آرشیو.
+ * کاور با نسبت ۱۶:۹ و `object-fit` می‌آید تا هیچ کاوری کشیده نشود.
+ */
+.manacore-collection-hero.is-hero {
+	display: grid;
+	grid-template-columns: minmax(0, 340px) minmax(0, 1fr);
+	gap: 24px;
+	align-items: center;
+}
+
+.manacore-collection-hero .collection-hero__cover {
+	display: block;
+	overflow: hidden;
+	aspect-ratio: 16 / 9;
+	border-radius: 12px;
+	background: var(--mc-surface-2);
+}
+
+.manacore-collection-hero .collection-hero__cover img {
+	display: block;
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+}
+
+.manacore-collection-hero .collection-hero__eyebrow {
+	margin: 0 0 6px;
+	color: var(--mc-text-muted);
+	font-size: .75rem;
+}
+
+.manacore-collection-hero .collection-hero__title {
+	margin: 0;
+	font-size: clamp(1.25rem, 2.4vw, 1.875rem);
+	line-height: 1.3;
+}
+
+.manacore-collection-hero .collection-hero__title a {
+	color: inherit;
+	text-decoration: none;
+}
+
+.manacore-collection-hero .collection-hero__subtitle {
+	margin: 8px 0 0;
+	color: var(--mc-text-muted);
+	line-height: 1.7;
+}
+
+.manacore-collection-hero .collection-hero__count {
+	margin: 10px 0 0;
+	color: var(--mc-text-muted);
+	font-size: .8125rem;
+}
+
+.manacore-collection-hero.is-card .collection-hero__cover {
+	margin-bottom: 12px;
+}
+
+.manacore-collection-hero.is-card .collection-hero__title {
+	font-size: 1rem;
+}
+
+@media (max-width: 720px) {
+	.manacore-collection-hero.is-hero {
+		grid-template-columns: minmax(0, 1fr);
+		gap: 16px;
+	}
+}
+
+/* کانال زنده: پوستر کانال به‌جای آیکن و زیرعنوان زیر نام. */
+.channel-card .channel-poster {
+	display: block;
+	flex: 0 0 auto;
+	width: 56px;
+	aspect-ratio: 16 / 9;
+	overflow: hidden;
+	border-radius: 8px;
+	background: var(--mc-surface-2);
+}
+
+.channel-card .channel-poster img {
+	display: block;
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+}
+
+.channel-card .channel-subtitle {
+	display: block;
+	margin-top: 2px;
+	color: var(--mc-text-muted);
+	font-size: .75rem;
+	font-style: normal;
+	line-height: 1.5;
+}
+
+/* اثر در حال پخش هر کانال، زیر نام کارت (هر کانال، نه فقط کانال جاری). */
+.channel-card .channel-now-work {
+	display: block;
+	margin-top: 2px;
+	overflow: hidden;
+	color: var(--mc-text-muted);
+	font-size: .6875rem;
+	font-style: normal;
+	line-height: 1.5;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+/*
+ * مودال ورود/ثبت‌نام (`[data-manacore-auth]`): ظاهر و ساختار مرجع `cinora/`
+ * (کارت مرکزی، تب‌های ورود/عضویت، نشان فیلم، یادداشت امنیت). عنصر با
+ * `hidden` باید پنهان بماند، پس `display` فقط روی حالت باز می‌آید.
+ */
+.manacore-auth[hidden] {
+	display: none;
+}
+
+.manacore-auth {
+	position: fixed;
+	inset: 0;
+	z-index: var(--mc-z-modal, 1000);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 18px;
+}
+
+.manacore-auth__backdrop {
+	position: absolute;
+	inset: 0;
+	background: rgba(7, 11, 18, .73);
+	backdrop-filter: blur(10px);
+}
+
+.manacore-auth__panel {
+	position: relative;
+	width: 430px;
+	max-width: 100%;
+	max-height: 91dvh;
+	overflow-y: auto;
+	padding: 26px 23px;
+	border: 1px solid var(--mc-border);
+	border-radius: 16px;
+	background: var(--mc-surface);
+	color: var(--mc-text);
+	box-shadow: 0 30px 100px rgba(0, 0, 0, .5);
+}
+
+.manacore-auth__panel:focus {
+	outline: none;
+}
+
+.manacore-auth__close {
+	position: absolute;
+	top: 14px;
+	left: 15px;
+	display: inline-grid;
+	place-items: center;
+	width: 28px;
+	height: 28px;
+	padding: 0;
+	border: 0;
+	background: transparent;
+	color: var(--mc-text-muted);
+	cursor: pointer;
+}
+
+.manacore-auth__close:focus-visible,
+.manacore-auth__toggle:focus-visible,
+.manacore-auth__tabs [role="tab"]:focus-visible,
+.manacore-auth__submit:focus-visible {
+	outline: 2px solid var(--mc-accent);
+	outline-offset: 2px;
+}
+
+.manacore-auth__logo {
+	display: grid;
+	place-items: center;
+	width: 56px;
+	height: 56px;
+	margin: 7px auto 0;
+	border: 1px solid color-mix(in srgb, var(--mc-accent) 25%, transparent);
+	border-radius: 14px;
+	background: color-mix(in srgb, var(--mc-accent) 8%, transparent);
+	color: var(--mc-accent);
+}
+
+.manacore-auth__eyebrow {
+	margin: 20px 0 0;
+	color: var(--mc-accent);
+	font-size: 9px;
+	font-weight: 500;
+	letter-spacing: 1.2px;
+	text-align: center;
+}
+
+.manacore-auth__title {
+	margin: 11px 0 0;
+	font-size: 20px;
+	line-height: 1.8;
+	text-align: center;
+}
+
+.manacore-auth__copy {
+	margin: 9px 0 0;
+	color: var(--mc-text-muted);
+	font-size: 10px;
+	line-height: 2.2;
+	text-align: center;
+}
+
+.manacore-auth__tabs {
+	display: flex;
+	gap: 5px;
+	margin: 24px 0 18px;
+	padding: 5px;
+	border-radius: 7px;
+	background: var(--mc-surface-2);
+}
+
+.manacore-auth__tabs [role="tab"] {
+	width: 50%;
+	padding: 9px;
+	border: 0;
+	border-radius: 5px;
+	background: transparent;
+	color: var(--mc-text-muted);
+	font: inherit;
+	font-size: 12px;
+	cursor: pointer;
+	transition: background var(--mc-transition, .2s), color var(--mc-transition, .2s);
+}
+
+.manacore-auth__tabs [role="tab"][aria-selected="true"] {
+	background: var(--mc-surface-3, var(--mc-surface-2));
+	color: var(--mc-accent);
+}
+
+.manacore-auth__tabs [role="tab"][hidden] {
+	display: none;
+}
+
+.manacore-auth__form {
+	display: grid;
+	gap: 0;
+}
+
+.manacore-auth__field {
+	display: flex;
+	flex-direction: column;
+	gap: 9px;
+	margin-bottom: 19px;
+	font-size: 11px;
+}
+
+.manacore-auth__field[hidden] {
+	display: none;
+}
+
+.manacore-auth__field input {
+	width: 100%;
+	height: 44px;
+	padding: 0 14px;
+	border: 1px solid var(--mc-border);
+	border-radius: var(--mc-radius-sm, 8px);
+	background: var(--mc-surface-2);
+	color: var(--mc-text);
+	font: inherit;
+	font-size: 12px;
+}
+
+.manacore-auth__field input:focus-visible {
+	outline: 2px solid var(--mc-accent);
+	outline-offset: 1px;
+}
+
+.manacore-auth__password {
+	position: relative;
+	display: block;
+}
+
+.manacore-auth__password input {
+	padding-inline-start: 42px;
+}
+
+.manacore-auth__toggle {
+	position: absolute;
+	top: 50%;
+	left: 10px;
+	display: grid;
+	place-items: center;
+	width: 24px;
+	height: 24px;
+	padding: 0;
+	border: 0;
+	background: transparent;
+	color: var(--mc-text-muted);
+	transform: translateY(-50%);
+	cursor: pointer;
+}
+
+.manacore-auth__toggle[aria-pressed="true"] {
+	color: var(--mc-accent);
+}
+
+.manacore-auth__error {
+	margin: 0 0 16px;
+	padding: 10px 12px;
+	border-radius: var(--mc-radius-sm, 8px);
+	background: color-mix(in srgb, var(--mc-danger) 14%, transparent);
+	color: var(--mc-danger);
+	font-size: 11px;
+	line-height: 1.8;
+}
+
+.manacore-auth__error[hidden] {
+	display: none;
+}
+
+.manacore-auth__submit {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 8px;
+	width: 100%;
+	min-height: 46px;
+	border: 0;
+	border-radius: var(--mc-radius-pill, 999px);
+	background: var(--mc-accent);
+	color: var(--mc-accent-contrast);
+	font: inherit;
+	font-size: 13px;
+	font-weight: 700;
+	cursor: pointer;
+}
+
+.manacore-auth__submit:disabled {
+	opacity: .6;
+	cursor: progress;
+}
+
+.manacore-auth__note {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 7px;
+	margin: 21px 0 0;
+	color: var(--mc-text-muted);
+	font-size: 9px;
+	text-align: center;
+}
+
+.manacore-auth__note svg {
+	color: var(--mc-accent);
+}
+
+.manacore-auth__fine {
+	margin: 13px 0 0;
+	color: var(--mc-text-muted);
+	font-size: 8px;
+	line-height: 2;
+	text-align: center;
+}
+
+.manacore-auth__fine a {
+	color: var(--mc-accent);
+}
+
+body.manacore-auth-open {
+	overflow: hidden;
+}
+
+@media (max-width: 480px) {
+	.manacore-auth__panel {
+		padding: 24px 18px;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.manacore-auth__tabs [role="tab"] {
+		transition: none;
 	}
 }

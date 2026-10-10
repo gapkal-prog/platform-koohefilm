@@ -109,7 +109,7 @@ function add_query_arg( $args, $url = '' ) {
 	}
 	return (string) $url . ( false === strpos( (string) $url, '?' ) ? '?' : '&' ) . implode( '&', $parts );
 }
-function taxonomy_exists( $t ) { return in_array( $t, array( 'genre', 'country', 'language', 'quality' ), true ); }
+function taxonomy_exists( $t ) { return in_array( $t, array( 'genre', 'country', 'language', 'quality', 'person_role' ), true ); }
 function post_type_exists( $t ) { return in_array( $t, (array) ( $GLOBALS['mc_post_types'] ?? array( 'movie', 'series', 'anime', 'episode', 'person', 'collection' ) ), true ); }
 function get_post_type( $id = 0 ) { return $GLOBALS['mc_types_by_id'][ (int) $id ] ?? 'movie'; }
 function get_post_status( $id = 0 ) { return isset( $GLOBALS['mc_types_by_id'][ (int) $id ] ) ? 'publish' : false; }
@@ -158,7 +158,7 @@ function delete_post_meta( $id, $key ) { unset( $GLOBALS['mc_meta'][ (int) $id ]
 function get_post_meta( $id, $key, $single = false ) { return $GLOBALS['mc_meta'][ (int) $id ][ $key ] ?? ''; }
 function term_exists( $term, $tax = '' ) { return false; }
 function wp_insert_term( $term, $tax, $args = array() ) { $GLOBALS['mc_terms']++; return array( 'term_id' => $GLOBALS['mc_terms'] ); }
-function wp_set_object_terms( $id, $terms, $tax, $append = false ) { return $terms; }
+function wp_set_object_terms( $id, $terms, $tax, $append = false ) { $GLOBALS['mc_object_terms'][ $id ][ $tax ] = $terms; return $terms; }
 function get_posts( $args = array() ) {
 	$ids = array();
 
@@ -473,7 +473,7 @@ $stored = json_decode( (string) $GLOBALS['mc_meta'][ $movie_id ]['manacore_links
 mc_ok( is_array( $stored ) && 3 === count( $stored ), 'JSON لینک‌ها خوانا است' );
 mc_ok( ! empty( $GLOBALS['mc_meta'][ $movie_id ]['manacore_original_title'] ), 'نام اصلی اثر ثبت شد' );
 mc_ok( ! empty( $GLOBALS['mc_meta'][ $seed['ids']['series'][0] ]['manacore_seasons'] ), 'فصل‌های سریال ثبت شدند' );
-mc_ok( ! empty( $GLOBALS['mc_meta'][ $seed['ids']['person'][0] ]['manacore_person_role'] ), 'عوامل با نقش ثبت شدند' );
+mc_ok( ! empty( $GLOBALS['mc_object_terms'][ $seed['ids']['person'][0] ]['person_role'] ), 'عوامل با نقش (تاکسونومی person_role) ثبت شدند' );
 mc_ok( 3 === count( $GLOBALS['mc_comments'] ), 'دیدگاه‌های نمونه ساخته شدند', (string) count( $GLOBALS['mc_comments'] ) );
 
 $status = Demo::status();

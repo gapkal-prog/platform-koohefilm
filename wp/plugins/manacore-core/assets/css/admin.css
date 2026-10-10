@@ -1586,3 +1586,30 @@ body:not(.rtl) .manacore-switch input:checked + .manacore-switch-track .manacore
 	padding: 5px 8px;
 	font-size: 13px;
 }
+
+/* سنجش لینک (ویرایشگر): فیلد حجم کنار دکمه‌ی «سنجش از لینک». */
+.manacore-inspect-row {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+}
+
+.manacore-inspect-row .manacore-input {
+	flex: 1 1 auto;
+	min-width: 0;
+}
+
+.manacore-inspect-row .manacore-inspect {
+	flex: 0 0 auto;
+	white-space: nowrap;
+}
+
+.manacore-inspect-msg {
+	color: var(--mc-muted);
+	font-size: 11px;
+	line-height: 1.5;
+}
+
+.manacore-inspect-msg:empty {
+	display: none;
+}

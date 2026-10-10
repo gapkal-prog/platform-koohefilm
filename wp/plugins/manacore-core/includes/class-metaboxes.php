@@ -676,6 +676,8 @@ class Metaboxes {
 			data-qualities="<?php echo esc_attr( wp_json_encode( manacore_qualities() ) ); ?>"
 			data-languages="<?php echo esc_attr( wp_json_encode( manacore_languages() ) ); ?>"
 			data-types="<?php echo esc_attr( wp_json_encode( manacore_link_types() ) ); ?>"
+			data-inspect-url="<?php echo esc_url( rest_url( Rest_Api::NS . Link_Meta::ROUTE ) ); ?>"
+			data-nonce="<?php echo esc_attr( wp_create_nonce( 'wp_rest' ) ); ?>"
 			data-value="<?php echo esc_attr( wp_json_encode( $groups, JSON_UNESCAPED_UNICODE ) ); ?>">
 
 			<div class="manacore-links-toolbar">

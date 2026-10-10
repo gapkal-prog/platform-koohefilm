@@ -734,6 +734,31 @@ class Blocks {
 			/*
 			 * «امشب با چه حال‌وهوایی؟» — کالکشن‌های مرجع (collections-grid).
 			 */
+			'manacore/collection-hero' => array(
+				'title'       => __( 'مشخصات مجموعه', 'manacore' ),
+				'description' => __( 'کاور، عنوان، زیرعنوان و شمار آثار یک مجموعه. در قالب تک‌مجموعه سرآمد صفحه است و در آرشیو کارت هر مجموعه.', 'manacore' ),
+				'icon'        => 'format-gallery',
+				'attributes'  => array(
+					'variant'      => array(
+						'type'    => 'string',
+						'default' => 'hero',
+					),
+					'showCover'    => array(
+						'type'    => 'boolean',
+						'default' => true,
+					),
+					'showSubtitle' => array(
+						'type'    => 'boolean',
+						'default' => true,
+					),
+					'showCount'    => array(
+						'type'    => 'boolean',
+						'default' => true,
+					),
+				),
+				'render'      => array( $this, 'render_collection_hero' ),
+			),
+
 			'manacore/collection-row' => array(
 				'title'       => __( 'ردیف کالکشن‌ها', 'manacore' ),
 				'description' => __( 'کارت‌های تصویری کالکشن‌ها با شماره، عنوان، توضیح و فلش — بخش «امشب با چه حال‌وهوایی؟».', 'manacore' ),
@@ -4033,6 +4058,52 @@ class Blocks {
 	 * @return string
 	 */
 	/**
+	 * آیا یک ردیف لینک را می‌توان در پلیر پخش کرد؟
+	 *
+	 * «پخش آنلاین» همیشه؛ و لینک مستقیمِ ویدئویی (mp4/webm/m3u8) هم. فایل‌های
+	 * غیرویدئویی (مثلاً آرشیو) و صفحه‌های پیوندی فقط دانلود می‌مانند.
+	 *
+	 * @param array $row ردیف تخت لینک (`Links::post_rows()`).
+	 * @return bool
+	 */
+	public static function is_playable_row( $row ) {
+		if ( 'stream' === ( $row['type'] ?? '' ) ) {
+			return true;
+		}
+
+		return 'direct' === ( $row['type'] ?? '' )
+			&& 'video' === Player::resolve( (string) ( $row['url'] ?? '' ) )['type'];
+	}
+
+	/**
+	 * کلید گزینه‌ی پیش‌انتخاب‌شده‌ی پلیر.
+	 *
+	 * ترتیب: تطابق دقیق با `?quality=`؛ سپس نشانی‌های قدیمی که فقط کیفیت را
+	 * دارند (`1080p` → `1080p · دوبله فارسی`)؛ و در نهایت نخستین گزینه.
+	 *
+	 * @param array  $sources   گزینه‌ها (کلید => نشانی).
+	 * @param string $requested کیفیت درخواستی.
+	 * @return string
+	 */
+	public static function pick_source_key( $sources, $requested ) {
+		$requested = (string) $requested;
+
+		if ( '' !== $requested ) {
+			if ( isset( $sources[ $requested ] ) ) {
+				return $requested;
+			}
+
+			foreach ( array_keys( (array) $sources ) as $key ) {
+				if ( 0 === strpos( (string) $key, $requested . ' · ' ) ) {
+					return (string) $key;
+				}
+			}
+		}
+
+		return (string) key( (array) $sources );
+	}
+
+	/**
 	 * رندر صفحه‌ی پخش (الگوی «در حال پخش»).
 	 *
 	 * همان بخش‌های `player.html` مرجع: نوار بازگشت، سرصفحه‌ی اثر، کادر
@@ -4087,29 +4158,56 @@ class Blocks {
 			$poster = (string) get_post_meta( $display_id, 'manacore_poster_url', true );
 		}
 
-		/* منبع‌های پخش: هر گروه لینک، یک کیفیت. */
+		/*
+		 * منبع‌های پخش. برای قسمت (`?season=&episode=`) «همه‌ی گزینه‌های
+		 * همان قسمت» از هر دو محل ثبت لینک خوانده می‌شوند (ردیف شماره‌دارِ
+		 * سریال و پست خودِ قسمت)، تا دکمه‌ی پخش کیفیت‌های یک قسمت را یک‌جا
+		 * بدهد. در غیر این صورت همان لینک‌های نشانی. کلید هر گزینه: کیفیت +
+		 * زبان/دوبله + انکودر (همان کلیدی که جدول دانلود در `quality=` می‌فرستد).
+		 */
+		$scope_series = in_array( get_post_type( $display_id ), manacore_serial_post_types(), true )
+			? $display_id
+			: (int) get_post_meta( $display_id, 'manacore_parent_title', true );
+
+		$rows = array();
+
+		if ( $req_episode && $scope_series ) {
+			$rows = Links::episode_variants( $scope_series, $req_season, $req_episode );
+		}
+		if ( ! $rows ) {
+			$rows = Links::post_rows( $source_id );
+		}
+
 		$sources   = array();
 		$downloads = array();
 		$download  = '';
-		foreach ( Links::get( $source_id ) as $group ) {
-			$quality = trim( (string) $group['quality'] );
-			foreach ( $group['items'] as $item ) {
-				$key = '' !== $quality ? $quality : Links::type_label( $item['type'] );
 
-				if ( 'stream' === $item['type'] ) {
-					$sources[ $key ] = $item['url'];
-				} else {
-					/*
-					 * پیوند دانلود هر کیفیت جدا نگه داشته می‌شود تا دکمه‌ی
-					 * «دانلود نمونه» — مثل مرجع — همان کیفیتی را بدهد که
-					 * کاربر در نوار کنترل انتخاب کرده است.
-					 */
-					if ( ! isset( $downloads[ $key ] ) ) {
-						$downloads[ $key ] = $item['url'];
-					}
-					if ( '' === $download ) {
-						$download = $item['url'];
-					}
+		foreach ( $rows as $row ) {
+			// گروه ویژه فقط برای دارندگان دسترسی؛ همان قاعده‌ی باکس دانلود.
+			if ( ! empty( $row['premium'] ) && ! manacore_user_can_access( (int) ( $row['owner'] ?: $display_id ) ) ) {
+				continue;
+			}
+
+			$key = Links::variant_key( $row['quality'], $row['type'], $row['language'], $row['encoder'] );
+
+			if ( '' === $key ) {
+				$key = __( 'کیفیت اصلی', 'manacore' );
+			}
+
+			if ( self::is_playable_row( $row ) && ! isset( $sources[ $key ] ) ) {
+				$sources[ $key ] = $row['url'];
+			}
+
+			if ( 'stream' !== $row['type'] ) {
+				/*
+				 * پیوند دانلود هر کیفیت جدا نگه داشته می‌شود تا دکمه‌ی
+				 * «دانلود نمونه» همان کیفیتی را بدهد که کاربر انتخاب کرده.
+				 */
+				if ( ! isset( $downloads[ $key ] ) ) {
+					$downloads[ $key ] = $row['url'];
+				}
+				if ( '' === $download ) {
+					$download = $row['url'];
 				}
 			}
 		}
@@ -4160,7 +4258,7 @@ class Blocks {
 		 * نخستین کیفیت موجود برمی‌گردند (نه پیوند شکسته).
 		 */
 		$requested = isset( $_GET['quality'] ) ? sanitize_text_field( wp_unslash( $_GET['quality'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-		$current   = '' !== $requested && isset( $sources[ $requested ] ) ? $requested : (string) key( $sources );
+		$current   = self::pick_source_key( $sources, $requested );
 
 		$eyebrow    = $attrs['eyebrow'] ? (string) $attrs['eyebrow'] : __( 'NOW PLAYING · DEMO', 'manacore' );
 		$back_label = $attrs['backLabel'] ? (string) $attrs['backLabel'] : __( 'بازگشت به جزئیات', 'manacore' );
@@ -5634,6 +5732,93 @@ class Blocks {
 		 * ستون کنار هم از آن استفاده می‌کنند (۲۰۰ واژه در دقیقه).
 		 */
 		return Article::read_minutes( $post_id );
+	}
+
+	/**
+	 * مشخصات یک مجموعه: کاور، عنوان، زیرعنوان و شمار آثار.
+	 *
+	 * دو شکل دارد: `hero` برای سرآمد تک‌مجموعه (با عنوان سطح یک) و `card`
+	 * برای هر کارت در آرشیو (در حلقه‌ی پرس‌وجو، همان نوشته‌ی جاری). کاور از
+	 * `Collection::cover()` می‌آید: کاور اختصاصی، سپس تصویر شاخص. شمار فقط
+	 * آثار منتشرشده را می‌شمارد.
+	 *
+	 * @param array $attrs ویژگی‌های بلوک.
+	 * @return string
+	 */
+	public function render_collection_hero( $attrs ) {
+		if ( ! Block_Support::should_render( $attrs ) ) {
+			return '';
+		}
+
+		$definitions = $this->definitions();
+		$attrs       = wp_parse_args(
+			is_array( $attrs ) ? $attrs : array(),
+			Block_Support::defaults( $definitions['manacore/collection-hero']['attributes'] )
+		);
+
+		$post_id = (int) get_the_ID();
+
+		if ( ! $post_id || 'collection' !== get_post_type( $post_id ) ) {
+			return Block_Support::render_empty( $attrs, 'manacore-collection-hero' );
+		}
+
+		$variant  = 'card' === $attrs['variant'] ? 'card' : 'hero';
+		$title    = get_the_title( $post_id );
+		$url      = (string) get_permalink( $post_id );
+		$subtitle = trim( (string) get_post_meta( $post_id, 'manacore_collection_subtitle', true ) );
+		$cover    = $attrs['showCover'] ? Collection::cover( $post_id, 'large' ) : '';
+
+		$count = 0;
+		foreach ( Collection::items( $post_id ) as $work_id ) {
+			if ( 'publish' === get_post_status( $work_id ) && Collection::is_work( $work_id ) ) {
+				++$count;
+			}
+		}
+
+		$count_label = sprintf(
+			/* translators: %s: شمار آثار */
+			__( '%s اثر', 'manacore' ),
+			manacore_fa_digits( number_format_i18n( $count ) )
+		);
+
+		ob_start();
+		?>
+		<?php if ( 'card' === $variant ) : ?>
+			<article <?php echo Block_Support::wrapper( $attrs, array( 'manacore-collection-hero', 'is-card' ) ); // phpcs:ignore WordPress.Security.EscapeOutput -- سازنده‌ی امن. ?>>
+				<?php if ( '' !== $cover ) : ?>
+					<a class="collection-hero__cover" href="<?php echo esc_url( $url ); ?>" tabindex="-1" aria-hidden="true">
+						<img src="<?php echo esc_url( $cover ); ?>" alt="" loading="lazy" decoding="async" />
+					</a>
+				<?php endif; ?>
+				<h3 class="collection-hero__title"><a href="<?php echo esc_url( $url ); ?>"><?php echo esc_html( $title ); ?></a></h3>
+				<?php if ( $attrs['showSubtitle'] && '' !== $subtitle ) : ?>
+					<p class="collection-hero__subtitle"><?php echo esc_html( $subtitle ); ?></p>
+				<?php endif; ?>
+				<?php if ( $attrs['showCount'] && $count > 0 ) : ?>
+					<p class="collection-hero__count"><?php echo esc_html( $count_label ); ?></p>
+				<?php endif; ?>
+			</article>
+		<?php else : ?>
+			<section <?php echo Block_Support::wrapper( $attrs, array( 'manacore-collection-hero', 'is-hero' ) ); // phpcs:ignore WordPress.Security.EscapeOutput -- سازنده‌ی امن. ?>>
+				<?php if ( '' !== $cover ) : ?>
+					<div class="collection-hero__cover">
+						<img src="<?php echo esc_url( $cover ); ?>" alt="" decoding="async" />
+					</div>
+				<?php endif; ?>
+				<div class="collection-hero__body">
+					<p class="collection-hero__eyebrow"><?php esc_html_e( 'مجموعه', 'manacore' ); ?></p>
+					<h1 class="collection-hero__title"><?php echo esc_html( $title ); ?></h1>
+					<?php if ( $attrs['showSubtitle'] && '' !== $subtitle ) : ?>
+						<p class="collection-hero__subtitle"><?php echo esc_html( $subtitle ); ?></p>
+					<?php endif; ?>
+					<?php if ( $attrs['showCount'] && $count > 0 ) : ?>
+						<p class="collection-hero__count"><?php echo esc_html( $count_label ); ?></p>
+					<?php endif; ?>
+				</div>
+			</section>
+		<?php endif; ?>
+		<?php
+		return (string) ob_get_clean();
 	}
 
 	/**
@@ -7661,7 +7846,7 @@ class Blocks {
 				<?php endif; ?>
 			</div>
 			<?php if ( ! empty( $attrs['showButton'] ) && '' !== $label && '' !== $url ) : ?>
-				<a class="button primary" id="open-register" href="<?php echo esc_url( $url ); ?>"><?php echo esc_html( $label ); ?></a>
+				<a class="button primary" id="open-register" href="<?php echo esc_url( $url ); ?>"<?php echo $profile['guest'] ? ' data-manacore-auth-open="' . esc_attr( get_option( 'users_can_register' ) ? 'register' : 'login' ) . '" aria-haspopup="dialog"' : ''; // phpcs:ignore WordPress.Security.EscapeOutput -- مقدار ثابت و escape شده. ?>><?php echo esc_html( $label ); ?></a>
 			<?php endif; ?>
 		</div>
 		<?php
@@ -8214,21 +8399,18 @@ class Blocks {
 
 					if ( $season_packs ) :
 						?>
+						<?php
+						$pack_rows = Templates::pack_rows( $season_packs, $pack_label );
+						$pack_cols = Templates::download_columns( $pack_rows );
+						$pack_play = class_exists( '\\ManaCore\\Core\\Player' )
+							? Player::url_for( $parent, 0 < $season ? array( 'season' => $season ) : array() )
+							: '';
+						?>
 						<div class="download-table download-packs" data-season-packs="<?php echo esc_attr( $season ); ?>">
-							<div class="download-table-header">
-								<span><?php esc_html_e( 'کیفیت تصویر', 'manacore' ); ?></span>
-								<span><?php esc_html_e( 'فرمت', 'manacore' ); ?></span>
-								<span><?php echo esc_html( $size_label ); ?></span>
-								<span><?php esc_html_e( 'پخش و دانلود', 'manacore' ); ?></span>
-							</div>
+							<?php echo Templates::download_head( $pack_cols, $size_label ); // phpcs:ignore WordPress.Security.EscapeOutput ?>
 							<?php
-							$pack_access = manacore_user_can_access( $parent );
-							$pack_play   = class_exists( '\\ManaCore\\Core\\Player' )
-								? Player::url_for( $parent, 0 < $season ? array( 'season' => $season ) : array() )
-								: '';
-
-							foreach ( $season_packs as $pack_group ) {
-								echo Templates::link_row( $pack_group, $pack_access, $parent, $pack_play, $pack_label ); // phpcs:ignore WordPress.Security.EscapeOutput
+							foreach ( $pack_rows as $pack_row ) {
+								echo Templates::link_row( $pack_row, $pack_cols, $parent, $pack_play ); // phpcs:ignore WordPress.Security.EscapeOutput
 							}
 							?>
 						</div>
@@ -8325,35 +8507,22 @@ class Blocks {
 									</a>
 								<?php endif; ?>
 							</div>
+							<?php
+							$groups  = Links::get( $episode->ID );
+							$ep_rows = Templates::download_rows( $groups );
+							$ep_cols = Templates::download_columns( $ep_rows );
+							?>
 							<div class="download-table episode-download" id="episode-download-<?php echo esc_attr( $episode->ID ); ?>" <?php echo $expanded ? '' : 'hidden'; ?>>
-								<div class="download-table-header">
-									<span><?php esc_html_e( 'کیفیت تصویر', 'manacore' ); ?></span>
-									<span><?php esc_html_e( 'فرمت', 'manacore' ); ?></span>
-									<?php /* همان برچسب ستونِ بسته‌های فصل؛ پیش‌تر همیشه «حجم نمونه» بود و ویژگی بلوک بی‌اثر می‌ماند. */ ?>
-								<span><?php echo esc_html( $size_label ); ?></span>
-									<span><?php esc_html_e( 'پخش و دانلود', 'manacore' ); ?></span>
-								</div>
+								<?php echo Templates::download_head( $ep_cols, $size_label ); // phpcs:ignore WordPress.Security.EscapeOutput ?>
 								<?php
-								$has_access = manacore_user_can_access( $episode->ID );
-								$groups     = Links::get( $episode->ID );
-
-								if ( ! $groups ) :
+								if ( ! $ep_rows ) :
 									?>
 									<p class="muted"><?php esc_html_e( 'برای این قسمت هنوز فایلی ثبت نشده است.', 'manacore' ); ?></p>
 									<?php
 								else :
-									foreach ( $groups as $group ) :
-										$quality  = trim( (string) $group['quality'] );
-										$play_row = '';
-										$quality  = '' !== $quality ? $quality : trim( (string) $group['title'] );
-
-										if ( $play_url && '' !== $quality ) {
-											$play_row = add_query_arg( 'quality', rawurlencode( $quality ), $play_url );
-										} elseif ( $play_url ) {
-											$play_row = $play_url;
-										}
-
-										echo Templates::link_row( $group, $has_access, $episode->ID, $play_row ); // phpcs:ignore WordPress.Security.EscapeOutput
+									foreach ( $ep_rows as $ep_row ) :
+										// کلید گزینه‌ی هر ردیف را خودِ `link_row()` می‌سازد (همان کلید صفحه‌ی پخش).
+										echo Templates::link_row( $ep_row, $ep_cols, $episode->ID, (string) $play_url ); // phpcs:ignore WordPress.Security.EscapeOutput
 									endforeach;
 								endif;
 								?>
@@ -9139,7 +9308,7 @@ class Blocks {
 		$channel_id = (int) $attrs['channelId'];
 		$channel    = $channel_id ? Channel::payload( $channel_id ) : array();
 		if ( ! $channel ) {
-			$post = Channel::resolve( $slug );
+			$post    = Channel::current( $slug );
 			$channel = $post ? Channel::payload( $post ) : array();
 		}
 
@@ -9182,18 +9351,25 @@ class Blocks {
 
 			<div class="live-now-info">
 				<span class="live-channel-logo" aria-hidden="true"><?php echo Block_Support::heading_icon( $channel['icon'] ); // phpcs:ignore WordPress.Security.EscapeOutput -- سازنده‌ی امن. ?></span>
+				<?php
+				/*
+				 * همه‌ی بخش‌های متنی همیشه در مارک‌آپ‌اند و با `hidden` پنهان
+				 * می‌مانند؛ تا `front.js` هنگام عوض‌شدن کانال، هر کدام را که داده
+				 * دارد نشان دهد و دادهٔ کانال قبلی باقی نماند.
+				 */
+				$now_work = ! empty( $channel['now'] ) ? $channel['now'] : array();
+				?>
 				<div>
-					<small><?php echo esc_html( (string) $attrs['nowLabel'] ); ?> · <?php echo esc_html( manacore_fa_digits( $channel['quality'] ) ); ?>p</small>
+					<small>
+						<?php echo esc_html( (string) $attrs['nowLabel'] ); ?>
+						<span id="live-quality-wrap"<?php echo '' === $channel['quality_label'] ? ' hidden' : ''; ?>> · <span id="live-quality"><?php echo esc_html( $channel['quality_label'] ); ?></span></span>
+					</small>
 					<h2 id="live-title"><?php echo esc_html( $title ); ?></h2>
-					<?php if ( '' !== $subtitle ) : ?>
-						<p id="live-subtitle"><?php echo esc_html( $subtitle ); ?></p>
-					<?php endif; ?>
-					<?php if ( ! empty( $channel['now'] ) ) : ?>
-						<p class="live-now-work">
-							<span><?php esc_html_e( 'اثر در حال پخش:', 'manacore' ); ?></span>
-							<a href="<?php echo esc_url( $channel['now']['url'] ); ?>"><?php echo esc_html( $channel['now']['title'] ); ?></a>
-						</p>
-					<?php endif; ?>
+					<p id="live-subtitle"<?php echo '' === $subtitle ? ' hidden' : ''; ?>><?php echo esc_html( $subtitle ); ?></p>
+					<p class="live-now-work" id="live-now-work"<?php echo $now_work ? '' : ' hidden'; ?>>
+						<span><?php esc_html_e( 'اثر در حال پخش:', 'manacore' ); ?></span>
+						<a id="live-now-link" href="<?php echo esc_url( (string) ( $now_work['url'] ?? '' ) ); ?>"><span id="live-now-title"><?php echo esc_html( (string) ( $now_work['title'] ?? '' ) ); ?></span></a>
+					</p>
 				</div>
 				<div class="live-player-actions">
 					<button class="icon-button" id="mute-video" type="button" aria-pressed="false" aria-label="<?php esc_attr_e( 'روشن کردن صدا', 'manacore' ); ?>">
@@ -9268,7 +9444,7 @@ class Blocks {
 		$slug = isset( $_GET['channel'] ) ? sanitize_title( wp_unslash( $_GET['channel'] ) ) : '';
 		// phpcs:enable
 
-		$current = Channel::resolve( $slug );
+		$current = Channel::current( $slug );
 
 		$note_title = trim( (string) $attrs['noteTitle'] );
 		$note_text  = trim( (string) $attrs['noteText'] );
@@ -9293,19 +9469,29 @@ class Blocks {
 					$data     = Channel::payload( $channel );
 					$is_now   = $current && (int) $current->ID === (int) $channel->ID;
 					$suffix   = trim( (string) $attrs['qualitySuffix'] );
-					$subtitle = manacore_fa_digits( $data['quality'] ) . 'p';
+					$subtitle = $data['quality_label'];
 					if ( '' !== $suffix ) {
-						$subtitle .= ' · ' . $suffix;
+						$subtitle = '' !== $subtitle ? $subtitle . ' · ' . $suffix : $suffix;
 					}
 					?>
 					<a class="channel-card<?php echo $is_now ? ' active' : ''; ?>" role="listitem"
 						href="<?php echo esc_url( $data['url'] ); ?>"
 						data-channel="<?php echo esc_attr( $data['slug'] ); ?>"
 						<?php echo $is_now ? ' aria-current="true"' : ''; ?>>
-						<span class="channel-icon" aria-hidden="true"><?php echo Block_Support::heading_icon( $data['icon'] ); // phpcs:ignore WordPress.Security.EscapeOutput -- سازنده‌ی امن. ?></span>
+						<?php if ( '' !== $data['poster'] ) : ?>
+							<span class="channel-poster"><img src="<?php echo esc_url( $data['poster'] ); ?>" alt="" loading="lazy" decoding="async" /></span>
+						<?php else : ?>
+							<span class="channel-icon" aria-hidden="true"><?php echo Block_Support::heading_icon( $data['icon'] ); // phpcs:ignore WordPress.Security.EscapeOutput -- سازنده‌ی امن. ?></span>
+						<?php endif; ?>
 						<span>
 							<strong><?php echo esc_html( $data['name'] ); ?></strong>
+							<?php if ( '' !== trim( (string) $data['subtitle'] ) ) : ?>
+								<em class="channel-subtitle"><?php echo esc_html( $data['subtitle'] ); ?></em>
+							<?php endif; ?>
 							<small><?php echo esc_html( $subtitle ); ?></small>
+							<?php if ( ! empty( $data['now']['title'] ) ) : ?>
+								<em class="channel-now-work"><?php esc_html_e( 'اثر:', 'manacore' ); ?> <?php echo esc_html( $data['now']['title'] ); ?></em>
+							<?php endif; ?>
 						</span>
 						<?php if ( $is_now ) : ?>
 							<span class="channel-on-air"><span class="live-dot" aria-hidden="true"></span><?php echo esc_html( (string) $attrs['onlineLabel'] ); ?></span>

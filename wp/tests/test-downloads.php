@@ -378,10 +378,21 @@ echo "\n=== ۶) مارک‌آپ باکس دانلود ===\n";
 
 $group = Links::get( 7 )[0];
 
+/* هر لینک یک ردیف است؛ این کمک همان مسیر رندر جدول را طی می‌کند. */
+$render_rows = static function ( $groups, $post_id ) {
+	$rows = Templates::download_rows( $groups );
+	$cols = Templates::download_columns( $rows );
+	$html = '';
+	foreach ( $rows as $row ) {
+		$html .= Templates::link_row( $row, $cols, $post_id );
+	}
+	return $html;
+};
+
 /* نخست با «پل دانلود» خاموش: دکمه باید مستقیم به مسیر امضاشده برود. */
 $GLOBALS['mc_options']['manacore_settings'] = array( 'download_signing' => 1, 'download_bridge' => 0 );
 
-$row_signed = Templates::link_row( $group, true, 7 );
+$row_signed = $render_rows( array( $group ), 7 );
 mc_ok( false !== strpos( $row_signed, 'class="download-row"' ), 'ردیف دانلود همان ساختار مرجع را دارد' );
 mc_ok( false !== strpos( $row_signed, 'data-manacore-download="7"' ), 'قلاب شمارش سمت کاربر سرجایش هست' );
 mc_ok( false !== strpos( $row_signed, '/manacore/v1/download/7' ), 'دکمه‌ی دانلود با امضا به مسیر داخلی می‌رود' );
@@ -390,18 +401,20 @@ mc_ok( false !== strpos( $row_signed, 'play.m3u8' ) || false !== strpos( $row_si
 
 /* حالت «پل دانلود»: دکمه به گام میانی می‌رود، نه مستقیم به مسیر فایل. */
 $GLOBALS['mc_options']['manacore_settings'] = array( 'download_signing' => 1, 'download_bridge' => 1 );
-$row_bridge = Templates::link_row( $group, true, 7 );
+$row_bridge = $render_rows( array( $group ), 7 );
 
 mc_ok( false !== strpos( $row_bridge, '/manacore-download/7/lnk_direct' ), 'با روشن‌بودن پل، دکمه به برگه‌ی «آماده‌ی دانلود» می‌رود' );
 mc_ok( false === strpos( $row_bridge, 'https://cdn.example/movie-1080.mp4' ), 'در حالت پل هم نشانی خام لو نمی‌رود' );
 
 $GLOBALS['mc_options']['manacore_settings'] = array( 'download_signing' => 0 );
-$row_plain = Templates::link_row( $group, true, 7 );
+$row_plain = $render_rows( array( $group ), 7 );
 
 mc_ok( false !== strpos( $row_plain, 'https://cdn.example/movie-1080.mp4' ), 'با خاموش‌بودن گزینه، نشانی خام همان‌جا می‌ماند' );
 mc_ok( substr_count( $row_plain, '<span' ) + substr_count( $row_plain, '<div' ) === substr_count( $row_signed, '<span' ) + substr_count( $row_signed, '<div' ), 'هندسه‌ی ردیف در دو حالت یکی است (هیچ عنصری اضافه/کم نمی‌شود)' );
 
-$locked_row = Templates::link_row( Links::get( 7 )[1], false, 7 );
+$GLOBALS['mc_can_access'] = false;
+$locked_row = $render_rows( array( Links::get( 7 )[1] ), 7 );
+$GLOBALS['mc_can_access'] = true;
 mc_ok( false !== strpos( $locked_row, 'manacore-btn is-primary is-small' ), 'گروه ویژه‌ی بدون دسترسی دکمه‌ی اشتراک می‌گیرد' );
 mc_ok( false === strpos( $locked_row, 'movie-4k.mp4' ), 'لینک ویژه هرگز برای کاربر بی‌دسترسی چاپ نمی‌شود' );
 

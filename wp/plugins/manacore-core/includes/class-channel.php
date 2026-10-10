@@ -259,7 +259,49 @@ class Channel {
 	}
 
 	/**
-	 * کانال انتخابی از نشانی (`?channel=slug`) یا کانال نخست.
+	 * کانال جاری: نشانی یکتای کانال، یا `?channel=` (با مقدم بودن نامک صریح)، یا کانال نخست.
+	 *
+	 * @param string $slug نامک درخواستی (`?channel=`).
+	 * @return \WP_Post|null
+	 */
+	public static function current( $slug = '' ) {
+		$slug = sanitize_title( (string) $slug );
+
+		/*
+		 * نشانی یکتای کانال (`/channel/<slug>/`) خودِ همان کانال را نشان
+		 * می‌دهد. پارامتر `?channel=` (کلیک روی کارت‌ها) بر آن مقدم است، و
+		 * بدون هیچ‌کدام، `resolve()` نخستین کانال را می‌دهد.
+		 */
+		if ( '' === $slug && is_singular( 'channel' ) ) {
+			$queried = get_queried_object();
+
+			if ( $queried instanceof \WP_Post && 'publish' === $queried->post_status ) {
+				return $queried;
+			}
+		}
+
+		return self::resolve( $slug );
+	}
+
+	/**
+	 * برچسب کیفیت کانال برای نمایش: عدد + «p» (با رقم فارسی)، یا متن آزاد.
+	 *
+	 * @param string $quality کیفیت ذخیره‌شده.
+	 * @return string
+	 */
+	public static function quality_label( $quality ) {
+		$quality = trim( (string) $quality );
+
+		if ( '' === $quality ) {
+			return '';
+		}
+
+		return preg_match( '/^\d+$/', $quality ) ? manacore_fa_digits( $quality ) . 'p' : $quality;
+	}
+
+	/**
+	 * نشانی `?channel=` یا کانال نخست. نامک ناشناس به کانال نخست می‌افتد
+	 * (برای رندر سرور)؛ REST نامک ناشناس را جدا 404 می‌کند.
 	 *
 	 * @param string $slug نامک درخواستی.
 	 * @return \WP_Post|null
@@ -380,6 +422,7 @@ class Channel {
 			'title'    => $meta['title'] ? $meta['title'] : get_the_title( $id ),
 			'subtitle' => $meta['subtitle'],
 			'quality'  => $quality,
+			'quality_label' => self::quality_label( $quality ),
 			'icon'     => $icon,
 			'video'    => self::clean_video( $meta['video'] ),
 			'poster'   => esc_url_raw( (string) self::poster( $id ) ),

@@ -72,6 +72,18 @@
 	}
 
 	/**
+	 * نشانه‌گذاری یک کنترل با نام فیلد (برای به‌روزرسانی مستقیم هنگام سنجش).
+	 *
+	 * @param {HTMLElement} node کنترل.
+	 * @param {string}      name نام فیلد.
+	 * @return {HTMLElement}
+	 */
+	function tag( node, name ) {
+		node.setAttribute( 'data-field', name );
+		return node;
+	}
+
+	/**
 	 * سازنده‌ی رابط مدیریت لینک.
 	 *
 	 * @param {HTMLElement} root ریشه.
@@ -86,6 +98,8 @@
 		this.languages = this.parse( root.getAttribute( 'data-languages' ) ) || {};
 		this.types = this.parse( root.getAttribute( 'data-types' ) ) || {};
 		this.data = this.parse( root.getAttribute( 'data-value' ) ) || [];
+		this.inspectUrl = root.getAttribute( 'data-inspect-url' ) || '';
+		this.nonce = root.getAttribute( 'data-nonce' ) || '';
 		this.collapsed = {};
 
 		this.bindToolbar();
@@ -172,7 +186,7 @@
 				type: 'direct',
 				size: '',
 				quality: '',
-				language: '',
+				encoder: '',
 				note: '',
 			} );
 		}
@@ -221,7 +235,7 @@
 				type: url.indexOf( 'magnet:' ) === 0 ? 'magnet' : 'direct',
 				size: parts[ 3 ] || '',
 				quality: '',
-				language: '',
+				encoder: '',
 				note: '',
 			} );
 		} );
@@ -423,7 +437,7 @@
 						type: 'direct',
 						size: '',
 						quality: '',
-						language: '',
+						encoder: '',
 						note: '',
 					} );
 					self.render();
@@ -456,59 +470,95 @@
 
 	LinksApp.prototype.renderItem = function ( group, item, itemIndex ) {
 		var self = this;
+		var urlInput = tag(
+			textField( item.url, 'https://...', function ( v ) {
+				item.url = v;
+				self.sync();
+			}, 'text' ),
+			'url'
+		);
 
-		return el( 'div', { class: 'manacore-item' }, [
+		var node = el( 'div', { class: 'manacore-item', 'data-item-id': item.id }, [
 			el( 'span', { class: 'manacore-item-index', text: String( itemIndex + 1 ) } ),
 			this.labeled(
 				t( 'label', 'عنوان' ),
-				textField( item.label, t( 'labelPh', 'قسمت ۱ / لینک مستقیم' ), function ( v ) {
-					item.label = v;
-					self.sync();
-				} )
+				tag(
+					textField( item.label, t( 'labelPh', 'قسمت ۱ / لینک مستقیم' ), function ( v ) {
+						item.label = v;
+						self.sync();
+					} ),
+					'label'
+				)
 			),
 			this.isSerial
 				? this.labeled(
 						t( 'episodeNo', 'قسمت' ),
-						textField(
-							item.episode,
-							'1',
-							function ( v ) {
-								item.episode = v === '' ? '' : parseInt( v, 10 );
-								self.sync();
-							},
-							'number'
+						tag(
+							textField(
+								item.episode,
+								'1',
+								function ( v ) {
+									item.episode = v === '' ? '' : parseInt( v, 10 );
+									self.sync();
+								},
+								'number'
+							),
+							'episode'
 						)
 				  )
 				: null,
-			this.labeled(
-				t( 'url', 'آدرس لینک' ),
-				textField( item.url, 'https://...', function ( v ) {
-					item.url = v;
-					self.sync();
-				}, 'text' ),
-				'is-grow'
-			),
+			this.labeled( t( 'url', 'آدرس لینک' ), urlInput, 'is-grow' ),
 			this.labeled(
 				t( 'type', 'نوع' ),
-				selectField( this.types, item.type, function ( v ) {
-					item.type = v;
-					self.sync();
-				} )
+				tag(
+					selectField( this.types, item.type, function ( v ) {
+						item.type = v;
+						self.sync();
+					} ),
+					'type'
+				)
 			),
 			this.labeled(
 				t( 'qualityOverride', 'کیفیت' ),
-				textField( item.quality, t( 'inherit', 'ارث از گروه' ), function ( v ) {
-					item.quality = v;
-					self.sync();
-				} )
+				tag(
+					selectField(
+						this.qualities,
+						item.quality,
+						function ( v ) {
+							item.quality = v;
+							self.sync();
+						},
+						t( 'inherit', 'ارث از گروه' )
+					),
+					'quality'
+				)
 			),
 			this.labeled(
-				t( 'size', 'حجم' ),
-				textField( item.size, '350MB', function ( v ) {
-					item.size = v;
-					self.sync();
-				} )
+				t( 'languageOverride', 'زبان / دوبله' ),
+				tag(
+					selectField(
+						this.languages,
+						item.language,
+						function ( v ) {
+							item.language = v;
+							self.sync();
+						},
+						t( 'inherit', 'ارث از گروه' )
+					),
+					'language'
+				)
 			),
+			this.labeled(
+				t( 'encoderOverride', 'انکودر' ),
+				tag(
+					textField( item.encoder, t( 'inherit', 'ارث از گروه' ), function ( v ) {
+						item.encoder = v;
+						self.sync();
+					} ),
+					'encoder'
+				)
+			),
+			this.sizeField( group, item ),
 			el( 'button', {
 				type: 'button',
 				class: 'button-link manacore-icon-btn manacore-danger dashicons dashicons-no-alt',
@@ -519,6 +569,217 @@
 				},
 			} ),
 		] );
+
+		/* سنجش خودکار (بدون شبکه) وقتی نشانی تغییر و از فیلد خارج می‌شود. */
+		urlInput.addEventListener( 'change', function () {
+			self.autoInspect( group, item );
+		} );
+
+		return node;
+	};
+
+	/**
+	 * فیلد حجم به‌همراه دکمه‌ی «سنجش از لینک».
+	 *
+	 * دکمه حجم را از میزبان می‌سنجد (درخواست شبکه‌ای، با محدودیت نرخ)، و
+	 * بقیه‌ی مشخصات را فقط وقتی خالی‌اند پر می‌کند.
+	 *
+	 * @param {Object} group گروه لینک.
+	 * @param {Object} item  ردیف لینک.
+	 * @return {HTMLElement}
+	 */
+	LinksApp.prototype.sizeField = function ( group, item ) {
+		var self = this;
+		var input = tag(
+			textField( item.size, '350MB', function ( v ) {
+				item.size = v;
+				self.sync();
+			} ),
+			'size'
+		);
+		var message = el( 'span', { class: 'manacore-inspect-msg', role: 'status', 'aria-live': 'polite' } );
+		var button = el( 'button', {
+			type: 'button',
+			class: 'button button-small manacore-inspect',
+			text: t( 'inspect', 'سنجش از لینک' ),
+			title: t( 'inspectHint', 'حجم را از میزبان می‌سنجد؛ کیفیت، زبان، انکودر و نام را هم از نشانی می‌خواند.' ),
+			onclick: function () {
+				self.inspect( group, item, button, message );
+			},
+		} );
+
+		input.setAttribute( 'aria-label', t( 'size', 'حجم' ) );
+
+		return el( 'div', { class: 'manacore-inline-field is-grow manacore-size-field' }, [
+			el( 'span', { class: 'manacore-inline-label', text: t( 'size', 'حجم' ) } ),
+			el( 'span', { class: 'manacore-inspect-row' }, [ input, button ] ),
+			message,
+		] );
+	};
+
+	/**
+	 * نشانه‌ی ردیف لینک در فهرست فعلی.
+	 *
+	 * @param {Object} item ردیف لینک.
+	 * @return {HTMLElement|null}
+	 */
+	LinksApp.prototype.nodeFor = function ( item ) {
+		var nodes = this.list.querySelectorAll( '[data-item-id]' );
+
+		for ( var i = 0; i < nodes.length; i++ ) {
+			if ( nodes[ i ].getAttribute( 'data-item-id' ) === item.id ) {
+				return nodes[ i ];
+			}
+		}
+
+		return null;
+	};
+
+	/**
+	 * درخواست سنجش به مسیر REST.
+	 *
+	 * @param {Object}  item  ردیف لینک.
+	 * @param {boolean} probe true = سنجش شبکه‌ای (حجم)، false = فقط تجزیه‌ی نشانی.
+	 * @return {Promise<Object>}
+	 */
+	LinksApp.prototype.fetchInspection = function ( item, probe ) {
+		var query = 'url=' + encodeURIComponent( item.url.trim() ) + '&probe=' + ( probe ? '1' : '0' );
+
+		if ( item.label ) {
+			query += '&label=' + encodeURIComponent( item.label );
+		}
+
+		return fetch( this.inspectUrl + '?' + query, {
+			credentials: 'same-origin',
+			headers: { 'X-WP-Nonce': this.nonce },
+		} ).then( function ( res ) {
+			return res.json().then( function ( body ) {
+				if ( ! res.ok ) {
+					throw new Error( body && body.message ? body.message : t( 'inspectFailed', 'سنجش انجام نشد.' ) );
+				}
+				return body;
+			} );
+		} );
+	};
+
+	/**
+	 * اعمال نتیجه‌ی سنجش روی ردیف.
+	 *
+	 * فقط فیلدهای خالی پر می‌شوند و مقدار تکراری گروه نوشته نمی‌شود (تا
+	 * ارث‌بری حفظ شود). حجم را فقط سنجش دستی بازنویسی می‌کند. مقدارها مستقیم
+	 * در ورودی‌ها نوشته می‌شوند تا فوکوس و متن در حال تایپ از دست نرود.
+	 *
+	 * @param {Object}  group          گروه لینک.
+	 * @param {Object}  item           ردیف لینک.
+	 * @param {Object}  data           پاسخ سنجش.
+	 * @param {boolean} overwriteSize  بازنویسی حجم فعلی؟
+	 * @return {string[]} نام فیلدهای تغییرکرده.
+	 */
+	LinksApp.prototype.applyInspection = function ( group, item, data, overwriteSize ) {
+		var changed = [];
+		var node = this.nodeFor( item );
+
+		function fill( key, value ) {
+			if ( ! value || item[ key ] || value === group[ key ] ) {
+				return;
+			}
+			item[ key ] = value;
+			changed.push( key );
+		}
+
+		fill( 'label', data.name );
+		fill( 'quality', data.quality );
+		fill( 'language', data.language );
+		fill( 'encoder', data.encoder );
+
+		if ( data.size && ( overwriteSize || ! item.size ) ) {
+			item.size = data.size;
+			changed.push( 'size' );
+		}
+
+		if ( changed.length ) {
+			this.sync();
+		}
+
+		changed.forEach( function ( key ) {
+			var field = node ? node.querySelector( '[data-field="' + key + '"]' ) : null;
+			if ( field ) {
+				field.value = item[ key ];
+			}
+		} );
+
+		return changed;
+	};
+
+	/**
+	 * سنجش خودکار هنگام تغییر نشانی (بدون شبکه و بدون محدودیت نرخ).
+	 *
+	 * @param {Object} group گروه لینک.
+	 * @param {Object} item  ردیف لینک.
+	 */
+	LinksApp.prototype.autoInspect = function ( group, item ) {
+		var self = this;
+		var url = item.url || '';
+
+		if ( ! /^https?:\/\//i.test( url.trim() ) || ! this.inspectUrl || ! this.nonce ) {
+			return;
+		}
+
+		this.fetchInspection( item, false )
+			.then( function ( data ) {
+				if ( item.url !== url ) {
+					return;
+				}
+
+				var node = self.nodeFor( item );
+				var msg = node ? node.querySelector( '.manacore-inspect-msg' ) : null;
+				var changed = self.applyInspection( group, item, data, false );
+
+				if ( msg && changed.length ) {
+					msg.textContent = t( 'autoFilled', 'مشخصات از خود نشانی خوانده شد.' );
+				}
+			} )
+			.catch( function () {
+				/* سنجش خودکار بی‌صدا است؛ خطا مانع ویرایش نمی‌شود. */
+			} );
+	};
+
+	/**
+	 * سنجش دستی (حجم از میزبان) با نمایش وضعیت.
+	 *
+	 * @param {Object}      group   گروه لینک.
+	 * @param {Object}      item    ردیف لینک.
+	 * @param {HTMLElement} button  دکمه‌ی سنجش.
+	 * @param {HTMLElement} message محل پیام وضعیت.
+	 */
+	LinksApp.prototype.inspect = function ( group, item, button, message ) {
+		var self = this;
+
+		if ( ! this.inspectUrl || ! this.nonce ) {
+			message.textContent = t( 'inspectUnavailable', 'سنجش در این صفحه فعال نیست.' );
+			return;
+		}
+
+		if ( ! /^https?:\/\//i.test( ( item.url || '' ).trim() ) ) {
+			message.textContent = t( 'needUrl', 'ابتدا نشانی معتبر با http یا https وارد کنید.' );
+			return;
+		}
+
+		button.disabled = true;
+		message.textContent = t( 'inspecting', 'در حال سنجش…' );
+
+		this.fetchInspection( item, true )
+			.then( function ( data ) {
+				self.applyInspection( group, item, data, true );
+				message.textContent = data.reached
+					? t( 'inspectDone', 'حجم از میزبان خوانده شد.' )
+					: t( 'inspectNoSize', 'حجم از میزبان خوانده نشد؛ بقیه‌ی مشخصات از نشانی و نام لینک خوانده شد.' );
+				button.disabled = false;
+			} )
+			.catch( function ( err ) {
+				message.textContent = err && err.message ? err.message : t( 'inspectFailed', 'سنجش انجام نشد.' );
+				button.disabled = false;
+			} );
 	};
 
 	LinksApp.prototype.labeled = function ( label, field, extraClass ) {

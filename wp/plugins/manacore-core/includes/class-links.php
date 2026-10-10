@@ -121,6 +121,7 @@ class Links {
 						'size'     => '',
 						'quality'  => '',
 						'language' => '',
+						'encoder'  => '',
 						'note'     => '',
 					)
 				);
@@ -251,6 +252,7 @@ class Links {
 					'size'     => sanitize_text_field( $item['size'] ?? '' ),
 					'quality'  => sanitize_text_field( $item['quality'] ?? '' ),
 					'language' => sanitize_key( $item['language'] ?? '' ),
+					'encoder'  => sanitize_text_field( $item['encoder'] ?? '' ),
 					'note'     => sanitize_text_field( $item['note'] ?? '' ),
 				);
 			}
@@ -285,6 +287,163 @@ class Links {
 	 */
 	public static function uid( $prefix = 'id' ) {
 		return $prefix . '_' . substr( md5( uniqid( (string) wp_rand(), true ) ), 0, 10 );
+	}
+
+	/**
+	 * کلید یک گزینه‌ی پخش: کیفیت + زبان/دوبله + انکودر.
+	 *
+	 * همین کلید هم در پیوند «پخش» جدول دانلود (`quality=`) و هم در فهرست
+	 * کیفیت صفحه‌ی پخش به کار می‌رود تا دو سوی یک پیوند هم‌دیگر را پیدا
+	 * کنند. قسمتی که دو لینک با کیفیت یکسان اما زبان یا انکودر متفاوت دارد
+	 * (مثلاً ۱۰۸۰p دوبله و ۱۰۸۰p زیرنویس) دو گزینه‌ی جدا می‌گیرد. نبودِ
+	 * کیفیت، نوع لینک را جای آن می‌نشاند تا گزینه بی‌نام نماند.
+	 *
+	 * @param string $quality  کیفیت (کلید یا متن آزاد).
+	 * @param string $type     نوع لینک (برای جای‌گزینی نبود کیفیت).
+	 * @param string $language کلید زبان/دوبله.
+	 * @param string $encoder  نام انکودر.
+	 * @return string
+	 */
+	public static function variant_key( $quality, $type = '', $language = '', $encoder = '' ) {
+		$base = trim( (string) $quality );
+
+		if ( '' === $base && '' !== trim( (string) $type ) ) {
+			$base = self::type_label( (string) $type );
+		}
+
+		$parts = array_filter(
+			array(
+				$base,
+				'' !== trim( (string) $language ) ? self::language_label( (string) $language ) : '',
+				trim( (string) $encoder ),
+			),
+			static function ( $part ) {
+				return '' !== $part;
+			}
+		);
+
+		return implode( ' · ', $parts );
+	}
+
+	/**
+	 * همه‌ی گزینه‌های پخشِ یک قسمت، از هر دو محل ثبت لینک.
+	 *
+	 * یک قسمت می‌تواند لینکش را (الف) روی ردیف شماره‌دارِ خودِ سریال داشته
+	 * باشد، یا (ب) روی پست جدای همان قسمت. صفحه‌ی پخش باید «همه‌ی کیفیت‌های
+	 * همان قسمت» را ببیند، پس هر دو منبع یک‌جا خوانده می‌شوند. نتیجه، فهرست
+	 * تخت است و هر ردیف با `url`، `type`، `quality`، `language`، `encoder`،
+	 * `size` و `premium` (با ارث‌بری از گروه) برمی‌گردد.
+	 *
+	 * @param int $series_id شناسه‌ی سریال/انیمه.
+	 * @param int $season    شماره‌ی فصل (۰ = هر فصل).
+	 * @param int $episode   شماره‌ی قسمت.
+	 * @return array<int,array>
+	 */
+	public static function episode_variants( $series_id, $season, $episode ) {
+		$series_id = (int) $series_id;
+		$season    = max( 0, (int) $season );
+		$episode   = max( 0, (int) $episode );
+		$out       = array();
+
+		if ( ! $series_id || ! $episode ) {
+			return $out;
+		}
+
+		foreach ( self::numbered_groups( $series_id ) as $row_season => $rows ) {
+			if ( $season && $season !== (int) $row_season ) {
+				continue;
+			}
+
+			foreach ( $rows as $row ) {
+				if ( (int) $row['episode'] === $episode ) {
+					$out = array_merge( $out, self::flatten( $row ) );
+				}
+			}
+		}
+
+		$meta_query = array(
+			array(
+				'key'   => 'manacore_parent_title',
+				'value' => $series_id,
+			),
+			array(
+				'key'   => 'manacore_episode_number',
+				'value' => $episode,
+			),
+		);
+
+		if ( $season ) {
+			$meta_query[] = array(
+				'key'   => 'manacore_season_number',
+				'value' => $season,
+			);
+		}
+
+		$episodes = get_posts(
+			array(
+				'post_type'      => 'episode',
+				'post_status'    => 'publish',
+				'posts_per_page' => 50,
+				'fields'         => 'ids',
+				'no_found_rows'  => true,
+				'meta_query'     => $meta_query, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
+			)
+		);
+
+		foreach ( (array) $episodes as $episode_id ) {
+			foreach ( self::get( (int) $episode_id ) as $group ) {
+				$out = array_merge( $out, self::flatten( $group ) );
+			}
+		}
+
+		return $out;
+	}
+
+	/**
+	 * همه‌ی ردیف‌های لینک یک پست به‌صورت تخت (برای صفحه‌ی پخش و ابزارها).
+	 *
+	 * @param int $post_id شناسه‌ی پست.
+	 * @return array<int,array>
+	 */
+	public static function post_rows( $post_id ) {
+		$out = array();
+
+		foreach ( self::get( (int) $post_id ) as $group ) {
+			$out = array_merge( $out, self::flatten( $group ) );
+		}
+
+		return $out;
+	}
+
+	/**
+	 * تخت‌کردن یک گروه به ردیف‌های لینک با ارث‌بری کامل از گروه.
+	 *
+	 * @param array $group گروه لینک.
+	 * @return array<int,array>
+	 */
+	public static function flatten( $group ) {
+		$out = array();
+
+		foreach ( (array) ( $group['items'] ?? array() ) as $item ) {
+			if ( ! is_array( $item ) || '' === trim( (string) ( $item['url'] ?? '' ) ) ) {
+				continue;
+			}
+
+			$out[] = array(
+				'url'      => trim( (string) $item['url'] ),
+				'type'     => '' !== trim( (string) ( $item['type'] ?? '' ) ) ? (string) $item['type'] : 'direct',
+				'label'    => trim( (string) ( $item['label'] ?? '' ) ),
+				'quality'  => self::value( $item, $group, 'quality' ),
+				'language' => self::value( $item, $group, 'language' ),
+				'encoder'  => self::value( $item, $group, 'encoder' ),
+				'size'     => self::value( $item, $group, 'size' ),
+				'premium'  => ! empty( $group['premium'] ),
+				'owner'    => (int) ( $group['owner'] ?? 0 ),
+				'episode'  => (int) ( $group['episode'] ?? 0 ),
+			);
+		}
+
+		return $out;
 	}
 
 	/**
@@ -376,6 +535,7 @@ class Links {
 				$row['quality']  = '' !== trim( (string) $item['quality'] ) ? (string) $item['quality'] : (string) $group['quality'];
 				$row['size']     = '' !== trim( (string) $item['size'] ) ? (string) $item['size'] : (string) $group['size'];
 				$row['language'] = '' !== trim( (string) $item['language'] ) ? (string) $item['language'] : (string) $group['language'];
+				$row['encoder']  = self::value( $item, $group, 'encoder' );
 				$row['owner']    = $post_id;
 				$row['episode']  = $number;
 				$row['episode_label'] = '';

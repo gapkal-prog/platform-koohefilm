@@ -462,7 +462,6 @@ class Templates {
 			);
 		}
 
-		$has_access = manacore_user_can_access( $post_id );
 		$notice     = $args['show_notice'] ? (string) get_post_meta( $post_id, 'manacore_custom_notice', true ) : '';
 
 		/*
@@ -663,27 +662,18 @@ class Templates {
 					id="<?php echo esc_attr( self::season_panel_id( $post_id, $season ) ); ?>"
 					data-season-panel="<?php echo esc_attr( $season ); ?>"<?php echo ( $multi && ! $first ) ? ' hidden' : ''; ?>>
 					<?php if ( $parts['packs'] ) : ?>
+						<?php
+						$pack_rows = self::pack_rows( $parts['packs'], 'series' === $labels['mode'] ? (string) $labels['pack'] : '' );
+						$pack_cols = self::download_columns( $pack_rows );
+						?>
 						<div class="download-table download-packs" data-season-packs="<?php echo esc_attr( $season ); ?>">
-							<div class="download-table-header">
-								<span><?php esc_html_e( 'کیفیت تصویر', 'manacore' ); ?></span>
-								<span><?php esc_html_e( 'فرمت', 'manacore' ); ?></span>
-								<span><?php echo esc_html( $size_label ); ?></span>
-								<span><?php esc_html_e( 'پخش و دانلود', 'manacore' ); ?></span>
-							</div>
+							<?php echo self::download_head( $pack_cols, $size_label ); // phpcs:ignore WordPress.Security.EscapeOutput ?>
 							<?php
-							foreach ( $parts['packs'] as $group ) {
+							foreach ( $pack_rows as $row ) {
 								// ردیف‌های بی‌شماره، ردیف «بسته» هستند؛ مالک آن‌ها خودِ اثر است.
-								$row_post   = ! empty( $group['owner'] ) ? (int) $group['owner'] : (int) $post_id;
-								$row_access = $row_post === (int) $post_id ? $has_access : manacore_user_can_access( $row_post );
-								$row_play   = '';
-								$row_badge  = 'series' === $labels['mode'] ? $labels['pack'] : '';
+								$row_play = ! empty( $row['owner'] ) ? self::episode_play_url( $post_id, (int) $season, $row ) : '';
 
-								if ( ! empty( $group['owner'] ) ) {
-									$row_play  = self::episode_play_url( $post_id, (int) $season, $group );
-									$row_badge = self::episode_row_badge( $group, $labels['episode'] );
-								}
-
-								echo self::link_row( $group, $row_access, $row_post, $row_play, $row_badge ); // phpcs:ignore WordPress.Security.EscapeOutput
+								echo self::link_row( $row, $pack_cols, $post_id, $row_play ); // phpcs:ignore WordPress.Security.EscapeOutput
 							}
 							?>
 						</div>
@@ -692,7 +682,7 @@ class Templates {
 					<?php if ( $parts['cards'] ) : ?>
 						<div class="episode-list">
 							<?php foreach ( $parts['cards'] as $index => $card_groups ) : ?>
-								<?php echo self::episode_card( $card_groups, (int) $season, $post_id, $has_access, 0 === $index, $labels ); // phpcs:ignore WordPress.Security.EscapeOutput ?>
+								<?php echo self::episode_card( $card_groups, (int) $season, $post_id, 0 === $index, $labels ); // phpcs:ignore WordPress.Security.EscapeOutput ?>
 							<?php endforeach; ?>
 						</div>
 					<?php endif; ?>
@@ -739,18 +729,16 @@ class Templates {
 	 * @param array  $groups   گروه‌های یک قسمت (هم‌مالک و هم‌شماره).
 	 * @param int    $season   شماره‌ی فصل (۰ = عمومی).
 	 * @param int    $post_id  شناسه‌ی سریال.
-	 * @param bool   $has_access دسترسی کاربر به سریال.
 	 * @param bool   $expanded  آیا کارت باز باشد.
 	 * @param array  $labels    برچسب‌های قسمت، بسته و حجم.
 	 * @return string
 	 */
-	protected static function episode_card( $groups, $season, $post_id, $has_access, $expanded, $labels ) {
+	protected static function episode_card( $groups, $season, $post_id, $expanded, $labels ) {
 		$first    = $groups[0];
 		$number   = max( 0, (int) $first['episode'] );
 		$owner    = (int) ( $first['owner'] ?? $post_id );
 		$body_id  = 'episode-download-' . $owner . '-' . (int) $season . '-' . $number;
 		$title    = trim( (string) ( $first['episode_label'] ?? '' ) );
-		$row_access = $owner === (int) $post_id ? $has_access : manacore_user_can_access( $owner );
 		$play_url = self::episode_play_url( $post_id, (int) $season, $first );
 		$number_fa = manacore_fa_digits( number_format_i18n( $number ) );
 		$play_label = sprintf(
@@ -766,6 +754,9 @@ class Templates {
 				break;
 			}
 		}
+
+		$rows = self::download_rows( $groups );
+		$cols = self::download_columns( $rows );
 
 		$meta = array();
 		if ( (int) $season > 0 ) {
@@ -805,16 +796,10 @@ class Templates {
 				<?php endif; ?>
 			</div>
 			<div class="download-table episode-download" id="<?php echo esc_attr( $body_id ); ?>"<?php echo $expanded ? '' : ' hidden'; ?>>
-				<div class="download-table-header">
-					<span><?php esc_html_e( 'کیفیت تصویر', 'manacore' ); ?></span>
-					<span><?php esc_html_e( 'فرمت', 'manacore' ); ?></span>
-					<span><?php echo esc_html( $labels['size'] ); ?></span>
-					<span><?php esc_html_e( 'پخش و دانلود', 'manacore' ); ?></span>
-				</div>
+				<?php echo self::download_head( $cols, $labels['size'] ?? '' ); // phpcs:ignore WordPress.Security.EscapeOutput ?>
 				<?php
-				foreach ( $groups as $group ) {
-					// بدون نشان ریز: شماره و عنوان قسمت همین بالای کارت آمده‌اند.
-					echo self::link_row( $group, $row_access, $owner, $play_url, '' ); // phpcs:ignore WordPress.Security.EscapeOutput
+				foreach ( $rows as $row ) {
+					echo self::link_row( $row, $cols, $owner, $play_url ); // phpcs:ignore WordPress.Security.EscapeOutput
 				}
 				?>
 			</div>
@@ -930,27 +915,6 @@ class Templates {
 		}
 
 		return 'series' === $mode ? 'both' : 'post';
-	}
-
-	/**
-	 * نشان ریزِ ردیف‌های قسمت («قسمت ۲»).
-	 *
-	 * برچسب از پنل مدیریت یا ویژگی بلوک می‌آید و می‌تواند در خودش `%s`
-	 * داشته باشد؛ اگر نداشت، شماره به انتهای متن می‌چسبد. زبان گروه هم
-	 * اگر ثبت شده باشد، کنار شماره می‌آید (مثل «قسمت ۲ · زیرنویس فارسی»).
-	 *
-	 * @param array  $group گروه لینک (با کلیدهای کمکی owner/episode).
-	 * @param string $label برچسب دلخواه مدیر (خالی = پیش‌فرض).
-	 * @return string
-	 */
-	protected static function episode_row_badge( $group, $label = '' ) {
-		$badge = self::episode_number_label( (int) ( $group['episode'] ?? 0 ), $label );
-
-		if ( ! empty( $group['language'] ) ) {
-			$badge .= ' · ' . Links::language_label( $group['language'] );
-		}
-
-		return $badge;
 	}
 
 	/**
@@ -1141,57 +1105,194 @@ class Templates {
 	}
 
 	/**
-	 * یک ردیف جدول دانلود (`.download-row` مرجع) برای هر گروه لینک.
+	 * ردیف‌های تخت جدول دانلود برای گروه‌های یک نقطه‌ی نمایش.
 	 *
-	 * ستون‌های نگاشت‌شده:
-	 *   کیفیت تصویر → `quality` گروه (با برچسب زبان/رمزگذار در `small`)
-	 *   فرمت        → `encoder` گروه (یا برچسب نوع نخستین لینک)
-	 *   حجم         → `size` گروه
-	 *   کنش‌ها       → «▶ پخش» برای لینک‌های آنلاین و «⇩ دانلود» برای بقیه؛
-	 *                 گروه ویژه (اشتراکی) به‌جای کنش‌ها دکمه‌ی اشتراک می‌گیرد.
+	 * هر لینک یک ردیف است؛ کیفیت، نام، زبان/دوبله، انکودر و حجمِ هر لینک از
+	 * خودِ همان لینک خوانده می‌شود و اگر خالی باشد، از گروه ارث می‌برد
+	 * (`Links::flatten()`). لینکِ بدون نشانی در خروجی نمی‌آید.
 	 *
-	 * @param array  $group             گروه لینک.
-	 * @param bool   $has_access        دسترسی کاربر به محتوای ویژه.
-	 * @param int    $post_id           شناسه‌ی اثر.
-	 * @param string $play_url_override نشانی پخش صریح (برای قسمت‌ها).
-	 * @param string $badge_override    متن نشان ریز زیر کیفیت (مثلاً «بسته‌ی کامل فصل»).
+	 * @param array $groups گروه‌های لینک.
+	 * @return array<int,array>
+	 */
+	public static function download_rows( $groups ) {
+		$rows = array();
+
+		foreach ( (array) $groups as $group ) {
+			if ( is_array( $group ) ) {
+				$rows = array_merge( $rows, Links::flatten( $group ) );
+			}
+		}
+
+		return $rows;
+	}
+
+	/**
+	 * کدام ستون‌های جدول دانلود داده دارند؟
+	 *
+	 * ستونی که در هیچ ردیفی مقدار نداشته باشد، کلاً حذف می‌شود: هم سرستونش
+	 * و هم سلول‌هایش، تا جای خالی باقی نماند. نام هر ردیف، نام خودِ لینک یا
+	 * در نبودش کلید `badge` همان ردیف است. ستون «پخش و دانلود» همیشه هست.
+	 *
+	 * @param array $rows ردیف‌های تخت (خروجی `download_rows()`).
+	 * @return array{quality:bool,name:bool,language:bool,encoder:bool,size:bool}
+	 */
+	public static function download_columns( $rows ) {
+		$cols = array(
+			'quality'  => false,
+			'name'     => false,
+			'language' => false,
+			'encoder'  => false,
+			'size'     => false,
+		);
+
+		foreach ( (array) $rows as $row ) {
+			if ( ! is_array( $row ) ) {
+				continue;
+			}
+
+			$name_values = array(
+				'quality'  => $row['quality'] ?? '',
+				'language' => $row['language'] ?? '',
+				'encoder'  => $row['encoder'] ?? '',
+				'size'     => $row['size'] ?? '',
+			);
+
+			foreach ( $name_values as $col => $value ) {
+				if ( '' !== trim( (string) $value ) ) {
+					$cols[ $col ] = true;
+				}
+			}
+
+			if ( '' !== self::row_name( $row ) ) {
+				$cols['name'] = true;
+			}
+		}
+
+		return $cols;
+	}
+
+	/**
+	 * ردیف‌های تخت یک فهرست بسته، با نام جایگزین هر ردیف.
+	 *
+	 * بسته‌ی کامل فصل، با `$badge` نام می‌گیرد؛ ردیفی که به یک قسمت تعلق دارد
+	 * (مالک ≠ اثر) نام بسته نمی‌گیرد و به‌جایش نامِ خودِ لینک می‌ماند.
+	 *
+	 * @param array  $groups گروه‌های بسته.
+	 * @param string $badge  برچسب نام بسته (خالی = بدون برچسب).
+	 * @return array<int,array>
+	 */
+	public static function pack_rows( $groups, $badge = '' ) {
+		$rows = self::download_rows( $groups );
+
+		foreach ( $rows as $index => $row ) {
+			$rows[ $index ]['badge'] = empty( $row['owner'] ) ? $badge : '';
+		}
+
+		return $rows;
+	}
+
+	/**
+	 * نام نمایشی یک ردیف: نام خودِ لینک، و در نبودش برچسب `badge` همان ردیف.
+	 *
+	 * @param array $row ردیف تخت.
 	 * @return string
 	 */
-	public static function link_row( $group, $has_access, $post_id, $play_url_override = '', $badge_override = '' ) {
-		$locked = $group['premium'] && ! $has_access;
+	public static function row_name( $row ) {
+		$name = trim( (string) ( $row['label'] ?? '' ) );
 
-		$quality = trim( (string) $group['quality'] );
-		if ( '' === $quality ) {
-			$quality = trim( (string) $group['title'] );
-		}
+		return '' !== $name ? $name : trim( (string) ( $row['badge'] ?? '' ) );
+	}
 
-		$badge = '' !== trim( (string) $badge_override )
-			? (string) $badge_override
-			: ( $group['language'] ? Links::language_label( $group['language'] ) : '' );
+	/**
+	 * سرستون جدول دانلود؛ فقط برچسب ستون‌هایی که داده دارند.
+	 *
+	 * کلاس‌های `dl-col-*` همان‌هایی است که ردیف‌ها دارند، پس عرض ستون‌ها
+	 * در سرستون و ردیف‌ها یکسان می‌ماند.
+	 *
+	 * @param array  $cols       خروجی `download_columns()`.
+	 * @param string $size_label برچسب ستون حجم (از تنظیمات بلوک).
+	 * @return string
+	 */
+	public static function download_head( $cols, $size_label = '' ) {
+		$size_label = '' !== trim( (string) $size_label ) ? (string) $size_label : __( 'حجم', 'manacore' );
 
-		if ( '' === $badge && $group['premium'] ) {
-			$badge = __( 'ویژه', 'manacore' );
-		}
+		ob_start();
+		?>
+		<div class="download-table-header">
+			<?php if ( ! empty( $cols['quality'] ) ) : ?>
+				<span class="dl-col-quality"><?php esc_html_e( 'کیفیت تصویر', 'manacore' ); ?></span>
+			<?php endif; ?>
+			<?php if ( ! empty( $cols['name'] ) ) : ?>
+				<span class="dl-col-name"><?php esc_html_e( 'نام', 'manacore' ); ?></span>
+			<?php endif; ?>
+			<?php if ( ! empty( $cols['language'] ) ) : ?>
+				<span class="dl-col-lang"><?php esc_html_e( 'زبان / دوبله', 'manacore' ); ?></span>
+			<?php endif; ?>
+			<?php if ( ! empty( $cols['encoder'] ) ) : ?>
+				<span class="dl-col-encoder"><?php esc_html_e( 'انکودر', 'manacore' ); ?></span>
+			<?php endif; ?>
+			<?php if ( ! empty( $cols['size'] ) ) : ?>
+				<span class="dl-col-size"><?php echo esc_html( $size_label ); ?></span>
+			<?php endif; ?>
+			<span class="dl-col-actions"><?php esc_html_e( 'پخش و دانلود', 'manacore' ); ?></span>
+		</div>
+		<?php
+		return (string) ob_get_clean();
+	}
 
-		$format = trim( (string) $group['encoder'] );
-		if ( '' === $format && ! empty( $group['items'][0]['type'] ) ) {
-			$format = Links::type_label( $group['items'][0]['type'] );
-		}
+	/**
+	 * یک ردیف جدول دانلود (`.download-row`) برای یک لینک.
+	 *
+	 * ستون‌هایی که در `$cols` نیستند، اصلاً رندر نمی‌شوند. کنش‌ها:
+	 *   «▶ پخش» برای لینک‌های آنلاین (به صفحه‌ی پخش با کیفیت همین ردیف)،
+	 *   «⇩ دانلود» برای بقیه؛ لینکِ گروه ویژه به‌جایش دکمه‌ی اشتراک می‌گیرد.
+	 *
+	 * @param array  $row               ردیف تخت (خروجی `download_rows()`).
+	 * @param array  $cols              ستون‌های نمایشی (خروجی `download_columns()`).
+	 * @param int    $post_id           شناسه‌ی پست نمایش (مالک پیش‌فرض ردیف).
+	 * @param string $play_url_override نشانی پخش صریح (برای قسمت‌ها).
+	 * @return string
+	 */
+	public static function link_row( $row, $cols, $post_id, $play_url_override = '' ) {
+		$owner  = ! empty( $row['owner'] ) ? (int) $row['owner'] : (int) $post_id;
+		$locked = ! empty( $row['premium'] ) && ! manacore_user_can_access( $owner );
 
-		$player = class_exists( '\ManaCore\Core\Player' ) ? Player::page_url( $post_id ) : '';
+		$quality  = trim( (string) ( $row['quality'] ?? '' ) );
+		$name     = self::row_name( $row );
+		$language = '' !== trim( (string) ( $row['language'] ?? '' ) ) ? Links::language_label( (string) $row['language'] ) : '';
+		$encoder  = trim( (string) ( $row['encoder'] ?? '' ) );
+		$size     = trim( (string) ( $row['size'] ?? '' ) );
+		$type     = (string) ( $row['type'] ?? 'direct' );
+		$url      = (string) ( $row['url'] ?? '' );
+		$label    = '' !== $name ? $name : Links::type_label( $type );
+
+		/*
+		 * کلید گزینه‌ی این ردیف (کیفیت + زبان + انکودر) همان کلیدی است که
+		 * صفحه‌ی پخش می‌سازد؛ پس پیش‌انتخابِ درستِ همان دوبله/زیرنویس روی
+		 * صفحه‌ی پخش می‌نشیند.
+		 */
+		$item_key = Links::variant_key( $quality, $type, (string) ( $row['language'] ?? '' ), $encoder );
+		$player   = class_exists( '\\ManaCore\\Core\\Player' ) ? Player::page_url( $owner ) : '';
 
 		ob_start();
 		?>
 		<div class="download-row">
-			<span class="quality-name">
-				<b dir="ltr"><?php echo esc_html( $quality ); ?></b>
-				<?php if ( '' !== $badge ) : ?>
-					<small><?php echo esc_html( $badge ); ?></small>
-				<?php endif; ?>
-			</span>
-			<span class="format-tag"><?php echo esc_html( $format ); ?></span>
-			<span class="download-size"><?php echo esc_html( (string) $group['size'] ); ?></span>
-			<div class="download-actions">
+			<?php if ( ! empty( $cols['quality'] ) ) : ?>
+				<span class="quality-name dl-col-quality"><b dir="ltr"><?php echo esc_html( $quality ); ?></b></span>
+			<?php endif; ?>
+			<?php if ( ! empty( $cols['name'] ) ) : ?>
+				<span class="download-name dl-col-name"><?php echo esc_html( $name ); ?></span>
+			<?php endif; ?>
+			<?php if ( ! empty( $cols['language'] ) ) : ?>
+				<span class="download-lang dl-col-lang"><?php echo esc_html( $language ); ?></span>
+			<?php endif; ?>
+			<?php if ( ! empty( $cols['encoder'] ) ) : ?>
+				<span class="format-tag dl-col-encoder"><?php echo esc_html( $encoder ); ?></span>
+			<?php endif; ?>
+			<?php if ( ! empty( $cols['size'] ) ) : ?>
+				<span class="download-size dl-col-size"><?php echo esc_html( $size ); ?></span>
+			<?php endif; ?>
+			<div class="download-actions dl-col-actions">
 				<?php if ( $locked ) : ?>
 					<?php
 					/* برچسب دکمه‌ی اشتراک از پنل مدیریت می‌آید (خالی = پیش‌فرض). */
@@ -1205,70 +1306,52 @@ class Templates {
 						href="<?php echo esc_url( apply_filters( 'manacore_subscribe_url', manacore_get_option( 'subscribe_url', home_url( '/subscribe/' ) ) ) ); ?>">
 						<?php echo esc_html( $subscribe_label ); ?>
 					</a>
+				<?php elseif ( '' !== $player && class_exists( '\\ManaCore\\Core\\Blocks' ) && Blocks::is_playable_row( $row ) ) : ?>
+					<?php
+					/*
+					 * «پخش» مثل مرجع به صفحه‌ی پخش می‌رود (نه مُدال) تا
+					 * تمام‌صفحه و کیفیت‌ها همان صفحه باشد. کیفیت این ردیف
+					 * در نشانی می‌آید تا پلیر همان را پیش‌انتخاب کند.
+					 *
+					 * `add_query_arg()` مقادیر تازه را کدگذاری نمی‌کند، پس
+					 * کدگذاری اینجا با `rawurlencode()` انجام می‌شود؛ وگرنه
+					 * کیفیت‌های فارسی/فاصله‌دار در نشانی می‌شکنند.
+					 */
+					$base_url = '' !== $play_url_override ? $play_url_override : $player;
+					$play_url = '' !== $item_key
+						? add_query_arg( 'quality', rawurlencode( $item_key ), $base_url )
+						: $base_url;
+					?>
+					<a class="manacore-btn is-secondary is-small" href="<?php echo esc_url( $play_url ); ?>"
+						aria-label="<?php echo esc_attr( $label ); ?>">
+						<svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="m8 5 11 7-11 7V5Z"/></svg>
+						<?php esc_html_e( 'پخش', 'manacore' ); ?>
+					</a>
+				<?php elseif ( 'stream' === $type ) : ?>
+					<button type="button" class="manacore-btn is-secondary is-small"
+						data-manacore-play="<?php echo esc_url( $url ); ?>"
+						data-title="<?php echo esc_attr( $label ); ?>">
+						<svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="m8 5 11 7-11 7V5Z"/></svg>
+						<?php esc_html_e( 'پخش', 'manacore' ); ?>
+					</button>
 				<?php else : ?>
-					<?php foreach ( $group['items'] as $item ) : ?>
-						<?php
-						$label = $item['label']
-							? $item['label']
-							: Links::type_label( $item['type'] );
-
-						if ( 'stream' === $item['type'] && $player ) :
-							/*
-							 * «پخش» مثل مرجع به صفحه‌ی پخش می‌رود (نه مُدال) تا
-							 * تمام‌صفحه و کیفیت‌ها همان صفحه باشد. کیفیت گروه
-							 * در نشانی می‌آید تا پلیر همان را پیش‌انتخاب کند.
-							 */
-							/*
-							 * صفحه‌ی پخشِ صریح (قسمت‌ها) بر ساخت پیش‌فرض
-							 * مقدم است و کیفیت هم روی همان سوار می‌شود.
-							 */
-							if ( '' !== $play_url_override ) {
-								$play_url = '' !== $quality
-									? add_query_arg( 'quality', rawurlencode( $quality ), $play_url_override )
-									: $play_url_override;
-							} else {
-								/*
-							 * `add_query_arg()` مقادیر تازه را کدگذاری نمی‌کند
-							 * (`build_query()` بدون urlencode است)؛ پس کدگذاری
-							 * اینجا وظیفه‌ی فراخوان است — وگرنه کیفیت‌های
-							 * فارسی/فاصله‌دار در نشانی می‌شکنند.
-							 */
-							$play_url = add_query_arg( 'quality', rawurlencode( $quality ), $player );
-							}
-							?>
-							<a class="manacore-btn is-secondary is-small" href="<?php echo esc_url( $play_url ); ?>"
-								aria-label="<?php echo esc_attr( $label ); ?>">
-								<svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="m8 5 11 7-11 7V5Z"/></svg>
-								<?php esc_html_e( 'پخش', 'manacore' ); ?>
-							</a>
-						<?php elseif ( 'stream' === $item['type'] ) : ?>
-							<button type="button" class="manacore-btn is-secondary is-small"
-								data-manacore-play="<?php echo esc_url( $item['url'] ); ?>"
-								data-title="<?php echo esc_attr( $label ); ?>">
-								<svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="m8 5 11 7-11 7V5Z"/></svg>
-								<?php esc_html_e( 'پخش', 'manacore' ); ?>
-							</button>
-						<?php else : ?>
-							<?php
-							/*
-							 * با روشن‌بودن «امضای لینک دانلود»، نشانی خام
-							 * فایل روی صفحه نمی‌آید و جایش یک مسیر داخلی
-							 * زمان‌دار می‌نشیند. خاموش‌بودن گزینه = همان
-							 * رفتار پیشین، بی‌هیچ تغییر در مارک‌آپ.
-							 */
-							$download_url = class_exists( '\\ManaCore\\Core\\Downloads' )
-								? Downloads::url_for( $post_id, (string) $item['url'], (string) $item['type'] )
-								: (string) $item['url'];
-							?>
-							<a class="manacore-btn is-primary is-small" href="<?php echo esc_url( $download_url ); ?>"
-								rel="nofollow noopener" target="_blank"
-								aria-label="<?php echo esc_attr( $label ); ?>"
-								data-manacore-download="<?php echo esc_attr( $post_id ); ?>">
-								<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M12 3v12m0 0 4-4m-4 4-4-4M4 21h16"/></svg>
-								<?php esc_html_e( 'دانلود', 'manacore' ); ?>
-							</a>
-						<?php endif; ?>
-					<?php endforeach; ?>
+					<?php
+					/*
+					 * با روشن‌بودن «امضای لینک دانلود»، نشانی خام فایل روی
+					 * صفحه نمی‌آید و جایش یک مسیر داخلی زمان‌دار می‌نشیند.
+					 * خاموش‌بودن گزینه = همان رفتار پیشین.
+					 */
+					$download_url = class_exists( '\\ManaCore\\Core\\Downloads' )
+						? Downloads::url_for( $owner, $url, $type )
+						: $url;
+					?>
+					<a class="manacore-btn is-primary is-small" href="<?php echo esc_url( $download_url ); ?>"
+						rel="nofollow noopener" target="_blank"
+						aria-label="<?php echo esc_attr( $label ); ?>"
+						data-manacore-download="<?php echo esc_attr( $owner ); ?>">
+						<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M12 3v12m0 0 4-4m-4 4-4-4M4 21h16"/></svg>
+						<?php esc_html_e( 'دانلود', 'manacore' ); ?>
+					</a>
 				<?php endif; ?>
 			</div>
 		</div>

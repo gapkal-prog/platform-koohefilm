@@ -197,7 +197,11 @@ function koohe_account_badge() {
 		 * منوی موبایل له می‌شد. برای صفحه‌خوان‌ها نام قابل‌دسترس باقی
 		 * می‌ماند و متن «ورود» در دسکتاپ دست‌نخورده است.
 		 */
-		return '<a class="koohe-btn koohe-btn-ghost koohe-account-login" href="' . esc_url( koohe_account_url() ) . '">'
+		/*
+		 * باز شدن مودال ورود/ثبت‌نام (تب «ورود»). اگر JS نباشد، لینک به
+		 * صفحه‌ی حساب می‌رود؛ همان مقصد قبلی.
+		 */
+		return '<a class="koohe-btn koohe-btn-ghost koohe-account-login" href="' . esc_url( koohe_account_url() ) . '" data-manacore-auth-open="register" aria-haspopup="dialog">'
 			. '<svg class="koohe-account-login__icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>'
 			. '<span class="koohe-account-login__text">' . esc_html__( 'ورود', 'koohe-film' ) . '</span></a>';
 	}
