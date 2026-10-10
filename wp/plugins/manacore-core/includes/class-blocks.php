@@ -4384,6 +4384,17 @@ class Blocks {
 		 */
 		$subtitles = self::subtitle_tracks( $source_id !== $display_id ? array( $source_id, $display_id ) : array( $display_id ) );
 
+		/*
+		 * `subs=1` از دکمه‌ی «زیرنویس» جدول دانلود می‌آید: اولین زیرنویس از
+		 * همان لحظه روشن است. بدون این پارامتر، فقط زیرنویس پیش‌فرضِ خود اثر.
+		 */
+		$subs_on = isset( $_GET['subs'] ) && '1' === sanitize_text_field( wp_unslash( $_GET['subs'] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		if ( $subs_on ) {
+			foreach ( $subtitles as $i => $subtitle ) {
+				$subtitles[ $i ]['default'] = 0 === $i;
+			}
+		}
+
 		ob_start();
 		?>
 		<div class="player-page" data-manacore-player-page="<?php echo esc_attr( $source_id ); ?>"
@@ -8409,8 +8420,8 @@ class Blocks {
 						<div class="download-table download-packs" data-season-packs="<?php echo esc_attr( $season ); ?>">
 							<?php echo Templates::download_head( $pack_cols, $size_label ); // phpcs:ignore WordPress.Security.EscapeOutput ?>
 							<?php
-							foreach ( $pack_rows as $pack_row ) {
-								echo Templates::link_row( $pack_row, $pack_cols, $parent, $pack_play ); // phpcs:ignore WordPress.Security.EscapeOutput
+							foreach ( Templates::download_entries( $pack_rows ) as $pack_entry ) {
+								echo Templates::entry_row( $pack_entry, $pack_cols, $parent, $pack_play ); // phpcs:ignore WordPress.Security.EscapeOutput
 							}
 							?>
 						</div>
@@ -8520,9 +8531,9 @@ class Blocks {
 									<p class="muted"><?php esc_html_e( 'برای این قسمت هنوز فایلی ثبت نشده است.', 'manacore' ); ?></p>
 									<?php
 								else :
-									foreach ( $ep_rows as $ep_row ) :
-										// کلید گزینه‌ی هر ردیف را خودِ `link_row()` می‌سازد (همان کلید صفحه‌ی پخش).
-										echo Templates::link_row( $ep_row, $ep_cols, $episode->ID, (string) $play_url ); // phpcs:ignore WordPress.Security.EscapeOutput
+									foreach ( Templates::download_entries( $ep_rows ) as $ep_entry ) :
+										// کلید گزینه‌ی هر لینک را خودِ `variant_cells()` می‌سازد (همان کلید صفحه‌ی پخش).
+										echo Templates::entry_row( $ep_entry, $ep_cols, $episode->ID, (string) $play_url ); // phpcs:ignore WordPress.Security.EscapeOutput
 									endforeach;
 								endif;
 								?>

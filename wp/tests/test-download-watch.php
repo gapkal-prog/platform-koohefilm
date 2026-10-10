@@ -543,8 +543,20 @@ mc_ok( false !== strpos( $pack_only, 'دانلود کامل' ), 'بسته‌ها
 
 /* ۶.۶ ادغام بسته‌ها و لینک قسمت‌ها در یک جدول */
 $merged = \ManaCore\Core\Templates::links( 14 );
-/* هر لینک یک ردیف است: دو بسته‌ی فصل + دو لینکِ قسمت (دانلود و پخش). */
-mc_ok( 4 === substr_count( $merged, 'class="download-row"' ), 'باکس سریال، دو بسته‌ی فصل و لینک‌های قسمت را کنار هم می‌آورد', 'ردیف‌ها: ' . substr_count( $merged, 'class="download-row"' ) );
+/* هر کیفیت (در هر مالک/قسمت) یک ردیف است؛ لینک‌های هم‌کیفیت کنار هم در همان ردیف. */
+mc_ok( 3 === substr_count( $merged, 'class="download-row"' ), 'باکس سریال: هر کیفیت یک ردیف (بسته‌ها و قسمت)', 'ردیف‌ها: ' . substr_count( $merged, 'class="download-row"' ) );
+/* گروه‌بندی: هم‌کیفیتِ هم‌مالک یک ردیف؛ مالک متفاوت جداست؛ بالاترین کیفیت اول. */
+$entries_test = \ManaCore\Core\Templates::download_entries(
+	array(
+		array( 'quality' => '720p', 'owner' => 0, 'episode' => 0, 'type' => 'direct', 'url' => 'a' ),
+		array( 'quality' => '1080p', 'owner' => 0, 'episode' => 0, 'type' => 'direct', 'url' => 'b', 'language' => 'dub_fa' ),
+		array( 'quality' => '1080p', 'owner' => 0, 'episode' => 0, 'type' => 'stream', 'url' => 'c', 'language' => 'dub_fa' ),
+		array( 'quality' => '1080p', 'owner' => 9, 'episode' => 1, 'type' => 'direct', 'url' => 'd' ),
+	)
+);
+mc_ok( 3 === count( $entries_test ), 'هم‌کیفیتِ هم‌مالک در یک گروه؛ مالک متفاوت جداست', 'گروه‌ها: ' . count( $entries_test ) );
+mc_ok( '1080p' === $entries_test[0]['quality'] && 2 === count( $entries_test[0]['variants'] ), 'گروه بالاترین کیفیت اول است و لینک‌های آن کنار هم‌اند' );
+mc_ok( '720p' === $entries_test[2]['quality'], 'گروه‌ها از بالا به پایین مرتب می‌شوند' );
 mc_ok( 2 === substr_count( $merged, 'data-season="' ), 'برای هر فصل یک تب ساخته می‌شود' );
 mc_ok( 2 === substr_count( $merged, 'data-season-panel=' ), 'هر تب پنل خودش را دارد' );
 mc_ok( false !== strpos( $merged, 'دانلود کامل' ) && false !== strpos( $merged, 'قسمت ۱' ), 'نشان بسته و نشان قسمت هر دو در یک جدول‌اند' );
@@ -624,7 +636,7 @@ mc_ok( false !== strpos( $post_html, 'دانلود کامل فصل' ), 'بسته
 $s2_html = \ManaCore\Core\Templates::links( 16, array( 'source' => 'both', 'season' => 2 ) );
 mc_ok( false !== strpos( $s2_html, 'data-season-panel="2"' ) && false === strpos( $s2_html, 'data-season-panel="1"' ), 'فیلتر فصل فقط همان فصل را نشان می‌دهد' );
 mc_ok( '' === \ManaCore\Core\Templates::links( 16, array( 'source' => 'both', 'season' => 9 ) ), 'فصلی که داده ندارد، باکس با فصل‌های دیگر پر نمی‌شود' );
-mc_ok( false !== strpos( $both_html, 'download-size dl-col-size">2GB<' ) && false !== strpos( $both_html, 'download-size dl-col-size">4GB<' ), 'حجم هر قسمت در جدول کیفیتش می‌آید (ارث‌بری از گروه وقتی آیتم حجم ندارد)' );
+mc_ok( false !== strpos( $both_html, 'class="download-size">2GB<' ) && false !== strpos( $both_html, 'class="download-size">4GB<' ), 'حجم هر قسمت در جدول کیفیتش می‌آید (ارث‌بری از گروه وقتی آیتم حجم ندارد)' );
 
 $movie_again = \ManaCore\Core\Templates::links( 4 );
 mc_ok( false === strpos( $movie_again, 'episode-card' ) && false === strpos( $movie_again, 'is-series' ), 'فیلم هیچ کارت قسمتی نمی‌گیرد' );

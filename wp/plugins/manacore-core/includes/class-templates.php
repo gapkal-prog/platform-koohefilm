@@ -669,11 +669,12 @@ class Templates {
 						<div class="download-table download-packs" data-season-packs="<?php echo esc_attr( $season ); ?>">
 							<?php echo self::download_head( $pack_cols, $size_label ); // phpcs:ignore WordPress.Security.EscapeOutput ?>
 							<?php
-							foreach ( $pack_rows as $row ) {
+							foreach ( self::download_entries( $pack_rows ) as $entry ) {
 								// ردیف‌های بی‌شماره، ردیف «بسته» هستند؛ مالک آن‌ها خودِ اثر است.
-								$row_play = ! empty( $row['owner'] ) ? self::episode_play_url( $post_id, (int) $season, $row ) : '';
+								$first    = $entry['variants'][0];
+								$row_play = ! empty( $first['owner'] ) ? self::episode_play_url( $post_id, (int) $season, $first ) : '';
 
-								echo self::link_row( $row, $pack_cols, $post_id, $row_play ); // phpcs:ignore WordPress.Security.EscapeOutput
+								echo self::entry_row( $entry, $pack_cols, $post_id, $row_play ); // phpcs:ignore WordPress.Security.EscapeOutput
 							}
 							?>
 						</div>
@@ -798,8 +799,8 @@ class Templates {
 			<div class="download-table episode-download" id="<?php echo esc_attr( $body_id ); ?>"<?php echo $expanded ? '' : ' hidden'; ?>>
 				<?php echo self::download_head( $cols, $labels['size'] ?? '' ); // phpcs:ignore WordPress.Security.EscapeOutput ?>
 				<?php
-				foreach ( $rows as $row ) {
-					echo self::link_row( $row, $cols, $owner, $play_url ); // phpcs:ignore WordPress.Security.EscapeOutput
+				foreach ( self::download_entries( $rows ) as $entry ) {
+					echo self::entry_row( $entry, $cols, $owner, $play_url ); // phpcs:ignore WordPress.Security.EscapeOutput
 				}
 				?>
 			</div>
@@ -1241,19 +1242,102 @@ class Templates {
 	}
 
 	/**
-	 * یک ردیف جدول دانلود (`.download-row`) برای یک لینک.
+	 * ردیف‌های تخت را به «ردیف کیفیت» گروه می‌کند.
 	 *
-	 * ستون‌هایی که در `$cols` نیستند، اصلاً رندر نمی‌شوند. کنش‌ها:
-	 *   «▶ پخش» برای لینک‌های آنلاین (به صفحه‌ی پخش با کیفیت همین ردیف)،
-	 *   «⇩ دانلود» برای بقیه؛ لینکِ گروه ویژه به‌جایش دکمه‌ی اشتراک می‌گیرد.
+	 * کلید گروه: مالک + قسمت + کیفیت. لینک‌های هم‌کیفیت (دوبله/زبان، انکودر،
+	 * حجم یا نوع متفاوت) یک ردیف جدول می‌شوند و کنش‌های پخش، دانلود و
+	 * زیرنویس‌شان کنار همان کیفیت می‌آیند؛ پس «1080p» پشت‌سرهم تکرار نمی‌شود.
+	 * گروه‌ها از بالاترین کیفیت به پایین‌ترین مرتب می‌شوند و ترتیب لینک‌های
+	 * داخل هر گروه حفظ می‌شود.
 	 *
-	 * @param array  $row               ردیف تخت (خروجی `download_rows()`).
-	 * @param array  $cols              ستون‌های نمایشی (خروجی `download_columns()`).
-	 * @param int    $post_id           شناسه‌ی پست نمایش (مالک پیش‌فرض ردیف).
-	 * @param string $play_url_override نشانی پخش صریح (برای قسمت‌ها).
-	 * @return string
+	 * @param array $rows ردیف‌های تخت (خروجی `download_rows()`).
+	 * @return array<int,array{quality:string,owner:int,episode:int,variants:array}>
 	 */
-	public static function link_row( $row, $cols, $post_id, $play_url_override = '' ) {
+	public static function download_entries( $rows ) {
+		$entries = array();
+
+		foreach ( (array) $rows as $row ) {
+			if ( ! is_array( $row ) ) {
+				continue;
+			}
+
+			$quality = trim( (string) ( $row['quality'] ?? '' ) );
+			$owner   = (int) ( $row['owner'] ?? 0 );
+			$episode = (int) ( $row['episode'] ?? 0 );
+			$key     = $owner . '|' . $episode . '|' . mb_strtolower( $quality );
+
+			if ( ! isset( $entries[ $key ] ) ) {
+				$entries[ $key ] = array(
+					'quality' => $quality,
+					'owner'   => $owner,
+					'episode' => $episode,
+					'variants' => array(),
+				);
+			}
+
+			$entries[ $key ]['variants'][] = $row;
+		}
+
+		$entries = array_values( $entries );
+
+		usort(
+			$entries,
+			static function ( $a, $b ) {
+				return self::quality_rank( $b['quality'] ) <=> self::quality_rank( $a['quality'] );
+			}
+		);
+
+		return $entries;
+	}
+
+	/**
+	 * وزن عددی کیفیت برای مرتب‌سازی (`1080p` → ۱۰۸۰؛ بدون عدد → ۰).
+	 *
+	 * @param string $quality برچسب کیفیت.
+	 * @return int
+	 */
+	protected static function quality_rank( $quality ) {
+		return (int) preg_replace( '/\D+/', '', (string) $quality );
+	}
+
+	/**
+	 * آیا عنوان زیرنویس فایل WebVTT دارد؟ (فهرست «زیرنویس‌ها» در تب اثر.)
+	 *
+	 * @param int $post_id شناسه‌ی پست پخش.
+	 * @return bool
+	 */
+	public static function has_subtitles( $post_id ) {
+		$raw = get_post_meta( (int) $post_id, 'manacore_subtitles', true );
+
+		return ! empty( $raw );
+	}
+
+	/**
+	 * آیا لینک را می‌شود در پلیر پخش کرد؟ (استریم، یا ویدئوی مستقیم قابل‌پخش.)
+	 *
+	 * @param array $row ردیف تخت.
+	 * @return bool
+	 */
+	protected static function row_is_playable( $row ) {
+		if ( class_exists( '\\ManaCore\\Core\\Blocks' ) ) {
+			return Blocks::is_playable_row( $row );
+		}
+
+		return 'stream' === ( $row['type'] ?? '' );
+	}
+
+	/**
+	 * خانه‌های یک خط (یک لینک) از ردیف کیفیت: نام، زبان، انکودر، حجم و کنش‌ها.
+	 *
+	 * همه‌ی مقادیر، اسکیپ‌شده برمی‌گردند. ستون‌های خالی در `entry_row()`
+	 * اصلاً رندر نمی‌شوند؛ اینجا فقط محتوای هر خط ساخته می‌شود.
+	 *
+	 * @param array  $row               ردیف تخت.
+	 * @param int    $post_id           شناسه‌ی پست نمایش (مالک پیش‌فرض).
+	 * @param string $play_url_override نشانی پخش صریح (برای قسمت‌ها).
+	 * @return array{name:string,language:string,encoder:string,size:string,actions:array<int,string>}
+	 */
+	protected static function variant_cells( $row, $post_id, $play_url_override = '' ) {
 		$owner  = ! empty( $row['owner'] ) ? (int) $row['owner'] : (int) $post_id;
 		$locked = ! empty( $row['premium'] ) && ! manacore_user_can_access( $owner );
 
@@ -1267,96 +1351,155 @@ class Templates {
 		$label    = '' !== $name ? $name : Links::type_label( $type );
 
 		/*
-		 * کلید گزینه‌ی این ردیف (کیفیت + زبان + انکودر) همان کلیدی است که
-		 * صفحه‌ی پخش می‌سازد؛ پس پیش‌انتخابِ درستِ همان دوبله/زیرنویس روی
-		 * صفحه‌ی پخش می‌نشیند.
+		 * کلید گزینه‌ی این لینک (کیفیت + زبان + انکودر) همان کلیدی است که
+		 * صفحه‌ی پخش می‌سازد؛ پس پیش‌انتخابِ درستِ همان دوبله روی پلیر می‌نشیند.
 		 */
 		$item_key = Links::variant_key( $quality, $type, (string) ( $row['language'] ?? '' ), $encoder );
 		$player   = class_exists( '\\ManaCore\\Core\\Player' ) ? Player::page_url( $owner ) : '';
+		$playable = '' !== $player && self::row_is_playable( $row );
 
-		ob_start();
-		?>
-		<div class="download-row">
-			<?php if ( ! empty( $cols['quality'] ) ) : ?>
-				<span class="quality-name dl-col-quality"><b dir="ltr"><?php echo esc_html( $quality ); ?></b></span>
-			<?php endif; ?>
-			<?php if ( ! empty( $cols['name'] ) ) : ?>
-				<span class="download-name dl-col-name"><?php echo esc_html( $name ); ?></span>
-			<?php endif; ?>
-			<?php if ( ! empty( $cols['language'] ) ) : ?>
-				<span class="download-lang dl-col-lang"><?php echo esc_html( $language ); ?></span>
-			<?php endif; ?>
-			<?php if ( ! empty( $cols['encoder'] ) ) : ?>
-				<span class="format-tag dl-col-encoder"><?php echo esc_html( $encoder ); ?></span>
-			<?php endif; ?>
-			<?php if ( ! empty( $cols['size'] ) ) : ?>
-				<span class="download-size dl-col-size"><?php echo esc_html( $size ); ?></span>
-			<?php endif; ?>
-			<div class="download-actions dl-col-actions">
-				<?php if ( $locked ) : ?>
-					<?php
-					/* برچسب دکمه‌ی اشتراک از پنل مدیریت می‌آید (خالی = پیش‌فرض). */
-					$subscribe_label = trim( (string) manacore_get_option( 'subscribe_label', '' ) );
+		$actions = array();
 
-					if ( '' === $subscribe_label ) {
-						$subscribe_label = __( 'تهیه اشتراک', 'manacore' );
-					}
-					?>
-					<a class="manacore-btn is-primary is-small"
-						href="<?php echo esc_url( apply_filters( 'manacore_subscribe_url', manacore_get_option( 'subscribe_url', home_url( '/subscribe/' ) ) ) ); ?>">
-						<?php echo esc_html( $subscribe_label ); ?>
-					</a>
-				<?php elseif ( '' !== $player && class_exists( '\\ManaCore\\Core\\Blocks' ) && Blocks::is_playable_row( $row ) ) : ?>
-					<?php
-					/*
-					 * «پخش» مثل مرجع به صفحه‌ی پخش می‌رود (نه مُدال) تا
-					 * تمام‌صفحه و کیفیت‌ها همان صفحه باشد. کیفیت این ردیف
-					 * در نشانی می‌آید تا پلیر همان را پیش‌انتخاب کند.
-					 *
-					 * `add_query_arg()` مقادیر تازه را کدگذاری نمی‌کند، پس
-					 * کدگذاری اینجا با `rawurlencode()` انجام می‌شود؛ وگرنه
-					 * کیفیت‌های فارسی/فاصله‌دار در نشانی می‌شکنند.
-					 */
-					$base_url = '' !== $play_url_override ? $play_url_override : $player;
-					$play_url = '' !== $item_key
-						? add_query_arg( 'quality', rawurlencode( $item_key ), $base_url )
-						: $base_url;
-					?>
-					<a class="manacore-btn is-secondary is-small" href="<?php echo esc_url( $play_url ); ?>"
-						aria-label="<?php echo esc_attr( $label ); ?>">
-						<svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="m8 5 11 7-11 7V5Z"/></svg>
-						<?php esc_html_e( 'پخش', 'manacore' ); ?>
-					</a>
-				<?php elseif ( 'stream' === $type ) : ?>
-					<button type="button" class="manacore-btn is-secondary is-small"
-						data-manacore-play="<?php echo esc_url( $url ); ?>"
-						data-title="<?php echo esc_attr( $label ); ?>">
-						<svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="m8 5 11 7-11 7V5Z"/></svg>
-						<?php esc_html_e( 'پخش', 'manacore' ); ?>
-					</button>
-				<?php else : ?>
-					<?php
-					/*
-					 * با روشن‌بودن «امضای لینک دانلود»، نشانی خام فایل روی
-					 * صفحه نمی‌آید و جایش یک مسیر داخلی زمان‌دار می‌نشیند.
-					 * خاموش‌بودن گزینه = همان رفتار پیشین.
-					 */
-					$download_url = class_exists( '\\ManaCore\\Core\\Downloads' )
-						? Downloads::url_for( $owner, $url, $type )
-						: $url;
-					?>
-					<a class="manacore-btn is-primary is-small" href="<?php echo esc_url( $download_url ); ?>"
-						rel="nofollow noopener" target="_blank"
-						aria-label="<?php echo esc_attr( $label ); ?>"
-						data-manacore-download="<?php echo esc_attr( $owner ); ?>">
-						<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M12 3v12m0 0 4-4m-4 4-4-4M4 21h16"/></svg>
-						<?php esc_html_e( 'دانلود', 'manacore' ); ?>
-					</a>
-				<?php endif; ?>
-			</div>
-		</div>
-		<?php
-		return (string) ob_get_clean();
+		if ( $locked ) {
+			/* برچسب دکمه‌ی اشتراک از پنل مدیریت می‌آید (خالی = پیش‌فرض). */
+			$subscribe_label = trim( (string) manacore_get_option( 'subscribe_label', '' ) );
+			if ( '' === $subscribe_label ) {
+				$subscribe_label = __( 'تهیه اشتراک', 'manacore' );
+			}
+
+			$actions[] = '<a class="manacore-btn is-primary is-small" href="' . esc_url( apply_filters( 'manacore_subscribe_url', manacore_get_option( 'subscribe_url', home_url( '/subscribe/' ) ) ) ) . '">' . esc_html( $subscribe_label ) . '</a>';
+		} elseif ( $playable ) {
+			$base_url = '' !== $play_url_override ? $play_url_override : $player;
+			$play_url = '' !== $item_key ? add_query_arg( 'quality', rawurlencode( $item_key ), $base_url ) : $base_url;
+
+			$actions[] = '<a class="manacore-btn is-secondary is-small" href="' . esc_url( $play_url ) . '" aria-label="' . esc_attr( sprintf( /* translators: %s: نام لینک */ __( 'پخش %s', 'manacore' ), $label ) ) . '">'
+				. self::icon( 'play' ) . esc_html__( 'پخش', 'manacore' ) . '</a>';
+
+			if ( self::has_subtitles( $owner ) ) {
+				$actions[] = '<a class="manacore-btn is-secondary is-small" href="' . esc_url( add_query_arg( 'subs', '1', $play_url ) ) . '" aria-label="' . esc_attr( sprintf( /* translators: %s: نام لینک */ __( 'پخش با زیرنویس %s', 'manacore' ), $label ) ) . '">'
+					. self::icon( 'captions' ) . esc_html__( 'زیرنویس', 'manacore' ) . '</a>';
+			}
+		} elseif ( 'stream' === $type ) {
+			$actions[] = '<button type="button" class="manacore-btn is-secondary is-small" data-manacore-play="' . esc_url( $url ) . '" data-title="' . esc_attr( $label ) . '">'
+				. self::icon( 'play' ) . esc_html__( 'پخش', 'manacore' ) . '</button>';
+		}
+
+		/*
+		 * دانلود: برای لینک‌های مستقیم (غیرقابل‌پخش) و کنار پخشِ ویدئوهای
+		 * مستقیم. استریم‌ها دانلود نمی‌شوند و قفل‌شده‌ها دکمه‌ی اشتراک دارند.
+		 */
+		$needs_download = ! $locked && ( array() === $actions || ( $playable && 'stream' !== $type ) );
+
+		if ( $needs_download ) {
+			/* با روشن‌بودن «امضای لینک دانلود»، نشانی خام فایل روی صفحه نمی‌آید. */
+			$download_url = class_exists( '\\ManaCore\\Core\\Downloads' )
+				? Downloads::url_for( $owner, $url, $type )
+				: $url;
+
+			$actions[] = '<a class="manacore-btn is-primary is-small" href="' . esc_url( $download_url ) . '" rel="nofollow noopener" target="_blank" aria-label="' . esc_attr( $label ) . '" data-manacore-download="' . esc_attr( $owner ) . '">'
+				. self::icon( 'download' ) . esc_html__( 'دانلود', 'manacore' ) . '</a>';
+		}
+
+		return array(
+			'name'     => '' !== $name ? '<span class="download-name">' . esc_html( $name ) . '</span>' : '',
+			'language' => '' !== $language ? '<span class="download-lang">' . esc_html( $language ) . '</span>' : '',
+			'encoder'  => '' !== $encoder ? '<span class="format-tag">' . esc_html( $encoder ) . '</span>' : '',
+			'size'     => '' !== $size ? '<span class="download-size">' . esc_html( $size ) . '</span>' : '',
+			'actions'  => $actions,
+		);
+	}
+
+	/**
+	 * آیکون‌های کوچک کنش‌های جدول دانلود (SVG ثابت، بدون ورودی کاربر).
+	 *
+	 * @param string $name play|download|captions
+	 * @return string
+	 */
+	protected static function icon( $name ) {
+		$paths = array(
+			'play'     => '<path d="m8 5 11 7-11 7V5Z"/>',
+			'download' => '<path d="M12 3v12m0 0 4-4m-4 4-4-4M4 21h16"/>',
+			'captions' => '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M7 11h3m-3 3h5m3-3h2m-2 3h2"/>',
+		);
+
+		$fill = 'play' === $name ? 'currentColor' : 'none';
+
+		return '<svg viewBox="0 0 24 24" width="13" height="13" fill="' . $fill . '" stroke="currentColor" stroke-width="1.8" aria-hidden="true">' . ( $paths[ $name ] ?? '' ) . '</svg>';
+	}
+
+	/**
+	 * یک «ردیف کیفیت» جدول دانلود (`.download-row`) برای یک گروه از `download_entries()`.
+	 *
+	 * ستون‌های نمایشی (`$cols`) فقط ستون‌هایی‌اند که در هیچ لینکی خالی نیستند؛
+	 * ستون کیفیت یک‌بار و ستون‌های دیگر به‌صورت خط‌های موازی (هر لینک یک خط)
+	 * رندر می‌شوند. خط‌ها در همه‌ی ستون‌ها هم‌تراز می‌مانند.
+	 *
+	 * @param array  $entry             گروه کیفیت (یک عضو از `download_entries()`).
+	 * @param array  $cols              ستون‌های نمایشی (خروجی `download_columns()`).
+	 * @param int    $post_id           شناسه‌ی پست نمایش.
+	 * @param string $play_url_override نشانی پخش صریح (برای قسمت‌ها).
+	 * @return string
+	 */
+	public static function entry_row( $entry, $cols, $post_id, $play_url_override = '' ) {
+		$lines = array();
+
+		/*
+		 * یک فایل که هم به‌صورت استریم و هم مستقیم آمده، دو لینکِ هم‌شکل است:
+		 * اگر نام/زبان/انکودر/حجم‌اش یکی باشد، یک خط می‌شود و کنش‌هایش
+		 * (پخش، زیرنویس، دانلود) کنار هم می‌آیند؛ کنش تکراری یک‌بار می‌آید.
+		 */
+		foreach ( (array) $entry['variants'] as $row ) {
+			$cells = self::variant_cells( $row, $post_id, $play_url_override );
+			$key   = implode( "\0", array( $cells['name'], $cells['language'], $cells['encoder'], $cells['size'] ) );
+
+			if ( ! isset( $lines[ $key ] ) ) {
+				$lines[ $key ] = $cells;
+				continue;
+			}
+
+			$lines[ $key ]['actions'] = array_values( array_unique( array_merge( $lines[ $key ]['actions'], $cells['actions'] ) ) );
+		}
+
+		/*
+		 * خروجی هر خانه از `variant_cells()` پیش‌اسکیپ شده است؛ این تابع
+		 * فقط آن‌ها را کنار هم می‌گذارد (بدون چاپ مستقیم متغیرها در قالب).
+		 */
+		$line_columns = array(
+			'name'     => 'dl-col-name',
+			'language' => 'dl-col-lang',
+			'encoder'  => 'dl-col-encoder',
+			'size'     => 'dl-col-size',
+		);
+
+		$html = '<div class="download-row">';
+
+		if ( ! empty( $cols['quality'] ) ) {
+			$html .= '<span class="quality-name dl-col-quality"><b dir="ltr">' . esc_html( (string) $entry['quality'] ) . '</b></span>';
+		}
+
+		foreach ( $line_columns as $col => $class ) {
+			if ( empty( $cols[ $col ] ) ) {
+				continue;
+			}
+
+			$html .= '<div class="dl-lines ' . esc_attr( $class ) . '">';
+
+			foreach ( $lines as $line ) {
+				$html .= '<span class="dl-line">' . $line[ $col ] . '</span>';
+			}
+
+			$html .= '</div>';
+		}
+
+		$html .= '<div class="dl-lines download-actions dl-col-actions">';
+
+		foreach ( $lines as $line ) {
+			$html .= '<div class="dl-line dl-line-actions">' . implode( '', $line['actions'] ) . '</div>';
+		}
+
+		$html .= '</div></div>';
+
+		return $html;
 	}
 
 	/**

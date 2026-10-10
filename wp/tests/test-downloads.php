@@ -378,13 +378,13 @@ echo "\n=== ۶) مارک‌آپ باکس دانلود ===\n";
 
 $group = Links::get( 7 )[0];
 
-/* هر لینک یک ردیف است؛ این کمک همان مسیر رندر جدول را طی می‌کند. */
+/* هر کیفیت یک ردیف است؛ این کمک همان مسیر رندر جدول را طی می‌کند. */
 $render_rows = static function ( $groups, $post_id ) {
 	$rows = Templates::download_rows( $groups );
 	$cols = Templates::download_columns( $rows );
 	$html = '';
-	foreach ( $rows as $row ) {
-		$html .= Templates::link_row( $row, $cols, $post_id );
+	foreach ( Templates::download_entries( $rows ) as $entry ) {
+		$html .= Templates::entry_row( $entry, $cols, $post_id );
 	}
 	return $html;
 };

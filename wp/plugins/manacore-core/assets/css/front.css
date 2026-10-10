@@ -2333,6 +2333,35 @@ html:not([dir="rtl"]) .manacore-hero-gradient {
 	border-bottom: 0;
 }
 
+/*
+ * خط‌های هم‌تراز: یک ردیف کیفیت می‌تواند چند لینک داشته باشد. هر ستون
+ * (نام، زبان، انکودر، حجم و کنش‌ها) فهرست عمودی از خط‌هاست و خط i در همه‌ی
+ * ستون‌ها هم‌ارتفاع است؛ پس نام و دکمه‌های هر لینک کنار هم می‌مانند.
+ */
+.download-section .dl-lines {
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+	min-width: 0;
+}
+
+.download-section .dl-line {
+	display: flex;
+	align-items: center;
+	min-height: 34px;
+	min-width: 0;
+}
+
+.download-section .dl-line-actions {
+	flex-wrap: wrap;
+	justify-content: flex-end;
+	gap: 6px;
+}
+
+.download-section .download-row {
+	padding-block: 12px;
+}
+
 .download-section .quality-name {
 	display: flex;
 	align-items: center;

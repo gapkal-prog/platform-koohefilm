@@ -472,7 +472,8 @@ assert(
 	/data-manacore-downloads/.test( linksBody ),
 	'بخش دانلود شناسه‌ی اثر را برای تب فصل‌ها نگه می‌دارد'
 );
-var rowBody = phpBody( templatesCode, 'function link_row(' );
+var rowBody = phpBody( templatesCode, 'function entry_row(' );
+var lineBody = phpBody( templatesCode, 'function variant_cells(' );
 var headBody = phpBody( templatesCode, 'function download_head(' );
 assert(
 	/class="download-table[\s"]/.test( linksBody ) && /download_head\(/.test( linksBody ),
@@ -484,13 +485,18 @@ assert(
 	'سرستون فقط ستون‌های دارای داده را می‌سازد (کلاس‌های dl-col-*)'
 );
 assert(
-	/class="download-row"/.test( rowBody ) && /class="download-actions/.test( rowBody ) &&
-		/quality-name/.test( rowBody ) && /format-tag/.test( rowBody ) && /download-name/.test( rowBody ),
-	'ردیف‌ها کیفیت، نام، انکودر و کنش‌ها را دارند'
+	/class="download-row"/.test( rowBody ) && /download-actions/.test( rowBody ) &&
+		/quality-name/.test( rowBody ) && /dl-line/.test( rowBody ) &&
+		/download-name/.test( lineBody ) && /format-tag/.test( lineBody ),
+	'ردیف کیفیت، خط‌های هم‌تراز نام/انکودر و کنش‌ها را دارد'
 );
 assert(
-	'' !== phpBody( templatesCode, 'function link_row(' ),
-	'ردیف دانلود در تابع مستقل link_row() ساخته می‌شود'
+	'' !== rowBody && '' !== lineBody && ! /function link_row\(/.test( templatesCode ),
+	'ردیف دانلود با entry_row() و هر خط با variant_cells() ساخته می‌شود (link_row حذف شده)'
+);
+assert(
+	/has_subtitles\(/.test( lineBody ) && /subs['"],\s*'1'/.test( lineBody ),
+	'دکمه‌ی زیرنویس فقط وقتی زیرنویس دارد و با subs=1 به پخش می‌رود'
 );
 assert(
 	! /manacore-links(?!-block)|is-box-/.test( templatesCode ),
