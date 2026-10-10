@@ -2755,6 +2755,15 @@ class Blocks {
 			Block_Support::defaults( Block_Support::loop_attributes() )
 		);
 
+		/*
+		 * شماره‌ی حلقه و صفحه‌ی درخواستی آن. شماره‌ی حلقه پیش از هر خروجی
+		 * گرفته می‌شود تا صفحه‌ی واکشی‌شده هم همان شماره را داشته باشد.
+		 */
+		$loop  = Block_Support::next_loop_index();
+		$param = Block_Support::page_param( $attrs, $loop );
+
+		$attrs['loopPage'] = Block_Support::requested_page( $param );
+
 		$posts = Block_Support::get_posts( $attrs, 48 );
 		if ( empty( $posts ) ) {
 			/*
@@ -2762,7 +2771,7 @@ class Blocks {
 			 * مرجع را می‌گیرد: پنل `.empty-state` با راه بازگشت به فهرست
 			 * کامل — چون آنجا کاربر با فیلترهای خودش به بن‌بست خورده است.
 			 */
-			if ( ! empty( $attrs['showFilterSummary'] ) || ! empty( $attrs['loadMore'] )
+			if ( ! empty( $attrs['showFilterSummary'] ) || Block_Support::paginates( $attrs )
 				|| ! empty( $attrs['emptyTitle'] ) || ! empty( $attrs['emptyLinkUrl'] ) ) {
 				/*
 				 * صفحه‌ی بیرون از محدوده (`?paged=9` با سه صفحه نتیجه) هم به
@@ -2771,9 +2780,7 @@ class Blocks {
 				 * پیامِ پنل خالی برای این حالت جداگانه است تا کاربر فکر
 				 * نکند فیلترهایش بی‌نتیجه بوده.
 				 */
-				$paged_now = isset( $_GET['paged'] ) ? max( 1, (int) $_GET['paged'] ) : 1; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-
-				return $this->render_discovery_empty( $attrs, $paged_now );
+				return $this->render_discovery_empty( $attrs, $attrs['loopPage'] );
 			}
 
 			return Block_Support::render_empty( $attrs, 'manacore-titles-block' );
@@ -2867,7 +2874,7 @@ class Blocks {
 		}
 
 		ob_start();
-		echo '<div ' . Block_Support::wrapper( $attrs, array( 'manacore-titles-block', 'is-layout-' . $layout ) ) . '>'; // phpcs:ignore WordPress.Security.EscapeOutput
+		echo '<div ' . Block_Support::wrapper( $attrs, array( 'manacore-titles-block', 'is-layout-' . $layout ) ) . ' data-manacore-loop="' . (int) $loop . '">'; // phpcs:ignore WordPress.Security.EscapeOutput
 
 		echo Block_Support::render_header( $attrs, $tabs ); // phpcs:ignore WordPress.Security.EscapeOutput
 
@@ -2909,8 +2916,12 @@ class Blocks {
 
 		echo '</div>';
 
-		if ( ! empty( $attrs['loadMore'] ) ) {
-			echo $this->render_load_more( $attrs, $paged, $max_pages, $total ); // phpcs:ignore WordPress.Security.EscapeOutput
+		$mode = Block_Support::pagination_mode( $attrs );
+
+		if ( 'loadMore' === $mode ) {
+			echo $this->render_load_more( $attrs, $paged, $max_pages, $total, $param ); // phpcs:ignore WordPress.Security.EscapeOutput
+		} elseif ( 'numbered' === $mode ) {
+			echo $this->render_numbered_pagination( $paged, $max_pages, $param ); // phpcs:ignore WordPress.Security.EscapeOutput
 		}
 
 		echo '</div>';
@@ -2975,13 +2986,14 @@ class Blocks {
 	 * (رفتار مرجع)؛ اگر جاوااسکریپت نباشد، همان پیوند صفحه‌ی بعد را
 	 * می‌آورد. در پایانِ صفحه‌بندی، همان پیام مرجع چاپ می‌شود.
 	 *
-	 * @param array $attrs     ویژگی‌ها.
-	 * @param int   $paged     صفحه‌ی جاری.
-	 * @param int   $max_pages شمار صفحه‌ها.
-	 * @param int   $total     شمار کل آثار.
+	 * @param array  $attrs     ویژگی‌ها.
+	 * @param int    $paged     صفحه‌ی جاری.
+	 * @param int    $max_pages شمار صفحه‌ها.
+	 * @param int    $total     شمار کل آثار.
+	 * @param string $param     پارامتر نشانی صفحه‌ی همین حلقه.
 	 * @return string
 	 */
-	protected function render_load_more( $attrs, $paged, $max_pages, $total ) {
+	protected function render_load_more( $attrs, $paged, $max_pages, $total, $param ) {
 		$label = ! empty( $attrs['loadText'] ) ? (string) $attrs['loadText'] : __( 'داستان‌های بیشتر', 'manacore' );
 
 		if ( $paged >= $max_pages ) {
@@ -3002,12 +3014,65 @@ class Blocks {
 				. '</p></div>';
 		}
 
-		$next = add_query_arg( 'paged', $paged + 1 );
+		$next = add_query_arg( $param, $paged + 1 );
+		$auto = ! empty( $attrs['autoLoad'] ) ? ' data-manacore-autoload="1"' : '';
 
-		return '<div class="load-more-zone"><a class="button secondary" href="' . esc_url( $next ) . '" rel="next" data-manacore-load-more>'
+		return '<div class="load-more-zone"><a class="button secondary" href="' . esc_url( $next ) . '" rel="next" data-manacore-load-more' . $auto
+			. ' data-manacore-error="' . esc_attr__( 'بارگذاری انجام نشد. دوباره تلاش کنید.', 'manacore' ) . '">'
 			. esc_html( $label )
 			. '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>'
 			. '</a></div>';
+	}
+
+	/**
+	 * بخش شماره‌ی صفحه‌ها («حالت شماره‌ی صفحه‌ها» ویرایشگر).
+	 *
+	 * پیوندها واقعی‌اند و بدون جاوااسکریپت هم کار می‌کنند. فقط پارامتر صفحه‌ی
+	 * همین حلقه عوض می‌شود؛ بقیه‌ی نشانی (فیلترها، مرتب‌سازی) حفظ می‌شود.
+	 *
+	 * @param int    $paged     صفحه‌ی جاری.
+	 * @param int    $max_pages شمار صفحه‌ها.
+	 * @param string $param     پارامتر نشانی صفحه‌ی همین حلقه.
+	 * @return string
+	 */
+	protected function render_numbered_pagination( $paged, $max_pages, $param ) {
+		if ( $max_pages < 2 ) {
+			return '';
+		}
+
+		/*
+		 * الگوی صفحه: عدد جای‌نگهدار را با `add_query_arg` می‌سازیم و بعد با
+		 * `%#%` عوض می‌کنیم (همان روش هستهٔ `paginate_links`، چون `%` در
+		 * `add_query_arg` کدگذاری می‌شود).
+		 */
+		$placeholder = 999999999;
+		$base        = str_replace(
+			$placeholder,
+			'%#%',
+			esc_url( add_query_arg( $param, $placeholder, remove_query_arg( $param ) ) )
+		);
+
+		$links = paginate_links(
+			array(
+				'base'      => $base,
+				'format'    => '',
+				'current'   => max( 1, (int) $paged ),
+				'total'     => (int) $max_pages,
+				'prev_text' => __( 'قبلی', 'manacore' ),
+				'next_text' => __( 'بعدی', 'manacore' ),
+				'mid_size'  => 1,
+				'end_size'  => 1,
+				'type'      => 'list',
+			)
+		);
+
+		if ( ! $links ) {
+			return '';
+		}
+
+		return '<nav class="koohe-pagination manacore-pagination" aria-label="' . esc_attr__( 'صفحه‌بندی آثار', 'manacore' ) . '">'
+			. wp_kses_post( $links )
+			. '</nav>';
 	}
 
 	/**

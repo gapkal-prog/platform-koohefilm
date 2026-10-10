@@ -10434,3 +10434,10 @@ body.manacore-auth-open {
 		transition: none;
 	}
 }
+
+/* پیام خطای «داستان‌های بیشتر» (زیر دکمه، بدون بازبارگذاری صفحه). */
+.load-more-zone .load-more-error {
+	margin: 0;
+	font-size: .625rem;
+	color: var(--mc-text-muted);
+}

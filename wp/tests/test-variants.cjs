@@ -791,7 +791,7 @@ assert( /'loadText'/.test( paginationBody ), 'ویژگی loadText در ویژگ�
 /* «شمار آثار» و «بیشتر» به max_num_pages/found_posts نیاز دارند. */
 var queryArgsBody = phpBody( supportCode, 'function query_args(' );
 assert(
-	/showFilterSummary/.test( queryArgsBody ) && /loadMore/.test( queryArgsBody ) &&
+	/showFilterSummary/.test( queryArgsBody ) && /paginates\(\s*\$attrs\s*\)/.test( queryArgsBody ) &&
 	/\$args\['no_found_rows'\]\s*=\s*false/.test( queryArgsBody ),
 	'query_args() برای خلاصه‌ی نتیجه و «بیشتر» شمارش کل را روشن می‌کند'
 );
@@ -799,7 +799,7 @@ assert(
 var loadMoreBody = phpBody( blocksCode, 'function render_load_more(' );
 assert( '' !== loadMoreBody, 'تابع render_load_more() یافت شد' );
 assert( /data-manacore-load-more/.test( loadMoreBody ), 'دکمه‌ی «بیشتر» نشانه‌ی data-manacore-load-more دارد' );
-assert( /add_query_arg\(\s*'paged'/.test( loadMoreBody ), 'نشانی دکمه با add_query_arg( \'paged\', … ) ساخته می‌شود' );
+assert( /add_query_arg\(\s*\$param\b/.test( loadMoreBody ), 'نشانی دکمه با add_query_arg( $param, … ) ساخته می‌شود' );
 assert(
 	/داستان\u200c?های بیشتر/.test( loadMoreBody ),
 	'برچسب پیش‌فرض دکمه «داستان‌های بیشتر» است'
@@ -825,8 +825,8 @@ assert(
 assert( /active-filter-chips/.test( summaryBody ), 'تراشه‌های فیلتر فعال در خلاصه‌ی نتیجه رندر می‌شوند' );
 
 assert(
-	/Array\.prototype\.slice\.call\(\s*page\.children\s*\)/.test( frontJsCode ),
-	'initLoadMore() پیش از افزودن، از children رونوشت می‌گیرد (هر کارت دوم حذف نشود)'
+	/Array\.prototype\.slice\.call\(\s*\w+\.children\s*\)/.test( frontJsCode ),
+	'کارت‌های تازه پیش از افزودن از children رونوشت می‌گیرند (هر کارت دوم حذف نشود)'
 );
 
 var queryPhp      = stripComments( read( path.join( PLUGIN, 'includes', 'class-query.php' ) ) );

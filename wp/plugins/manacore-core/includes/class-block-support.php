@@ -36,6 +36,13 @@ class Block_Support {
 	 */
 	protected static $last_query = null;
 
+	/**
+	 * شمارندهٔ حلقه‌های آثار رندرشده در این درخواست (برای `next_loop_index()`).
+	 *
+	 * @var int
+	 */
+	protected static $loop_count = 0;
+
 	/* ---------------------------------------------------------------------
 	 * ۱) گروه‌های ویژگی
 	 * ------------------------------------------------------------------ */
@@ -136,7 +143,100 @@ class Block_Support {
 				'type'    => 'string',
 				'default' => '',
 			),
+			/*
+			 * حالت صفحه‌بندی: `none` | `loadMore` | `numbered`. خالی یعنی
+			 * «از `loadMore` قدیمی بخوان» (بلوک‌های ذخیره‌شده‌ی پیش از این ویژگی).
+			 */
+			'paginationMode' => array(
+				'type'    => 'string',
+				'default' => '',
+			),
+			'autoLoad'  => array(
+				'type'    => 'boolean',
+				'default' => false,
+			),
 		);
+	}
+
+	/**
+	 * حالت صفحه‌بندی یک حلقه: `none` | `loadMore` | `numbered`.
+	 *
+	 * ویژگی `paginationMode` از ویرایشگر می‌آید. اگر خالی یا نامعتبر باشد،
+	 * از ویژگی بولی `loadMore` خوانده می‌شود تا قالب‌ها و بلوک‌های قدیمی
+	 * بدون تغییر کار کنند. مقدار با تطبیق دقیق پذیرفته می‌شود (نه
+	 * `sanitize_key` که حروف را کوچک می‌کند).
+	 *
+	 * @param array $attrs ویژگی‌ها.
+	 * @return string
+	 */
+	public static function pagination_mode( $attrs ) {
+		$mode = isset( $attrs['paginationMode'] ) ? (string) $attrs['paginationMode'] : '';
+
+		if ( in_array( $mode, array( 'none', 'loadMore', 'numbered' ), true ) ) {
+			return $mode;
+		}
+
+		return ! empty( $attrs['loadMore'] ) ? 'loadMore' : 'none';
+	}
+
+	/**
+	 * آیا این حلقه صفحه‌بندی دارد (دکمه یا شماره‌ی صفحه‌ها)؟
+	 *
+	 * @param array $attrs ویژگی‌ها.
+	 * @return bool
+	 */
+	public static function paginates( $attrs ) {
+		return 'none' !== self::pagination_mode( $attrs );
+	}
+
+	/**
+	 * نام پارامتر نشانی که صفحه‌ی همین حلقه را می‌برد.
+	 *
+	 * حلقه‌ای که فیلترهای نشانی یا کوئری صفحه را ارث می‌برد (برگه‌ی کشف،
+	 * آرشیوها) همان `paged` را دارد. بقیه‌ی حلقه‌ها `mc_page_N` می‌گیرند
+	 * (N ترتیب حلقه در صفحه، مثل `query-N-page` هسته)، پس چند حلقه روی یک
+	 * صفحه یکدیگر را صفحه‌بندی نمی‌کنند.
+	 *
+	 * @param array $attrs ویژگی‌ها.
+	 * @param int   $loop  ترتیب حلقه در صفحه (از `next_loop_index()`).
+	 * @return string
+	 */
+	public static function page_param( $attrs, $loop ) {
+		if ( ! empty( $attrs['inheritFilters'] ) || ! empty( $attrs['inheritQuery'] ) ) {
+			return 'paged';
+		}
+
+		return 'mc_page_' . max( 1, (int) $loop );
+	}
+
+	/**
+	 * شمارهٔ صفحهٔ درخواستی برای یک پارامتر نشانی (حداقل ۱).
+	 *
+	 * @param string $param نام پارامتر (از `page_param()`).
+	 * @return int
+	 */
+	public static function requested_page( $param ) {
+		$page = isset( $_GET[ $param ] ) ? absint( wp_unslash( $_GET[ $param ] ) ) : 0; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+
+		if ( 'paged' === $param ) {
+			$page = max( $page, (int) get_query_var( 'paged' ) );
+		}
+
+		return max( 1, $page );
+	}
+
+	/**
+	 * شمارهٔ ترتیب حلقه‌ی آثار در این درخواست (از ۱).
+	 *
+	 * هر حلقه‌ی رندرشده یک شماره می‌گیرد؛ چون ترتیب رندر در یک صفحه ثابت است،
+	 * همان حلقه در صفحه‌ی بعدِ واکشی‌شده هم همین شماره را دارد.
+	 *
+	 * @return int
+	 */
+	public static function next_loop_index() {
+		self::$loop_count++;
+
+		return self::$loop_count;
 	}
 
 	/**
@@ -407,12 +507,20 @@ class Block_Support {
 		}
 
 		/*
+		 * صفحه‌ی درخواستی همین حلقه (`loopPage`، ویژگی زمان اجرا که هرگز
+		 * ذخیره نمی‌شود). صفحه‌ی نخست یعنی همان کوئری پیش‌فرض.
+		 */
+		if ( ! empty( $attrs['loopPage'] ) && (int) $attrs['loopPage'] > 1 ) {
+			$args['paged'] = (int) $attrs['loopPage'];
+		}
+
+		/*
 		 * شمار کل و شمار صفحه‌ها: پیش‌فرض `Query::get_titles()` روی
 		 * `no_found_rows = true` است (سبک‌تر). بلوکی که «شمار آثار» یا
-		 * «داستان‌های بیشتر» می‌خواهد به `found_posts`/`max_num_pages` نیاز
-		 * دارد، پس همان‌جا خاموش می‌شود — نه برای همه‌ی حلقه‌ها.
+		 * صفحه‌بندی می‌خواهد به `found_posts`/`max_num_pages` نیاز دارد، پس
+		 * همان‌جا خاموش می‌شود — نه برای همه‌ی حلقه‌ها.
 		 */
-		if ( ! empty( $attrs['showFilterSummary'] ) || ! empty( $attrs['loadMore'] ) ) {
+		if ( ! empty( $attrs['showFilterSummary'] ) || self::paginates( $attrs ) ) {
 			$args['no_found_rows'] = false;
 		}
 
@@ -432,7 +540,11 @@ class Block_Support {
 
 		self::$last_query = null;
 
-		if ( $ttl > 0 && ! self::is_editor_preview() ) {
+		/*
+		 * حلقه‌ی صفحه‌بندی‌شده کش نمی‌شود: کش، `last_query` (شمار صفحه‌ها) را
+		 * خالی می‌گذارد و دکمه یا شماره‌ها اشتباه رندر می‌شدند.
+		 */
+		if ( $ttl > 0 && ! self::is_editor_preview() && ! self::paginates( $attrs ) ) {
 			$key    = 'mc_blk_' . md5( wp_json_encode( $args ) . '|' . Block_Visibility::current_post_id() );
 			$cached = get_transient( $key );
 			if ( is_array( $cached ) ) {

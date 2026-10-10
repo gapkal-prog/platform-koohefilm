@@ -1160,13 +1160,67 @@
 	}
 
 	/**
+	 * پنل صفحه‌بندی حلقه: دکمه‌ی «داستان‌های بیشتر»، شماره‌ی صفحه‌ها، یا هیچ‌کدام.
+	 *
+	 * «بدون صفحه‌بندی» پیش‌فرض بلوک‌های تازه است. ویژگی `loadMore` همگام
+	 * نگه داشته می‌شود تا قالب‌ها و کدهای قدیمی که آن را می‌خوانند درست بمانند.
+	 *
+	 * @param {Object} props props بلوک.
+	 * @return {Object|null} پنل.
+	 */
+	function paginationPanel( props ) {
+		if ( ! has( props, 'paginationMode' ) ) {
+			return null;
+		}
+
+		var a    = props.attributes;
+		var mode = a.paginationMode || ( a.loadMore ? 'loadMore' : 'none' );
+
+		return el(
+			PanelBody,
+			{ key: 'pagination', title: __( 'صفحه‌بندی', 'manacore' ), initialOpen: false },
+			el( SelectControl, {
+				label: __( 'حالت صفحه‌بندی', 'manacore' ),
+				value: mode,
+				options: [
+					{ label: __( 'بدون صفحه‌بندی', 'manacore' ), value: 'none' },
+					{ label: __( 'دکمه‌ی «داستان‌های بیشتر»', 'manacore' ), value: 'loadMore' },
+					{ label: __( 'بخش شماره‌ی صفحه‌ها', 'manacore' ), value: 'numbered' },
+				],
+				onChange: function ( value ) {
+					props.setAttributes( { paginationMode: value, loadMore: 'loadMore' === value } );
+				},
+				__nextHasNoMarginBottom: true,
+			} ),
+			'loadMore' === mode
+				? el( ToggleControl, {
+						label: __( 'بارگذاری خودکار با اسکرول', 'manacore' ),
+						help: __( 'با رسیدن به انتهای فهرست، صفحه‌ی بعد خودکار می‌آید. دکمه همچنان دیده می‌شود.', 'manacore' ),
+						checked: !! a.autoLoad,
+						onChange: setter( props, 'autoLoad' ),
+						__nextHasNoMarginBottom: true,
+				  } )
+				: null,
+			'loadMore' === mode
+				? el( TextControl, {
+						label: __( 'متن دکمه', 'manacore' ),
+						help: __( 'خالی = «داستان‌های بیشتر».', 'manacore' ),
+						value: a.loadText,
+						onChange: setter( props, 'loadText' ),
+						__nextHasNoMarginBottom: true,
+				  } )
+				: null
+		);
+	}
+
+	/**
 	 * مجموع پنل‌های کوئری.
 	 *
 	 * @param {Object} props props بلوک.
 	 * @return {Array} پنل‌ها.
 	 */
 	function queryPanels( props ) {
-		return [ sourcePanel( props ), taxonomyPanel( props ), filtersPanel( props ), orderPanel( props ) ];
+		return [ sourcePanel( props ), taxonomyPanel( props ), filtersPanel( props ), orderPanel( props ), paginationPanel( props ) ];
 	}
 
 	/* -----------------------------------------------------------------

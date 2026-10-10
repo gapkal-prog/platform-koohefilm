@@ -1797,74 +1797,192 @@
 	}
 
 	/*
-	 * «داستان‌های بیشتر» (`.load-more-zone` مرجع).
+	 * «داستان‌های بیشتر» و بارگذاری خودکار (`.load-more-zone` مرجع).
 	 *
-	 * پیوند صفحه‌ی بعد را می‌گیرد، کارت‌هایش را به انتهای همین شبکه
-	 * می‌چسباند (رفتار مرجع: افزودن، نه جایگزینی) و پیوند تازه‌ای برای
-	 * صفحه‌ی بعد می‌گذارد؛ در پایان همان پیام مرجع را نشان می‌دهد. اگر
-	 * جاوااسکریپت نباشد، همان پیوند یک صفحه‌بندی معمولی است و کار می‌کند.
+	 * کلیک، صفحه‌ی بعد **همان حلقه** را واکشی می‌کند (با شماره‌ی حلقه از
+	 * `data-manacore-loop`) و کارت‌هایش را به انتهای شبکه‌ی همان بلوک
+	 * می‌چسباند؛ کارت تکراری (همان `data-post-id`) دوباره نمی‌آید. پیوند
+	 * پایانی تازه‌ای می‌گذارد و در آخرین صفحه پیام پایانی را نشان می‌دهد.
+	 * خطا پیام کوتاه می‌دهد و صفحه بازبارگذاری نمی‌شود. اگر جاوااسکریپت
+	 * یا واکشی نباشد، همان پیوند یک صفحه‌بندی معمولی است.
 	 */
 	function initLoadMore() {
 		document.addEventListener( 'click', function ( event ) {
 			var link = event.target.closest( '[data-manacore-load-more]' );
-			if ( ! link || link.getAttribute( 'aria-busy' ) === 'true' ) {
-				return;
+			if ( ! link || ! loopBlockOf( link ) || ! window.fetch ) {
+				return; // پیوند معمولی: مرورگر خودش به صفحه‌ی بعد می‌رود.
 			}
 
-			var zone = link.closest( '.load-more-zone' );
-			var grid = document.querySelector( '.manacore-titles-block .manacore-grid-cards' );
-			var block = grid ? grid.closest( '.manacore-titles-block' ) : null;
-
-			if ( ! zone || ! grid || ! window.fetch ) {
-				return; // بدون جاوااسکریپت/مرورگر قدیمی: پیوند خودش کار می‌کند.
-			}
-
+			/*
+			 * از این‌جا به بعد JS کار را می‌گیرد؛ حتی وقتی واکشی در جریان است
+			 * کلیک تکراری هم باید بی‌صدا رد شود، نه ناوبری کامل صفحه.
+			 */
 			event.preventDefault();
-			link.setAttribute( 'aria-busy', 'true' );
+			requestMore( link );
+		} );
 
-			window.fetch( link.href, { credentials: 'same-origin' } )
-				.then( function ( response ) {
-					return response.text();
-				} )
-				.then( function ( html ) {
-					var parsed = new window.DOMParser().parseFromString( html, 'text/html' );
-					var page   = parsed.querySelector( '.manacore-titles-block .manacore-grid-cards' );
-					var next   = parsed.querySelector( '[data-manacore-load-more]' );
+		initLoadMoreAutoload();
+	}
 
-					if ( ! page ) {
-						window.location.href = link.href;
-						return;
+	/**
+	 * بلوک آثاری که این پیوند به آن تعلق دارد (یا null).
+	 *
+	 * @param {Element} link پیوند «داستان‌های بیشتر».
+	 * @return {Element|null}
+	 */
+	function loopBlockOf( link ) {
+		var block = link.closest( '.manacore-titles-block' );
+
+		return block && block.querySelector( '.manacore-grid-cards' ) ? block : null;
+	}
+
+	/**
+	 * صفحه‌ی بعد همان حلقه را واکشی و کارت‌هایش را اضافه می‌کند.
+	 *
+	 * @param {Element} link پیوند «داستان‌های بیشتر».
+	 * @return {Promise<boolean>} true اگر موفق بود؛ هرگز رد نمی‌شود.
+	 */
+	function requestMore( link ) {
+		if ( 'true' === link.getAttribute( 'aria-busy' ) ) {
+			return Promise.resolve( false );
+		}
+
+		var block = loopBlockOf( link );
+		var grid  = block.querySelector( '.manacore-grid-cards' );
+		var zone  = link.closest( '.load-more-zone' );
+		var loop  = block.getAttribute( 'data-manacore-loop' );
+
+		clearLoadError( zone );
+		link.setAttribute( 'aria-busy', 'true' );
+
+		return window.fetch( link.getAttribute( 'href' ), { credentials: 'same-origin' } )
+			.then( function ( response ) {
+				if ( ! response.ok ) {
+					throw new Error( 'HTTP ' + response.status );
+				}
+				return response.text();
+			} )
+			.then( function ( html ) {
+				var doc      = new window.DOMParser().parseFromString( html, 'text/html' );
+				var incoming = doc.querySelector( '.manacore-titles-block[data-manacore-loop="' + loop + '"]' );
+				if ( ! incoming ) {
+					throw new Error( 'loop not found' );
+				}
+
+				appendUniqueCards( grid, incoming.querySelector( '.manacore-grid-cards' ) );
+
+				var next = incoming.querySelector( '[data-manacore-load-more]' );
+				link.removeAttribute( 'aria-busy' );
+				if ( next ) {
+					link.setAttribute( 'href', next.getAttribute( 'href' ) );
+				} else if ( zone ) {
+					var done = incoming.querySelector( '.load-more-zone' );
+					zone.innerHTML = done ? done.innerHTML : '';
+				}
+
+				return true;
+			} )
+			.catch( function () {
+				link.removeAttribute( 'aria-busy' );
+				showLoadError( zone, link );
+				return false;
+			} );
+	}
+
+	/**
+	 * کارت‌های `source` را به انتهای `grid` می‌افزاید، بدون کارت تکراری.
+	 *
+	 * @param {Element}      grid   شبکه‌ی مقصد.
+	 * @param {Element|null} source شبکه‌ی واکشی‌شده.
+	 */
+	function appendUniqueCards( grid, source ) {
+		if ( ! source ) {
+			return;
+		}
+
+		var seen = {};
+		Array.prototype.forEach.call( grid.querySelectorAll( '[data-post-id]' ), function ( card ) {
+			seen[ card.getAttribute( 'data-post-id' ) ] = true;
+		} );
+
+		/* `children` زنده است؛ نخست فهرست ساکن می‌گیریم (گره‌ها جابه‌جا می‌شوند). */
+		Array.prototype.slice.call( source.children ).forEach( function ( card ) {
+			var id = card.getAttribute( 'data-post-id' );
+			if ( id ) {
+				if ( seen[ id ] ) {
+					return;
+				}
+				seen[ id ] = true;
+			}
+			grid.appendChild( card );
+		} );
+	}
+
+	/**
+	 * پیام خطا زیر دکمه (یک بار؛ با تلاش مجدد پاک می‌شود).
+	 *
+	 * @param {Element|null} zone ظرف دکمه.
+	 * @param {Element}      link دکمه.
+	 */
+	function showLoadError( zone, link ) {
+		if ( ! zone || zone.querySelector( '.load-more-error' ) ) {
+			return;
+		}
+
+		var message = document.createElement( 'p' );
+		message.className = 'load-more-error';
+		message.setAttribute( 'role', 'alert' );
+		message.textContent = link.getAttribute( 'data-manacore-error' ) || '';
+		zone.appendChild( message );
+	}
+
+	/**
+	 * پیام خطای قبلی را پاک می‌کند.
+	 *
+	 * @param {Element|null} zone ظرف دکمه.
+	 */
+	function clearLoadError( zone ) {
+		var old = zone ? zone.querySelector( '.load-more-error' ) : null;
+		if ( old ) {
+			old.parentNode.removeChild( old );
+		}
+	}
+
+	/*
+	 * بارگذاری خودکار با اسکرول: وقتی ظرف «داستان‌های بیشتر» به ناحیه‌ی
+	 * دید نزدیک می‌شود، همان تابع دکمه اجرا می‌شود. دکمه همچنان دیده
+	 * می‌شود. بعد از هر موفقیت دوباره مشاهده می‌شود تا اگر هنوز در دید است
+	 * صفحه‌ی بعد هم بیاید. بعد از خطا یا در آخرین صفحه متوقف می‌شود تا
+	 * حلقه‌ی بی‌پایان نداشته باشیم (دکمه برای ادامه‌ی دستی می‌ماند).
+	 * بدون IntersectionObserver فقط دکمه کار می‌کند.
+	 */
+	function initLoadMoreAutoload() {
+		if ( ! ( 'IntersectionObserver' in window ) ) {
+			return;
+		}
+
+		var observer = new window.IntersectionObserver( function ( entries ) {
+			entries.forEach( function ( entry ) {
+				var zone = entry.target;
+				var link = zone.querySelector( '[data-manacore-load-more]' );
+
+				if ( ! entry.isIntersecting || ! link || 'true' === link.getAttribute( 'aria-busy' ) ) {
+					return;
+				}
+
+				observer.unobserve( zone );
+				requestMore( link ).then( function ( ok ) {
+					if ( ok && zone.querySelector( '[data-manacore-load-more]' ) ) {
+						observer.observe( zone );
 					}
-
-					/*
-					 * `children` یک مجموعه‌ی زنده است؛ اگر همان را پیمایش
-					 * کنیم و هر گره را به شبکه‌ی مقصد بچسبانیم، گره از
-					 * مجموعه‌ی مبدأ حذف می‌شود و ایندکس‌ها جابه‌جا
-					 * می‌شوند — نتیجه، جاافتادن هر کارت دوم بود
-					 * (سنجیده‌شده: صفحه‌ی دوم با دو کارت، فقط یکی را
-					 * می‌افزود). پس نخست یک رونوشت ساکن می‌گیریم.
-					 */
-					var incoming = Array.prototype.slice.call( page.children );
-
-					incoming.forEach( function ( card ) {
-						grid.appendChild( card );
-					} );
-
-					if ( next ) {
-						link.setAttribute( 'href', next.getAttribute( 'href' ) );
-						link.removeAttribute( 'aria-busy' );
-						// شمارش کارت‌های افزوده‌شده به خواننده‌ی صفحه.
-						link.setAttribute( 'data-manacore-loaded', String( page.children.length ) );
-					} else if ( block ) {
-						var done = parsed.querySelector( '.load-more-zone' );
-						zone.innerHTML = done ? done.innerHTML : '';
-					} else {
-						zone.innerHTML = '';
-					}
-				} )
-				.catch( function () {
-					window.location.href = link.href;
 				} );
+			} );
+		}, { rootMargin: '600px 0px' } );
+
+		Array.prototype.forEach.call( document.querySelectorAll( '.load-more-zone' ), function ( zone ) {
+			if ( zone.querySelector( '[data-manacore-autoload]' ) ) {
+				observer.observe( zone );
+			}
 		} );
 	}
 
